@@ -19,7 +19,7 @@ pwsh scripts/build.ps1 -Component client     # cargo build --release -p hoa
 pwsh scripts/build.ps1 -Component launcher   # dotnet build
 pwsh scripts/build.ps1 -Component addon      # LuaJIT 语法检查
 pwsh scripts/build.ps1 -Component i18n       # 校验 i18n 目录并检查生成物
-pwsh scripts/build.ps1 -Component content    # 编译卡牌内容并检查生成 SQL
+pwsh scripts/build.ps1 -Component content    # 编译内容并检查生成 SQL
 pwsh scripts/build.ps1 -Component check      # 客户端清单 + 插件语法 + i18n
 pwsh scripts/build.ps1 -Component all
 ```
@@ -37,16 +37,27 @@ scripts/build.sh check
 scripts/build.sh all
 ```
 
-## 当前状态（0.1.0 / 阶段 1）
+## 当前状态（0.1.0）
 
 - `server/`：CMake 配置 + `mangosd` Release 构建通过。
 - `launcher/`：`dotnet build` 通过（导入时把 `..\telegraphs` 引用修正为 `..\tools\telegraphs`）。
 - `addon/` + `glue/`：70 个 Lua 文件语法检查通过。
-- `client/`：workspace 清单校验通过；完整 `cargo build` 尚未在 monorepo 内跑过（源码与已构建的 0.6.3 客户端一致），放到 CI/下一阶段验证。
+- `client/`：完整 `cargo build -p benilla-app` 通过。
 
 ## CI
 
 `.github/workflows/ci.yml` 在每次 pull request 和 push 到 `main` 时运行 `docs-check`、`i18n-check`、`content-check`、`addon-lua`、`launcher-build`、`client-check`、`server-build`。这七项是合并门槛。分支保护还没启用：GitHub 的私有仓库需要 GitHub Pro 才能使用分支保护，本仓库目前在免费计划下。升级 Pro 或把仓库改为公开后运行 `scripts/protect-main.sh`。
+
+## 应用内容数据
+
+内容改动后需要刷新世界库：
+
+```powershell
+python tools/content/compile.py
+python tools/content/apply.py --maria <mariadb 客户端路径> --database <世界库>
+```
+
+`apply.py` 还接受 `--host`、`--port`、`--user`、`--password`（默认 `127.0.0.1:3306`，`root`/`root`）。服务端启动时会输出 `HoA content hash ...`，数据库哈希与构建不一致时记错误日志。
 
 ## 服务端构建细节
 
