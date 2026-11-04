@@ -40,6 +40,7 @@ hoa-core/
 - [总体架构](docs/architecture.md)
 - [i18n](docs/i18n.md)
 - [光环与效果](docs/auras.md)
+- [客户端原生能力](docs/native-capabilities.md)
 - [内容与数据](docs/content-data.md)
 - [协议](docs/protocol.md)
 - [迁移计划](docs/migration-plan.md)

@@ -18,9 +18,10 @@
 1. [总体架构](architecture.md)
 2. [i18n](i18n.md)
 3. [光环与效果](auras.md)
-4. [内容与数据](content-data.md)
-5. [协议](protocol.md)
-6. [迁移计划](migration-plan.md)
+4. [客户端原生能力](native-capabilities.md)
+5. [内容与数据](content-data.md)
+6. [协议](protocol.md)
+7. [迁移计划](migration-plan.md)
 
 ## 待确认
 
