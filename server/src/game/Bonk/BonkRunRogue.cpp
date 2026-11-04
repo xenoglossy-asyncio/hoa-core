@@ -150,6 +150,8 @@ void BonkRun::ResetRogueState()
     m_riposteTimes.clear();
     m_roguePruneMs = 0;
     m_bladeFlurryUntilMs = 0;
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_ENVENOM_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_SHADOW_DANCE_AURA);
     m_envenomUntilMs = 0;
     m_shadowDanceUntilMs = 0;
     m_smokeUntilMs = 0;
@@ -561,7 +563,7 @@ bool BonkRun::OpenRogueWindow(OwnedWeapon& owned, uint32& untilMs, uint32 auraSp
 
 void BonkRun::StartShadowDance(OwnedWeapon& owned)
 {
-    if (!OpenRogueWindow(owned, m_shadowDanceUntilMs, 0))
+    if (!OpenRogueWindow(owned, m_shadowDanceUntilMs, BONK_SPELL_SHADOW_DANCE_AURA))
         return;
     if (m_mastery.Special(BONK_SPECIAL_SECRET_TECHNIQUE) > 0.0f)
         for (Creature* mob : GetMobsInRange(BONK_SECRET_TECHNIQUE_RADIUS))
@@ -791,6 +793,13 @@ void BonkRun::CastEnvenom(OwnedWeapon& owned, SpellEntry const* spellInfo)
             Exsanguinate(owned, spellInfo, target);
     }
     m_envenomUntilMs = m_totalMs + uint32(owned.weapon.durationMs * GetWeaponDurationScale(owned));
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_ENVENOM_AURA, ADD_AURA_POSITIVE))
+    {
+        int32 const duration = int32(m_envenomUntilMs - m_totalMs);
+        holder->SetAuraDuration(duration);
+        holder->SetAuraMaxDuration(duration);
+        holder->UpdateAuraDuration();
+    }
     ThrowDeadlyFan();
 }
 

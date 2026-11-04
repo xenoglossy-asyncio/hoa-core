@@ -21,6 +21,8 @@ pub(crate) const CARD_THORNS: u32 = 60010;
 pub(crate) const DASH_RECHARGE: u32 = 60011;
 pub(crate) const TIGERS_FURY: u32 = 60012;
 pub(crate) const ARCANE_POWER: u32 = 60013;
+pub(crate) const SHADOW_DANCE: u32 = 60014;
+pub(crate) const ENVENOM: u32 = 60015;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -150,6 +152,24 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Arcane Power",
                 r"Interface\Icons\Spell_Nature_StarFall",
                 "Your spells deal more damage for a short time.",
+            ),
+        ),
+        (
+            SHADOW_DANCE,
+            display(
+                SHADOW_DANCE,
+                "Shadow Dance",
+                r"Interface\Icons\Spell_Shadow_Shadowform",
+                "Your stealth abilities are usable for a short time.",
+            ),
+        ),
+        (
+            ENVENOM,
+            display(
+                ENVENOM,
+                "Envenom",
+                r"Interface\Icons\Ability_Rogue_Eviscerate",
+                "Your poisons strike harder for a short time.",
             ),
         ),
     ]
