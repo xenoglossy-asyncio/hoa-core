@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 9
+#define HOA_PROTOCOL_VERSION 10
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -44,6 +44,13 @@
 #define HOA_MSG_LEY_OPTION 0x002A
 #define HOA_MSG_LEY_END 0x002B
 #define HOA_MSG_LEY_CLOSED 0x002C
+#define HOA_MSG_GLYPH_OFFER 0x002D
+#define HOA_MSG_GLYPH_OPTION 0x002E
+#define HOA_MSG_GLYPH_OFFER_END 0x002F
+#define HOA_MSG_GLYPH_CLOSE 0x0030
+#define HOA_MSG_GLYPH_TAKEN 0x0031
+#define HOA_MSG_GLYPH_INFO 0x0032
+#define HOA_MSG_GLYPH_COUNT 0x0033
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -363,4 +370,53 @@ inline void HoAWriteLeyEnd(WorldPacket& packet)
 inline void HoAWriteLeyClosed(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_LEY_CLOSED);
+}
+
+inline void HoAWriteGlyphOffer(WorldPacket& packet, uint32 const& picksGiven, uint32 const& count, uint32 const& rerolls)
+{
+    packet << uint16(HOA_MSG_GLYPH_OFFER);
+    packet << uint32(picksGiven);
+    packet << uint32(count);
+    packet << uint32(rerolls);
+}
+
+inline void HoAWriteGlyphOption(WorldPacket& packet, uint32 const& index, uint32 const& id)
+{
+    packet << uint16(HOA_MSG_GLYPH_OPTION);
+    packet << uint32(index);
+    packet << uint32(id);
+}
+
+inline void HoAWriteGlyphOfferEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_GLYPH_OFFER_END);
+}
+
+inline void HoAWriteGlyphClose(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_GLYPH_CLOSE);
+}
+
+inline void HoAWriteGlyphTaken(WorldPacket& packet, std::string const& ids)
+{
+    packet << uint16(HOA_MSG_GLYPH_TAKEN);
+    HoAWriteString(packet, ids);
+}
+
+inline void HoAWriteGlyphInfo(WorldPacket& packet, uint32 const& id, std::string const& name, std::string const& icon, uint32 const& rarity, std::string const& description, std::string const& drawback)
+{
+    packet << uint16(HOA_MSG_GLYPH_INFO);
+    packet << uint32(id);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    packet << uint32(rarity);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, drawback);
+}
+
+inline void HoAWriteGlyphCount(WorldPacket& packet, uint32 const& id, uint32 const& count)
+{
+    packet << uint16(HOA_MSG_GLYPH_COUNT);
+    packet << uint32(id);
+    packet << uint32(count);
 }

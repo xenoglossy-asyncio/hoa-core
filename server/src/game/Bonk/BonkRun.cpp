@@ -2019,7 +2019,14 @@ void BonkRun::DropOffers()
     if (!m_offer.empty())
         SendOfferClosed();
     if (!m_glyphOffer.empty())
-        bonk->SendAddon("glyphclose");
+    {
+        if (m_player->GetBonkPlayer()->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteGlyphClose(data);
+            m_player->GetSession()->SendPacket(&data);
+        }
+    }
     if (!m_leyOffer.empty())
     {
         if (m_player->GetBonkPlayer()->IsAddonReady())

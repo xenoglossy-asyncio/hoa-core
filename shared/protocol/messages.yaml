@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 9
+version: 10
 messages:
   - name: aura_value
     id: 0x0002
@@ -280,3 +280,45 @@ messages:
     id: 0x002C
     direction: server_to_client
     fields: []
+  - name: glyph_offer
+    id: 0x002D
+    direction: server_to_client
+    fields:
+      - { name: picks_given, type: u32 }
+      - { name: count, type: u32 }
+      - { name: rerolls, type: u32 }
+  - name: glyph_option
+    id: 0x002E
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: id, type: u32 }
+  - name: glyph_offer_end
+    id: 0x002F
+    direction: server_to_client
+    fields: []
+  - name: glyph_close
+    id: 0x0030
+    direction: server_to_client
+    fields: []
+  - name: glyph_taken
+    id: 0x0031
+    direction: server_to_client
+    fields:
+      - { name: ids, type: string }
+  - name: glyph_info
+    id: 0x0032
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: name, type: string }
+      - { name: icon, type: string }
+      - { name: rarity, type: u32 }
+      - { name: description, type: string }
+      - { name: drawback, type: string }
+  - name: glyph_count
+    id: 0x0033
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: count, type: u32 }

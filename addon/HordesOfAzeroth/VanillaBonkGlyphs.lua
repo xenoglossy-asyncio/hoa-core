@@ -506,6 +506,27 @@ handlers["glyphcount"] = function(f)
 end
 
 UI.ListenHoa({
+    HOA_GLYPH_INFO = function(info)
+        handlers["glyphinfo"]({ false, tostring(info.id), info.name, info.icon, info.rarity, info.description, info.drawback })
+    end,
+    HOA_GLYPH_OFFER = function(offer)
+        handlers["glyphoffer"]({ false, offer.picks_given, offer.count, offer.rerolls })
+    end,
+    HOA_GLYPH_OPTION = function(option)
+        handlers["glyphopt"]({ false, tostring(option.index), tostring(option.id) })
+    end,
+    HOA_GLYPH_OFFER_END = function()
+        handlers["glyphofferend"]()
+    end,
+    HOA_GLYPH_CLOSE = function()
+        handlers["glyphclose"]()
+    end,
+    HOA_GLYPH_TAKEN = function(taken)
+        handlers["glyphs"]({ false, taken.ids })
+    end,
+    HOA_GLYPH_COUNT = function(count)
+        handlers["glyphcount"]({ false, tostring(count.id), tostring(count.count) })
+    end,
     HOA_COOP_NO_PAUSE = function(state)
         frame.side = state.no_pause and true or false
         if frame.open then

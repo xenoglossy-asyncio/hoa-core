@@ -51,6 +51,13 @@ const HOA_LEY_OPEN: &str = "HOA_LEY_OPEN";
 const HOA_LEY_OPTION: &str = "HOA_LEY_OPTION";
 const HOA_LEY_END: &str = "HOA_LEY_END";
 const HOA_LEY_CLOSED: &str = "HOA_LEY_CLOSED";
+const HOA_GLYPH_OFFER: &str = "HOA_GLYPH_OFFER";
+const HOA_GLYPH_OPTION: &str = "HOA_GLYPH_OPTION";
+const HOA_GLYPH_OFFER_END: &str = "HOA_GLYPH_OFFER_END";
+const HOA_GLYPH_CLOSE: &str = "HOA_GLYPH_CLOSE";
+const HOA_GLYPH_TAKEN: &str = "HOA_GLYPH_TAKEN";
+const HOA_GLYPH_INFO: &str = "HOA_GLYPH_INFO";
+const HOA_GLYPH_COUNT: &str = "HOA_GLYPH_COUNT";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -127,6 +134,59 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::GlyphOffer(offer) => {
+                    script.fire_event(
+                        HOA_GLYPH_OFFER,
+                        vec![lua_table(vec![
+                            ("picks_given", ScriptValue::Int(i64::from(offer.picks_given))),
+                            ("count", ScriptValue::Int(i64::from(offer.count))),
+                            ("rerolls", ScriptValue::Int(i64::from(offer.rerolls))),
+                        ])],
+                    );
+                }
+                HoaMessage::GlyphOption(option) => {
+                    script.fire_event(
+                        HOA_GLYPH_OPTION,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(option.index))),
+                            ("id", ScriptValue::Int(i64::from(option.id))),
+                        ])],
+                    );
+                }
+                HoaMessage::GlyphOfferEnd(_) => {
+                    script.fire_event(HOA_GLYPH_OFFER_END, Vec::new());
+                }
+                HoaMessage::GlyphClose(_) => {
+                    script.fire_event(HOA_GLYPH_CLOSE, Vec::new());
+                }
+                HoaMessage::GlyphTaken(taken) => {
+                    script.fire_event(
+                        HOA_GLYPH_TAKEN,
+                        vec![lua_table(vec![("ids", ScriptValue::Str(taken.ids))])],
+                    );
+                }
+                HoaMessage::GlyphInfo(info) => {
+                    script.fire_event(
+                        HOA_GLYPH_INFO,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(info.id))),
+                            ("name", ScriptValue::Str(info.name)),
+                            ("icon", ScriptValue::Str(info.icon)),
+                            ("rarity", ScriptValue::Int(i64::from(info.rarity))),
+                            ("description", ScriptValue::Str(info.description)),
+                            ("drawback", ScriptValue::Str(info.drawback)),
+                        ])],
+                    );
+                }
+                HoaMessage::GlyphCount(count) => {
+                    script.fire_event(
+                        HOA_GLYPH_COUNT,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(count.id))),
+                            ("count", ScriptValue::Int(i64::from(count.count))),
+                        ])],
+                    );
+                }
                 HoaMessage::OfferOpen(offer) => {
                     script.fire_event(
                         HOA_OFFER_OPEN,
@@ -537,6 +597,13 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_LEY_OPTION);
         add_in_game_event(HOA_LEY_END);
         add_in_game_event(HOA_LEY_CLOSED);
+        add_in_game_event(HOA_GLYPH_OFFER);
+        add_in_game_event(HOA_GLYPH_OPTION);
+        add_in_game_event(HOA_GLYPH_OFFER_END);
+        add_in_game_event(HOA_GLYPH_CLOSE);
+        add_in_game_event(HOA_GLYPH_TAKEN);
+        add_in_game_event(HOA_GLYPH_INFO);
+        add_in_game_event(HOA_GLYPH_COUNT);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

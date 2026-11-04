@@ -3161,12 +3161,16 @@ void BonkPlayer::TrimPoolToggles() const
 
 void BonkPlayer::SendGlyphInfo() const
 {
+    if (!m_addonReady)
+        return;
     for (auto const& itr : sBonkMgr.GetGlyphs())
     {
         BonkGlyph const& glyph = itr.second;
-        SendAddon("glyphinfo~" + std::to_string(glyph.id) + "~" + Localize(BONK_FIELD_GLYPH_NAME, glyph.id, glyph.name) + "~" + glyph.icon + "~" +
-            std::to_string(uint32(glyph.rarity)) + "~" + Localize(BONK_FIELD_GLYPH_DESCRIPTION, glyph.id, glyph.description) + "~" +
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGlyphInfo(data, glyph.id, Localize(BONK_FIELD_GLYPH_NAME, glyph.id, glyph.name), glyph.icon,
+            uint32(glyph.rarity), Localize(BONK_FIELD_GLYPH_DESCRIPTION, glyph.id, glyph.description),
             Localize(BONK_FIELD_GLYPH_DRAWBACK, glyph.id, glyph.drawback));
+        m_player->GetSession()->SendPacket(&data);
     }
 }
 
