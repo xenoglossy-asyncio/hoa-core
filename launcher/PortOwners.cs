@@ -44,10 +44,10 @@ namespace HordesOfAzeroth.Launcher
             public string Describe()
             {
                 if (Platform.IsWindows && ProcessId == SystemProcessId)
-                    return Loc.T("Windows itself (System)");
+                    return Loc.T("hoa.launcher.windows_itself_system");
                 if (Path != null)
                     return $"{System.IO.Path.GetFileName(Path)} ({System.IO.Path.GetDirectoryName(Path)})";
-                return Name ?? Loc.T("process {0}", ProcessId);
+                return Name ?? Loc.T("hoa.launcher.process_0", ProcessId);
             }
         }
 

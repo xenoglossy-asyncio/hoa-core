@@ -141,7 +141,7 @@ local mode = MODE_DAMAGE
 local Render
 
 panel.tabs = {}
-for index, label in ipairs({ L["Damage Done"], L["Healing Done"] }) do
+for index, label in ipairs({ L["hoa.addon.damage_done"], L["hoa.addon.healing_done"] }) do
     local tab = CreateFrame("Button", nil, panel)
     tab.mode = index
     tab:SetHeight(HEADER_HEIGHT - 4)
@@ -182,8 +182,8 @@ for index, label in ipairs({ L["Damage Done"], L["Healing Done"] }) do
 end
 
 local COLUMNS = {
-    [MODE_DAMAGE] = { L["Damage"], L["Share"], L["Kills"] },
-    [MODE_HEALING] = { L["Healed"], L["Absorb"], L["Share"] },
+    [MODE_DAMAGE] = { L["hoa.addon.damage_2"], L["hoa.addon.share"], L["hoa.addon.kills_2"] },
+    [MODE_HEALING] = { L["hoa.addon.healed"], L["hoa.addon.absorb"], L["hoa.addon.share"] },
 }
 local COLUMN_OFFSETS = { 2 * COLUMN_WIDTH, COLUMN_WIDTH, 0 }
 panel.columns = {}
@@ -227,7 +227,7 @@ end
 
 local function AddRunLines(entry)
     GameTooltip:AddLine(" ")
-    GameTooltip:AddDoubleLine(L("{1} damage", Short(entry.damage)), L(entry.kills == 1 and "{1} kill" or "{1} kills", Thousands(entry.kills)), 1, 1, 1, 0.6, 0.6, 0.6)
+    GameTooltip:AddDoubleLine(L("hoa.addon.1_damage", Short(entry.damage)), L(entry.kills == 1 and "hoa.addon.1_kill" or "hoa.addon.1_kills", Thousands(entry.kills)), 1, 1, 1, 0.6, 0.6, 0.6)
 end
 
 local function SpellLineTooltip(line, entry)
@@ -239,7 +239,7 @@ local function SpellLineTooltip(line, entry)
     if entry.evolved then
         r, g, b = 1, 0.5, 0
     end
-    GameTooltip:AddDoubleLine(entry.name, entry.level > 0 and L("Rank {1}", entry.level) or "", r, g, b, 0.6, 0.6, 0.6)
+    GameTooltip:AddDoubleLine(entry.name, entry.level > 0 and L("hoa.addon.rank_1", entry.level) or "", r, g, b, 0.6, 0.6, 0.6)
     AddRunLines(entry)
     GameTooltip:Show()
 end
@@ -251,7 +251,7 @@ local function EffectLineTooltip(line, entry)
     if kind.note then
         GameTooltip:AddLine(kind.note, 1, 0.82, 0, 1)
     end
-    GameTooltip:AddLine(L("Applied by {1}.", entry.parent.name), 0.6, 0.6, 0.6, 1)
+    GameTooltip:AddLine(L("hoa.addon.applied_by_1", entry.parent.name), 0.6, 0.6, 0.6, 1)
     AddRunLines(entry)
     GameTooltip:Show()
 end
@@ -259,8 +259,8 @@ end
 local function HealLineTooltip(line, entry)
     GameTooltip:SetOwner(line, "ANCHOR_RIGHT")
     GameTooltip:AddLine(entry.name, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Healed"], Thousands(entry.healed), UI.HEAL_COLOR.r, UI.HEAL_COLOR.g, UI.HEAL_COLOR.b, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Absorbed"], Thousands(entry.absorbed), UI.ABSORB_COLOR.r, UI.ABSORB_COLOR.g, UI.ABSORB_COLOR.b, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.healed"], Thousands(entry.healed), UI.HEAL_COLOR.r, UI.HEAL_COLOR.g, UI.HEAL_COLOR.b, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.absorbed"], Thousands(entry.absorbed), UI.ABSORB_COLOR.r, UI.ABSORB_COLOR.g, UI.ABSORB_COLOR.b, 1, 1, 1)
     GameTooltip:Show()
 end
 
@@ -367,7 +367,7 @@ build:SetHeight(FOOTER_HEIGHT)
 build.glyphLabel = UI.Text(build, 10)
 build.glyphLabel:SetPoint("LEFT", build, "LEFT", 0, 0)
 build.glyphLabel:SetTextColor(0.78, 0.72, 0.56)
-build.glyphLabel:SetText(L["Glyphs"])
+build.glyphLabel:SetText(L["hoa.addon.glyphs"])
 build.glyphs = {}
 for index = 1, 3 do
     local ring = UI.Ring(build, 20, true)
@@ -383,7 +383,7 @@ for index = 1, 3 do
 end
 build.passiveLabel = UI.Text(build, 10)
 build.passiveLabel:SetTextColor(0.78, 0.72, 0.56)
-build.passiveLabel:SetText(L["Passives"])
+build.passiveLabel:SetText(L["hoa.addon.passives"])
 build.passives = {}
 for index = 1, 6 do
     local slot = CreateFrame("Frame", nil, build)
@@ -409,7 +409,7 @@ panel.earned:SetJustifyH("CENTER")
 panel.done = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, panel, "UIPanelButtonTemplate"))
 panel.done:SetWidth(BUTTON_WIDTH)
 panel.done:SetHeight(22)
-panel.done:SetText(L["Continue"])
+panel.done:SetText(L["hoa.addon.continue"])
 
 local RECAP_WIDTH = PANEL_WIDTH - 2 * PAD_X
 local RECAP_GRAPH_TOP = 22
@@ -459,7 +459,7 @@ recapFrame.ruleRight:SetGradientAlpha("HORIZONTAL", 1, 0.82, 0, 0.55, 1, 0.82, 0
 recapFrame.title = UI.Text(recapFrame, 12)
 recapFrame.title:SetPoint("TOPLEFT", recapFrame, "TOPLEFT", 0, -8)
 recapFrame.title:SetTextColor(1, 0.82, 0)
-recapFrame.title:SetText(L["Your last 10 seconds"])
+recapFrame.title:SetText(L["hoa.addon.your_last_10_seconds"])
 recapFrame.summary = UI.Text(recapFrame, 11)
 recapFrame.summary:SetPoint("LEFT", recapFrame.title, "RIGHT", 10, 0)
 recapFrame.summary:SetTextColor(0.8, 0.8, 0.8)
@@ -626,9 +626,9 @@ end
 
 local function BlowText(source)
     if source.spell == "Melee" then
-        return L("{1}'s melee hit", source.name)
+        return L("hoa.addon.1_s_melee_hit", source.name)
     end
-    return source.spell ~= "" and L("{1}'s {2}", source.name, source.spell) or source.name
+    return source.spell ~= "" and L("hoa.addon.1_s_2", source.name, source.spell) or source.name
 end
 
 local function HealthPoints(permille)
@@ -637,13 +637,13 @@ end
 
 local function SecondsBeforeDeath(slot)
     if slot >= RECAP_SLOTS then
-        return L["Moment of death"]
+        return L["hoa.addon.moment_of_death"]
     end
-    return format(L["%.1fs before death"], (RECAP_SLOTS - slot) * RECAP_SECONDS / RECAP_SLOTS)
+    return format(L["hoa.addon.1fs_before_death"], (RECAP_SLOTS - slot) * RECAP_SECONDS / RECAP_SLOTS)
 end
 
 local function HealthLine(permille)
-    return format(L["Health %s / %s (%d%%)"], Thousands(HealthPoints(permille)), Thousands(recap.maxHealth), floor(max(0, permille) / 10 + 0.5))
+    return format(L["hoa.addon.health_s_s_d"], Thousands(HealthPoints(permille)), Thousands(recap.maxHealth), floor(max(0, permille) / 10 + 0.5))
 end
 
 local function EventsNearX(x)
@@ -671,14 +671,14 @@ local function AddEventLines(indexes)
     for _, index in ipairs(indexes) do
         local event = recap.events[index]
         if event.source == 0 then
-            GameTooltip:AddDoubleLine(L["Healed"], "+" .. Thousands(event.amount), 0.85, 0.85, 0.85, RECAP_GREEN[1], RECAP_GREEN[2], RECAP_GREEN[3])
+            GameTooltip:AddDoubleLine(L["hoa.addon.healed"], "+" .. Thousands(event.amount), 0.85, 0.85, 0.85, RECAP_GREEN[1], RECAP_GREEN[2], RECAP_GREEN[3])
         else
             local source = recap.sources[event.source]
             local color = RecapColor(source)
-            GameTooltip:AddDoubleLine(source and BlowText(source) or L["Unknown"], "-" .. Thousands(event.amount), color[1] + 0.25, color[2] + 0.25, color[3] + 0.25, 1, 0.42, 0.31)
+            GameTooltip:AddDoubleLine(source and BlowText(source) or L["hoa.addon.unknown"], "-" .. Thousands(event.amount), color[1] + 0.25, color[2] + 0.25, color[3] + 0.25, 1, 0.42, 0.31)
         end
         if index == count and recap.overkill > 0 then
-            GameTooltip:AddLine(L("Killing blow, {1} overkill", Thousands(recap.overkill)), 1, 0.42, 0.31)
+            GameTooltip:AddLine(L("hoa.addon.killing_blow_1_overkill", Thousands(recap.overkill)), 1, 0.42, 0.31)
         end
     end
     GameTooltip:AddLine(HealthLine(recap.events[indexes[getn(indexes)]].health), 1, 1, 1)
@@ -779,9 +779,9 @@ local function KillerText()
     local blow = BlowText(killer)
     local numbers = Thousands(recap.killAmount)
     if recap.overkill > 0 then
-        numbers = L("{1}, {2} overkill", numbers, Thousands(recap.overkill))
+        numbers = L("hoa.addon.1_2_overkill", numbers, Thousands(recap.overkill))
     end
-    return L(" · killed by |cffff6a50{1} ({2})|r", blow, numbers)
+    return L("hoa.addon.killed_by_cffff6a50_1_2_r", blow, numbers)
 end
 
 local function FillRecapLegend()
@@ -816,7 +816,7 @@ local function FillRecapLegend()
 end
 
 local function LayoutRecap(y)
-    recapFrame.summary:SetText(L("Took |cffffffff{1}|r · healed |cffffffff{2}|r", Thousands(recap.taken), Thousands(recap.healed)) .. KillerText())
+    recapFrame.summary:SetText(L("hoa.addon.took_cffffffff_1_r_healed_cffffffff_2_r", Thousands(recap.taken), Thousands(recap.healed)) .. KillerText())
     graph.maxLabel:SetText(Thousands(recap.maxHealth))
     DrawRecapLine()
     DrawRecapTicks()
@@ -955,7 +955,7 @@ local function FillLine(line, entry, top, total, y)
         line.damage:SetTextColor(0.78, 0.78, 0.78)
         line.kills:SetTextColor(0.78, 0.78, 0.78)
     else
-        local rank = entry.level > 0 and ("  |cffc8c8c8" .. L("Rank {1}", entry.level) .. "|r") or ""
+        local rank = entry.level > 0 and ("  |cffc8c8c8" .. L("hoa.addon.rank_1", entry.level) .. "|r") or ""
         local color = entry.evolved and "|cffff8000" or "|cffffffff"
         line.name:SetText(color .. entry.name .. "|r" .. rank)
         line.damage:SetTextColor(1, 1, 1)
@@ -996,7 +996,7 @@ local function SupportTotals()
         absorbed = absorbed + source.absorbed
     end
     local list = {}
-    for _, entry in ipairs({ { UI.HEAL_COLOR, L["Healed"], healed }, { UI.ABSORB_COLOR, L["Absorbed"], absorbed } }) do
+    for _, entry in ipairs({ { UI.HEAL_COLOR, L["hoa.addon.healed"], healed }, { UI.ABSORB_COLOR, L["hoa.addon.absorbed"], absorbed } }) do
         if entry[3] > 0 then
             tinsert(list, { color = entry[1], name = entry[2], damage = entry[3] })
         end
@@ -1100,13 +1100,13 @@ end
 local function FillStats()
     local _, class = UnitClass("player")
     local stats = {
-        { "INV_Misc_PocketWatch_01", L["Time"], UI.FormatTime(run.seconds) },
-        { nil, L["Level"], run.level or "1" },
-        { "INV_Misc_Bone_HumanSkull_01", L["Kills"], Thousands(run.kills) },
-        { "Ability_Warrior_Challange", L["Elites"], Thousands(run.elites) },
-        { "Ability_Rogue_Eviscerate", L["Mini-bosses"], Thousands(run.minis) },
-        { "INV_Misc_Head_Dragon_01", L["Stage bosses"], Thousands(run.bosses) },
-        { "INV_Shield_06", L["Damage taken"], "|cffff5a4a" .. Thousands(run.damageTaken) .. "|r" },
+        { "INV_Misc_PocketWatch_01", L["hoa.addon.time"], UI.FormatTime(run.seconds) },
+        { nil, L["hoa.addon.level"], run.level or "1" },
+        { "INV_Misc_Bone_HumanSkull_01", L["hoa.addon.kills_2"], Thousands(run.kills) },
+        { "Ability_Warrior_Challange", L["hoa.addon.elites"], Thousands(run.elites) },
+        { "Ability_Rogue_Eviscerate", L["hoa.addon.mini_bosses"], Thousands(run.minis) },
+        { "INV_Misc_Head_Dragon_01", L["hoa.addon.stage_bosses"], Thousands(run.bosses) },
+        { "INV_Shield_06", L["hoa.addon.damage_taken"], "|cffff5a4a" .. Thousands(run.damageTaken) .. "|r" },
     }
     for index, stat in ipairs(panel.stats) do
         local data = stats[index]
@@ -1128,13 +1128,13 @@ local function Place()
     if level and level ~= "" then
         return run.map .. " (" .. level .. ")"
     end
-    return run.map ~= "" and run.map or L["the arena"]
+    return run.map ~= "" and run.map or L["hoa.addon.the_arena"]
 end
 
 local function FillBestLevel()
     local best = tonumber(run.bestLevel or "") or 0
     if run.victory and best > (tonumber(run.bestBefore or "") or 0) then
-        panel.best:SetText(L("|cff40ff40New best: {1}!|r", run.levelName or ""))
+        panel.best:SetText(L("hoa.addon.cff40ff40new_best_1_r", run.levelName or ""))
     else
         panel.best:SetText("")
     end
@@ -1144,18 +1144,18 @@ local function FillHeading()
     local color
     if run.victory then
         color = TITLE_VICTORY
-        panel.title:SetText(L["Victory"])
+        panel.title:SetText(L["hoa.addon.victory"])
         local finale = tonumber(run.finaleSeconds or "") or 0
-        panel.subtitle:SetText(finale > 0 and L("You cleared {1} and survived {2} in the finale.", Place(), UI.FormatTime(finale)) or
-            L("You cleared {1} in {2}.", Place(), UI.FormatTime(run.seconds)))
+        panel.subtitle:SetText(finale > 0 and L("hoa.addon.you_cleared_1_and_survived_2_in_the_finale", Place(), UI.FormatTime(finale)) or
+            L("hoa.addon.you_cleared_1_in_2", Place(), UI.FormatTime(run.seconds)))
     elseif run.wentHome then
         color = TITLE_HOME
-        panel.title:SetText(L["Run Complete"])
-        panel.subtitle:SetText(L("You left {1} on stage {2} after {3}.", Place(), run.stage or "1", UI.FormatTime(run.seconds)))
+        panel.title:SetText(L["hoa.addon.run_complete"])
+        panel.subtitle:SetText(L("hoa.addon.you_left_1_on_stage_2_after_3", Place(), run.stage or "1", UI.FormatTime(run.seconds)))
     else
         color = TITLE_DEFEAT
-        panel.title:SetText(L["Defeat"])
-        panel.subtitle:SetText(L("You fell on stage {1} in {2} after {3}.", run.stage or "1", Place(), UI.FormatTime(run.seconds)))
+        panel.title:SetText(L["hoa.addon.defeat"])
+        panel.subtitle:SetText(L("hoa.addon.you_fell_on_stage_1_in_2_after_3", run.stage or "1", Place(), UI.FormatTime(run.seconds)))
     end
     panel.title:SetTextColor(color[1], color[2], color[3])
     FillBestLevel()
@@ -1166,11 +1166,11 @@ local function FillHeading()
     end
 
     local shards = tonumber(run.shards or "") or 0
-    local tickets = "|cffc080ff" .. shards .. (shards == 1 and L[" Darkmoon Ticket"] or L[" Darkmoon Tickets"]) .. "|r"
+    local tickets = "|cffc080ff" .. shards .. (shards == 1 and L["hoa.addon.darkmoon_ticket"] or L["hoa.addon.darkmoon_tickets"]) .. "|r"
     if run.wentHome then
-        panel.earned:SetText(L("You earned {1}, {2} and the gear in the Extraction Vault.", UI.FormatGold(run.gold), tickets))
+        panel.earned:SetText(L("hoa.addon.you_earned_1_2_and_the_gear_in_the_extraction_vault", UI.FormatGold(run.gold), tickets))
     else
-        panel.earned:SetText(L("You earned {1} and {2}.", UI.FormatGold(run.gold), tickets))
+        panel.earned:SetText(L("hoa.addon.you_earned_1_and_2", UI.FormatGold(run.gold), tickets))
     end
 end
 
@@ -1230,7 +1230,7 @@ local function RenderLines()
 
     local empty = getn(entries) == 0
     if empty then
-        panel.empty:SetText(mode == MODE_HEALING and L["No healing or absorbs this run."] or L["No damage this run."])
+        panel.empty:SetText(mode == MODE_HEALING and L["hoa.addon.no_healing_or_absorbs_this_run"] or L["hoa.addon.no_damage_this_run"])
         panel.empty:Show()
         y = y + 20
     else
@@ -1391,7 +1391,7 @@ end
 
 handlers["sumw"] = function(f)
     local icon = f[2] ~= "" and f[2] or "INV_Misc_QuestionMark"
-    local name = f[3] == "Melee" and L["Melee"] or f[3] or ""
+    local name = f[3] == "Melee" and L["hoa.addon.melee"] or f[3] or ""
     local school = UI.DAMAGE_TYPES[f[9] or ""] and f[9] or DamageTypeFor(name, icon)
     tinsert(weapons, {
         icon = icon,

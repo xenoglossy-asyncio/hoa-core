@@ -239,18 +239,18 @@ UI.GlyphAnchor:SetPoint("BOTTOMLEFT", runPlate, "TOPLEFT", ceil(GryphonInset(RUN
 local spellSlots, passiveSlots = {}, {}
 
 local LOCKED_SLOTS = {
-    spell = { talent = L["Spell Slot"], start = 3, ranks = {
-        { quest = L["Renowned"], quests = 25 }, { quests = 45 },
+    spell = { talent = L["hoa.addon.spell_slot"], start = 3, ranks = {
+        { quest = L["hoa.addon.renowned"], quests = 25 }, { quests = 45 },
     } },
-    passive = { talent = L["Passive Slot"], start = 3, ranks = {
-        { quest = L["Trusted Adventurer"], quests = 15 }, { quests = 35 }, { quests = 55 },
+    passive = { talent = L["hoa.addon.passive_slot"], start = 3, ranks = {
+        { quest = L["hoa.addon.trusted_adventurer"], quests = 15 }, { quests = 35 }, { quests = 55 },
     } },
 }
 
 local function AddPassiveLines(entry)
     local info = run.info[entry.index] or {}
-    GameTooltip:AddDoubleLine(info.name or "?", (entry.max > 0 and L("Rank {1} / {2}", entry.rank, entry.max) or L("Rank {1}", entry.rank)), 1, 1, 1, 0.6, 0.6, 0.6)
-    GameTooltip:AddLine(L["Passive"], 0.6, 0.6, 0.6)
+    GameTooltip:AddDoubleLine(info.name or "?", (entry.max > 0 and L("hoa.addon.rank_1_2", entry.rank, entry.max) or L("hoa.addon.rank_1", entry.rank)), 1, 1, 1, 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L["hoa.addon.passive"], 0.6, 0.6, 0.6)
     if info.description and info.description ~= "" then
         GameTooltip:AddLine(info.description, 1, 0.82, 0, 1)
     end
@@ -273,20 +273,20 @@ local function ShowSpellTip(owner, anchor, entry, stat)
     Tip:SetLegendary(evolved)
     Tip:Title(info.name or "?", { rarity.r, rarity.g, rarity.b })
     if evolved and info.evolvedFrom and info.evolvedFrom ~= "" then
-        Tip:AddSmallLine(L("Evolved from {1}", info.evolvedFrom), Tip.ORANGE)
+        Tip:AddSmallLine(L("hoa.addon.evolved_from_1", info.evolvedFrom), Tip.ORANGE)
     end
 
     local headerColor = info.faster and Tip.GREEN or Tip.WHITE
-    Tip:AddDoubleLine(((entry.max or 0) > 0 and entry.rank >= entry.max) and L["Max rank"] or L("Rank {1}", entry.rank), Tip.ReachText(info.radius, info.range, info.currentRadius, info.currentRange),
+    Tip:AddDoubleLine(((entry.max or 0) > 0 and entry.rank >= entry.max) and L["hoa.addon.max_rank"] or L("hoa.addon.rank_1", entry.rank), Tip.ReachText(info.radius, info.range, info.currentRadius, info.currentRange),
         0.62, 0.62, 0.62, 1, 1, 1)
     if info.header and info.header ~= "" then
-        Tip:AddDoubleLine(L["Instant"], info.header, 1, 1, 1, headerColor[1], headerColor[2], headerColor[3])
+        Tip:AddDoubleLine(L["hoa.addon.instant"], info.header, 1, 1, 1, headerColor[1], headerColor[2], headerColor[3])
     end
     if info.description and info.description ~= "" then
         Tip:AddLine(info.description, 1, 0.82, 0)
     end
     if info.line and info.line ~= "" then
-        Tip:AddSmallLine(L["Upgrades"], Tip.GOLD)
+        Tip:AddSmallLine(L["hoa.addon.upgrades"], Tip.GOLD)
         Tip:AddSmallLine(info.line, Tip.GREEN)
     end
     Tip:AddFooter(info.spec, info.school, info.aoe)
@@ -297,7 +297,7 @@ local function ShowSpellTip(owner, anchor, entry, stat)
         end
         local share = total > 0 and floor(stat.damage / total * 100 + 0.5) or 0
         Tip:AddRule()
-        Tip:AddDoubleLine(L("{1} damage · {2}% of total", VanillaBonkUI.Short(stat.damage), share), L((stat.kills or 0) == 1 and "{1} kill" or "{1} kills", stat.kills or 0),
+        Tip:AddDoubleLine(L("hoa.addon.1_damage_2_of_total", VanillaBonkUI.Short(stat.damage), share), L((stat.kills or 0) == 1 and "hoa.addon.1_kill" or "hoa.addon.1_kills", stat.kills or 0),
             0.62, 0.62, 0.62, 0.62, 0.62, 0.62, 11)
     end
     Tip:Show()
@@ -322,26 +322,26 @@ local function ShowSlotTooltip()
         local unlock = LOCKED_SLOTS[kind]
         local rank = max(1, slot.slotIndex - unlock.start)
         local need = unlock.ranks[rank] or unlock.ranks[getn(unlock.ranks)]
-        GameTooltip:AddLine(slot.isSpell and L["Locked spell slot"] or L["Locked passive slot"], 1, 1, 1)
+        GameTooltip:AddLine(slot.isSpell and L["hoa.addon.locked_spell_slot"] or L["hoa.addon.locked_passive_slot"], 1, 1, 1)
         if rank == 1 then
-            GameTooltip:AddLine(L("Buy {1} from Sayge at the Inn to unlock it.", unlock.talent), 1, 0.82, 0, 1)
-            GameTooltip:AddLine(L("Sayge sells it once you finish the quest \"{1}\" (complete {2} quests).", need.quest, need.quests),
+            GameTooltip:AddLine(L("hoa.addon.buy_1_from_sayge_at_the_inn_to_unlock_it", unlock.talent), 1, 0.82, 0, 1)
+            GameTooltip:AddLine(L("hoa.addon.sayge_sells_it_once_you_finish_the_quest_1_complete_2_quests", need.quest, need.quests),
                 0.6, 0.6, 0.6, 1)
         else
-            GameTooltip:AddLine(L("Buy rank {1} of {2} from Sayge at the Inn to unlock it.", rank, unlock.talent), 1, 0.82, 0, 1)
-            GameTooltip:AddLine(L("Sayge sells rank {1} once you have completed {2} quests.", rank, need.quests), 0.6, 0.6, 0.6, 1)
+            GameTooltip:AddLine(L("hoa.addon.buy_rank_1_of_2_from_sayge_at_the_inn_to_unlock_it", rank, unlock.talent), 1, 0.82, 0, 1)
+            GameTooltip:AddLine(L("hoa.addon.sayge_sells_rank_1_once_you_have_completed_2_quests", rank, need.quests), 0.6, 0.6, 0.6, 1)
         end
         GameTooltip:Show()
         return
     end
     if not entry then
         if slot.isSpell then
-            GameTooltip:AddLine(L["Empty spell slot"], 1, 1, 1)
-            GameTooltip:AddLine(L["Level-ups can offer a new spell while a slot is free."], 1, 0.82, 0, 1)
-            GameTooltip:AddLine(L("Up to {1} spells per run.", SPELL_SLOTS), 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(L["hoa.addon.empty_spell_slot"], 1, 1, 1)
+            GameTooltip:AddLine(L["hoa.addon.level_ups_can_offer_a_new_spell_while_a_slot_is_free"], 1, 0.82, 0, 1)
+            GameTooltip:AddLine(L("hoa.addon.up_to_1_spells_per_run", SPELL_SLOTS), 0.6, 0.6, 0.6)
         else
-            GameTooltip:AddLine(L["Empty passive slot"], 1, 1, 1)
-            GameTooltip:AddLine(L("Up to {1} passives per run.", PASSIVE_SLOTS), 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(L["hoa.addon.empty_passive_slot"], 1, 1, 1)
+            GameTooltip:AddLine(L("hoa.addon.up_to_1_passives_per_run", PASSIVE_SLOTS), 0.6, 0.6, 0.6)
         end
         GameTooltip:Show()
         return
@@ -716,20 +716,20 @@ local mastery
 local function ShowMasteryTooltip()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     if not mastery then
-        GameTooltip:AddLine(L["Class Mastery"], 1, 1, 1)
+        GameTooltip:AddLine(L["hoa.addon.class_mastery"], 1, 1, 1)
         GameTooltip:Show()
         return
     end
-    GameTooltip:AddDoubleLine(L("{1} Mastery", mastery.class), mastery.level .. " / " .. mastery.maxLevel, 1, 1, 1, 0.6, 0.6, 0.6)
+    GameTooltip:AddDoubleLine(L("hoa.addon.1_mastery", mastery.class), mastery.level .. " / " .. mastery.maxLevel, 1, 1, 1, 0.6, 0.6, 0.6)
     if mastery.next > 0 then
-        GameTooltip:AddLine(L("{1} / {2} experience", mastery.xp, mastery.next), 1, 1, 1)
+        GameTooltip:AddLine(L("hoa.addon.1_2_experience", mastery.xp, mastery.next), 1, 1, 1)
     end
-    GameTooltip:AddLine(L("{1} runs earn Mastery experience for each minute survived and each mini-boss and stage boss killed. Harder difficulties earn more.", mastery.class), 1, 0.82, 0, 1)
+    GameTooltip:AddLine(L("hoa.addon.1_runs_earn_mastery_experience_for_each_minute_survived_and_", mastery.class), 1, 0.82, 0, 1)
     if not mastery.trees then
-        GameTooltip:AddLine(L["Your class's talent trees aren't available yet. The experience you earn is saved for them."], 0.6, 0.6, 0.6, 1)
+        GameTooltip:AddLine(L["hoa.addon.your_class_s_talent_trees_aren_t_available_yet_the_experienc"], 0.6, 0.6, 0.6, 1)
     elseif mastery.unspent > 0 then
-        GameTooltip:AddLine(L(mastery.unspent == 1 and "You have {1} unspent talent point. Spend it at the talent trainer."
-            or "You have {1} unspent talent points. Spend them at the talent trainer.", mastery.unspent), 0.25, 1, 0.25, 1)
+        GameTooltip:AddLine(L(mastery.unspent == 1 and "hoa.addon.you_have_1_unspent_talent_point_spend_it_at_the_talent_train"
+            or "hoa.addon.you_have_1_unspent_talent_points_spend_them_at_the_talent_tr", mastery.unspent), 0.25, 1, 0.25, 1)
     end
     GameTooltip:Show()
 end
@@ -745,7 +745,7 @@ local function RefreshMastery()
         masteryBar:SetValue(0)
         masteryText:SetText("")
         masteryLevel.text:SetText("")
-        masteryName:SetText(L["|cffffd100Class Mastery|r"])
+        masteryName:SetText(L["hoa.addon.cffffd100class_mastery_r"])
         masteryPoints:SetText("")
         return
     end
@@ -756,14 +756,14 @@ local function RefreshMastery()
     else
         masteryBar:SetMinMaxValues(0, 1)
         masteryBar:SetValue(1)
-        masteryText:SetText(L["Max level"])
+        masteryText:SetText(L["hoa.addon.max_level"])
     end
-    masteryName:SetText("|cffffd100" .. L("{1} Mastery", mastery.class) .. "|r")
+    masteryName:SetText("|cffffd100" .. L("hoa.addon.1_mastery", mastery.class) .. "|r")
     masteryLevel.text:SetText(mastery.level)
     if not mastery.trees then
-        masteryPoints:SetText(L["|cffaaaaaaTrees coming soon|r"])
+        masteryPoints:SetText(L["hoa.addon.cffaaaaaatrees_coming_soon_r"])
     elseif mastery.unspent > 0 then
-        masteryPoints:SetText(L(mastery.unspent == 1 and "{1} talent point to spend" or "{1} talent points to spend", mastery.unspent))
+        masteryPoints:SetText(L(mastery.unspent == 1 and "hoa.addon.1_talent_point_to_spend" or "hoa.addon.1_talent_points_to_spend", mastery.unspent))
     else
         masteryPoints:SetText("")
     end
@@ -780,12 +780,12 @@ wallet.text:SetJustifyH("RIGHT")
 wallet:EnableMouse(true)
 wallet:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
-    GameTooltip:AddLine(L["Account"], 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Gold"], UI.FormatGold(GetMoney()), 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddLine(L["hoa.addon.account"], 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.gold"], UI.FormatGold(GetMoney()), 1, 0.82, 0, 1, 1, 1)
     if run.shards then
-        GameTooltip:AddDoubleLine(L["Darkmoon Tickets"], "|cffc080ff" .. run.shards .. "|r", 1, 0.82, 0, 1, 1, 1)
+        GameTooltip:AddDoubleLine(L["hoa.addon.darkmoon_tickets_2"], "|cffc080ff" .. run.shards .. "|r", 1, 0.82, 0, 1, 1, 1)
     end
-    GameTooltip:AddLine(L["Shared by all your characters."], 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L["hoa.addon.shared_by_all_your_characters"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end)
 wallet:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -793,7 +793,7 @@ wallet:SetScript("OnLeave", function() GameTooltip:Hide() end)
 local function RefreshWallet()
     local text = UI.FormatGold(GetMoney())
     if run.shards then
-        text = text .. "    |cffc080ff" .. L(run.shards == 1 and "{1} Darkmoon Ticket" or "{1} Darkmoon Tickets", run.shards) .. "|r"
+        text = text .. "    |cffc080ff" .. L(run.shards == 1 and "hoa.addon.1_darkmoon_ticket" or "hoa.addon.1_darkmoon_tickets", run.shards) .. "|r"
     end
     wallet.text:SetText(text)
     wallet:SetWidth(wallet.text:GetStringWidth() + 4)
@@ -806,7 +806,7 @@ local DASH_ARC_FRAMES = 32
 local DASH_ARC_COLUMNS = 8
 local DASH_ARC_ROWS = 4
 local DASH_ARC_SCALE = 1.3
-local dash = { charges = 0, max = 0, cooldown = 0, key = L["Shift"] }
+local dash = { charges = 0, max = 0, cooldown = 0, key = L["hoa.addon.shift"] }
 
 local dashButton = UI.Slot(root, DASH_SIZE)
 dashButton:Hide()
@@ -841,13 +841,13 @@ end
 
 dashButton:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
-    GameTooltip:AddDoubleLine(dash.blink and L["Blink"] or L["Dash"], dash.key ~= "" and dash.key or NOT_BOUND, 1, 1, 1, 0.6, 0.6, 0.6)
-    GameTooltip:AddDoubleLine(L("{1}/{2} charges", dash.charges, dash.max),
-        L("{1} sec recharge", floor(dash.cooldown / 100 + 0.5) / 10), 1, 1, 1, 1, 1, 1)
+    GameTooltip:AddDoubleLine(dash.blink and L["hoa.addon.blink"] or L["hoa.addon.dash"], dash.key ~= "" and dash.key or NOT_BOUND, 1, 1, 1, 0.6, 0.6, 0.6)
+    GameTooltip:AddDoubleLine(L("hoa.addon.1_2_charges", dash.charges, dash.max),
+        L("hoa.addon.1_sec_recharge", floor(dash.cooldown / 100 + 0.5) / 10), 1, 1, 1, 1, 1, 1)
     if dash.blink then
-        GameTooltip:AddLine(L["Teleports you a short distance in the direction you're moving, or forward while in midair."], 1, 0.82, 0, 1)
+        GameTooltip:AddLine(L["hoa.addon.teleports_you_a_short_distance_in_the_direction_you_re_movin"], 1, 0.82, 0, 1)
     else
-        GameTooltip:AddLine(L["Dashes a short distance in the direction you're moving, or forward while in midair."], 1, 0.82, 0, 1)
+        GameTooltip:AddLine(L["hoa.addon.dashes_a_short_distance_in_the_direction_you_re_moving_or_fo"], 1, 0.82, 0, 1)
     end
     GameTooltip:Show()
 end)
@@ -960,10 +960,10 @@ end
 local function ShowXpTooltip()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     local level, current, maximum = RunXp()
-    GameTooltip:AddLine(L("Level {1}", level), 1, 1, 1)
-    GameTooltip:AddLine(L("{1} / {2} experience", current, maximum), 1, 1, 1)
-    GameTooltip:AddLine(L["Every level brings a choice of 3 upgrades."], 1, 0.82, 0, 1)
-    GameTooltip:AddLine(L["Each run starts again at level 1."], 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L("hoa.addon.level_1", level), 1, 1, 1)
+    GameTooltip:AddLine(L("hoa.addon.1_2_experience", current, maximum), 1, 1, 1)
+    GameTooltip:AddLine(L["hoa.addon.every_level_brings_a_choice_of_3_upgrades"], 1, 0.82, 0, 1)
+    GameTooltip:AddLine(L["hoa.addon.each_run_starts_again_at_level_1"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end
 for _, frame in ipairs({ xpHover, levelRing }) do
@@ -1192,7 +1192,7 @@ end
 
 handlers["mastery"] = function(f)
     mastery = {
-        class = f[2] or L["Class"],
+        class = f[2] or L["hoa.addon.class"],
         level = tonumber(f[3]) or 0,
         xp = tonumber(f[4]) or 0,
         next = tonumber(f[5]) or 0,

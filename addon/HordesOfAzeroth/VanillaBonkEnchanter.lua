@@ -1,7 +1,7 @@
 local L = VanillaBonkL
 local UI = VanillaBonkUI
 
-UI.ENCHANTER_NAME = L["Ilsa Runeweaver"]
+UI.ENCHANTER_NAME = L["hoa.addon.ilsa_runeweaver"]
 UI.enchants = UI.enchants or {}
 
 local WIDTH = 440
@@ -12,26 +12,26 @@ local ROW_HEIGHT = 40
 local ICON_SIZE = 32
 local ROLL_WIDTH = 92
 local NO_ENCHANT = 255
-local GREETING = L["For Valor I will bind magic into your gear until this run ends. The enchant stays on the slot, whatever you wear there, and grows with the piece."]
+local GREETING = L["hoa.addon.for_valor_i_will_bind_magic_into_your_gear_until_this_run_en"]
 local OFFER_COUNT = 3
 local OFFER_HEIGHT = 26
 
 local SLOTS = {
-    { slot = 0, name = L["Head"], art = "Head" },
-    { slot = 2, name = L["Shoulders"], art = "Shoulder" },
-    { slot = 4, name = L["armor slot::Chest"], art = "Chest" },
-    { slot = 8, name = L["Wrists"], art = "Wrists" },
-    { slot = 9, name = L["Hands"], art = "Hands" },
-    { slot = 5, name = L["Waist"], art = "Waist" },
-    { slot = 6, name = L["Legs"], art = "Legs" },
-    { slot = 7, name = L["Feet"], art = "Feet" },
+    { slot = 0, name = L["hoa.addon.head"], art = "Head" },
+    { slot = 2, name = L["hoa.addon.shoulders"], art = "Shoulder" },
+    { slot = 4, name = L["hoa.addon.armor_slot_chest"], art = "Chest" },
+    { slot = 8, name = L["hoa.addon.wrists"], art = "Wrists" },
+    { slot = 9, name = L["hoa.addon.hands"], art = "Hands" },
+    { slot = 5, name = L["hoa.addon.waist"], art = "Waist" },
+    { slot = 6, name = L["hoa.addon.legs"], art = "Legs" },
+    { slot = 7, name = L["hoa.addon.feet"], art = "Feet" },
 }
 local GRADES = {
-    [0] = { name = L["Minor"], color = { 0.8, 0.8, 0.8 } },
-    [1] = { name = L["Lesser"], color = { 0.12, 1, 0 } },
-    [2] = { name = L["Greater"], color = { 0, 0.44, 0.87 } },
-    [3] = { name = L["Superior"], color = { 0.64, 0.21, 0.93 } },
-    [4] = { name = L["Godly"], color = { 1, 0.5, 0 } },
+    [0] = { name = L["hoa.addon.minor"], color = { 0.8, 0.8, 0.8 } },
+    [1] = { name = L["hoa.addon.lesser"], color = { 0.12, 1, 0 } },
+    [2] = { name = L["hoa.addon.greater"], color = { 0, 0.44, 0.87 } },
+    [3] = { name = L["hoa.addon.superior"], color = { 0.64, 0.21, 0.93 } },
+    [4] = { name = L["hoa.addon.godly"], color = { 1, 0.5, 0 } },
 }
 
 local state = { cost = 0, valor = 0, slots = {}, offers = nil }
@@ -58,13 +58,13 @@ local function PieceShare(percent)
     if not percent or percent <= 0 then
         return ""
     end
-    return " |cff8a8478(" .. L("{1}% of this piece", percent) .. ")|r"
+    return " |cff8a8478(" .. L("hoa.addon.1_of_this_piece", percent) .. ")|r"
 end
 
 local function EnchantText(effect, grade, value, percent)
     local info = GRADES[grade]
     if not effect or effect == NO_ENCHANT or not info then
-        return "|cff8a8478" .. L["No enchant"] .. "|r"
+        return "|cff8a8478" .. L["hoa.addon.no_enchant"] .. "|r"
     end
     local color = info.color
     return format("|cff%02x%02x%02x%s:|r %s%s", color[1] * 255, color[2] * 255, color[3] * 255, info.name,
@@ -99,7 +99,7 @@ for index, entry in ipairs(SLOTS) do
     row.enchant:SetPoint("BOTTOMLEFT", row.icon, "BOTTOMRIGHT", 10, 1)
     row.enchant:SetWidth(CONTENT_WIDTH - ICON_SIZE - ROLL_WIDTH - 24)
     row.enchant:SetJustifyH("LEFT")
-    row.roll = UI.Button(row, ROLL_WIDTH, L["Enchant"], function() Roll(this:GetParent().entry.slot) end)
+    row.roll = UI.Button(row, ROLL_WIDTH, L["hoa.addon.enchant"], function() Roll(this:GetParent().entry.slot) end)
     row.roll:SetPoint("RIGHT", row, "RIGHT", 0, 0)
     rows[index] = row
 end
@@ -122,7 +122,7 @@ for index = 1, OFFER_COUNT do
     offer:SetPoint("TOPLEFT", window.pending, "TOPLEFT", 12, -30 - (index - 1) * OFFER_HEIGHT)
     window.pending.offers[index] = offer
 end
-window.pending.discard = UI.Button(window.pending, 120, L["Keep current"], function()
+window.pending.discard = UI.Button(window.pending, 120, L["hoa.addon.keep_current"], function()
     PlaySound("igMainMenuOptionCheckBoxOff")
     SendChatMessage(".bonk gear enchant discard", "SAY")
 end)
@@ -144,7 +144,7 @@ local function Refresh()
     if not window:IsShown() then
         return
     end
-    window.cost:SetText(L("Each enchant costs |cffffe873{1} Valor|r, and the next one this visit costs more. You have {2}.", state.cost, state.valor))
+    window.cost:SetText(L("hoa.addon.each_enchant_costs_cffffe873_1_valor_r_and_the_next_one_this", state.cost, state.valor))
     local offers = state.offers
     for _, row in ipairs(rows) do
         local slot = state.slots[row.entry.slot] or {}
@@ -158,7 +158,7 @@ local function Refresh()
     end
     if offers then
         local current = state.slots[offers.slot] or {}
-        window.pending.text:SetText(L("Choose an enchant for your {1}:", string.lower(SlotName(offers.slot))))
+        window.pending.text:SetText(L("hoa.addon.choose_an_enchant_for_your_1", string.lower(SlotName(offers.slot))))
         for index, button in ipairs(window.pending.offers) do
             local offer = offers[index]
             if offer then
@@ -168,7 +168,7 @@ local function Refresh()
                 button:Hide()
             end
         end
-        window.pending.hint:SetText(L("Now: {1}", EnchantText(current.effect, current.grade, current.value, current.percent)))
+        window.pending.hint:SetText(L("hoa.addon.now_1", EnchantText(current.effect, current.grade, current.value, current.percent)))
         window.pending:Show()
     else
         window.pending:Hide()
@@ -278,5 +278,5 @@ function UI.EnchantLine(inventorySlot)
     if not enchant or not UI.StatText then
         return nil
     end
-    return L("Enchanted: {1} {2}", GRADES[enchant.grade].name, UI.StatText(enchant.stat, enchant.value)) .. PieceShare(enchant.percent)
+    return L("hoa.addon.enchanted_1_2", GRADES[enchant.grade].name, UI.StatText(enchant.stat, enchant.value)) .. PieceShare(enchant.percent)
 end

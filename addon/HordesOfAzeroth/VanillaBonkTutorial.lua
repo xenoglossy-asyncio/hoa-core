@@ -2,10 +2,10 @@ local L = VanillaBonkL
 local UI = VanillaBonkUI
 
 local RUN_MASTER = 900001
-local RUN_MASTER_NAME = L["Gizzik Bonkwhistle"]
+local RUN_MASTER_NAME = L["hoa.addon.gizzik_bonkwhistle"]
 local RUN_MASTER_TARGETS = { { entry = RUN_MASTER, name = RUN_MASTER_NAME } }
 local INNKEEPER_TARGETS = { { entry = UI.INNKEEPER_ENTRY, name = UI.INNKEEPER_NAME } }
-local UPGRADE_VENDOR_TARGETS = { { entry = 900002, name = L["Nix Sparkwrench"] } }
+local UPGRADE_VENDOR_TARGETS = { { entry = 900002, name = L["hoa.addon.nix_sparkwrench"] } }
 local STAIRS_FOOT = { x = 16248.695, y = 16313.784, z = 20.844 }
 local DECK_SPOT = { x = 16256.1, y = 16312.2, z = 20.865 }
 local WAYPOINT_REACH = 3
@@ -25,31 +25,31 @@ local GUIDE_WIDTH = 430
 local GUIDE_PLATE_COLUMN = 150
 local GUIDE_ROW_GAP = 14
 local PAD_BUTTON_NAMES = {
-    xbox = { dash = "RT", interact = "X", menu = L["Menu"] },
-    ps = { dash = "R2", interact = L["Square"], menu = L["Options"] },
-    deck = { dash = "R2", interact = "X", menu = L["Menu"] },
+    xbox = { dash = "RT", interact = "X", menu = L["hoa.addon.menu"] },
+    ps = { dash = "R2", interact = L["hoa.addon.square"], menu = L["hoa.addon.options"] },
+    deck = { dash = "R2", interact = "X", menu = L["hoa.addon.menu"] },
 }
 local PLATE_KINDS = {
-    { kind = 0, name = L["Normal"], text = L["Regular enemies."] },
-    { kind = 5, name = L["Bruiser"], text = L["A big enemy with four times the health that hits twice as hard."] },
-    { kind = 6, name = L["Veteran"], text = L["A stronger version of a regular enemy, with more health and harder hits."],
-        note = L["Only appears on Heroic and Mythic."] },
-    { kind = 1, name = L["Elite"], text = L["Has special powers called affixes. The Spellbook Keeper at the Inn explains each one."],
-        sample = L["Kolkar Pack Runner"] },
-    { kind = 0, name = L["Your debuffs"], text = L["Shown under an enemy's health bar with their stacks. On bosses, hitting again refreshes each icon before it runs out."],
+    { kind = 0, name = L["hoa.addon.normal"], text = L["hoa.addon.regular_enemies"] },
+    { kind = 5, name = L["hoa.addon.bruiser"], text = L["hoa.addon.a_big_enemy_with_four_times_the_health_that_hits_twice_as_ha"] },
+    { kind = 6, name = L["hoa.addon.veteran"], text = L["hoa.addon.a_stronger_version_of_a_regular_enemy_with_more_health_and_h"],
+        note = L["hoa.addon.only_appears_on_heroic_and_mythic"] },
+    { kind = 1, name = L["hoa.addon.elite"], text = L["hoa.addon.has_special_powers_called_affixes_the_spellbook_keeper_at_th"],
+        sample = L["hoa.addon.kolkar_pack_runner"] },
+    { kind = 0, name = L["hoa.addon.your_debuffs"], text = L["hoa.addon.shown_under_an_enemy_s_health_bar_with_their_stacks_on_bosse"],
         debuffs = { { 3, 12 }, { 4, 5 } } },
-    { kind = 0, name = L["You"], text = L["Your health, shown above your character. A cyan glow shows your Shield."], own = true },
+    { kind = 0, name = L["hoa.addon.you"], text = L["hoa.addon.your_health_shown_above_your_character_a_cyan_glow_shows_you"], own = true },
 }
 local OWN_BAR_COLOR = { 0.24, 0.70, 0.28 }
 local CURRENCY_WIDTH = 400
 local CURRENCY_ICON_SIZE = 32
 local CURRENCIES = {
-    { icon = "INV_Misc_Coin_02", name = L["Gold"], color = { 1, 0.82, 0 },
-        text = L["Spent on gear and upgrades at the Inn. Kept between runs."] },
-    { icon = "INV_Misc_Ticket_Darkmoon_01", name = L["Darkmoon Tickets"], color = { 0.75, 0.5, 1 },
-        text = L["Spent at the Darkmoon vendors. You keep them between runs."] },
-    { icon = "INV_Misc_Coin_04", name = L["Valor"], color = { 1, 0.91, 0.45 },
-        text = L["Spent on chests and shops during a run. Lost when the run ends."] },
+    { icon = "INV_Misc_Coin_02", name = L["hoa.addon.gold"], color = { 1, 0.82, 0 },
+        text = L["hoa.addon.spent_on_gear_and_upgrades_at_the_inn_kept_between_runs"] },
+    { icon = "INV_Misc_Ticket_Darkmoon_01", name = L["hoa.addon.darkmoon_tickets_2"], color = { 0.75, 0.5, 1 },
+        text = L["hoa.addon.spent_at_the_darkmoon_vendors_you_keep_them_between_runs"] },
+    { icon = "INV_Misc_Coin_04", name = L["hoa.addon.valor"], color = { 1, 0.91, 0.45 },
+        text = L["hoa.addon.spent_on_chests_and_shops_during_a_run_lost_when_the_run_end"] },
 }
 
 local tutorial = CreateFrame("Frame")
@@ -157,7 +157,7 @@ local function BuildControllerTip()
     box:EnableMouse(true)
     DialogBackdrop(box)
     Title(box)
-    box.title:SetText(L["Playing with a controller?"])
+    box.title:SetText(L["hoa.addon.playing_with_a_controller"])
     box.art = box:CreateTexture(nil, "ARTWORK")
     box.art:SetWidth(CONTROLLER_ART_WIDTH)
     box.art:SetPoint("TOP", box.title, "BOTTOM", 0, -10)
@@ -169,9 +169,9 @@ local function BuildControllerTip()
     box.hint:SetWidth(CONTROLLER_TIP_WIDTH - 52)
     box.hint:SetTextColor(1, 0.82, 0)
     box.hint:SetPoint("TOP", box.body, "BOTTOM", 0, -8)
-    box.settings = UI.Button(box, 150, L["Controller Settings"], function() tutorial:OpenControllerSettings() end)
+    box.settings = UI.Button(box, 150, L["hoa.addon.controller_settings"], function() tutorial:OpenControllerSettings() end)
     box.settings:SetPoint("BOTTOMRIGHT", box, "BOTTOM", -4, 18)
-    box.next = UI.Button(box, 96, L["Next"], function() box:Hide() end)
+    box.next = UI.Button(box, 96, L["hoa.addon.next"], function() box:Hide() end)
     box.next:SetPoint("BOTTOMLEFT", box, "BOTTOM", 4, 18)
     UI.NavPrompt(box, box.next, box.settings)
     box:SetScript("OnHide", function()
@@ -215,7 +215,7 @@ local function BuildCurrencyTip()
     box:EnableMouse(true)
     DialogBackdrop(box)
     Title(box)
-    box.title:SetText(L["Your currencies"])
+    box.title:SetText(L["hoa.addon.your_currencies"])
     local top = CreateFrame("Frame", nil, box)
     top:SetWidth(1)
     top:SetHeight(1)
@@ -234,7 +234,7 @@ local function BuildCurrencyTip()
         end
         height = height + GUIDE_ROW_GAP + rowHeight
     end
-    box.next = UI.Button(box, 96, L["Next"], function() tutorial:ShowInnkeeper() end)
+    box.next = UI.Button(box, 96, L["hoa.addon.next"], function() tutorial:ShowInnkeeper() end)
     box.next:SetPoint("BOTTOM", box, "BOTTOM", 0, 18)
     UI.NavPrompt(box, box.next)
     box:SetHeight(height + 16 + 22 + 18)
@@ -247,7 +247,7 @@ local currencyTip = BuildCurrencyTip()
 local dashBox = Callout()
 local dashArrow = Arrow(DASH_ARROW_SIZE)
 RotateTexture(dashArrow.texture, math.pi)
-dashBox.next = UI.Button(dashBox, 96, L["Next"], function() tutorial:ShowCurrencies() end)
+dashBox.next = UI.Button(dashBox, 96, L["hoa.addon.next"], function() tutorial:ShowCurrencies() end)
 dashBox.next:SetPoint("BOTTOM", dashBox, "BOTTOM", 0, 18)
 UI.NavPrompt(dashBox, dashBox.next)
 
@@ -260,8 +260,8 @@ guideBox.hint:SetPoint("TOP", guideBox.body, "BOTTOM", 0, -8)
 local guideArrow = Arrow(GUIDE_ARROW_SIZE)
 
 local rangeBox = Callout()
-rangeBox.title:SetText(L["Range Ring"])
-SetBody(rangeBox, L["Alt-click a spell on your action bar to show its range during a run. Open Range Ring to change its color, fill and opacity."])
+rangeBox.title:SetText(L["hoa.addon.range_ring"])
+SetBody(rangeBox, L["hoa.addon.alt_click_a_spell_on_your_action_bar_to_show_its_range_durin"])
 local rangeArrow = Arrow(DASH_ARROW_SIZE)
 RotateTexture(rangeArrow.texture, -math.pi / 2)
 rangeBox:SetFrameStrata("FULLSCREEN_DIALOG")
@@ -301,30 +301,30 @@ local function IsBlink()
 end
 
 local function DashText()
-    local verb = IsBlink() and L["teleport"] or L["dash"]
-    local safety = L("You can't be hurt while you {1}, so use it to get out of trouble.", verb)
+    local verb = IsBlink() and L["hoa.addon.teleport"] or L["hoa.addon.dash_2"]
+    local safety = L("hoa.addon.you_can_t_be_hurt_while_you_1_so_use_it_to_get_out_of_troubl", verb)
     if PadStyle() then
-        return L("Pull {1} to {2} a short way in the direction you're moving. {3}\n\nTry it now!", PadButton("dash"), verb, safety)
+        return L("hoa.addon.pull_1_to_2_a_short_way_in_the_direction_you_re_moving_3_try", PadButton("dash"), verb, safety)
     end
     local key = UI.DashKeyText and UI.DashKeyText() or ""
     if key == "" then
-        return L("Your character can {1} a short way in the direction you're moving. Set a key for it at the top of Key Bindings.", verb)
+        return L("hoa.addon.your_character_can_1_a_short_way_in_the_direction_you_re_mov", verb)
     end
-    return L("Press |cffffffff{1}|r to {2} a short way in the direction you're moving. {3}", key, verb, safety)
-        .. L["\n\nTry it now! You can change the key under Key Bindings."]
+    return L("hoa.addon.press_cffffffff_1_r_to_2_a_short_way_in_the_direction_you_re", key, verb, safety)
+        .. L["hoa.addon.try_it_now_you_can_change_the_key_under_key_bindings"]
 end
 
 local function ControllerTipText()
-    return L["Hordes of Azeroth supports Xbox and PlayStation controllers. Plug one in and press any button to play with it. There is nothing to set up."]
-        .. L["\n\nThe Controller page in the pause menu shows what every button does. You can also change the camera speed, the stick deadzone and the button prompts there."]
+    return L["hoa.addon.hordes_of_azeroth_supports_xbox_and_playstation_controllers_"]
+        .. L["hoa.addon.the_controller_page_in_the_pause_menu_shows_what_every_butto"]
 end
 
 local function ControllerTipHint()
     local style = PadStyle()
     if style then
-        return L("Press {1} to open the pause menu.", PadButton("menu", style))
+        return L("hoa.addon.press_1_to_open_the_pause_menu", PadButton("menu", style))
     end
-    return L["Press |cffffffffEscape|r to open the pause menu."]
+    return L["hoa.addon.press_cffffffffescape_r_to_open_the_pause_menu"]
 end
 
 local function FitControllerTip()
@@ -432,7 +432,7 @@ function tutorial:ShowDash()
     step = "dash"
     dashedAt = nil
     controllerTip:Hide()
-    dashBox.title:SetText(IsBlink() and L["Blink"] or L["Dash"])
+    dashBox.title:SetText(IsBlink() and L["hoa.addon.blink"] or L["hoa.addon.dash"])
     dashBox.body:SetText("")
     SetBody(dashBox, DashText(), 30)
     dashArrow:ClearAllPoints()
@@ -463,7 +463,7 @@ function tutorial:ShowInnkeeper()
     dashBox:Hide()
     dashArrow:Hide()
     currencyTip:Hide()
-    ShowGuide(L["Make yourself at home"], L("Talk to {1}, the Innkeeper, to change settings such as the interact key, auto-opening chests and your health bar position.", UI.INNKEEPER_NAME))
+    ShowGuide(L["hoa.addon.make_yourself_at_home"], L("hoa.addon.talk_to_1_the_innkeeper_to_change_settings_such_as_the_inter", UI.INNKEEPER_NAME))
 end
 
 function tutorial:InnkeeperSeen()
@@ -480,19 +480,19 @@ function tutorial:ShowRunMaster()
     dashBox:Hide()
     dashArrow:Hide()
     currencyTip:Hide()
-    ShowGuide(L["Start a run"], L("Talk to {1}, the Run Master. He lets you pick a map and starts your first run.", RUN_MASTER_NAME))
+    ShowGuide(L["hoa.addon.start_a_run"], L("hoa.addon.talk_to_1_the_run_master_he_lets_you_pick_a_map_and_starts_y", RUN_MASTER_NAME))
 end
 
 function tutorial:ShowVendors()
     step = "vendors"
     waypointReached = false
-    ShowGuide(L["Spend your gold"], L["The gold you bring back is yours to keep. Upstairs, Nix Sparkwrench sells upgrades that last through every run."])
+    ShowGuide(L["hoa.addon.spend_your_gold"], L["hoa.addon.the_gold_you_bring_back_is_yours_to_keep_upstairs_nix_sparkw"])
 end
 
 function tutorial:ShowDeck()
     step = "deck"
     waypointReached = false
-    ShowGuide(L["The Darkmoon Deck"], L["The Darkmoon Deck table at the foot of the stairs shows every Darkmoon Card and Glyph you own. Ban the ones you don't want to see in your runs."])
+    ShowGuide(L["hoa.addon.the_darkmoon_deck"], L["hoa.addon.the_darkmoon_deck_table_at_the_foot_of_the_stairs_shows_ever_2"])
 end
 
 local function MarkStepSeen()
@@ -585,33 +585,33 @@ end
 
 local function TalkHint(name)
     if PadStyle() then
-        return L("Press {1} to talk to {2}.", PadButton("interact"), name)
+        return L("hoa.addon.press_1_to_talk_to_2", PadButton("interact"), name)
     end
-    return L("Right-click {1} to talk.", name)
+    return L("hoa.addon.right_click_1_to_talk", name)
 end
 
 local GUIDES = {
     innkeeper = {
         targets = INNKEEPER_TARGETS,
-        far = L["Follow the arrow to find him."],
-        lost = L("Look for {1} <Innkeeper> at the Inn.", UI.INNKEEPER_NAME),
+        far = L["hoa.addon.follow_the_arrow_to_find_him"],
+        lost = L("hoa.addon.look_for_1_innkeeper_at_the_inn", UI.INNKEEPER_NAME),
     },
     runmaster = {
         targets = RUN_MASTER_TARGETS,
-        far = L["Follow the arrow to find him."],
-        lost = L("Look for {1} <Run Master> at the Inn.", RUN_MASTER_NAME),
+        far = L["hoa.addon.follow_the_arrow_to_find_him"],
+        lost = L("hoa.addon.look_for_1_run_master_at_the_inn", RUN_MASTER_NAME),
     },
     deck = {
         spot = DECK_SPOT,
-        spotName = L["the Darkmoon Deck table"],
-        far = L["Follow the arrow to the Darkmoon Deck."],
+        spotName = L["hoa.addon.the_darkmoon_deck_table"],
+        far = L["hoa.addon.follow_the_arrow_to_the_darkmoon_deck"],
     },
     vendors = {
         targets = UPGRADE_VENDOR_TARGETS,
         waypoint = STAIRS_FOOT,
-        toWaypoint = L["Follow the arrow to the stairs."],
-        far = L["Follow the arrow up the stairs."],
-        lost = L["Look for him on the top floor of the Inn."],
+        toWaypoint = L["hoa.addon.follow_the_arrow_to_the_stairs"],
+        far = L["hoa.addon.follow_the_arrow_up_the_stairs"],
+        lost = L["hoa.addon.look_for_him_on_the_top_floor_of_the_inn"],
     },
 }
 
@@ -620,7 +620,7 @@ local function PointArrow(angle, distance)
     local bob = Bob()
     guideArrow:ClearAllPoints()
     guideArrow:SetPoint("TOP", guideBox, "BOTTOM", -math.sin(angle) * bob, -8 + math.cos(angle) * bob - BOB_HEIGHT / 2)
-    guideArrow.distance:SetText(L("{1} yd", floor(distance + 0.5)))
+    guideArrow.distance:SetText(L("hoa.addon.1_yd", floor(distance + 0.5)))
     guideArrow:Show()
 end
 
@@ -643,9 +643,9 @@ end
 
 local function OpenHint(name)
     if PadStyle() then
-        return L("Press {1} to open {2}.", PadButton("interact"), name)
+        return L("hoa.addon.press_1_to_open_2", PadButton("interact"), name)
     end
-    return L("Right-click {1} to open it.", name)
+    return L("hoa.addon.right_click_1_to_open_it", name)
 end
 
 local function UpdateSpot(guide)
@@ -811,9 +811,9 @@ local plateGuide
 local function PlateKeyText()
     local key = GetBindingKey("NAMEPLATES")
     if not key or key == "" then
-        return L["Turn enemy health bars on and off under Key Bindings."]
+        return L["hoa.addon.turn_enemy_health_bars_on_and_off_under_key_bindings"]
     end
-    return L("Press |cffffd100{1}|r to toggle enemy health bars.", key)
+    return L("hoa.addon.press_cffffd100_1_r_to_toggle_enemy_health_bars", key)
 end
 
 local function SampleDebuffs(entries)
@@ -837,13 +837,13 @@ local function BuildPlateGuide()
     box.title = UI.Text(box, 15)
     box.title:SetTextColor(1, 0.82, 0)
     box.title:SetPoint("TOP", box, "TOP", 0, -22)
-    box.title:SetText(L["Health bars"])
+    box.title:SetText(L["hoa.addon.health_bars"])
     box.hint = UI.Text(box, 12)
     box.hint:SetPoint("TOP", box.title, "BOTTOM", 0, -10)
     box.close = CreateFrame("Button", nil, box, "UIPanelCloseButton")
     box.close:SetPoint("TOPRIGHT", box, "TOPRIGHT", -6, -6)
     box.close:SetScript("OnClick", function() plateGuide.Close() end)
-    box.done = UI.Button(box, 96, L["Got it"], function() plateGuide.Close() end)
+    box.done = UI.Button(box, 96, L["hoa.addon.got_it"], function() plateGuide.Close() end)
     box.done:SetPoint("BOTTOM", box, "BOTTOM", 0, 18)
     UI.NavPrompt(box, box.done)
 
@@ -891,7 +891,7 @@ local function BuildPlateGuide()
     box.selfBar = UI.Text(box, 12)
     box.selfBar:SetWidth(GUIDE_WIDTH - 44)
     box.selfBar:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -GUIDE_ROW_GAP - 6)
-    box.selfBar:SetText(L["Prefer the classic player frame in the top left? Change it under Interface Options, Your Health Bar."])
+    box.selfBar:SetText(L["hoa.addon.prefer_the_classic_player_frame_in_the_top_left_change_it_un"])
     box:Hide()
     return box
 end

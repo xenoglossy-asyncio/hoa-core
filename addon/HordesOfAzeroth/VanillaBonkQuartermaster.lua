@@ -28,27 +28,27 @@ local REROLL_FRAME_HEIGHT = 64
 local ITEM_BAR_HEIGHT, ITEM_BAR_GAP = 34, 6
 
 local ACCESSORY_GROUPS = {
-    { key = "cloak", name = L["Cloaks"] },
-    { key = "neck", name = L["Necks"] },
-    { key = "ring", name = L["Rings"] },
-    { key = "trinket", name = L["Trinkets"] },
+    { key = "cloak", name = L["hoa.addon.cloaks"] },
+    { key = "neck", name = L["hoa.addon.necks"] },
+    { key = "ring", name = L["hoa.addon.rings"] },
+    { key = "trinket", name = L["hoa.addon.trinkets"] },
 }
 local ARMOR_GROUPS = {
-    { key = "head", name = L["Head"] },
-    { key = "shoulder", name = L["Shoulders"] },
-    { key = "chest", name = L["armor slot::Chest"] },
-    { key = "wrist", name = L["Wrists"] },
-    { key = "hands", name = L["Hands"] },
-    { key = "waist", name = L["Waist"] },
-    { key = "legs", name = L["Legs"] },
-    { key = "feet", name = L["Feet"] },
+    { key = "head", name = L["hoa.addon.head"] },
+    { key = "shoulder", name = L["hoa.addon.shoulders"] },
+    { key = "chest", name = L["hoa.addon.armor_slot_chest"] },
+    { key = "wrist", name = L["hoa.addon.wrists"] },
+    { key = "hands", name = L["hoa.addon.hands"] },
+    { key = "waist", name = L["hoa.addon.waist"] },
+    { key = "legs", name = L["hoa.addon.legs"] },
+    { key = "feet", name = L["hoa.addon.feet"] },
 }
 local CATEGORY_ART = {
-    armor = { name = L["Armor"], icon = "Interface\\Icons\\INV_Chest_Plate16", groups = ARMOR_GROUPS },
-    weapons = { name = L["Weapons"], icon = "Interface\\Icons\\INV_Sword_50" },
-    accessories = { name = L["Accessories"], icon = "Interface\\Icons\\INV_Jewelry_Talisman_12", groups = ACCESSORY_GROUPS },
-    upgrade = { name = L["Your found gear"], icon = "Interface\\Icons\\INV_Misc_Gear_08", groups = { { key = "worn", name = L["Equipped"] }, { key = "bags", name = L["In bags"] } } },
-    buyback = { name = L["Buyback"], icon = "Interface\\Icons\\INV_Misc_Coin_01" },
+    armor = { name = L["hoa.addon.armor"], icon = "Interface\\Icons\\INV_Chest_Plate16", groups = ARMOR_GROUPS },
+    weapons = { name = L["hoa.addon.weapons"], icon = "Interface\\Icons\\INV_Sword_50" },
+    accessories = { name = L["hoa.addon.accessories"], icon = "Interface\\Icons\\INV_Jewelry_Talisman_12", groups = ACCESSORY_GROUPS },
+    upgrade = { name = L["hoa.addon.your_found_gear"], icon = "Interface\\Icons\\INV_Misc_Gear_08", groups = { { key = "worn", name = L["hoa.addon.equipped"] }, { key = "bags", name = L["hoa.addon.in_bags"] } } },
+    buyback = { name = L["hoa.addon.buyback"], icon = "Interface\\Icons\\INV_Misc_Coin_01" },
 }
 local CATEGORIES = { "armor", "weapons", "accessories", "upgrade", "buyback" }
 local EQUIP_PLACES = {
@@ -120,7 +120,7 @@ frame.tierNote:SetTextColor(0.54, 0.52, 0.47)
 frame.divider = UI.Divider(frame, WIDTH - 36)
 frame.divider:SetPoint("TOPLEFT", frame, "TOPLEFT", 18, -80)
 
-frame.done = UI.Button(frame, 90, L["Close"], function() frame:Hide() end)
+frame.done = UI.Button(frame, 90, L["hoa.addon.close"], function() frame:Hide() end)
 frame.done:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", SIDE_X, 18)
 
 local listWidth = WIDTH - LIST_X - 18
@@ -138,11 +138,11 @@ panel.headingNote:SetTextColor(0.54, 0.52, 0.47)
 panel.hint = UI.Text(panel, 10)
 panel.hint:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 14, 10)
 panel.hint:SetTextColor(0.54, 0.52, 0.47)
-panel.hint:SetText(L["Right-click an item to buy it, Ctrl-click to preview it. Right-click your own items to sell them."])
+panel.hint:SetText(L["hoa.addon.right_click_an_item_to_buy_it_ctrl_click_to_preview_it_right"])
 panel.empty = UI.Text(panel, 12)
 panel.empty:SetPoint("CENTER", panel, "CENTER", 0, 0)
 panel.empty:SetTextColor(0.54, 0.52, 0.47)
-panel.empty:SetText(L["No extracted items"])
+panel.empty:SetText(L["hoa.addon.no_extracted_items"])
 panel.empty:Hide()
 
 local Refresh
@@ -153,9 +153,9 @@ end
 
 local function UpgradeBlockedText(piece)
     if piece.left == 0 then
-        return L["This item is fully upgraded."]
+        return L["hoa.addon.this_item_is_fully_upgraded"]
     end
-    return L["Clear a higher level to upgrade it further."]
+    return L["hoa.addon.clear_a_higher_level_to_upgrade_it_further"]
 end
 
 local function NextItemLevel(piece)
@@ -203,7 +203,7 @@ reroll.heading:SetPoint("TOPLEFT", reroll, "TOPLEFT", 12, -10)
 reroll.hint = UI.Text(reroll, 10)
 reroll.hint:SetPoint("BOTTOMLEFT", reroll, "BOTTOMLEFT", 12, 14)
 reroll.hint:SetTextColor(0.54, 0.52, 0.47)
-reroll.hint:SetText(L["You may only reroll one stat per item."])
+reroll.hint:SetText(L["hoa.addon.you_may_only_reroll_one_stat_per_item"])
 reroll.rows = {}
 
 local itemBar = CreateFrame("Frame", nil, panel)
@@ -297,7 +297,7 @@ reroll.coin:SetWidth(13)
 reroll.coin:SetHeight(13)
 
 local function SetRerollPrice(copper)
-    reroll.price:SetText(L("Reroll: {1}", floor(copper / 10000)))
+    reroll.price:SetText(L("hoa.addon.reroll_1_2", floor(copper / 10000)))
     local width = reroll.price:GetStringWidth() + 15
     reroll.price:ClearAllPoints()
     reroll.price:SetPoint("LEFT", reroll.button, "CENTER", -width / 2, 0)
@@ -373,9 +373,9 @@ local function LayoutReroll()
     end
     local nextLevel = NextItemLevel(piece)
     if piece.left == 0 then
-        reroll.upgrade:SetText(L["No upgrades left"])
+        reroll.upgrade:SetText(L["hoa.addon.no_upgrades_left"])
     else
-        reroll.upgrade:SetText(piece.can and L("Upgrade to Item Level {1} ({2} Scrap)", nextLevel, piece.cost) or L("Upgrade to Item Level {1}", nextLevel))
+        reroll.upgrade:SetText(piece.can and L("hoa.addon.upgrade_to_item_level_1_2_scrap", nextLevel, piece.cost) or L("hoa.addon.upgrade_to_item_level_1", nextLevel))
     end
     reroll.upgrade:SetWidth(max(200, reroll.upgrade:GetFontString():GetStringWidth() + 24))
     if piece.can and qm.scrap >= piece.cost then
@@ -392,22 +392,22 @@ local function LayoutReroll()
     end
     if piece.offers then
         local current = piece.offerStat
-        reroll.heading:SetText(L["Choose a stat:"])
-        ShowRerollRow(1, lines[current], L["Current"], true, function() Command("rerollpick " .. piece.guid .. " 0") end)
+        reroll.heading:SetText(L["hoa.addon.choose_a_stat"])
+        ShowRerollRow(1, lines[current], L["hoa.addon.current"], true, function() Command("rerollpick " .. piece.guid .. " 0") end)
         for index, offer in ipairs(piece.offers) do
             local choice = index
             ShowRerollRow(index + 1, offer, nil, false, function() Command("rerollpick " .. piece.guid .. " " .. choice) end)
         end
         reroll.stat = current
     elseif piece.rerollStat then
-        reroll.heading:SetText(L["Rerolled stat:"])
+        reroll.heading:SetText(L["hoa.addon.rerolled_stat"])
         ShowRerollRow(1, lines[piece.rerollStat], nil, true, nil)
         reroll.stat = piece.rerollStat
     else
         if not qm.rerollPick or not lines[qm.rerollPick] then
             qm.rerollPick = table.getn(lines) == 1 and 1 or nil
         end
-        reroll.heading:SetText(L["Choose a stat to reroll:"])
+        reroll.heading:SetText(L["hoa.addon.choose_a_stat_to_reroll"])
         for index, statLine in ipairs(lines) do
             local stat = index
             ShowRerollRow(index, statLine, nil, qm.rerollPick == index, function()
@@ -676,13 +676,13 @@ local function Card(index)
                 UI.nextFound = this.item.found
                 GameTooltip:SetHyperlink("item:" .. this.item.entry .. ":0:0:0")
                 GameTooltip:AddLine(" ")
-                GameTooltip:AddLine(L("Upgrades left: {1}", this.item.left), 1, 0.82, 0, 1)
+                GameTooltip:AddLine(L("hoa.addon.upgrades_left_1", this.item.left), 1, 0.82, 0, 1)
                 if not this.item.can then
                     GameTooltip:AddLine(UpgradeBlockedText(this.item), 1, 0.5, 0.25, 1)
                 else
-                    GameTooltip:AddLine(L("Right-click to upgrade to item level {1} for {2} Scrap.", NextItemLevel(this.item), this.item.cost), 0.2, 1, 0.2, 1)
+                    GameTooltip:AddLine(L("hoa.addon.right_click_to_upgrade_to_item_level_1_for_2_scrap", NextItemLevel(this.item), this.item.cost), 0.2, 1, 0.2, 1)
                 end
-                GameTooltip:AddLine(L["Left-click to select it."], 0.2, 1, 0.2, 1)
+                GameTooltip:AddLine(L["hoa.addon.left_click_to_select_it"], 0.2, 1, 0.2, 1)
                 GameTooltip:Show()
             elseif this.item.buyback then
                 GameTooltip:SetBuybackItem(this.item.index)
@@ -791,7 +791,7 @@ local function JoinNames(names)
     if count == 1 then
         return names[1]
     end
-    return L("{1} and {2}", table.concat(names, L[", "], 1, count - 1), names[count])
+    return L("hoa.addon.1_and_2", table.concat(names, L["hoa.addon.empty"], 1, count - 1), names[count])
 end
 
 local function Sections(shown)
@@ -883,7 +883,7 @@ local function ShowCard(card, item, x, y)
     card.name:SetTextColor(r, g, b)
     if item.upgrade then
         local lines = item.found and table.getn(item.found.lines) or 0
-        local cost = "|cffc7bfb0" .. L("{1} Scrap", item.cost) .. "|r"
+        local cost = "|cffc7bfb0" .. L("hoa.addon.1_scrap", item.cost) .. "|r"
         local _, _, quality = GetItemInfo(item.entry)
         card.price:SetText(UI.ItemLevelText(item.tier, quality) .. (lines > 0 and ("  |cffff66cc+" .. lines .. "|r") or "") ..
             (item.can and ("  " .. cost) or ""))
@@ -938,7 +938,7 @@ local function PlaceRows(shown)
     end
     local count = table.getn(pages)
     if count > 1 then
-        panel.pageText:SetText(L("Page {1} of {2}", qm.page, count))
+        panel.pageText:SetText(L("hoa.addon.page_1_of_2", qm.page, count))
         panel.pageText:Show()
         panel.prevPage:Show()
         panel.nextPage:Show()
@@ -953,14 +953,14 @@ end
 
 local function StockText()
     if qm.category == "upgrade" then
-        return L["Gear Vendor  |cff8a8478·|r  Upgrades |cff33ff33up to your highest cleared level|r  |cff8a8478(3 per item)|r"]
+        return L["hoa.addon.gear_vendor_cff8a8478_r_upgrades_cff33ff33up_to_your_highest"]
     end
-    return L("Gear Vendor  |cff8a8478·|r  Stock: |cffffd100{1}|r  |cff8a8478(2 levels below your highest cleared level)|r", UI.ItemLevelRange(qm.tier, 1, 3))
+    return L("hoa.addon.gear_vendor_cff8a8478_r_stock_cffffd100_1_r_cff8a8478_2_leve", UI.ItemLevelRange(qm.tier, 1, 3))
 end
 
 local function HeadingNote()
     if qm.category == "upgrade" then
-        return L("{1} Scrap", qm.scrap)
+        return L("hoa.addon.1_scrap", qm.scrap)
     end
     if qm.category == "buyback" then
         return ""
@@ -993,9 +993,9 @@ Refresh = function()
     end
     CollectItems()
     LayoutSide()
-    frame.title:SetText(L["Gear Vendor"])
+    frame.title:SetText(L["hoa.addon.gear_vendor"])
     frame.stock:SetText(StockText())
-    frame.tierNote:SetText(L["Each level drops gear of its own tier. Spend Scrap to upgrade gear you found."])
+    frame.tierNote:SetText(L["hoa.addon.each_level_drops_gear_of_its_own_tier_spend_scrap_to_upgrade"])
     panel.heading:SetText(HeadingText())
     panel.headingNote:SetText(HeadingNote())
     local upgrading = qm.category == "upgrade"
@@ -1006,9 +1006,9 @@ Refresh = function()
         panel.empty:Hide()
     end
     if upgrading then
-        panel.hint:SetText(noneExtracted and "" or L["Click an item to upgrade it or reroll a bonus stat. Right-click to upgrade it instantly."])
+        panel.hint:SetText(noneExtracted and "" or L["hoa.addon.click_an_item_to_upgrade_it_or_reroll_a_bonus_stat_right_cli"])
     else
-        panel.hint:SetText(L["Right-click an item to buy it, Ctrl-click to preview it. Right-click your own items to sell them."])
+        panel.hint:SetText(L["hoa.addon.right_click_an_item_to_buy_it_ctrl_click_to_preview_it_right"])
     end
     LayoutReroll()
     PlaceRows(Shown())

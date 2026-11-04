@@ -162,14 +162,14 @@ handlers["capture"] = function(f)
         return
     end
     capture.goAfterFlash = nil
-    local label = f[2] ~= "" and f[2] or L["Capturing"]
+    local label = f[2] ~= "" and f[2] or L["hoa.addon.capturing"]
     if not capture:IsShown() or capture.want == 0 then
         SetValue(capture, percent / 100)
     end
     capture.target = min(1, percent / 100)
     if percent >= 100 then
         SetValue(capture, 1)
-        capture.text:SetText("|cff80ff80" .. L("{1} captured", label) .. "|r")
+        capture.text:SetText("|cff80ff80" .. L("hoa.addon.1_captured", label) .. "|r")
         if capture.flashLeft == 0 then
             capture.flashLeft = FLASH
             PlaySound("igQuestListComplete")
@@ -201,17 +201,17 @@ handlers["hearth"] = function(f)
     if percent >= 100 then
         SetValue(hearth, 1)
         hearth.bar:SetStatusBarColor(0.45, 0.6, 1.0)
-        hearth.text:SetText(L["|cff80ff80Returning to the Inn|r"])
+        hearth.text:SetText(L["hoa.addon.cff80ff80returning_to_the_inn_r"])
         if hearth.flashLeft == 0 then
             hearth.flashLeft = FLASH
             PlaySound("igQuestListComplete")
         end
     elseif f[3] == "1" then
         hearth.bar:SetStatusBarColor(0.45, 0.6, 1.0)
-        hearth.text:SetText(L("Hearthstone  {1}s", seconds))
+        hearth.text:SetText(L("hoa.addon.hearthstone_1_s", seconds))
     else
         hearth.bar:SetStatusBarColor(0.8, 0.25, 0.2)
-        hearth.text:SetText(L("|cffff7060Get back in the ring!|r  {1}s", seconds))
+        hearth.text:SetText(L("hoa.addon.cffff7060get_back_in_the_ring_r_1_s", seconds))
     end
     FadeIn(hearth)
 end
@@ -230,10 +230,10 @@ handlers["moonwell"] = function(f)
         SetValue(moonwell, moonwell.target)
     end
     if inside then
-        moonwell.text:SetText(L("|cff80ff80Healing in the Moonwell|r ({1}s)", seconds))
+        moonwell.text:SetText(L("hoa.addon.cff80ff80healing_in_the_moonwell_r_1_s", seconds))
         moonwell.bar:SetStatusBarColor(0.3, 0.9, 0.75)
     else
-        moonwell.text:SetText(L("Step into the Moonwell to heal ({1}s)", seconds))
+        moonwell.text:SetText(L("hoa.addon.step_into_the_moonwell_to_heal_1_s", seconds))
         moonwell.bar:SetStatusBarColor(0.2, 0.5, 0.42)
     end
     FadeIn(moonwell)

@@ -18,7 +18,8 @@ namespace HordesOfAzeroth.Launcher
 
         static readonly Dictionary<string, Dictionary<string, string>> Tables = new Dictionary<string, Dictionary<string, string>>
         {
-            ["zhCN"] = LocZhCN.Strings,
+            ["enUS"] = LauncherStrings.EnUs,
+            ["zhCN"] = LauncherStrings.ZhCn,
         };
 
         static readonly ConditionalWeakTable<AvaloniaObject, Dictionary<AvaloniaProperty, Shown>> Originals =
@@ -26,15 +27,27 @@ namespace HordesOfAzeroth.Launcher
 
         static Dictionary<string, string> s_table;
 
-        public static void Use(string code) => Tables.TryGetValue(code, out s_table);
+        public static void Use(string code) => s_table = Tables.TryGetValue(code, out Dictionary<string, string> table) ? table : LauncherStrings.EnUs;
 
-        public static string Key(string english) => english;
+        static string Id(string key) =>
+            LauncherStrings.EnglishToId.TryGetValue(key, out string id) ? id : key;
 
-        public static string T(string english) =>
-            s_table != null && s_table.TryGetValue(english, out string text) ? text : english;
+        public static string Key(string key) =>
+            LauncherStrings.EnUs.TryGetValue(Id(key), out string english) ? english : key;
 
-        public static string T(string english, params object[] values) =>
-            string.Format(CultureInfo.InvariantCulture, T(english), values);
+        static string Text(string key)
+        {
+            string id = Id(key);
+            Dictionary<string, string> table = s_table ?? LauncherStrings.EnUs;
+            if (table.TryGetValue(id, out string text))
+                return text;
+            return LauncherStrings.EnUs.TryGetValue(id, out text) ? text : key;
+        }
+
+        public static string T(string key) => Text(key);
+
+        public static string T(string key, params object[] values) =>
+            string.Format(CultureInfo.InvariantCulture, Text(key), values);
 
         public static void Apply(Control root)
         {

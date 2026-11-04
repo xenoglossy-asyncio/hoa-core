@@ -31,9 +31,9 @@ local SOFT = { 0.78, 0.75, 0.7 }
 local MUTED = { 0.51, 0.49, 0.44 }
 local HAIR = { 0.47, 0.39, 0.24 }
 local INVADED_COLOR = { 1, 0.6, 0.24 }
-local CHALLENGE_RISK = L["Enemies have 30% more health and deal 20% more damage."]
-local DUNGEON_REWARD = L["Enemies drop 25% more gold, and mini-bosses drop gear twice as often."]
-local INVASION_REWARD = L["More enemies come at once. They drop 25% more gold, and mini-bosses drop gear 50% more often."]
+local CHALLENGE_RISK = L["hoa.addon.enemies_have_30_more_health_and_deal_20_more_damage"]
+local DUNGEON_REWARD = L["hoa.addon.enemies_drop_25_more_gold_and_mini_bosses_drop_gear_twice_as"]
+local INVASION_REWARD = L["hoa.addon.more_enemies_come_at_once_they_drop_25_more_gold_and_mini_bo"]
 local TIER_LOOKS = {
     normal = { color = { 1, 0.82, 0 }, emblem = "Ability_Warrior_DefensiveStance" },
     heroic = { color = { 0.38, 0.65, 1 }, emblem = "INV_Shield_05" },
@@ -49,7 +49,7 @@ local DUNGEON_ART = {
     zulgurub = "Interface\\Glues\\LoadingScreens\\LoadScreenZulGurub",
     ruinsaq = "Interface\\Glues\\LoadingScreens\\LoadScreenAhnQiraj20man",
 }
-local MAP_TYPES = { ["0"] = L["Open zone"], ["1"] = L["Enclosed raid"], ["2"] = L["Dungeon room"] }
+local MAP_TYPES = { ["0"] = L["hoa.addon.open_zone"], ["1"] = L["hoa.addon.enclosed_raid"], ["2"] = L["hoa.addon.dungeon_room"] }
 local WORLD_MAP_PATH = "Interface\\WorldMap\\"
 local ZONE_MAP_WIDTH, ZONE_MAP_HEIGHT = 1002, 668
 local MAP_TILE = 256
@@ -62,23 +62,23 @@ local INVASION_TINT = {
 }
 local DEFAULT_TINT = { 1, 0.6, 0.45 }
 local MODES = { "zones", "dungeon", "invasion" }
-local MODE_LABELS = { zones = L["Zones"], dungeon = L["Dungeon"], invasion = L["Invasion"] }
+local MODE_LABELS = { zones = L["hoa.addon.zones"], dungeon = L["hoa.addon.dungeon"], invasion = L["hoa.addon.invasion"] }
 local STAT_ROWS = {
-    { group = L["Enemies"] },
-    { label = L["Health"], key = "health", format = "+%s%%", rising = true },
-    { label = L["Damage"], key = "damage", format = "+%s%%", rising = true },
-    { label = L["Veterans"], key = "veterans", format = "%s%%", rising = true },
-    { label = L["Elite affixes"], key = "affixes", format = "%s", rising = true },
+    { group = L["hoa.addon.enemies"] },
+    { label = L["hoa.addon.health_2"], key = "health", format = "+%s%%", rising = true },
+    { label = L["hoa.addon.damage_2"], key = "damage", format = "+%s%%", rising = true },
+    { label = L["hoa.addon.veterans"], key = "veterans", format = "%s%%", rising = true },
+    { label = L["hoa.addon.elite_affixes"], key = "affixes", format = "%s", rising = true },
     { behavior = true },
-    { group = L["Rewards"], rewards = true },
-    { label = L["Gold and Tickets per kill"], key = "gold", format = "+%s%%", rewards = true },
-    { label = L["Gear drops"], key = "dropTier", tier = true, rewards = true },
-    { label = L["White gear"], key = "white", format = "%s%%", rewards = true, odds = true, color = { 1, 1, 1 } },
-    { label = L["Green gear"], key = "green", format = "%s%%", rewards = true, odds = true, color = { 0.12, 1, 0 } },
-    { label = L["Blue gear"], key = "blue", format = "%s%%", rewards = true, odds = true, color = { 0, 0.44, 0.87 } },
-    { label = L["Epic gear"], key = "epic", format = "%s%%", rewards = true, odds = true, luck = true, color = { 0.64, 0.21, 0.93 } },
+    { group = L["hoa.addon.rewards"], rewards = true },
+    { label = L["hoa.addon.gold_and_tickets_per_kill"], key = "gold", format = "+%s%%", rewards = true },
+    { label = L["hoa.addon.gear_drops"], key = "dropTier", tier = true, rewards = true },
+    { label = L["hoa.addon.white_gear"], key = "white", format = "%s%%", rewards = true, odds = true, color = { 1, 1, 1 } },
+    { label = L["hoa.addon.green_gear"], key = "green", format = "%s%%", rewards = true, odds = true, color = { 0.12, 1, 0 } },
+    { label = L["hoa.addon.blue_gear"], key = "blue", format = "%s%%", rewards = true, odds = true, color = { 0, 0.44, 0.87 } },
+    { label = L["hoa.addon.epic_gear"], key = "epic", format = "%s%%", rewards = true, odds = true, luck = true, color = { 0.64, 0.21, 0.93 } },
     { luckHint = true },
-    { label = L["Boss drops legendary"], key = "legendary", format = "%s%%", rewards = true, odds = true, color = { 1, 0.5, 0 } },
+    { label = L["hoa.addon.boss_drops_legendary"], key = "legendary", format = "%s%%", rewards = true, odds = true, color = { 1, 0.5, 0 } },
 }
 
 local state = { zone = {}, dungeon = {}, mode = {}, level = {} }
@@ -87,7 +87,7 @@ local levelInfo = {}
 local levelBests = {}
 local tierInfo = {}
 local epicLuck = 0
-local BEHAVIOR_CELLS = { { L["Caster aim"], "aim" }, { L["Boss attacks"], "boss" }, { L["Max enemies"], "crowd" } }
+local BEHAVIOR_CELLS = { { L["hoa.addon.caster_aim"], "aim" }, { L["hoa.addon.boss_attacks"], "boss" }, { L["hoa.addon.max_enemies"], "crowd" } }
 local zoneOverlays, overlaySeen = {}, {}
 local arena, content, tier, onTierClick
 local head, ladder, list, banner, preview
@@ -116,9 +116,9 @@ end
 
 local function LevelsText(shown)
     if (shown.levels or 0) == 0 then
-        return L["Endless levels"]
+        return L["hoa.addon.endless_levels"]
     end
-    return L("{1} levels", shown.levels)
+    return L("hoa.addon.1_levels", shown.levels)
 end
 
 local function LevelRow(shown, index)
@@ -238,14 +238,14 @@ end
 
 local function Progress(shown)
     if not shown.unlocked then
-        return L["Locked"]
+        return L["hoa.addon.locked"]
     end
     if (shown.levels or 0) > 0 and shown.best >= shown.levels then
-        return L["Cleared"]
+        return L["hoa.addon.cleared"]
     elseif shown.best > 0 then
-        return L("best {1}", shown.best)
+        return L("hoa.addon.best_1", shown.best)
     end
-    return L["new"]
+    return L["hoa.addon.new_2"]
 end
 
 local function FillPlaque(plaque, shown, selected)
@@ -372,8 +372,8 @@ local function ZoneTooltip(row)
     local map = row.map
     GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
     if not map then
-        GameTooltip:AddLine(L["Random zone"], 1, 0.82, 0)
-        GameTooltip:AddLine(L("Stage 1 is a random {1} zone.", tier.name), 1, 1, 1, 1)
+        GameTooltip:AddLine(L["hoa.addon.random_zone"], 1, 0.82, 0)
+        GameTooltip:AddLine(L("hoa.addon.stage_1_is_a_random_1_zone", tier.name), 1, 1, 1, 1)
     else
         GameTooltip:AddLine(map.name, 1, 0.82, 0)
         if MAP_TYPES[map.type] then
@@ -384,7 +384,7 @@ local function ZoneTooltip(row)
             GameTooltip:AddLine(info.description, 1, 1, 1, 1)
         end
         if map.reward and map.reward ~= 100 then
-            GameTooltip:AddLine(L("Rewards {1}x gold, Darkmoon Tickets and Mastery experience.", Multiplier(map.reward)), 0.25, 1, 0.25, 1)
+            GameTooltip:AddLine(L("hoa.addon.rewards_1_x_gold_darkmoon_tickets_and_mastery_experience", Multiplier(map.reward)), 0.25, 1, 0.25, 1)
         end
     end
     GameTooltip:Show()
@@ -401,7 +401,7 @@ local function DungeonTooltip(row)
     GameTooltip:AddLine(CHALLENGE_RISK, 1, 0.5, 0.5, 1)
     GameTooltip:AddLine(Mode() == "invasion" and INVASION_REWARD or DUNGEON_REWARD, 0.25, 1, 0.25, 1)
     if not dungeon.open then
-        GameTooltip:AddLine(L("Clear {1} first.", tier.name), 1, 0.3, 0.3, 1)
+        GameTooltip:AddLine(L("hoa.addon.clear_1_first", tier.name), 1, 0.3, 0.3, 1)
     end
     GameTooltip:Show()
 end
@@ -430,14 +430,14 @@ local function ShowList()
         local row = ListRow(1)
         row.map, row.dungeon, row.tooltip = nil, nil, ZoneTooltip
         row.pick = function() state.zone[tier.id] = nil end
-        FillRow(row, RANDOM_ICON, L["Random zone"], L("Any {1} zone, picked when the run starts", tier.name), zone == nil, dimmed)
+        FillRow(row, RANDOM_ICON, L["hoa.addon.random_zone"], L("hoa.addon.any_1_zone_picked_when_the_run_starts", tier.name), zone == nil, dimmed)
         for _, map in ipairs(tier.maps) do
             count = count + 1
             row = ListRow(count)
             row.map, row.dungeon, row.tooltip = map, nil, ZoneTooltip
             local key = map.key
             row.pick = function() state.zone[tier.id] = key end
-            local tag = map.reward and map.reward ~= 100 and ("|cff40ff40" .. L("{1}x Tickets and Mastery", Multiplier(map.reward)) .. "|r") or nil
+            local tag = map.reward and map.reward ~= 100 and ("|cff40ff40" .. L("hoa.addon.1_x_tickets_and_mastery", Multiplier(map.reward)) .. "|r") or nil
             FillRow(row, map.icon, map.name, Info(map.key).summary, zone == map, dimmed, tag)
         end
     else
@@ -449,7 +449,7 @@ local function ShowList()
             local key, open = dungeon.key, dungeon.open
             row.pick = open and function() state.dungeon[tier.id] = key end or nil
             FillRow(row, dungeon.icon, dungeon.name, Info(dungeon.key).summary, chosen == dungeon, dimmed or not open,
-                not open and L["|cffff6060Locked|r"] or nil)
+                not open and L["hoa.addon.cffff6060locked_r"] or nil)
         end
     end
     list.child:SetHeight(max(1, count * ROW_STEP))
@@ -582,15 +582,15 @@ local function ShowBanner()
     banner.risk = nil
     if mode == "dungeon" and dungeon then
         SetArt(DUNGEON_ART[dungeon.key] or tier.art, false, locked)
-        banner.tag:SetText(Hex(INVADED_COLOR) .. L["Dungeon challenge  ·  every stage inside the dungeon|r"])
+        banner.tag:SetText(Hex(INVADED_COLOR) .. L["hoa.addon.dungeon_challenge_every_stage_inside_the_dungeon_r"])
         banner.name:SetText(dungeon.name)
         banner.description:SetText(Info(dungeon.key).summary or "")
         banner.risk = DUNGEON_REWARD
     elseif mode ~= "zones" and not dungeon then
         SetArt(tier.art, false, true)
         banner.tag:SetText("")
-        banner.name:SetText(mode == "dungeon" and L["Dungeon"] or L["Invasion"])
-        banner.description:SetText(L("Clear {1} to unlock challenges.", tier.name))
+        banner.name:SetText(mode == "dungeon" and L["hoa.addon.dungeon"] or L["hoa.addon.invasion"])
+        banner.description:SetText(L("hoa.addon.clear_1_to_unlock_challenges", tier.name))
     else
         local invader = mode == "invasion" and dungeon or nil
         local info = Info(zone and zone.key)
@@ -600,19 +600,19 @@ local function ShowBanner()
             local art = zone and CONTINENT_ART[info.continent or ""] or tier.art
             SetArt(art ~= "" and art or CONTINENT_ART["0"], invader ~= nil, locked)
         end
-        banner.name:SetText(zone and zone.name or L["Random zone"])
+        banner.name:SetText(zone and zone.name or L["hoa.addon.random_zone"])
         if invader then
-            banner.tag:SetText(Hex(INVADED_COLOR) .. L("Invaded by {1}", invader.name) .. "|r")
+            banner.tag:SetText(Hex(INVADED_COLOR) .. L("hoa.addon.invaded_by_1", invader.name) .. "|r")
             local invaders = Info(invader.key).summary
-            banner.description:SetText(invaders and invaders ~= "" and L("{1} roam the zone.", invaders) or L["Its enemies roam the zone."])
+            banner.description:SetText(invaders and invaders ~= "" and L("hoa.addon.1_roam_the_zone", invaders) or L["hoa.addon.its_enemies_roam_the_zone"])
             banner.risk = INVASION_REWARD
         else
             if zone and zone.reward and zone.reward ~= 100 then
-                banner.tag:SetText("|cff40ff40" .. L("Rewards {1}x Tickets and Mastery", Multiplier(zone.reward)) .. "|r")
+                banner.tag:SetText("|cff40ff40" .. L("hoa.addon.rewards_1_x_tickets_and_mastery", Multiplier(zone.reward)) .. "|r")
             else
                 banner.tag:SetText("")
             end
-            banner.description:SetText(zone and (info.description or "") or L("Stage 1 is a random {1} zone.", tier.name))
+            banner.description:SetText(zone and (info.description or "") or L("hoa.addon.stage_1_is_a_random_1_zone", tier.name))
         end
     end
 end
@@ -641,7 +641,7 @@ local function SetLevel(value, quiet)
 end
 
 local function LevelName(band)
-    return L("{1} {2}", tier.name, band)
+    return L("hoa.addon.1_2", tier.name, band)
 end
 
 local function PickerEntries()
@@ -671,10 +671,10 @@ local function ShowPickerRowTooltip()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
     GameTooltip:SetText(LevelName(this.band), 1, 1, 1)
     if level.cleared == "2" then
-        GameTooltip:AddLine(L("Unlocked by your best clear ({1}).", (tierInfo[tier.id] or {}).carriedFrom or ""), 1, 0.82, 0, 1)
+        GameTooltip:AddLine(L("hoa.addon.unlocked_by_your_best_clear_1", (tierInfo[tier.id] or {}).carriedFrom or ""), 1, 0.82, 0, 1)
     end
-    GameTooltip:AddLine(L["The last stage has a Summoning Stone."], 1, 1, 1, 1)
-    GameTooltip:AddLine(L["All your characters can start any level up to 10 below your best clear."], 0.8, 0.8, 0.8, 1)
+    GameTooltip:AddLine(L["hoa.addon.the_last_stage_has_a_summoning_stone"], 1, 1, 1, 1)
+    GameTooltip:AddLine(L["hoa.addon.all_your_characters_can_start_any_level_up_to_10_below_your_"], 0.8, 0.8, 0.8, 1)
     GameTooltip:Show()
 end
 
@@ -689,12 +689,12 @@ end
 
 local function ShowStoneRule()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:SetText(L["The last stage has a Summoning Stone."], 1, 1, 1, 1)
+    GameTooltip:SetText(L["hoa.addon.the_last_stage_has_a_summoning_stone"], 1, 1, 1, 1)
     local from = CarriedFrom(LevelRow(tier, ChosenLevel()))
     if from then
-        GameTooltip:AddLine(L("Unlocked by your best clear ({1}).", from), 1, 0.82, 0, 1)
+        GameTooltip:AddLine(L("hoa.addon.unlocked_by_your_best_clear_1", from), 1, 0.82, 0, 1)
     end
-    GameTooltip:AddLine(L["All your characters can start any level up to 10 below your best clear."], 0.8, 0.8, 0.8, 1)
+    GameTooltip:AddLine(L["hoa.addon.all_your_characters_can_start_any_level_up_to_10_below_your_"], 0.8, 0.8, 0.8, 1)
     GameTooltip:Show()
 end
 
@@ -724,7 +724,7 @@ local function ShowStoneLine(current)
         preview.stone:Hide()
         return
     end
-    preview.stone.text:SetText(L["The last stage has a Summoning Stone."])
+    preview.stone.text:SetText(L["hoa.addon.the_last_stage_has_a_summoning_stone"])
     preview.stone:Show()
 end
 
@@ -758,11 +758,11 @@ local function FillChoices()
             row.selected:SetVertexColor(color[1], color[2], color[3], 0.35)
             if entry.state == "locked" then
                 row.name:SetTextColor(MUTED[1], MUTED[2], MUTED[3])
-                row.note:SetText(L("Clear {1}", LevelName(entry.band - 1)))
+                row.note:SetText(L("hoa.addon.clear_1", LevelName(entry.band - 1)))
                 row.note:SetTextColor(MUTED[1], MUTED[2], MUTED[3])
             else
                 row.name:SetTextColor(selected and 1 or color[1], selected and 1 or color[2], selected and 1 or color[3])
-                row.note:SetText(entry.state == "next" and L["next"] or entry.state == "carried" and L["open"] or L["cleared"])
+                row.note:SetText(entry.state == "next" and L["hoa.addon.next_2"] or entry.state == "carried" and L["hoa.addon.open_2"] or L["hoa.addon.cleared_2"])
                 if entry.state == "next" then
                     row.note:SetTextColor(1, 0.82, 0)
                 else
@@ -795,7 +795,7 @@ end
 
 local function ShowPicker(current)
     local color = Look(tier).color
-    preview.pickerLabel:SetText(L("{1} level", tier.name))
+    preview.pickerLabel:SetText(L("hoa.addon.1_level", tier.name))
     preview.picker.text:SetText(LevelName(current))
     preview.picker.text:SetTextColor(color[1], color[2], color[3])
     local best = 0
@@ -805,7 +805,7 @@ local function ShowPicker(current)
             best = band
         end
     end
-    preview.picker.best:SetText(best > 0 and L("best {1}", LevelName(best)) or "")
+    preview.picker.best:SetText(best > 0 and L("hoa.addon.best_1", LevelName(best)) or "")
     ShowStoneLine(current)
     if preview.choices:IsShown() then
         FillChoices()
@@ -823,9 +823,9 @@ end
 
 local function GoldText(copper)
     local gold, silver = floor(copper / 10000), floor(mod(copper, 10000) / 100)
-    local text = format(L["|cffc7c7cf%ds|r "], silver)
+    local text = format(L["hoa.addon.cffc7c7cf_ds_r"], silver)
     if gold > 0 then
-        text = format(L["|cffffd700%dg|r "], gold) .. text
+        text = format(L["hoa.addon.cffffd700_dg_r"], gold) .. text
     end
     return text
 end
@@ -840,7 +840,7 @@ end
 local function ShowBest(current)
     local best = preview.best
     local record = (levelBests[tier.id] or {})[current]
-    best.title:SetText(L("Your best on {1}", LevelName(current)))
+    best.title:SetText(L("hoa.addon.your_best_on_1", LevelName(current)))
     best.note:ClearAllPoints()
     if not record then
         for _, line in ipairs(best.lines) do
@@ -849,15 +849,15 @@ local function ShowBest(current)
         end
         best.clears:SetText("")
         best.note:SetPoint("TOPLEFT", best.title, "BOTTOMLEFT", 0, -4)
-        best.note:SetText(L["No clears on this level yet."])
+        best.note:SetText(L["hoa.addon.no_clears_on_this_level_yet"])
         return
     end
     best.note:SetPoint("BOTTOMLEFT", best, "BOTTOMLEFT", 0, 0)
-    best.clears:SetText(record.clears == 1 and L["cleared once"] or L("cleared {1} times", record.clears))
+    best.clears:SetText(record.clears == 1 and L["hoa.addon.cleared_once"] or L("hoa.addon.cleared_1_times", record.clears))
     local values = {
         ByName(UI.FormatTime(floor(record.bestMs / 1000)), record.bestMsBy),
         ByName(UI.Thousands(record.kills), record.killsBy),
-        ByName(L("{1}/s", ShortNumber(record.damage)), record.damageBy),
+        ByName(L("hoa.addon.1_s", ShortNumber(record.damage)), record.damageBy),
         ByName(GoldText(record.gold), record.goldBy),
         ByName(UI.Thousands(record.valor), record.valorBy),
     }
@@ -866,9 +866,9 @@ local function ShowBest(current)
         line.label:Show()
         line.value:Show()
     end
-    local note = L("First cleared {1}.", date("%Y-%m-%d", record.first))
+    local note = L("hoa.addon.first_cleared_1", date("%Y-%m-%d", record.first))
     if record.finale > 0 then
-        note = note .. " " .. L("Best finale: {1} survived, score {2}.", UI.FormatTime(record.finaleSeconds), record.finale)
+        note = note .. " " .. L("hoa.addon.best_finale_1_survived_score_2", UI.FormatTime(record.finaleSeconds), record.finale)
     end
     best.note:SetText(note)
 end
@@ -897,7 +897,7 @@ local function StatValue(row, spec, withLuck)
     end
     local text = format(spec.format, value)
     if withLuck and spec.luck and epicLuck > 0 and (tonumber(value) or 0) > 0 then
-        return text .. " " .. L("(+{1}%)", epicLuck)
+        return text .. " " .. L("hoa.addon.1", epicLuck)
     end
     return text
 end
@@ -945,7 +945,7 @@ local function ShowStats(current)
                 line.label:ClearAllPoints()
                 line.label:SetPoint("TOPLEFT", preview.stats, "TOPLEFT", 0, -y)
                 line.label:SetPoint("TOPRIGHT", preview.stats, "TOPRIGHT", 0, -y)
-                line.label:SetText(L("Bad luck protection adds {1}% until an epic drops.", epicLuck))
+                line.label:SetText(L("hoa.addon.bad_luck_protection_adds_1_until_an_epic_drops", epicLuck))
                 line.label:Show()
                 line.hover:ClearAllPoints()
                 line.hover:SetAllPoints(line.label)
@@ -1014,7 +1014,7 @@ local function ShowPreview()
     state.level[tier.id] = current
     preview.title:SetText(LevelName(current))
     local from = CarriedFrom(LevelRow(tier, current))
-    preview.note:SetText(from and L("Unlocked by your best clear ({1}).", from) or L["Clearing this level opens the next one."])
+    preview.note:SetText(from and L("hoa.addon.unlocked_by_your_best_clear_1", from) or L["hoa.addon.clearing_this_level_opens_the_next_one"])
     local top = PREVIEW_TOP + 40
     preview.stats:ClearAllPoints()
     preview.stats:SetPoint("TOPLEFT", arena, "TOPLEFT", RIGHT_X + 2, -top)
@@ -1043,7 +1043,7 @@ local function BuildHead()
     head.label = UI.Text(content, 11)
     head.label:SetPoint("TOPLEFT", arena, "TOPLEFT", LEFT_X, -38)
     head.label:SetTextColor(1, 0.82, 0)
-    head.label:SetText(L["Difficulty"])
+    head.label:SetText(L["hoa.addon.difficulty"])
     head.name = UI.Text(content, 30, UI.TITLE_FONT)
     head.name:SetPoint("TOPLEFT", arena, "TOPLEFT", MID_X, -34)
     head.description = UI.Text(content, 10)
@@ -1155,7 +1155,7 @@ local function BuildPreview()
     preview.best.clears:SetPoint("TOPRIGHT", preview.best, "TOPRIGHT", 0, 0)
     preview.best.clears:SetTextColor(MUTED[1], MUTED[2], MUTED[3])
     preview.best.lines = {}
-    local labels = { L["Fastest clear"], L["Most kills"], L["Top damage"], L["Gold per minute"], L["Valor per minute"] }
+    local labels = { L["hoa.addon.fastest_clear"], L["hoa.addon.most_kills"], L["hoa.addon.top_damage"], L["hoa.addon.gold_per_minute"], L["hoa.addon.valor_per_minute"] }
     for index, text in ipairs(labels) do
         local y = -(15 + (index - 1) * BEST_LINE)
         local line = {}
@@ -1277,9 +1277,9 @@ local function BuildPreview()
             line.hover = CreateFrame("Button", nil, preview.stats)
             line.hover:SetScript("OnEnter", function()
                 GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-                GameTooltip:AddLine(L["Bad luck protection"], 0.64, 0.21, 0.93)
-                GameTooltip:AddLine(L("Epic drop chance on Mythic levels increased by {1}%.", epicLuck), 1, 1, 1, 1)
-                GameTooltip:AddLine(L["Every Mythic gear drop that isn't an epic adds 5%. It resets when an epic or legendary drops."], 0.8, 0.8, 0.8, 1)
+                GameTooltip:AddLine(L["hoa.addon.bad_luck_protection"], 0.64, 0.21, 0.93)
+                GameTooltip:AddLine(L("hoa.addon.epic_drop_chance_on_mythic_levels_increased_by_1", epicLuck), 1, 1, 1, 1)
+                GameTooltip:AddLine(L["hoa.addon.every_mythic_gear_drop_that_isn_t_an_epic_adds_5_it_resets_w"], 0.8, 0.8, 0.8, 1)
                 GameTooltip:Show()
             end)
             line.hover:SetScript("OnLeave", function()
@@ -1304,9 +1304,9 @@ local function BuildPreview()
                 line.hover:SetHeight(STAT_STEP)
                 line.hover:SetScript("OnEnter", function()
                     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-                    GameTooltip:AddLine(L["Bad luck protection"], 0.64, 0.21, 0.93)
-                    GameTooltip:AddLine(L("Epic drop chance on Mythic levels increased by {1}%.", epicLuck), 1, 1, 1, 1)
-                    GameTooltip:AddLine(L["Every Mythic gear drop that isn't an epic adds 5%. It resets when an epic or legendary drops."], 0.8, 0.8, 0.8, 1)
+                    GameTooltip:AddLine(L["hoa.addon.bad_luck_protection"], 0.64, 0.21, 0.93)
+                    GameTooltip:AddLine(L("hoa.addon.epic_drop_chance_on_mythic_levels_increased_by_1", epicLuck), 1, 1, 1, 1)
+                    GameTooltip:AddLine(L["hoa.addon.every_mythic_gear_drop_that_isn_t_an_epic_adds_5_it_resets_w"], 0.8, 0.8, 0.8, 1)
                     GameTooltip:Show()
                 end)
                 line.hover:SetScript("OnLeave", function()
@@ -1359,23 +1359,23 @@ local function BoardNote()
     for slot = 1, 19 do
         local piece = UI.FoundAt("inv", slot)
         if piece and piece.legacy then
-            return L("This run won't count for the leaderboard because {1} is legacy gear.", WornItemName(slot)), "bad"
+            return L("hoa.addon.this_run_won_t_count_for_the_leaderboard_because_1_is_legacy", WornItemName(slot)), "bad"
         end
     end
     for slot = 1, 19 do
         local piece = UI.FoundAt("inv", slot)
         if piece and piece.tier > level then
-            return L("This run won't count for the leaderboard because {1} is above {2}.", WornItemName(slot), UI.LevelName(level)), "bad"
+            return L("hoa.addon.this_run_won_t_count_for_the_leaderboard_because_1_is_above_", WornItemName(slot), UI.LevelName(level)), "bad"
         end
     end
     if UI.boardClimb and UI.boardClimb > 0 and level > UI.boardClimb + 1 then
-        return L("Above {1}, a level counts for the leaderboard only after you clear the one below it this season. Clear {2} first, or this run won't count.",
+        return L("hoa.addon.above_1_a_level_counts_for_the_leaderboard_only_after_you_cl",
             UI.LevelName(BOARD_FREE_CLIMB_LEVEL), UI.LevelName(UI.boardClimb + 1)), "bad"
     end
     if UI.boardChoice ~= 1 then
-        return L["You haven't joined the leaderboard, so this run won't be listed."], "off"
+        return L["hoa.addon.you_haven_t_joined_the_leaderboard_so_this_run_won_t_be_list"], "off"
     end
-    return L["This run counts for the leaderboard."], "good"
+    return L["hoa.addon.this_run_counts_for_the_leaderboard"], "good"
 end
 
 local BOARD_NOTE_WIDTH = 640
@@ -1463,7 +1463,7 @@ UI.Listen({
         if f[2] then
             levelInfo[f[2]] = {}
             levelBests[f[2]] = {}
-            tierInfo[f[2]] = { aim = f[3] or "", boss = f[4] or "", charge = (f[5] and f[5] ~= "") and L("every {1} sec", f[5]) or "",
+            tierInfo[f[2]] = { aim = f[3] or "", boss = f[4] or "", charge = (f[5] and f[5] ~= "") and L("hoa.addon.every_1_sec", f[5]) or "",
                 crowd = f[6] or "", carriedFrom = f[7] or "" }
         end
     end,

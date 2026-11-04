@@ -98,6 +98,10 @@ def main() -> int:
         values = {unescape(value) for value in L_INDEX.findall(text)}
         values.update(unescape(value) for value in L_CALL.findall(text))
         for value in sorted(values):
+            if value.startswith("hoa."):
+                if value not in packs["enUS"]["messages"]:
+                    errors.append(f"{path.name}: L id {value!r} is not in the pack")
+                continue
             if value not in aliases:
                 errors.append(f"{path.name}: L key {value!r} has no language-pack alias")
 

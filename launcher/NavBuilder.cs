@@ -85,7 +85,7 @@ namespace HordesOfAzeroth.Launcher
                 foreach (ZipArchiveEntry entry in archive.Entries)
                 {
                     if (entry.FullName != Path.GetFileName(entry.FullName))
-                        throw new InvalidDataException(Loc.T("{0} contains a file outside the monster path folder.", Path.GetFileName(zip)));
+                        throw new InvalidDataException(Loc.T("hoa.launcher.0_contains_a_file_outside_the_monster_path_folder", Path.GetFileName(zip)));
                     entry.ExtractToFile(Path.Combine(MmapsDir, entry.FullName), true);
                 }
             foreach (string map in group.WholeMaps)
@@ -175,7 +175,7 @@ namespace HordesOfAzeroth.Launcher
                         await Task.Delay(200);
                 cancel.ThrowIfCancellationRequested();
                 if (process.ExitCode != 0)
-                    throw new InvalidOperationException(Loc.T("Building monster paths failed (MoveMapGenerator {0}, code {1}).", string.Join(" ", arguments), process.ExitCode));
+                    throw new InvalidOperationException(Loc.T("hoa.launcher.building_monster_paths_failed_movemapgenerator_0_code_1", string.Join(" ", arguments), process.ExitCode));
             }
         }
 

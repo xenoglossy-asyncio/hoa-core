@@ -1,15 +1,15 @@
 local L = BonkGlueL;
 
 BONK_CLASSES = {
-	{ token = "WARRIOR", id = 1, name = "Warrior", display = L["Warrior"], races = { "HUMAN", "DWARF", "NIGHTELF", "GNOME", "ORC", "SCOURGE", "TAUREN", "TROLL" } },
-	{ token = "PALADIN", id = 2, name = "Paladin", display = L["Paladin"], races = { "HUMAN", "DWARF" } },
-	{ token = "HUNTER",  id = 3, name = "Hunter", display = L["Hunter"],  races = { "DWARF", "NIGHTELF", "ORC", "TAUREN", "TROLL" } },
-	{ token = "ROGUE",   id = 4, name = "Rogue", display = L["Rogue"],   races = { "HUMAN", "DWARF", "NIGHTELF", "GNOME", "ORC", "SCOURGE", "TROLL" } },
-	{ token = "PRIEST",  id = 5, name = "Priest", display = L["Priest"],  races = { "HUMAN", "DWARF", "NIGHTELF", "SCOURGE", "TROLL" } },
-	{ token = "SHAMAN",  id = 7, name = "Shaman", display = L["Shaman"],  races = { "ORC", "TAUREN", "TROLL" } },
-	{ token = "MAGE",    id = 8, name = "Mage", display = L["Mage"],    races = { "HUMAN", "GNOME", "SCOURGE", "TROLL" } },
-	{ token = "WARLOCK", id = 9, name = "Warlock", display = L["Warlock"], races = { "HUMAN", "GNOME", "ORC", "SCOURGE" } },
-	{ token = "DRUID",   id = 11, name = "Druid", display = L["Druid"],   races = { "NIGHTELF", "TAUREN" } },
+	{ token = "WARRIOR", id = 1, name = "Warrior", display = L["hoa.ui.glue.warrior"], races = { "HUMAN", "DWARF", "NIGHTELF", "GNOME", "ORC", "SCOURGE", "TAUREN", "TROLL" } },
+	{ token = "PALADIN", id = 2, name = "Paladin", display = L["hoa.ui.glue.paladin"], races = { "HUMAN", "DWARF" } },
+	{ token = "HUNTER",  id = 3, name = "Hunter", display = L["hoa.ui.glue.hunter"],  races = { "DWARF", "NIGHTELF", "ORC", "TAUREN", "TROLL" } },
+	{ token = "ROGUE",   id = 4, name = "Rogue", display = L["hoa.ui.glue.rogue"],   races = { "HUMAN", "DWARF", "NIGHTELF", "GNOME", "ORC", "SCOURGE", "TROLL" } },
+	{ token = "PRIEST",  id = 5, name = "Priest", display = L["hoa.ui.glue.priest"],  races = { "HUMAN", "DWARF", "NIGHTELF", "SCOURGE", "TROLL" } },
+	{ token = "SHAMAN",  id = 7, name = "Shaman", display = L["hoa.ui.glue.shaman"],  races = { "ORC", "TAUREN", "TROLL" } },
+	{ token = "MAGE",    id = 8, name = "Mage", display = L["hoa.ui.glue.mage"],    races = { "HUMAN", "GNOME", "SCOURGE", "TROLL" } },
+	{ token = "WARLOCK", id = 9, name = "Warlock", display = L["hoa.ui.glue.warlock"], races = { "HUMAN", "GNOME", "ORC", "SCOURGE" } },
+	{ token = "DRUID",   id = 11, name = "Druid", display = L["hoa.ui.glue.druid"],   races = { "NIGHTELF", "TAUREN" } },
 };
 
 BONK_RACE_NAMES = {
@@ -18,8 +18,8 @@ BONK_RACE_NAMES = {
 };
 
 BONK_RACE_DISPLAY_NAMES = {
-	HUMAN = L["Human"], DWARF = L["Dwarf"], NIGHTELF = L["Night Elf"], GNOME = L["Gnome"],
-	ORC = L["Orc"], SCOURGE = L["Undead"], TAUREN = L["Tauren"], TROLL = L["Troll"],
+	HUMAN = L["hoa.ui.glue.human"], DWARF = L["hoa.ui.glue.dwarf"], NIGHTELF = L["hoa.ui.glue.night_elf"], GNOME = L["hoa.ui.glue.gnome"],
+	ORC = L["hoa.ui.glue.orc"], SCOURGE = L["hoa.ui.glue.undead"], TAUREN = L["hoa.ui.glue.tauren"], TROLL = L["hoa.ui.glue.troll"],
 };
 
 BONK_CLASS_COLORS = {
@@ -36,7 +36,7 @@ for _, class in BONK_CLASSES do
 	BONK_CLASS_TOKENS[class.token] = class.token;
 end
 
-BONK_IRONMAN_TIP = L["This character does not share gold or unlocks with other characters."];
+BONK_IRONMAN_TIP = L["hoa.ui.glue.this_character_does_not_share_gold_or_unlocks_with_other_cha"];
 
 local NUM_STAT_ROWS = 9;
 local NUM_SPELL_ROWS = 7;
@@ -52,33 +52,33 @@ local STARTER_NAME_HEIGHT = 14;
 local STARTER_LINE_HEIGHT = 12;
 
 local XML_TEXTS = {
-	BonkLoginTitle = L["Hordes of Azeroth"],
-	BonkLoginConnectButton = L["Connect"],
-	BonkLoginQuitButton = L["Quit"],
-	BonkHeroTitle = L["HORDES OF AZEROTH"],
-	BonkHeroSubtitle = L["Choose your character"],
-	BonkRaceNote = L["Cosmetic only, no racial bonuses"],
-	BonkHeroRandomizeButton = L["Randomize"],
-	BonkHeroIronmanText = L["Ironman Mode"],
-	BonkClassRacesLabel = L["Races"],
-	BonkClassStarterLabel = L["Starts with"],
-	BonkSpecNote = L["Preview only. You choose your specialization later."],
-	BonkHeroRetireButton = L["Delete Character"],
-	BonkHeroNameLabel = L["Name"],
-	BonkHeroQuitButton = L["Quit"],
-	BonkHeroWipeButton = L["Wipe Account"],
-	BonkHeroBackButton = L["Back"],
+	BonkLoginTitle = L["hoa.ui.glue.hordes_of_azeroth_2"],
+	BonkLoginConnectButton = L["hoa.ui.glue.connect"],
+	BonkLoginQuitButton = L["hoa.ui.glue.quit"],
+	BonkHeroTitle = L["hoa.ui.glue.hordes_of_azeroth"],
+	BonkHeroSubtitle = L["hoa.ui.glue.choose_your_character"],
+	BonkRaceNote = L["hoa.ui.glue.cosmetic_only_no_racial_bonuses"],
+	BonkHeroRandomizeButton = L["hoa.ui.glue.randomize"],
+	BonkHeroIronmanText = L["hoa.ui.glue.ironman_mode"],
+	BonkClassRacesLabel = L["hoa.ui.glue.races"],
+	BonkClassStarterLabel = L["hoa.ui.glue.starts_with"],
+	BonkSpecNote = L["hoa.ui.glue.preview_only_you_choose_your_specialization_later"],
+	BonkHeroRetireButton = L["hoa.ui.glue.delete_character"],
+	BonkHeroNameLabel = L["hoa.ui.glue.name"],
+	BonkHeroQuitButton = L["hoa.ui.glue.quit"],
+	BonkHeroWipeButton = L["hoa.ui.glue.wipe_account"],
+	BonkHeroBackButton = L["hoa.ui.glue.back"],
 };
 
-local CUSTOMIZE_LABELS = { L["Skin Color"], L["Face"], L["Hair Style"], L["Hair Color"], L["Facial Hair"] };
+local CUSTOMIZE_LABELS = { L["hoa.ui.glue.skin_color"], L["hoa.ui.glue.face"], L["hoa.ui.glue.hair_style"], L["hoa.ui.glue.hair_color"], L["hoa.ui.glue.facial_hair"] };
 
-local HAIR_STYLE_LABELS = { NORMAL = L["Hair Style"], HORNS = L["Horn Style"] };
+local HAIR_STYLE_LABELS = { NORMAL = L["hoa.ui.glue.hair_style"], HORNS = L["hoa.ui.glue.horn_style"] };
 
-local HAIR_COLOR_LABELS = { NORMAL = L["Hair Color"], HORNS = L["Horn Color"] };
+local HAIR_COLOR_LABELS = { NORMAL = L["hoa.ui.glue.hair_color"], HORNS = L["hoa.ui.glue.horn_color"] };
 
 local FACIAL_HAIR_LABELS = {
-	EARRINGS = L["Earrings"], FEATURES = L["facial feature::Features"], HAIR = L["Hair"], MARKINGS = L["Markings"],
-	NORMAL = L["Facial Hair"], PIERCINGS = L["Piercings"], TUSKS = L["Tusks"],
+	EARRINGS = L["hoa.ui.glue.earrings"], FEATURES = L["hoa.ui.glue.facial_feature_features"], HAIR = L["hoa.ui.glue.hair"], MARKINGS = L["hoa.ui.glue.markings"],
+	NORMAL = L["hoa.ui.glue.facial_hair"], PIERCINGS = L["hoa.ui.glue.piercings"], TUSKS = L["hoa.ui.glue.tusks"],
 };
 
 local function Flag(condition)
@@ -122,11 +122,11 @@ function BonkLogin_Connect()
 		gate, coopAccount, coopPassword = HoaCoop_GetGate();
 	end
 	if ( gate ) then
-		BonkLoginStatus:SetText(L["Connecting to host..."]);
+		BonkLoginStatus:SetText(L["hoa.ui.glue.connecting_to_host"]);
 		DefaultServerLogin(coopAccount, coopPassword);
 		return;
 	end
-	BonkLoginStatus:SetText(L["Connecting..."]);
+	BonkLoginStatus:SetText(L["hoa.ui.glue.connecting"]);
 	DefaultServerLogin(BONK_ACCOUNT, BONK_PASSWORD);
 end
 
@@ -280,7 +280,7 @@ function GlueDialog_OnEvent()
 	end
 	local wipeRefused = Bonk.wiping and failed and Bonk.wiping.step == "create";
 	if ( Bonk.wiping and failed ) then
-		BonkHero_StopWipe(L["The account was not wiped."]);
+		BonkHero_StopWipe(L["hoa.ui.glue.the_account_was_not_wiped"]);
 	end
 	OriginalGlueDialogOnEvent();
 
@@ -290,25 +290,25 @@ function GlueDialog_OnEvent()
 	local accountGone = shown and (shown == LOGIN_UNKNOWN_ACCOUNT or shown == LOGIN_INCORRECT_PASSWORD or shown == LOGIN_NO_GAME_ACCOUNT);
 	if ( accountGone and BonkCoop_IsJoined() and not BonkCoop.leaving ) then
 		GlueDialog:Hide();
-		BonkCoop_RefusedAtLogin(L["Your spot in the host's game is no longer available. Returning to your own game..."]);
+		BonkCoop_RefusedAtLogin(L["hoa.ui.glue.your_spot_in_the_host_s_game_is_no_longer_available_returnin"]);
 	elseif ( noServer and BonkCoop_IsJoined() and not BonkCoop.leaving ) then
 		BonkCoop_LostHost();
 	elseif ( noServer and not Bonk.reachedServer ) then
-		GlueDialogText:SetText(L["The Hordes of Azeroth server isn't running. Close the game and start it with HoALauncher.exe in your World of Warcraft folder."]);
+		GlueDialogText:SetText(L["hoa.ui.glue.the_hordes_of_azeroth_server_isn_t_running_close_the_game_an"]);
 		GlueDialogBackground:SetHeight(32 + GlueDialogText:GetHeight() + 8 + GlueDialogButton1:GetHeight() + 16);
 		BonkLoginStatus:SetText("");
 	elseif ( noServer ) then
-		GlueDialogText:SetText(L["The Hordes of Azeroth server stopped. Restart the game with HoALauncher.exe. If this keeps happening, click Report a bug in the launcher."]);
+		GlueDialogText:SetText(L["hoa.ui.glue.the_hordes_of_azeroth_server_stopped_restart_the_game_with_h"]);
 		GlueDialogBackground:SetHeight(32 + GlueDialogText:GetHeight() + 8 + GlueDialogButton1:GetHeight() + 16);
 		BonkLoginStatus:SetText("");
 	elseif ( BonkCoop_IsJoined() and BonkCoop_RefusalNote(shown) ) then
 		GlueDialog:Hide();
 		BonkCoop_RefusedAtLogin(BonkCoop_RefusalNote(shown));
 	elseif ( shown == CHAR_LOGIN_LOCKED_FOR_TRANSFER ) then
-		GlueDialogText:SetText(L["This character is in a co-op party. Leave the party first."]);
+		GlueDialogText:SetText(L["hoa.ui.glue.this_character_is_in_a_co_op_party_leave_the_party_first"]);
 		GlueDialogBackground:SetHeight(32 + GlueDialogText:GetHeight() + 8 + GlueDialogButton1:GetHeight() + 16);
 	elseif ( wipeRefused ) then
-		GlueDialogText:SetText(L["The account was not wiped because a character couldn't be deleted. Try again."]);
+		GlueDialogText:SetText(L["hoa.ui.glue.the_account_was_not_wiped_because_a_character_couldn_t_be_de"]);
 		GlueDialogBackground:SetHeight(32 + GlueDialogText:GetHeight() + 8 + GlueDialogButton1:GetHeight() + 16);
 	elseif ( Bonk.wiping and success and event == "UPDATE_STATUS_DIALOG" and arg2 ) then
 		GlueDialog:Hide();
@@ -324,14 +324,14 @@ function GlueDialog_OnClick(index)
 		BonkHero_SetStatus("");
 	end
 	if ( Bonk.wiping and which ~= "BONK_WIPE" ) then
-		BonkHero_StopWipe(L["Wipe stopped. Some characters may already be gone."]);
+		BonkHero_StopWipe(L["hoa.ui.glue.wipe_stopped_some_characters_may_already_be_gone"]);
 	end
 end
 
 GlueDialogTypes["BONK_QUIT"] = {
-	text = L["Quit Hordes of Azeroth?"],
-	button1 = L["Yes"],
-	button2 = L["No"],
+	text = L["hoa.ui.glue.quit_hordes_of_azeroth"],
+	button1 = L["hoa.ui.glue.yes"],
+	button2 = L["hoa.ui.glue.no"],
 	OnAccept = function()
 		QuitGame();
 	end,
@@ -341,8 +341,8 @@ GlueDialogTypes["BONK_QUIT"] = {
 
 GlueDialogTypes["BONK_RETIRE"] = {
 	text = "",
-	button1 = L["Yes"],
-	button2 = L["No"],
+	button1 = L["hoa.ui.glue.yes"],
+	button2 = L["hoa.ui.glue.no"],
 	showAlert = 1,
 	OnAccept = function()
 		DeleteCharacter(GlueDialog.data);
@@ -352,9 +352,9 @@ GlueDialogTypes["BONK_RETIRE"] = {
 };
 
 GlueDialogTypes["BONK_WIPE"] = {
-	text = L["Are you sure? This deletes all your characters and all account progress: gold, Darkmoon Tickets, upgrades, Sayge's Fortunes, quests and Mastery. It cannot be undone."],
-	button1 = L["Yes"],
-	button2 = L["No"],
+	text = L["hoa.ui.glue.are_you_sure_this_deletes_all_your_characters_and_all_accoun"],
+	button1 = L["hoa.ui.glue.yes"],
+	button2 = L["hoa.ui.glue.no"],
 	showAlert = 1,
 	OnAccept = function()
 		BonkHero_StartWipe();
@@ -367,12 +367,12 @@ local function FormatGold(copper)
 	copper = copper or 0;
 	local gold = floor(copper / 10000);
 	local silver = floor(mod(copper, 10000) / 100);
-	local text = format("|cffeda55f%s|r", L("copper coin::{1}c", format("%d", mod(copper, 100))));
+	local text = format("|cffeda55f%s|r", L("hoa.ui.glue.copper_coin_1_c", format("%d", mod(copper, 100))));
 	if ( gold > 0 or silver > 0 ) then
-		text = format("|cffc7c7cf%s|r ", L("silver coin::{1}s", format("%d", silver)))..text;
+		text = format("|cffc7c7cf%s|r ", L("hoa.ui.glue.silver_coin_1_s", format("%d", silver)))..text;
 	end
 	if ( gold > 0 ) then
-		text = format("|cffffd700%s|r ", L("gold coin::{1}g", format("%d", gold)))..text;
+		text = format("|cffffd700%s|r ", L("hoa.ui.glue.gold_coin_1_g", format("%d", gold)))..text;
 	end
 	return text;
 end
@@ -420,9 +420,9 @@ end
 
 local function SexName(sex)
 	if ( sex == 2 ) then
-		return L["Female"];
+		return L["hoa.ui.glue.female"];
 	end
-	return L["Male"];
+	return L["hoa.ui.glue.male"];
 end
 
 local function SetClassColor(fontString, token)
@@ -476,13 +476,13 @@ function BonkHero_OnLoad()
 
 	BonkHeroGenderButton1Icon:SetTexCoord(0, 0.5, 0, 1.0);
 	BonkHeroGenderButton2Icon:SetTexCoord(0.5, 1.0, 0, 1.0);
-	BonkHeroGenderButton1Label:SetText(L["Male"]);
-	BonkHeroGenderButton2Label:SetText(L["Female"]);
-	BonkRaceBoxCaption:SetText(L["Race"]);
-	BonkGenderBoxCaption:SetText(L["Gender"]);
-	BonkFeatureBoxCaption:SetText(L["Features"]);
-	BonkListPanelTitle:SetText(L["Characters"]);
-	BonkAppearPanelTitle:SetText(L["Appearance"]);
+	BonkHeroGenderButton1Label:SetText(L["hoa.ui.glue.male"]);
+	BonkHeroGenderButton2Label:SetText(L["hoa.ui.glue.female"]);
+	BonkRaceBoxCaption:SetText(L["hoa.ui.glue.race"]);
+	BonkGenderBoxCaption:SetText(L["hoa.ui.glue.gender"]);
+	BonkFeatureBoxCaption:SetText(L["hoa.ui.glue.features"]);
+	BonkListPanelTitle:SetText(L["hoa.ui.glue.characters"]);
+	BonkAppearPanelTitle:SetText(L["hoa.ui.glue.appearance"]);
 
 	for name, text in XML_TEXTS do
 		getglobal(name):SetText(text);
@@ -492,7 +492,7 @@ function BonkHero_OnLoad()
 end
 
 function BonkHero_UpdateCount()
-	BonkListCount:SetText(L("{1} of {2} classes created", HeroCount(), PlayableCount()));
+	BonkListCount:SetText(L("hoa.ui.glue.1_of_2_classes_created", HeroCount(), PlayableCount()));
 end
 
 function BonkHero_ToggleIronman()
@@ -509,7 +509,7 @@ function BonkHero_CustomizeLabel(id)
 end
 
 function BonkHero_ShowIronmanTip(owner)
-	BonkHero_ShowTip(owner, L["Ironman Mode"], BONK_IRONMAN_TIP);
+	BonkHero_ShowTip(owner, L["hoa.ui.glue.ironman_mode"], BONK_IRONMAN_TIP);
 end
 
 function BonkHero_ShowTip(owner, title, text)
@@ -571,7 +571,7 @@ function BonkHero_ReadHeroes()
 	end
 	Bonk.unknownHero = unknown;
 	if ( unknown and Bonk.classNamesLearned ) then
-		BonkHero_SetStatus(L("Could not read the class of {1}.", unknown));
+		BonkHero_SetStatus(L("hoa.ui.glue.could_not_read_the_class_of_1", unknown));
 	end
 end
 
@@ -725,19 +725,19 @@ function BonkHero_UpdateRoster()
 			icon:SetVertexColor(1.0, 1.0, 1.0);
 			name:SetText(hero.name);
 			name:SetTextColor(1.0, 0.82, 0);
-			sub:SetText(L("Mastery {1} {2} {3}", format("%d", stats.mastery or 0), BONK_RACE_DISPLAY_NAMES[hero.race] or "", class.display));
+			sub:SetText(L("hoa.ui.glue.mastery_1_2_3", format("%d", stats.mastery or 0), BONK_RACE_DISPLAY_NAMES[hero.race] or "", class.display));
 			sub:SetTextColor(1.0, 1.0, 1.0);
 		elseif ( class.locked ) then
 			icon:SetVertexColor(0.25, 0.25, 0.25);
 			name:SetText(class.display);
 			name:SetTextColor(0.4, 0.4, 0.4);
-			sub:SetText(L["Locked"]);
+			sub:SetText(L["hoa.ui.glue.locked"]);
 			sub:SetTextColor(0.4, 0.4, 0.4);
 		else
 			icon:SetVertexColor(0.4, 0.4, 0.4);
 			name:SetText(class.display);
 			name:SetTextColor(0.55, 0.55, 0.55);
-			sub:SetText(L("Create a {1}", class.display));
+			sub:SetText(L("hoa.ui.glue.create_a_1", class.display));
 			sub:SetTextColor(0.5, 0.5, 0.5);
 		end
 	end
@@ -746,11 +746,11 @@ end
 function BonkHero_UpdateControls()
 	local hero = CurrentHero();
 	if ( hero ) then
-		BonkHeroPlayButton:SetText(L["Play"]);
+		BonkHeroPlayButton:SetText(L["hoa.ui.glue.play"]);
 	elseif ( Bonk.customizing ) then
-		BonkHeroPlayButton:SetText(L["Create"]);
+		BonkHeroPlayButton:SetText(L["hoa.ui.glue.create"]);
 	else
-		BonkHeroPlayButton:SetText(L("Create {1}", CurrentClass().display));
+		BonkHeroPlayButton:SetText(L("hoa.ui.glue.create_1", CurrentClass().display));
 	end
 
 	if ( Bonk.customizing ) then
@@ -760,7 +760,7 @@ function BonkHero_UpdateControls()
 		BonkHeroQuitButton:Hide();
 		BonkHeroWipeButton:Hide();
 		BonkHeroBackButton:Show();
-		BonkHeroSubtitle:SetText(L("Create your {1}", CurrentClass().display));
+		BonkHeroSubtitle:SetText(L("hoa.ui.glue.create_your_1", CurrentClass().display));
 		BonkHeroPreview:SetText("");
 	else
 		BonkAppearPanel:Hide();
@@ -770,11 +770,11 @@ function BonkHero_UpdateControls()
 		BonkHeroBackButton:Hide();
 		BonkHeroQuitButton:Show();
 		BonkHeroWipeButton:Show();
-		BonkHeroSubtitle:SetText(L["Choose your character"]);
+		BonkHeroSubtitle:SetText(L["hoa.ui.glue.choose_your_character"]);
 		if ( hero ) then
 			BonkHeroPreview:SetText("");
 		else
-			BonkHeroPreview:SetText(L("Preview: {1}", BONK_RACE_DISPLAY_NAMES[NewHeroRace()]));
+			BonkHeroPreview:SetText(L("hoa.ui.glue.preview_1", BONK_RACE_DISPLAY_NAMES[NewHeroRace()]));
 		end
 	end
 end
@@ -862,7 +862,7 @@ function BonkHero_UpdateClassInfo(class, sex)
 	for _, spell in ipairs(info.shared) do
 		if ( rows < NUM_SPELL_ROWS ) then
 			rows = rows + 1;
-			ShowSpellRow(getglobal("BonkSpellRow"..rows), spell, L["every spec"]);
+			ShowSpellRow(getglobal("BonkSpellRow"..rows), spell, L["hoa.ui.glue.every_spec"]);
 		end
 	end
 	for index = rows + 1, NUM_SPELL_ROWS do
@@ -876,15 +876,15 @@ function BonkHero_UpdateInfo()
 	SetTexCoords(BonkInfoIcon, CLASS_ICON_TCOORDS[class.token]);
 
 	if ( hero ) then
-		BonkInfoPanelTitle:SetText(L["Stats"]);
+		BonkInfoPanelTitle:SetText(L["hoa.ui.glue.stats"]);
 		BonkHeroName:SetText(hero.name);
 		SetClassColor(BonkHeroName, class.token);
 		local stats = HeroStats(hero) or {};
 		local detail;
 		if ( stats.ironman ) then
-			detail = L("Mastery {1} {2} {3} (Ironman)", format("%d", stats.mastery or 0), BONK_RACE_DISPLAY_NAMES[hero.race] or "", class.display);
+			detail = L("hoa.ui.glue.mastery_1_2_3_ironman", format("%d", stats.mastery or 0), BONK_RACE_DISPLAY_NAMES[hero.race] or "", class.display);
 		else
-			detail = L("Mastery {1} {2} {3}", format("%d", stats.mastery or 0), BONK_RACE_DISPLAY_NAMES[hero.race] or "", class.display);
+			detail = L("hoa.ui.glue.mastery_1_2_3", format("%d", stats.mastery or 0), BONK_RACE_DISPLAY_NAMES[hero.race] or "", class.display);
 		end
 		BonkHeroDetail:SetText(detail);
 		BonkHeroRetireButton:Show();
@@ -897,13 +897,13 @@ function BonkHero_UpdateInfo()
 	if ( Bonk.raceIndex > getn(class.races) ) then
 		Bonk.raceIndex = 1;
 	end
-	BonkInfoPanelTitle:SetText(L["Class"]);
+	BonkInfoPanelTitle:SetText(L["hoa.ui.glue.class"]);
 	BonkHeroName:SetText(class.display);
 	SetClassColor(BonkHeroName, class.token);
 	if ( Bonk.customizing ) then
 		BonkHeroDetail:SetText(BONK_RACE_DISPLAY_NAMES[NewHeroRace()].." - "..SexName(Bonk.sex));
 	else
-		BonkHeroDetail:SetText(L["|cff808080Not created yet|r"]);
+		BonkHeroDetail:SetText(L["hoa.ui.glue.cff808080not_created_yet_r"]);
 	end
 	BonkHeroRetireButton:Hide();
 	BonkHeroRecordFrame:Hide();
@@ -948,11 +948,11 @@ function BonkLevelName(level)
 	if ( level <= 0 ) then
 		return "-";
 	elseif ( level <= 4 ) then
-		return L("level name::{1} {2}", L["Normal"], level);
+		return L("hoa.ui.glue.level_name_1_2", L["hoa.ui.glue.normal"], level);
 	elseif ( level <= 9 ) then
-		return L("level name::{1} {2}", L["Heroic"], level - 4);
+		return L("hoa.ui.glue.level_name_1_2", L["hoa.ui.glue.heroic"], level - 4);
 	end
-	return L("level name::{1} {2}", L["Mythic"], level - 9);
+	return L("hoa.ui.glue.level_name_1_2", L["hoa.ui.glue.mythic"], level - 9);
 end
 
 local function FormatPlayed(seconds)
@@ -962,9 +962,9 @@ local function FormatPlayed(seconds)
 	local hours = floor(seconds / 3600);
 	local minutes = floor(mod(seconds, 3600) / 60);
 	if ( hours > 0 ) then
-		return L("hours and minutes::{1}h {2}m", hours, minutes);
+		return L("hoa.ui.glue.hours_and_minutes_1_h_2_m", hours, minutes);
 	end
-	return L("minutes::{1}m", minutes);
+	return L("hoa.ui.glue.minutes_1_m", minutes);
 end
 
 local function SetStatRow(index, label, value)
@@ -976,29 +976,29 @@ function BonkHero_UpdateRecord(hero)
 	local stats = HeroStats(hero) or {};
 	local runs = stats.runs or 0;
 
-	SetStatRow(1, L["Runs"], runs);
-	SetStatRow(2, L["Time played"], FormatPlayed(stats.played));
-	SetStatRow(3, L["Best level"], BonkLevelName(stats.bestLevel));
-	SetStatRow(4, L["Longest run"], stats.bestTime and FormatTime(stats.bestTime) or "-");
-	SetStatRow(5, L["Enemies slain"], stats.kills or 0);
-	SetStatRow(6, L["Gold earned"], FormatGold(stats.goldEarned));
+	SetStatRow(1, L["hoa.ui.glue.runs"], runs);
+	SetStatRow(2, L["hoa.ui.glue.time_played"], FormatPlayed(stats.played));
+	SetStatRow(3, L["hoa.ui.glue.best_level"], BonkLevelName(stats.bestLevel));
+	SetStatRow(4, L["hoa.ui.glue.longest_run"], stats.bestTime and FormatTime(stats.bestTime) or "-");
+	SetStatRow(5, L["hoa.ui.glue.enemies_slain"], stats.kills or 0);
+	SetStatRow(6, L["hoa.ui.glue.gold_earned"], FormatGold(stats.goldEarned));
 	if ( stats.items and stats.items > 0 ) then
-		SetStatRow(7, L["Gear"], L("{1} items, item level {2}", stats.items, stats.itemLevel or 0));
+		SetStatRow(7, L["hoa.ui.glue.gear"], L("hoa.ui.glue.1_items_item_level_2", stats.items, stats.itemLevel or 0));
 	else
-		SetStatRow(7, L["Gear"], "-");
+		SetStatRow(7, L["hoa.ui.glue.gear"], "-");
 	end
-	SetStatRow(8, L["Gear value"], FormatGold(stats.gearValue));
+	SetStatRow(8, L["hoa.ui.glue.gear_value"], FormatGold(stats.gearValue));
 	if ( stats.ironman ) then
-		SetStatRow(9, L["Gold"], FormatGold(stats.gold));
+		SetStatRow(9, L["hoa.ui.glue.gold"], FormatGold(stats.gold));
 		BonkHeroStat9:Show();
 	else
 		BonkHeroStat9:Hide();
 	end
 
 	if ( not HeroStats(hero) ) then
-		BonkHeroRecordNote:SetText(L("These stats update when {1} logs out.", hero.name));
+		BonkHeroRecordNote:SetText(L("hoa.ui.glue.these_stats_update_when_1_logs_out", hero.name));
 	elseif ( runs == 0 ) then
-		BonkHeroRecordNote:SetText(L("{1} has not done a run yet.", hero.name));
+		BonkHeroRecordNote:SetText(L("hoa.ui.glue.1_has_not_done_a_run_yet", hero.name));
 	else
 		BonkHeroRecordNote:SetText("");
 	end
@@ -1079,7 +1079,7 @@ function BonkHero_SelectClass(index)
 	local class = BONK_CLASSES[index];
 	if ( not IsSelectable(class) ) then
 		PlaySound("igMainMenuOptionCheckBoxOff");
-		BonkHero_SetStatus(L("The {1} is not available yet.", class.display));
+		BonkHero_SetStatus(L("hoa.ui.glue.the_1_is_not_available_yet", class.display));
 		BonkHero_UpdateRoster();
 		return;
 	end
@@ -1134,7 +1134,7 @@ function BonkHero_CreateCharacter()
 end
 
 function BonkHero_EnterWorld(hero)
-	BonkHero_SetStatus(L["Entering the world..."]);
+	BonkHero_SetStatus(L["hoa.ui.glue.entering_the_world"]);
 	CharacterSelect_SelectCharacter(hero.index, 1);
 	PlaySound("gsCharacterSelectionEnterWorld");
 	EnterWorld();
@@ -1178,14 +1178,14 @@ function BonkHero_Play()
 		return;
 	end
 	if ( BonkHeroNameEdit:GetText() == "" ) then
-		BonkHero_SetStatus(L["Enter a name for your character"]);
+		BonkHero_SetStatus(L["hoa.ui.glue.enter_a_name_for_your_character"]);
 		BonkHeroNameEdit:SetFocus();
 		return;
 	end
 
 	BonkHeroNameEdit:ClearFocus();
 	Bonk.creating = { class = CurrentClass().token };
-	BonkHero_SetStatus(L["Creating your character..."]);
+	BonkHero_SetStatus(L["hoa.ui.glue.creating_your_character"]);
 	if ( Bonk.ironman ) then
 		Bonk.creating.ironmanSent = true;
 		CreateCharacter(IRONMAN_NAME);
@@ -1200,7 +1200,7 @@ function BonkHero_Retire()
 		return;
 	end
 	PlaySound("gsCharacterSelectionDelCharacter");
-	GlueDialog_Show("BONK_RETIRE", L("Delete {1}, your {2}?\nThis permanently deletes the character and their gear. Your gold stays on the account.", hero.name, CurrentClass().display), hero.index);
+	GlueDialog_Show("BONK_RETIRE", L("hoa.ui.glue.delete_1_your_2_this_permanently_deletes_the_character_and_t", hero.name, CurrentClass().display), hero.index);
 end
 
 BONK_WIPE_GAP = 0.3;
@@ -1220,7 +1220,7 @@ function BonkHero_StartWipe()
 	Bonk.wiping = { step = "delete", wait = 0 };
 	Bonk.customizing = nil;
 	BonkHeroNameEdit:ClearFocus();
-	BonkHero_SetStatus(L["Wiping the account..."]);
+	BonkHero_SetStatus(L["hoa.ui.glue.wiping_the_account"]);
 end
 
 function BonkHero_StopWipe(text)
@@ -1239,7 +1239,7 @@ function BonkHero_FinishWipe()
 	Bonk.specIndex = 1;
 	BonkHeroNameEdit:SetText("");
 	BonkHero_Refresh();
-	BonkHero_SetStatus(L["|cff20ff20Account wiped.|r Every character and all progress are gone."]);
+	BonkHero_SetStatus(L["hoa.ui.glue.cff20ff20account_wiped_r_every_character_and_all_progress_ar"]);
 end
 
 function BonkHero_UpdateWipe(elapsed)
@@ -1250,7 +1250,7 @@ function BonkHero_UpdateWipe(elapsed)
 			wipe.askedAgain = true;
 			GetCharacterListUpdate();
 		elseif ( wipe.sentFor > WIPE_TIMEOUT ) then
-			BonkHero_StopWipe(L["The server didn't answer, so the account was not wiped."]);
+			BonkHero_StopWipe(L["hoa.ui.glue.the_server_didn_t_answer_so_the_account_was_not_wiped"]);
 		end
 		return;
 	end
@@ -1262,9 +1262,9 @@ function BonkHero_UpdateWipe(elapsed)
 	local count = GetNumCharacters();
 	if ( count > 0 ) then
 		if ( count == 1 ) then
-			BonkHero_SetStatus(L["Wiping the account... 1 character left"]);
+			BonkHero_SetStatus(L["hoa.ui.glue.wiping_the_account_1_character_left"]);
 		else
-			BonkHero_SetStatus(L("Wiping the account... {1} characters left", count));
+			BonkHero_SetStatus(L("hoa.ui.glue.wiping_the_account_1_characters_left", count));
 		end
 		wipe.sent = "delete";
 		wipe.sentFor = 0;
@@ -1278,7 +1278,7 @@ function BonkHero_UpdateWipe(elapsed)
 		wipe.wait = BONK_WIPE_GAP;
 		return;
 	end
-	BonkHero_SetStatus(L["Wiping the account..."]);
+	BonkHero_SetStatus(L["hoa.ui.glue.wiping_the_account"]);
 	wipe.step = "create";
 	wipe.sent = "create";
 	wipe.sentFor = 0;

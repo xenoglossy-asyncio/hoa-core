@@ -17,8 +17,8 @@ local SIZES = {
 }
 
 local LOOKS = {
-    boss = { fill = { 0.78, 0.12, 0.12 }, name = { 1, 0.82, 0 }, tag = L["|cffff4b4bSTAGE BOSS|r"], kind = L["Stage boss"], border = GOLD_BORDER, edge = { 1, 1, 1 } },
-    mini = { fill = { 0.9, 0.48, 0.1 }, name = { 1, 1, 1 }, tag = L["|cffffa040MINI-BOSS|r"], kind = L["Mini-boss"], border = STONE_BORDER, edge = { 0.85, 0.85, 0.85 } },
+    boss = { fill = { 0.78, 0.12, 0.12 }, name = { 1, 0.82, 0 }, tag = L["hoa.addon.cffff4b4bstage_boss_r"], kind = L["hoa.addon.stage_boss"], border = GOLD_BORDER, edge = { 1, 1, 1 } },
+    mini = { fill = { 0.9, 0.48, 0.1 }, name = { 1, 1, 1 }, tag = L["hoa.addon.cffffa040mini_boss_r"], kind = L["hoa.addon.mini_boss"], border = STONE_BORDER, edge = { 0.85, 0.85, 0.85 } },
 }
 
 local function Short(value)
@@ -98,7 +98,7 @@ end
 local function ShowEntryTooltip()
     GameTooltip:SetOwner(this, "ANCHOR_BOTTOM")
     GameTooltip:AddDoubleLine(this.bossName or "", this.look and this.look.kind or "", 1, 0.82, 0, 1, 0.3, 0.3)
-    GameTooltip:AddLine(L("{1} / {2} health", Short(this.hp or 0), Short(this.hpMax or 0)), 1, 1, 1)
+    GameTooltip:AddLine(L("hoa.addon.1_2_health", Short(this.hp or 0), Short(this.hpMax or 0)), 1, 1, 1)
     if getn(this.affixNames) > 0 then
         GameTooltip:AddLine(table.concat(this.affixNames, ", "), 1, 0.82, 0, 1)
     end

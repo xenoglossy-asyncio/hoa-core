@@ -10,11 +10,11 @@ namespace HordesOfAzeroth.Launcher
     {
         const double Width = 460;
 
-        public static Task<bool> AskAsync(Window owner, string question) => ShowAsync(owner, question, Loc.T("Yes"), Loc.T("No"));
+        public static Task<bool> AskAsync(Window owner, string question) => ShowAsync(owner, question, Loc.T("hoa.launcher.yes"), Loc.T("hoa.launcher.no"));
 
-        public static Task<bool> TellAsync(Window owner, string message) => ShowAsync(owner, message, Loc.T("OK"), null);
+        public static Task<bool> TellAsync(Window owner, string message) => ShowAsync(owner, message, Loc.T("hoa.launcher.ok"), null);
 
-        public static Task<bool> ConfirmAsync(Window owner, string question, string confirm) => ShowAsync(owner, question, confirm, Loc.T("Cancel"));
+        public static Task<bool> ConfirmAsync(Window owner, string question, string confirm) => ShowAsync(owner, question, confirm, Loc.T("hoa.launcher.cancel"));
 
         public static async Task<string> AskTextAsync(Window owner, string question, string initial, string confirm, int maxLength)
         {
@@ -24,7 +24,7 @@ namespace HordesOfAzeroth.Launcher
                 box.Focus();
                 box.SelectAll();
             };
-            bool confirmed = await ShowAsync(owner, question, confirm, Loc.T("Cancel"), box);
+            bool confirmed = await ShowAsync(owner, question, confirm, Loc.T("hoa.launcher.cancel"), box);
             return confirmed ? box.Text : null;
         }
 
@@ -33,7 +33,7 @@ namespace HordesOfAzeroth.Launcher
             bool confirmed = false;
             Window window = new Window
             {
-                Title = Loc.T("Hordes of Azeroth"),
+                Title = Loc.T("hoa.launcher.hordes_of_azeroth"),
                 Width = Width,
                 SizeToContent = SizeToContent.Height,
                 CanResize = false,

@@ -16,7 +16,7 @@ local PAD_ACTIONS = {
     VANILLABONK_DASH = "dash",
     VANILLABONK_SHAPESHIFT = "shapeshift",
 }
-local GREETING = L["Make yourself at home, friend. Tell old Tarn how you like things, and the Inn will keep it that way."]
+local GREETING = L["hoa.addon.make_yourself_at_home_friend_tell_old_tarn_how_you_like_thin"]
 
 local window = UI.Window("VanillaBonkInnkeeper", WIDTH, 600)
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
@@ -26,7 +26,7 @@ window.sliders = {}
 window.radios = {}
 window.keys = {}
 
-local LISTEN_TEXT = L["Press a button"]
+local LISTEN_TEXT = L["hoa.addon.press_a_button"]
 
 local function PadAction(row)
     local controller = VanillaBonkController
@@ -128,8 +128,8 @@ local function SettingSlider(setting)
     slider:SetValueStep(setting.step or 10)
     slider.setting = setting
     getglobal(slider:GetName() .. "Text"):SetText(setting.label)
-    getglobal(slider:GetName() .. "Low"):SetText(setting.low or L["Off"])
-    getglobal(slider:GetName() .. "High"):SetText(setting.high or L["All"])
+    getglobal(slider:GetName() .. "Low"):SetText(setting.low or L["hoa.addon.off_2"])
+    getglobal(slider:GetName() .. "High"):SetText(setting.high or L["hoa.addon.all"])
     slider.value = UI.Text(slider, 11)
     slider.value:SetPoint("LEFT", slider, "RIGHT", 10, 0)
     slider:SetScript("OnValueChanged", function()
@@ -163,7 +163,7 @@ local function KeyRow(binding, label)
     row.label = UI.Text(row, 12)
     row.label:SetPoint("LEFT", row, "LEFT", 4, 0)
     row.label:SetText(label or binding.label)
-    row.change = UI.Button(row, KEY_BUTTON_WIDTH, L["Change"], function()
+    row.change = UI.Button(row, KEY_BUTTON_WIDTH, L["hoa.addon.change"], function()
         PlaySound("igMainMenuOptionCheckBoxOn")
         ChangeKey(this:GetParent())
     end)
@@ -207,17 +207,17 @@ local function HealthBarChoice(mode, column)
     tinsert(window.radios, radio)
 end
 
-Section(L["Interact Key"])
-KeyRow(UI.KEYS[1], L["Interact with what's nearby"])
-Note(L["Interacts with:"])
+Section(L["hoa.addon.interact_key"])
+KeyRow(UI.KEYS[1], L["hoa.addon.interact_with_what_s_nearby"])
+Note(L["hoa.addon.interacts_with"])
 for index, setting in ipairs(UI.INTERACT_SETTINGS) do
     Check(setting, math.mod(index - 1, 2) + 1, math.mod(index, 2) == 0 or index == table.getn(UI.INTERACT_SETTINGS))
 end
 cursor = cursor + 4
 Check(UI.AUTO_CHEST_SETTING, 1, true)
 
-Section(L["Your character"])
-Note(L["Your health bar:"])
+Section(L["hoa.addon.your_character"])
+Note(L["hoa.addon.your_health_bar_2"])
 for index, mode in ipairs(UI.HEALTH_BAR_MODES) do
     HealthBarChoice(mode, index)
 end
@@ -227,28 +227,28 @@ for index, setting in ipairs(UI.DISPLAY_SETTINGS) do
 end
 SettingSlider(UI.OTHER_EFFECTS_SETTING)
 SettingSlider(UI.SIDE_CARD_SCALE_SETTING)
-window.rangeRing = UI.Button(window, 150, L["Range Ring..."], function()
+window.rangeRing = UI.Button(window, 150, L["hoa.addon.range_ring_2"], function()
     PlaySound("igMainMenuOption")
     UI.ShowRangeRingWindow(window)
 end)
 window.rangeRing:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:SetText(L["Choose how the range ring around your character looks."], 1, 1, 1, 1, 1)
+    GameTooltip:SetText(L["hoa.addon.choose_how_the_range_ring_around_your_character_looks"], 1, 1, 1, 1, 1)
 end)
 window.rangeRing:SetScript("OnLeave", function() GameTooltip:Hide() end)
 Place(window.rangeRing, 1, 28)
 
-Section(L["Keys"])
+Section(L["hoa.addon.keys"])
 KeyRow(UI.KEYS[2])
 KeyRow(UI.KEYS[3])
 KeyRow(UI.KEYS[4])
 
-window.settings = UI.Button(window, 150, L["All Game Settings"], function()
+window.settings = UI.Button(window, 150, L["hoa.addon.all_game_settings"], function()
     PlaySound("igMainMenuOption")
     window:Hide()
     ShowUIPanel(UIOptionsFrame)
 end)
-window.goodbye = UI.Button(window, 100, L["Goodbye"], function() window:Hide() end)
+window.goodbye = UI.Button(window, 100, L["hoa.addon.goodbye"], function() window:Hide() end)
 
 local footerTop = 84 + window.greeting:GetHeight() + cursor + 18
 window.settings:SetPoint("TOPLEFT", window, "TOPLEFT", LEFT, -footerTop)

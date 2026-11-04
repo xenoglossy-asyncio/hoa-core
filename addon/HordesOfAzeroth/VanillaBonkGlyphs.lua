@@ -3,7 +3,7 @@ local UI = VanillaBonkUI
 
 local SOCKET_SIZE = 26
 local SOCKETS = 7
-local GLYPH_SUBTITLES = { L["Your first Glyph lasts the whole run."], L["Your second Glyph lasts the whole run."], L["Your third Glyph lasts the whole run."], L["Your fourth Glyph lasts the whole run."], L["Your fifth Glyph lasts the whole run."], L["Your sixth Glyph lasts the whole run."], L["Your seventh Glyph lasts the whole run."] }
+local GLYPH_SUBTITLES = { L["hoa.addon.your_first_glyph_lasts_the_whole_run"], L["hoa.addon.your_second_glyph_lasts_the_whole_run"], L["hoa.addon.your_third_glyph_lasts_the_whole_run"], L["hoa.addon.your_fourth_glyph_lasts_the_whole_run"], L["hoa.addon.your_fifth_glyph_lasts_the_whole_run"], L["hoa.addon.your_sixth_glyph_lasts_the_whole_run"], L["hoa.addon.your_seventh_glyph_lasts_the_whole_run"] }
 local FADE = 0.2
 local BAD = { 1, 0.25, 0.2 }
 local MAX_CARDS = 4
@@ -35,9 +35,9 @@ end
 
 local function KindText(glyph)
     if glyph and glyph.drawback ~= "" then
-        return L("{1} Glyph with a |cffff4a3adrawback|r", Rarity(glyph).name)
+        return L("hoa.addon.1_glyph_with_a_cffff4a3adrawback_r", Rarity(glyph).name)
     end
-    return L("{1} Glyph", Rarity(glyph).name)
+    return L("hoa.addon.1_glyph", Rarity(glyph).name)
 end
 
 local function GlyphTooltip(owner, glyph)
@@ -93,7 +93,7 @@ frame.title = frame:CreateFontString(nil, "OVERLAY")
 frame.title:SetFont(UI.TITLE_FONT, 44, "OUTLINE")
 frame.title:SetPoint("CENTER", frame, "CENTER", 0, 244)
 frame.title:SetTextColor(1, 0.82, 0)
-frame.title:SetText(L["Choose a Glyph"])
+frame.title:SetText(L["hoa.addon.choose_a_glyph"])
 
 frame.subtitle = UI.Text(frame, 13)
 frame.subtitle:SetPoint("CENTER", frame, "CENTER", 0, 202)
@@ -234,7 +234,7 @@ for index = 1, MAX_CARDS do
     card.badLabel = UI.Text(card, 9)
     card.badLabel:SetPoint("TOP", card.badLeft, "BOTTOMRIGHT", 0, -7)
     card.badLabel:SetTextColor(1, 0.48, 0.42)
-    card.badLabel:SetText(L["DRAWBACK"])
+    card.badLabel:SetText(L["hoa.addon.drawback"])
     card.drawback = UI.Text(card, 12)
     card.drawback:SetPoint("TOP", card.badLabel, "BOTTOM", 0, -3)
     card.drawback:SetWidth(TEXT_WIDTH)
@@ -278,7 +278,7 @@ local function FillCard(card, glyph)
     SetCardLine(card, card.lineColor)
     card.name:SetText(glyph.name)
     card.name:SetTextColor(rarity.r, rarity.g, rarity.b)
-    card.kind:SetText(L("{1} Glyph", UI.RarityText(glyph.rarity, rarity.name)))
+    card.kind:SetText(L("hoa.addon.1_glyph", UI.RarityText(glyph.rarity, rarity.name)))
     card.description:SetText(glyph.description)
     card.drawback:SetText(glyph.drawback)
     for _, part in ipairs({ card.badLeft, card.badRight, card.badLabel, card.drawback }) do
@@ -296,13 +296,13 @@ local function ApplySideChrome()
         frame.title:Hide()
         frame.dim:Hide()
         frame.subtitle:SetPoint("TOP", UIParent, "BOTTOM", 0, SIDE_BOTTOM - 6)
-        frame.subtitle:SetText(GLYPH_SUBTITLES[offer.pick] or L["Your next Glyph lasts the whole run."])
+        frame.subtitle:SetText(GLYPH_SUBTITLES[offer.pick] or L["hoa.addon.your_next_glyph_lasts_the_whole_run"])
         return
     end
     frame.title:Show()
     frame.dim:Show()
     frame.subtitle:SetPoint("CENTER", frame, "CENTER", 0, 202)
-    frame.subtitle:SetText((GLYPH_SUBTITLES[offer.pick] or L["Your next Glyph lasts the whole run."]) .. " " .. L["The run is paused while you choose."])
+    frame.subtitle:SetText((GLYPH_SUBTITLES[offer.pick] or L["hoa.addon.your_next_glyph_lasts_the_whole_run"]) .. " " .. L["hoa.addon.the_run_is_paused_while_you_choose"])
 end
 
 local function PlaceGlyphCard(card, x)
@@ -340,7 +340,7 @@ local function Fill()
     end
     frame.hint:SetText("")
     if offer.rerolls > 0 then
-        frame.reroll:SetText(L("Reroll ({1})", offer.rerolls))
+        frame.reroll:SetText(L("hoa.addon.reroll_1", offer.rerolls))
         frame.reroll:Show()
     else
         frame.reroll:Hide()

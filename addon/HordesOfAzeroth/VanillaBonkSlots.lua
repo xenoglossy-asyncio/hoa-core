@@ -12,15 +12,15 @@ local LOCKED_SLOTS = {
 }
 
 local CLASS_WEAPONS = {
-    WARRIOR = L["Warriors fight using melee weapons."],
-    PALADIN = L["Paladins fight using melee weapons and shields."],
-    ROGUE   = L["Rogues fight using melee weapons."],
-    PRIEST  = L["Priests fight using maces, staves and held items."],
-    SHAMAN  = L["Shamans fight using melee weapons and shields."],
-    MAGE    = L["Mages fight using staves, swords, daggers and held items."],
-    WARLOCK = L["Warlocks fight using staves, swords, daggers and held items."],
-    DRUID   = L["Druids fight using staves and two-handed maces."],
-    HUNTER  = L["Hunters fight using ranged weapons."],
+    WARRIOR = L["hoa.addon.warriors_fight_using_melee_weapons"],
+    PALADIN = L["hoa.addon.paladins_fight_using_melee_weapons_and_shields"],
+    ROGUE   = L["hoa.addon.rogues_fight_using_melee_weapons"],
+    PRIEST  = L["hoa.addon.priests_fight_using_maces_staves_and_held_items"],
+    SHAMAN  = L["hoa.addon.shamans_fight_using_melee_weapons_and_shields"],
+    MAGE    = L["hoa.addon.mages_fight_using_staves_swords_daggers_and_held_items"],
+    WARLOCK = L["hoa.addon.warlocks_fight_using_staves_swords_daggers_and_held_items"],
+    DRUID   = L["hoa.addon.druids_fight_using_staves_and_two_handed_maces"],
+    HUNTER  = L["hoa.addon.hunters_fight_using_ranged_weapons"],
 }
 
 local DIM = 0.35
@@ -59,7 +59,7 @@ end
 local function ShowLockTooltip(button)
     GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
     GameTooltip:SetText(TEXT(getglobal(strupper(strsub(button:GetName(), 10)))), HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
-    GameTooltip:AddLine(L["Not used by your class."], RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b)
+    GameTooltip:AddLine(L["hoa.addon.not_used_by_your_class"], RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b)
     GameTooltip:AddLine(slots.why, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
     GameTooltip:Show()
 end

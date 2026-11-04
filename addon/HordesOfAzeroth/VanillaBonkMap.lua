@@ -21,7 +21,7 @@ local UPDATE_INTERVAL = 0.03
 local window = UI.Window("VanillaBonkMap", WIDTH, HEIGHT)
 window:SetFrameStrata("FULLSCREEN_DIALOG")
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
-window.header:SetText(L["Mouse wheel zooms in and out."])
+window.header:SetText(L["hoa.addon.mouse_wheel_zooms_in_and_out"])
 window.header:SetTextColor(0.7, 0.7, 0.7)
 
 local view = CreateFrame("Frame", nil, window)
@@ -67,9 +67,9 @@ hero:SetHeight(ARROW_SIZE)
 local noMap = UI.Text(overlay, 13)
 noMap:SetPoint("CENTER", view, "CENTER", 0, 0)
 noMap:SetTextColor(1, 0.82, 0)
-noMap:SetText(L["There is no map for this place."])
+noMap:SetText(L["hoa.addon.there_is_no_map_for_this_place"])
 
-local worldButton = UI.Button(window, 110, L["World Map"])
+local worldButton = UI.Button(window, 110, L["hoa.addon.world_map"])
 worldButton:SetPoint("TOPRIGHT", window, "TOPRIGHT", -14, -38)
 
 local mapFile
@@ -280,7 +280,7 @@ local function PlacePin(objective, scale)
         px, py = cx + dx * reach, cy + dy * reach
         pin:SetAlpha(0.8)
         local yards = YardsTo(objective)
-        pin.yards:SetText(yards and L("{1} yd", yards) or "")
+        pin.yards:SetText(yards and L("hoa.addon.1_yd", yards) or "")
         pin.yards:Show()
     end
     pin:ClearAllPoints()
@@ -328,7 +328,7 @@ end
 local emptyList = UI.Text(window, 12)
 emptyList:SetPoint("TOPLEFT", window, "TOPLEFT", VIEW_LEFT, -LIST_TOP - 8)
 emptyList:SetTextColor(0.7, 0.7, 0.7)
-emptyList:SetText(L["There are no objectives right now."])
+emptyList:SetText(L["hoa.addon.there_are_no_objectives_right_now"])
 
 local function FillList(list)
     for index, row in ipairs(rows) do
@@ -337,8 +337,8 @@ local function FillList(list)
             row.pin.objective = objective
             row.pin.icon:SetTexture(UI.ObjectiveIcon(objective))
             row.pin:Show()
-            row.label:SetText(objective.label ~= "" and objective.label or L["Objective"])
-            row.yards:SetText(L("{1} yd", objective.distance))
+            row.label:SetText(objective.label ~= "" and objective.label or L["hoa.addon.objective"])
+            row.yards:SetText(L("hoa.addon.1_yd", objective.distance))
             row:Show()
         else
             row.pin.objective = nil

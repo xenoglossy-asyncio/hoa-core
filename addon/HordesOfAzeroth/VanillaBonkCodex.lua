@@ -22,15 +22,15 @@ local EVOLVE_RANK = 10
 local DIVIDER_HEIGHT = 26
 
 local CLASSES = {
-    { mask = 1,    name = L["Warrior"], plural = L["Warriors"], color = { 0.78, 0.61, 0.43 }, coords = { 0, 0.25, 0, 0.25 } },
-    { mask = 2,    name = L["Paladin"], plural = L["Paladins"], color = { 0.96, 0.55, 0.73 }, coords = { 0, 0.25, 0.5, 0.75 } },
-    { mask = 4,    name = L["Hunter"],  plural = L["Hunters"],  color = { 0.67, 0.83, 0.45 }, coords = { 0, 0.25, 0.25, 0.5 } },
-    { mask = 8,    name = L["Rogue"],   plural = L["Rogues"],   color = { 1.00, 0.96, 0.41 }, coords = { 0.49609375, 0.7421875, 0, 0.25 } },
-    { mask = 16,   name = L["Priest"],  plural = L["Priests"],  color = { 1.00, 1.00, 1.00 }, coords = { 0.49609375, 0.7421875, 0.25, 0.5 } },
-    { mask = 64,   name = L["Shaman"],  plural = L["Shamans"],  color = { 0.00, 0.44, 0.87 }, coords = { 0.25, 0.49609375, 0.25, 0.5 } },
-    { mask = 128,  name = L["Mage"],    plural = L["Mages"],    color = { 0.41, 0.80, 0.94 }, coords = { 0.25, 0.49609375, 0, 0.25 } },
-    { mask = 256,  name = L["Warlock"], plural = L["Warlocks"], color = { 0.58, 0.51, 0.79 }, coords = { 0.7421875, 0.98828125, 0.25, 0.5 } },
-    { mask = 1024, name = L["Druid"],   plural = L["Druids"],   color = { 1.00, 0.49, 0.04 }, coords = { 0.7421875, 0.98828125, 0, 0.25 } },
+    { mask = 1,    name = L["hoa.addon.warrior"], plural = L["hoa.addon.warriors"], color = { 0.78, 0.61, 0.43 }, coords = { 0, 0.25, 0, 0.25 } },
+    { mask = 2,    name = L["hoa.addon.paladin"], plural = L["hoa.addon.paladins"], color = { 0.96, 0.55, 0.73 }, coords = { 0, 0.25, 0.5, 0.75 } },
+    { mask = 4,    name = L["hoa.addon.hunter"],  plural = L["hoa.addon.hunters"],  color = { 0.67, 0.83, 0.45 }, coords = { 0, 0.25, 0.25, 0.5 } },
+    { mask = 8,    name = L["hoa.addon.rogue"],   plural = L["hoa.addon.rogues"],   color = { 1.00, 0.96, 0.41 }, coords = { 0.49609375, 0.7421875, 0, 0.25 } },
+    { mask = 16,   name = L["hoa.addon.priest"],  plural = L["hoa.addon.priests"],  color = { 1.00, 1.00, 1.00 }, coords = { 0.49609375, 0.7421875, 0.25, 0.5 } },
+    { mask = 64,   name = L["hoa.addon.shaman"],  plural = L["hoa.addon.shamans"],  color = { 0.00, 0.44, 0.87 }, coords = { 0.25, 0.49609375, 0.25, 0.5 } },
+    { mask = 128,  name = L["hoa.addon.mage"],    plural = L["hoa.addon.mages"],    color = { 0.41, 0.80, 0.94 }, coords = { 0.25, 0.49609375, 0, 0.25 } },
+    { mask = 256,  name = L["hoa.addon.warlock"], plural = L["hoa.addon.warlocks"], color = { 0.58, 0.51, 0.79 }, coords = { 0.7421875, 0.98828125, 0.25, 0.5 } },
+    { mask = 1024, name = L["hoa.addon.druid"],   plural = L["hoa.addon.druids"],   color = { 1.00, 0.49, 0.04 }, coords = { 0.7421875, 0.98828125, 0, 0.25 } },
 }
 
 VanillaBonkCodex = {}
@@ -82,7 +82,7 @@ end
 
 local function ClassNames(mask, plural)
     if mask == 0 then
-        return L["All classes"]
+        return L["hoa.addon.all_classes"]
     end
     local names = {}
     for _, class in ipairs(CLASSES) do
@@ -119,7 +119,7 @@ local function EvolutionNames(evolutions)
     local count = getn(evolutions)
     for index, evolved in ipairs(evolutions) do
         if index > 1 then
-            text = text .. (index == count and L[" or "] or ", ")
+            text = text .. (index == count and L["hoa.addon.or"] or ", ")
         end
         text = text .. evolved.name
     end
@@ -130,9 +130,9 @@ local tooltip = GameTooltip
 
 local function AddLock(lock)
     tooltip:AddLine(" ")
-    tooltip:AddLine(L["Locked"], 1, 0.3, 0.3)
+    tooltip:AddLine(L["hoa.addon.locked"], 1, 0.3, 0.3)
     if lock then
-        tooltip:AddLine(L("Quest: {1}", lock.name), 1, 0.6, 0.6)
+        tooltip:AddLine(L("hoa.addon.quest_1", lock.name), 1, 0.6, 0.6)
         tooltip:AddLine(lock.description, 0.9, 0.9, 0.9, 1)
         VanillaBonkUI.AddQuestProgress(tooltip, lock)
     end
@@ -155,7 +155,7 @@ local function ShowSpellTooltip(owner, spell)
     Tip:AddDoubleLine(spell.spec or "", classes, Tip.SPEC[1], Tip.SPEC[2], Tip.SPEC[3], 0.62, 0.62, 0.62)
     local base = evolved and book.weapons[spell.evolvesFrom]
     if base then
-        Tip:AddDoubleLine(L("Evolved from {1}", base.name), "", 1, 0.5, 0, 1, 1, 1, 11)
+        Tip:AddDoubleLine(L("hoa.addon.evolved_from_1", base.name), "", 1, 0.5, 0, 1, 1, 1, 11)
     end
     Tip:AddReach(spell.radius, spell.range)
     if spell.description ~= "" then
@@ -165,15 +165,15 @@ local function ShowSpellTooltip(owner, spell)
 
     Tip:AddRule()
     if base then
-        Tip:AddSmallLine(L("Evolves from {1} through a Legendary rank, offered at rank {2} or higher.", base.name, EVOLVE_RANK), Tip.ORANGE)
+        Tip:AddSmallLine(L("hoa.addon.evolves_from_1_through_a_legendary_rank_offered_at_rank_2_or", base.name, EVOLVE_RANK), Tip.ORANGE)
     else
         local evolutions = book.evolutionOf[spell.id]
         if evolutions then
-            Tip:AddSmallLine(L("Can evolve into {2} through a Legendary rank, offered at rank {1} or higher.", EVOLVE_RANK, EvolutionNames(evolutions)), Tip.ORANGE)
+            Tip:AddSmallLine(L("hoa.addon.can_evolve_into_2_through_a_legendary_rank_offered_at_rank_1", EVOLVE_RANK, EvolutionNames(evolutions)), Tip.ORANGE)
         end
     end
     if spell.starterMask > 0 then
-        Tip:AddSmallLine(format(L["%s can choose it as their starter spell at the Run Master."], ClassNames(spell.starterMask, true)), { 0.6, 0.8, 1 })
+        Tip:AddSmallLine(format(L["hoa.addon.s_can_choose_it_as_their_starter_spell_at_the_run_master"], ClassNames(spell.starterMask, true)), { 0.6, 0.8, 1 })
     end
     AddState(spell)
     tooltip:Show()
@@ -183,11 +183,11 @@ local function ShowPassiveTooltip(owner, passive)
     tooltip = GameTooltip
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
     tooltip:AddLine(passive.name, 1, 0.82, 0)
-    tooltip:AddLine(L["Passive (all classes)"], 0.7, 0.7, 0.7)
+    tooltip:AddLine(L["hoa.addon.passive_all_classes"], 0.7, 0.7, 0.7)
     tooltip:AddLine(passive.description, 1, 1, 1, 1)
     if passive.maxRank > 0 then
         tooltip:AddLine(" ")
-        tooltip:AddLine(L("Max rank {1}", passive.maxRank), 1, 0.82, 0)
+        tooltip:AddLine(L("hoa.addon.max_rank_1", passive.maxRank), 1, 0.82, 0)
     end
     AddState(passive)
     tooltip:Show()
@@ -198,12 +198,12 @@ local function ShowCardTooltip(owner, card)
     tooltip = GameTooltip
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
     tooltip:AddLine(card.name, rarity.r, rarity.g, rarity.b)
-    tooltip:AddLine(L("{1} Darkmoon Card (all classes)", rarity.name), 0.7, 0.7, 0.7)
+    tooltip:AddLine(L("hoa.addon.1_darkmoon_card_all_classes", rarity.name), 0.7, 0.7, 0.7)
     if card.description ~= "" then
         tooltip:AddLine(card.description, 1, 1, 1, 1)
     end
     tooltip:AddLine(" ")
-    tooltip:AddLine(card.maxCopies == 1 and L["1 copy per run"] or L["Each copy adds a bit less than the one before."], 1, 0.82, 0, 1)
+    tooltip:AddLine(card.maxCopies == 1 and L["hoa.addon.1_copy_per_run"] or L["hoa.addon.each_copy_adds_a_bit_less_than_the_one_before"], 1, 0.82, 0, 1)
     AddState(card)
     tooltip:Show()
 end
@@ -213,7 +213,7 @@ local function ShowGlyphTooltip(owner, glyph)
     tooltip = GameTooltip
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
     tooltip:AddLine(glyph.name, rarity.r, rarity.g, rarity.b)
-    tooltip:AddLine(L("{1} Glyph (all classes)", rarity.name), 0.7, 0.7, 0.7)
+    tooltip:AddLine(L("hoa.addon.1_glyph_all_classes", rarity.name), 0.7, 0.7, 0.7)
     if glyph.description ~= "" then
         tooltip:AddLine(glyph.description, 1, 1, 1, 1)
     end
@@ -221,7 +221,7 @@ local function ShowGlyphTooltip(owner, glyph)
         tooltip:AddLine(glyph.drawback, 1, 0.29, 0.23, 1)
     end
     tooltip:AddLine(" ")
-    tooltip:AddLine(L["Offered after the first timed mini-boss and the first two stage bosses, up to 2 per run. Foresight adds one at the start of a run."], 1, 0.82, 0, 1)
+    tooltip:AddLine(L["hoa.addon.offered_after_the_first_timed_mini_boss_and_the_first_two_st"], 1, 0.82, 0, 1)
     AddState(glyph)
     tooltip:Show()
 end
@@ -237,22 +237,22 @@ local function ShowEntryTooltip(owner, entry, manage)
         TOOLTIPS[entry.kind](owner, entry)
         if entry.off then
             tooltip:AddLine(" ")
-            tooltip:AddLine(L["Banned. It won't turn up in runs."], 1, 0.3, 0.3)
+            tooltip:AddLine(L["hoa.addon.banned_it_won_t_turn_up_in_runs"], 1, 0.3, 0.3)
             if manage then
-                tooltip:AddLine(L["Right-click to allow it again."], 0.4, 1, 0.4)
+                tooltip:AddLine(L["hoa.addon.right_click_to_allow_it_again"], 0.4, 1, 0.4)
             end
             tooltip:Show()
         elseif not manage then
             return
         elseif CanSwitch(entry) then
             tooltip:AddLine(" ")
-            tooltip:AddLine(L["Right-click to ban it from your runs."], 1, 0.82, 0)
+            tooltip:AddLine(L["hoa.addon.right_click_to_ban_it_from_your_runs"], 1, 0.82, 0)
             tooltip:Show()
         elseif book and entry.owned and POOL_KINDS[entry.kind] then
             local pool = book.pool[entry.kind]
             tooltip:AddLine(" ")
-            tooltip:AddLine(pool.slots > 0 and L("All your ban slots are in use ({1}/{2}).", pool.used, pool.slots) or
-                L["You have no ban slots yet."], 0.7, 0.7, 0.7, 1)
+            tooltip:AddLine(pool.slots > 0 and L("hoa.addon.all_your_ban_slots_are_in_use_1_2", pool.used, pool.slots) or
+                L["hoa.addon.you_have_no_ban_slots_yet"], 0.7, 0.7, 0.7, 1)
             tooltip:Show()
         end
     end
@@ -266,7 +266,7 @@ local UI = VanillaBonkUI
 
 local window = UI.Window("VanillaBonkSpellbook", WIDTH, HEIGHT)
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 30)
-window.title:SetText(L["Spellbook"])
+window.title:SetText(L["hoa.addon.spellbook"])
 window.subtitle = window.headerRight
 
 window.pane = UI.Pane(window, UI.CONTENT_LEFT, UI.CONTENT_TOP, WIDTH - UI.CONTENT_LEFT - UI.CONTENT_RIGHT,
@@ -292,12 +292,12 @@ window.empty:SetTextColor(0.6, 0.6, 0.6)
 local Refresh
 
 local TABS = {
-    { key = "spells",     label = L["Spells"] },
-    { key = "unlocks",    label = L["Passives"] },
-    { key = "debuffs",    label = L["Debuffs"] },
-    { key = "affixes",    label = L["Affixes"] },
-    { key = "evolutions", label = L["Evolutions"] },
-    { key = "rules",      label = L["Rules"] },
+    { key = "spells",     label = L["hoa.addon.spells"] },
+    { key = "unlocks",    label = L["hoa.addon.passives"] },
+    { key = "debuffs",    label = L["hoa.addon.debuffs"] },
+    { key = "affixes",    label = L["hoa.addon.affixes"] },
+    { key = "evolutions", label = L["hoa.addon.evolutions"] },
+    { key = "rules",      label = L["hoa.addon.rules"] },
 }
 
 local eliteAffixes = {}
@@ -377,11 +377,11 @@ local function CreateFilterButton(index, mask, name)
 end
 
 do
-    local all = CreateFilterButton(1, 0, L["All classes"])
+    local all = CreateFilterButton(1, 0, L["hoa.addon.all_classes"])
     all.label = all:CreateFontString(nil, "OVERLAY")
     SetFont(all.label, NUMBER_FONT, 11, "OUTLINE")
     all.label:SetPoint("CENTER", all, "CENTER", 0, 0)
-    all.label:SetText(L["All"])
+    all.label:SetText(L["hoa.addon.all"])
 
     for index, class in ipairs(CLASSES) do
         local button = CreateFilterButton(index + 1, class.mask, class.name)
@@ -485,7 +485,7 @@ local function CreateCard(index)
     card.offText = card:CreateFontString(nil, "OVERLAY")
     SetFont(card.offText, FONT, 10)
     card.offText:SetPoint("CENTER", card.offTag, "CENTER", 0, 0)
-    card.offText:SetText(L["OFF"])
+    card.offText:SetText(L["hoa.addon.off"])
     card.offTag:Hide()
     card.offText:Hide()
 
@@ -521,7 +521,7 @@ local function SpellGroup(spell)
 end
 
 local function SpellGroupLabel(spell)
-    local name = spell.spec ~= "" and spell.spec or L["Other spells"]
+    local name = spell.spec ~= "" and spell.spec or L["hoa.addon.other_spells"]
     if classFilter == 0 then
         return name .. "  |cff9d9d9d" .. ClassNames(spell.classMask) .. "|r"
     end
@@ -704,13 +704,13 @@ local function ShowCards(entries, grouped)
 
         local lock = book.locks[entry.kind .. entry.id]
         if entry.locked then
-            card.detail:SetText(lock and L("Locked by \"{1}\"", lock.name) or L["Locked by a quest"])
+            card.detail:SetText(lock and L("hoa.addon.locked_by_1", lock.name) or L["hoa.addon.locked_by_a_quest"])
         elseif entry.kind == "p" then
-            card.detail:SetText(entry.maxRank > 0 and L("Unlocked, max rank {1}", entry.maxRank) or L["Unlocked"])
+            card.detail:SetText(entry.maxRank > 0 and L("hoa.addon.unlocked_max_rank_1", entry.maxRank) or L["hoa.addon.unlocked"])
         else
             local text = ClassNames(entry.classMask)
             if entry.starterMask > 0 and (classFilter == 0 or HasFlag(entry.starterMask, classFilter)) then
-                text = L("{1} starter spell", text)
+                text = L("hoa.addon.1_starter_spell", text)
             end
             card.detail:SetText(text)
         end
@@ -724,7 +724,7 @@ local function ShowCards(entries, grouped)
         StyleCard(card, entry)
         if entry.off then
             card.name:SetTextColor(0.55, 0.55, 0.55)
-            card.detail:SetText(L["|cffff6060Disabled. Never offered in runs.|r"])
+            card.detail:SetText(L["hoa.addon.cffff6060disabled_never_offered_in_runs_r"])
             SetDesaturation(card.icon, 1)
             card:SetBackdropColor(0.04, 0.04, 0.04, 0.6)
             card.offTag:Show()
@@ -798,12 +798,12 @@ end
 local function DescribeDebuffLimits(debuff)
     local parts = {}
     if debuff.maxStacks > 1 then
-        tinsert(parts, L("Up to {1} stacks", debuff.maxStacks))
+        tinsert(parts, L("hoa.addon.up_to_1_stacks", debuff.maxStacks))
     end
     if debuff.durationMs > 0 then
-        tinsert(parts, L(getn(parts) > 0 and "lasts {1} sec" or "Lasts {1} sec", format("%g", debuff.durationMs / 1000)))
+        tinsert(parts, L(getn(parts) > 0 and "hoa.addon.lasts_1_sec_2" or "hoa.addon.lasts_1_sec", format("%g", debuff.durationMs / 1000)))
     end
-    return table.concat(parts, L[", "])
+    return table.concat(parts, L["hoa.addon.empty"])
 end
 
 local function ShowInfoRows(entries, describe)
@@ -1061,7 +1061,7 @@ function Refresh(keepScroll)
         window.tally:SetText("")
         window.pool:SetText("")
         local name = rules.Show(book.rules)
-        window.header:SetText(L("Rules|cff9d9d9d: {1}|r", name))
+        window.header:SetText(L("hoa.addon.rules_cff9d9d9d_1_r", name))
         return
     end
     rules.Hide()
@@ -1089,13 +1089,13 @@ function Refresh(keepScroll)
         else
             height, count = ShowInfoRows(book.debuffs, DescribeDebuffLimits)
         end
-        window.empty:SetText(count == 0 and L["Nothing here yet."] or "")
+        window.empty:SetText(count == 0 and L["hoa.addon.nothing_here_yet"] or "")
     elseif currentTab == "evolutions" then
         for _, card in ipairs(window.cards) do
             card:Hide()
         end
         height, count = ShowEvolutions()
-        window.empty:SetText(count == 0 and L["No evolutions for this class."] or "")
+        window.empty:SetText(count == 0 and L["hoa.addon.no_evolutions_for_this_class"] or "")
     else
         for _, row in ipairs(window.evolutionRows) do
             row:Hide()
@@ -1110,9 +1110,9 @@ function Refresh(keepScroll)
         if table.getn(entries) > 0 then
             window.empty:SetText("")
         elseif TabHasClasses() and classFilter ~= 0 then
-            window.empty:SetText(L["Nothing here for this class."])
+            window.empty:SetText(L["hoa.addon.nothing_here_for_this_class"])
         else
-            window.empty:SetText(L["Nothing here yet."])
+            window.empty:SetText(L["hoa.addon.nothing_here_yet"])
         end
     end
 
@@ -1128,7 +1128,7 @@ function Refresh(keepScroll)
             end
         end
     end
-    window.subtitle:SetText("|cffffffff" .. L("{1} locked by quests", locked) .. "|r")
+    window.subtitle:SetText("|cffffffff" .. L("hoa.addon.1_locked_by_quests", locked) .. "|r")
 
     if TabHasClasses() or TabHasInfoRows() then
         window.tally:SetText("")
@@ -1141,11 +1141,11 @@ function Refresh(keepScroll)
                 held = held + 1
             end
         end
-        window.tally:SetText(L("|cffffffff{1} owned|r|cff9d9d9d,|r |cffff6666{2} locked by quests|r", owned, held))
+        window.tally:SetText(L("hoa.addon.cffffffff_1_owned_r_cff9d9d9d_r_cffff6666_2_locked_by_quests", owned, held))
     end
     window.pool:SetText("")
 
-    local className = L["All classes"]
+    local className = L["hoa.addon.all_classes"]
     if TabHasClasses() then
         for _, class in ipairs(CLASSES) do
             if class.mask == classFilter then
@@ -1153,7 +1153,7 @@ function Refresh(keepScroll)
             end
         end
     end
-    window.header:SetText(L("{1}|cff9d9d9d: {2} spells, {3} passives|r", className, book.spellCount, book.passiveCount))
+    window.header:SetText(L("hoa.addon.1_cff9d9d9d_2_spells_3_passives_r", className, book.spellCount, book.passiveCount))
 end
 
 TogglePool = function(entry)
@@ -1457,7 +1457,7 @@ handlers["cdxend"] = function()
     received.glyphCount = 0
     for key, glyph in pairs(received.glyphs) do
         local text = VanillaBonkGlyphInfo and VanillaBonkGlyphInfo[key]
-        glyph.name = text and text.name or L("Glyph {1}", key)
+        glyph.name = text and text.name or L("hoa.addon.glyph_1", key)
         glyph.icon = text and text.icon or ""
         glyph.rarity = text and text.rarity or 0
         glyph.description = text and text.description or ""

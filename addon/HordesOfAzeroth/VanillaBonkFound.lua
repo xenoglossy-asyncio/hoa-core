@@ -98,11 +98,11 @@ function UI.ItemLevel(tier, quality)
 end
 
 function UI.ItemLevelText(tier, quality)
-    return L("Item Level {1}", UI.ItemLevel(tier, quality))
+    return L("hoa.addon.item_level_1", UI.ItemLevel(tier, quality))
 end
 
 function UI.ItemLevelRange(tier, lowQuality, highQuality)
-    return L("Item Level {1}-{2}", UI.ItemLevel(tier, lowQuality), UI.ItemLevel(tier, highQuality))
+    return L("hoa.addon.item_level_1_2", UI.ItemLevel(tier, lowQuality), UI.ItemLevel(tier, highQuality))
 end
 
 function UI.FoundLineText(piece)
@@ -110,7 +110,7 @@ function UI.FoundLineText(piece)
     if count == 0 then
         return ""
     end
-    return count == 1 and L["1 bonus stat"] or L("{1} bonus stats", count)
+    return count == 1 and L["hoa.addon.1_bonus_stat"] or L("hoa.addon.1_bonus_stats", count)
 end
 
 local handlers = {}

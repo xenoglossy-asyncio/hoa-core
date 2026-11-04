@@ -70,36 +70,36 @@ function UI.AuraStacks(spellId, filter)
 end
 
 UI.RARITY = {
-    [0] = { name = L["Common"], r = 1, g = 1, b = 1 },
-    [1] = { name = L["Uncommon"], r = 0.12, g = 1, b = 0 },
-    [2] = { name = L["Rare"], r = 0, g = 0.44, b = 0.87 },
-    [3] = { name = L["Epic"], r = 0.64, g = 0.21, b = 0.93 },
-    [4] = { name = L["Legendary"], r = 1, g = 0.5, b = 0 },
+    [0] = { name = L["hoa.addon.common"], r = 1, g = 1, b = 1 },
+    [1] = { name = L["hoa.addon.uncommon"], r = 0.12, g = 1, b = 0 },
+    [2] = { name = L["hoa.addon.rare"], r = 0, g = 0.44, b = 0.87 },
+    [3] = { name = L["hoa.addon.epic"], r = 0.64, g = 0.21, b = 0.93 },
+    [4] = { name = L["hoa.addon.legendary"], r = 1, g = 0.5, b = 0 },
 }
 
 UI.DAMAGE_TYPES = {
-    phys = { name = L["Physical"], r = 0.78, g = 0.61, b = 0.43, icon = "Ability_MeleeDamage" },
-    bleed = { name = L["Bleed"], r = 0.83, g = 0.16, b = 0.16, icon = "Ability_BackStab", note = L["Physical damage over time."] },
-    poison = { name = L["Poison"], r = 0.3, g = 0.76, b = 0.23, icon = "Spell_Nature_CorrosiveBreath", note = L["Nature damage over time."] },
-    fire = { name = L["Fire"], r = 1, g = 0.49, b = 0.1, icon = "Spell_Fire_FlameBolt" },
-    burn = { name = L["Burning"], r = 1, g = 0.71, b = 0.24, icon = "Spell_Fire_Incinerate", note = L["Fire damage over time."] },
-    frost = { name = L["Frost"], r = 0.41, g = 0.8, b = 0.94, icon = "Spell_Frost_FrostBolt02" },
-    arcane = { name = L["Arcane"], r = 0.82, g = 0.49, b = 1, icon = "Spell_Nature_StarFall" },
-    shadow = { name = L["Shadow"], r = 0.56, g = 0.42, b = 0.85, icon = "Spell_Shadow_ShadowBolt" },
-    nature = { name = L["Nature"], r = 0.25, g = 0.78, b = 0.71, icon = "Spell_Nature_Lightning" },
-    static = { name = L["Static"], r = 0.45, g = 0.6, b = 1, icon = "Spell_Nature_Lightning", note = L["Nature damage when the stacks discharge."] },
-    holy = { name = L["Holy"], r = 1, g = 0.9, b = 0.5, icon = "Spell_Holy_HolyBolt" },
-    decay = { name = L["Decay"], r = 0.45, g = 0.3, b = 0.7, icon = "Spell_Shadow_ChillTouch", note = L["Shadow damage over time."] },
-    agony = { name = L["Agony"], r = 0.55, g = 0.2, b = 0.55, icon = "Spell_Shadow_CurseOfSargeras", note = L["Shadow damage over time that grows."] },
-    moonkin = { name = L["Moonkin Form"], r = 0.55, g = 0.6, b = 1, icon = "Spell_Nature_ForceOfNature", note = L["Wrath and Starfall."] },
-    cat = { name = L["Cat Form"], r = 1, g = 0.82, b = 0.25, icon = "Ability_Druid_CatForm", note = L["Claw."] },
-    bear = { name = L["Bear Form"], r = 0.75, g = 0.45, b = 0.25, icon = "Ability_Racial_BearForm", note = L["Maul."] },
-    tree = { name = L["Tree of Life"], r = 0.35, g = 0.85, b = 0.35, icon = "Spell_Nature_ProtectionformNature", note = L["Vines."] },
+    phys = { name = L["hoa.addon.physical"], r = 0.78, g = 0.61, b = 0.43, icon = "Ability_MeleeDamage" },
+    bleed = { name = L["hoa.addon.bleed"], r = 0.83, g = 0.16, b = 0.16, icon = "Ability_BackStab", note = L["hoa.addon.physical_damage_over_time"] },
+    poison = { name = L["hoa.addon.poison"], r = 0.3, g = 0.76, b = 0.23, icon = "Spell_Nature_CorrosiveBreath", note = L["hoa.addon.nature_damage_over_time"] },
+    fire = { name = L["hoa.addon.fire"], r = 1, g = 0.49, b = 0.1, icon = "Spell_Fire_FlameBolt" },
+    burn = { name = L["hoa.addon.burning"], r = 1, g = 0.71, b = 0.24, icon = "Spell_Fire_Incinerate", note = L["hoa.addon.fire_damage_over_time"] },
+    frost = { name = L["hoa.addon.frost"], r = 0.41, g = 0.8, b = 0.94, icon = "Spell_Frost_FrostBolt02" },
+    arcane = { name = L["hoa.addon.arcane"], r = 0.82, g = 0.49, b = 1, icon = "Spell_Nature_StarFall" },
+    shadow = { name = L["hoa.addon.shadow"], r = 0.56, g = 0.42, b = 0.85, icon = "Spell_Shadow_ShadowBolt" },
+    nature = { name = L["hoa.addon.nature"], r = 0.25, g = 0.78, b = 0.71, icon = "Spell_Nature_Lightning" },
+    static = { name = L["hoa.addon.static"], r = 0.45, g = 0.6, b = 1, icon = "Spell_Nature_Lightning", note = L["hoa.addon.nature_damage_when_the_stacks_discharge"] },
+    holy = { name = L["hoa.addon.holy"], r = 1, g = 0.9, b = 0.5, icon = "Spell_Holy_HolyBolt" },
+    decay = { name = L["hoa.addon.decay"], r = 0.45, g = 0.3, b = 0.7, icon = "Spell_Shadow_ChillTouch", note = L["hoa.addon.shadow_damage_over_time"] },
+    agony = { name = L["hoa.addon.agony"], r = 0.55, g = 0.2, b = 0.55, icon = "Spell_Shadow_CurseOfSargeras", note = L["hoa.addon.shadow_damage_over_time_that_grows"] },
+    moonkin = { name = L["hoa.addon.moonkin_form"], r = 0.55, g = 0.6, b = 1, icon = "Spell_Nature_ForceOfNature", note = L["hoa.addon.wrath_and_starfall"] },
+    cat = { name = L["hoa.addon.cat_form"], r = 1, g = 0.82, b = 0.25, icon = "Ability_Druid_CatForm", note = L["hoa.addon.claw"] },
+    bear = { name = L["hoa.addon.bear_form"], r = 0.75, g = 0.45, b = 0.25, icon = "Ability_Racial_BearForm", note = L["hoa.addon.maul"] },
+    tree = { name = L["hoa.addon.tree_of_life"], r = 0.35, g = 0.85, b = 0.35, icon = "Spell_Nature_ProtectionformNature", note = L["hoa.addon.vines"] },
 }
-UI.DAMAGE_TYPE_BY_KEYWORD = { [L["Bleed"]] = "bleed", [L["Poison"]] = "poison", [L["Burning"]] = "burn", [L["Decay"]] = "decay", [L["Agony"]] = "agony", [L["Static"]] = "static" }
+UI.DAMAGE_TYPE_BY_KEYWORD = { [L["hoa.addon.bleed"]] = "bleed", [L["hoa.addon.poison"]] = "poison", [L["hoa.addon.burning"]] = "burn", [L["hoa.addon.decay"]] = "decay", [L["hoa.addon.agony"]] = "agony", [L["hoa.addon.static"]] = "static" }
 UI.CLASS_NAMES = {
-    WARRIOR = L["Warrior"], PALADIN = L["Paladin"], HUNTER = L["Hunter"], ROGUE = L["Rogue"], PRIEST = L["Priest"],
-    SHAMAN = L["Shaman"], MAGE = L["Mage"], WARLOCK = L["Warlock"], DRUID = L["Druid"],
+    WARRIOR = L["hoa.addon.warrior"], PALADIN = L["hoa.addon.paladin"], HUNTER = L["hoa.addon.hunter"], ROGUE = L["hoa.addon.rogue"], PRIEST = L["hoa.addon.priest"],
+    SHAMAN = L["hoa.addon.shaman"], MAGE = L["hoa.addon.mage"], WARLOCK = L["hoa.addon.warlock"], DRUID = L["hoa.addon.druid"],
 }
 
 function UI.PlayerClassName()
@@ -181,12 +181,12 @@ function UI.FormatGold(copper)
     copper = tonumber(copper) or 0
     local gold = floor(copper / 10000)
     local silver = floor(mod(copper, 10000) / 100)
-    local text = format(L["|cffeda55f%dc|r"], mod(copper, 100))
+    local text = format(L["hoa.addon.cffeda55f_dc_r"], mod(copper, 100))
     if silver > 0 or gold > 0 then
-        text = format(L["|cffc7c7cf%ds|r "], silver) .. text
+        text = format(L["hoa.addon.cffc7c7cf_ds_r"], silver) .. text
     end
     if gold > 0 then
-        text = format(L["|cffffd700%dg|r "], gold) .. text
+        text = format(L["hoa.addon.cffffd700_dg_r"], gold) .. text
     end
     return text
 end
@@ -203,7 +203,7 @@ end
 
 function UI.AddQuestProgress(tooltip, lock)
     if lock and lock.amount and lock.amount > 1 then
-        tooltip:AddLine(L("Progress: {1}/{2}", UI.Thousands(math.min(lock.progress, lock.amount)), UI.Thousands(lock.amount)), 0.62, 0.62, 0.62)
+        tooltip:AddLine(L("hoa.addon.progress_1_2", UI.Thousands(math.min(lock.progress, lock.amount)), UI.Thousands(lock.amount)), 0.62, 0.62, 0.62)
     end
 end
 
@@ -212,11 +212,11 @@ function UI.LevelName(level)
     if level <= 0 then
         return "-"
     elseif level <= 4 then
-        return L("{1} {2}", L["Normal"], level)
+        return L("hoa.addon.1_2", L["hoa.addon.normal"], level)
     elseif level <= 9 then
-        return L("{1} {2}", L["Heroic"], level - 4)
+        return L("hoa.addon.1_2", L["hoa.addon.heroic"], level - 4)
     end
-    return L("{1} {2}", L["Mythic"], level - 9)
+    return L("hoa.addon.1_2", L["hoa.addon.mythic"], level - 9)
 end
 
 function UI.FormatTime(seconds)
@@ -890,7 +890,7 @@ function UI.PanelTabs(panel, x, onClick)
 end
 
 UI.INNKEEPER_ENTRY = 900140
-UI.INNKEEPER_NAME = L["Tarn Oakhoof"]
+UI.INNKEEPER_NAME = L["hoa.addon.tarn_oakhoof"]
 
 UI.npcNames = {}
 

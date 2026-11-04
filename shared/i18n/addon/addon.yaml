@@ -1,6 +1,3 @@
-# Imported by tools/i18n/extract_addon_locale.py from
-# addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua. Edit this file, then run
-# tools/i18n/gen_addon_locale.py.
 - id: hoa.addon.the_controller_page_in_the_pause_menu_shows_what_every_butto
   enUS: '
 
@@ -5008,55 +5005,42 @@
 - id: hoa.addon.r_healed_cffffffff
   enUS: '|r · healed |cffffffff'
   zhCN: '|r · 治疗 |cffffffff'
-
 - id: hoa.addon.action_bars
   enUS: Action Bars
   zhCN: 动作条
-
 - id: hoa.addon.addons
   enUS: AddOns
   zhCN: 插件
-
 - id: hoa.addon.always
   enUS: Always
   zhCN: 始终
-
 - id: hoa.addon.always_show_actionbars
   enUS: Always Show ActionBars
   zhCN: 始终显示动作条
-
 - id: hoa.addon.apply
   enUS: Apply
   zhCN: 应用
-
 - id: hoa.addon.arc
   enUS: Arc
   zhCN: 弧形
-
 - id: hoa.addon.attack_on_assist
   enUS: Attack on assist
   zhCN: 协助攻击
-
 - id: hoa.addon.audio
   enUS: Audio
   zhCN: 声音
-
 - id: hoa.addon.auto_clear_afk
   enUS: Auto Clear AFK
   zhCN: 自动取消暂离
-
 - id: hoa.addon.auto_loot
   enUS: Auto Loot
   zhCN: 自动拾取
-
 - id: hoa.addon.auto_self_cast
   enUS: Auto Self Cast
   zhCN: 自动自我施法
-
 - id: hoa.addon.automatic_quest_tracking
   enUS: Automatic Quest Tracking
   zhCN: 自动追踪任务
-
 - id: hoa.addon.automatic_fills_your_screen_at_its_own_resolution_pick_a_siz
   enUS: 'Automatic fills your screen at its own resolution.
 
@@ -5066,35 +5050,27 @@
 
 
     选择某个尺寸后，游戏会改为在相应大小的窗口中运行。在 Steam Deck 和掌机上，窗口会被拉伸以铺满屏幕。如果想保持全屏、只以更低或更高的分辨率绘制 3D 世界，请使用渲染缩放。'
-
 - id: hoa.addon.block_trades
   enUS: Block Trades
   zhCN: 拒绝交易
-
 - id: hoa.addon.character_specific_key_bindings
   enUS: Character Specific Key Bindings
   zhCN: 角色专用按键绑定
-
 - id: hoa.addon.chat
   enUS: Chat
   zhCN: 聊天
-
 - id: hoa.addon.combat
   enUS: Combat
   zhCN: 战斗
-
 - id: hoa.addon.detailed_loot_information
   enUS: Detailed Loot Information
   zhCN: 详细拾取信息
-
 - id: hoa.addon.disable_spam_filter
   enUS: Disable Spam Filter
   zhCN: 禁用广告过滤
-
 - id: hoa.addon.display_mode
   enUS: Display Mode
   zhCN: 显示模式
-
 - id: hoa.addon.draws_the_3d_world_at_a_fraction_of_the_window_s_resolution_
   enUS: 'Draws the 3D world at a fraction of the window''s resolution, or larger than it. The interface is unaffected at any setting.
 
@@ -5104,35 +5080,27 @@
 
 
     低于100%会用清晰度换取帧率；高于100%则是超级采样，以帧率为代价让边缘更平滑。点击“应用”后生效。'
-
 - id: hoa.addon.enable_sound_in_background
   enUS: Enable Sound in Background
   zhCN: 后台播放声音
-
 - id: hoa.addon.environment_detail
   enUS: Environment Detail
   zhCN: 环境细节
-
 - id: hoa.addon.game
   enUS: Game
   zhCN: 游戏
-
 - id: hoa.addon.gameplay
   enUS: Gameplay
   zhCN: 游戏性
-
 - id: hoa.addon.graphics
   enUS: Graphics
   zhCN: 图像
-
 - id: hoa.addon.guild_member_alert
   enUS: Guild Member Alert
   zhCN: 公会成员提示
-
 - id: hoa.addon.instant_quest_text
   enUS: Instant Quest Text
   zhCN: 任务文本即时显示
-
 - id: hoa.addon.keeps_the_game_s_sound_playing_while_you_are_working_in_anot
   enUS: 'Keeps the game''s sound playing while you are working in another window.
 
@@ -5142,11 +5110,9 @@
 
 
     关闭时，切换到其他窗口会让游戏静音，切回来再恢复。静音期间声音仍在继续播放，所以你回来时较长的音效可能已经放完了。'
-
 - id: hoa.addon.keybindings
   enUS: Keybindings
   zhCN: 按键设置
-
 - id: hoa.addon.lightens_or_darkens_the_whole_picture_nights_caves_and_inter
   enUS: 'Lightens or darkens the whole picture — nights, caves and interiors are what it is for.
 
@@ -5156,143 +5122,108 @@
 
 
     它与 1.12 通过显示器自身的伽马曲线所做的校正相同，只是当年只能在独占全屏下生效。benilla 改为对最终画面进行校正，因此在两种显示模式下都能使用。'
-
 - id: hoa.addon.lock_actionbars
   enUS: Lock ActionBars
   zhCN: 锁定动作条
-
 - id: hoa.addon.nameplates
   enUS: Nameplates
   zhCN: 姓名板
-
 - id: hoa.addon.never
   enUS: Never
   zhCN: 从不
-
 - id: hoa.addon.no_results_found
   enUS: No results found.
   zhCN: 未找到结果。
-
 - id: hoa.addon.party
   enUS: Party
   zhCN: 小队
-
 - id: hoa.addon.party_or_raid
   enUS: Party or Raid
   zhCN: 小队或团队
-
 - id: hoa.addon.profanity_filter
   enUS: Profanity Filter
   zhCN: 语言过滤器
-
 - id: hoa.addon.raid
   enUS: Raid
   zhCN: 团队
-
 - id: hoa.addon.remove_chat_hover_delay
   enUS: Remove Chat Hover Delay
   zhCN: 移除聊天悬停延迟
-
 - id: hoa.addon.render_scale
   enUS: Render Scale
   zhCN: 渲染缩放
-
 - id: hoa.addon.resolution
   enUS: Resolution
   zhCN: 分辨率
-
 - id: hoa.addon.search_results
   enUS: Search Results
   zhCN: 搜索结果
-
 - id: hoa.addon.show_chat_bubbles
   enUS: Show Chat Bubbles
   zhCN: 显示聊天气泡
-
 - id: hoa.addon.show_combo_points
   enUS: Show Combo Points
   zhCN: 显示连击点
-
 - id: hoa.addon.show_detailed_tooltips
   enUS: Show Detailed Tooltips
   zhCN: 显示详细提示
-
 - id: hoa.addon.show_energy_gains
   enUS: Show Energy Gains
   zhCN: 显示能量获得
-
 - id: hoa.addon.show_friendly_healer_names
   enUS: Show Friendly Healer Names
   zhCN: 显示友方治疗者姓名
-
 - id: hoa.addon.show_honor_gained
   enUS: Show Honor Gained
   zhCN: 显示荣誉获得
-
 - id: hoa.addon.show_loading_screen_tips
   enUS: Show Loading Screen Tips
   zhCN: 显示载入界面提示
-
 - id: hoa.addon.show_party_chat_bubbles
   enUS: Show Party Chat Bubbles
   zhCN: 显示小队聊天气泡
-
 - id: hoa.addon.show_reactive_spells_and_abilities
   enUS: Show Reactive Spells and Abilities
   zhCN: 显示可触发法术和技能
-
 - id: hoa.addon.show_reputation
   enUS: Show Reputation
   zhCN: 显示声望
-
 - id: hoa.addon.show_target_of_target
   enUS: Show Target of Target
   zhCN: 显示目标的目标
-
 - id: hoa.addon.show_when
   enUS: Show When
   zhCN: 显示时机
-
 - id: hoa.addon.smart
   enUS: Smart
   zhCN: 智能
-
 - id: hoa.addon.status_bar_text
   enUS: Status Bar Text
   zhCN: 状态栏文字
-
 - id: hoa.addon.sticky_targeting
   enUS: Sticky Targeting
   zhCN: 粘性目标
-
 - id: hoa.addon.system
   enUS: System
   zhCN: 系统
-
 - id: hoa.addon.terrain_distance
   enUS: Terrain Distance
   zhCN: 地形距离
-
 - id: hoa.addon.ui_scale
   enUS: UI Scale
   zhCN: 界面缩放
-
 - id: hoa.addon.vertical_sync
   enUS: Vertical Sync
   zhCN: 垂直同步
-
 - id: hoa.addon.weather_intensity
   enUS: Weather Intensity
   zhCN: 天气强度
-
 - id: hoa.addon.windowed
   enUS: Windowed
   zhCN: 窗口
-
 - id: hoa.addon.windowed_fullscreen
   enUS: Windowed (Fullscreen)
   zhCN: 窗口（全屏）
-
 - id: hoa.addon.windowed_fullscreen_fills_the_screen_with_a_borderless_windo
   enUS: 'Windowed (Fullscreen) fills the screen with a borderless window; Windowed runs in an ordinary one.
 
@@ -5302,127 +5233,126 @@
 
 
     没有独占全屏模式。WoW 本身在 8.0.1 中移除了它，现代魔兽经典版也只提供这两种方式。'
-
 - id: hoa.addon.show_bottom_left_actionbar
   enUS: Show Bottom Left ActionBar
   zhCN: 显示左下方动作条
-
 - id: hoa.addon.show_bottom_right_actionbar
   enUS: Show Bottom Right ActionBar
   zhCN: 显示右下方动作条
-
 - id: hoa.addon.show_right_actionbar
   enUS: Show Right ActionBar
   zhCN: 显示右侧动作条
-
 - id: hoa.addon.show_right_actionbar_2
   enUS: Show Right ActionBar 2
   zhCN: 显示右侧动作条 2
-
 - id: hoa.addon.enemy_name_plates
   enUS: Enemy Name Plates
   zhCN: 敌方姓名板
-
 - id: hoa.addon.friendly_name_plates
   enUS: Friendly Name Plates
   zhCN: 友方姓名板
-
 - id: hoa.addon.brightness
   enUS: Brightness
   zhCN: 亮度
-
 - id: hoa.addon.low
   enUS: Low
   zhCN: 低
-
 - id: hoa.addon.medium
   enUS: Medium
   zhCN: 中
-
 - id: hoa.addon.high
   enUS: High
   zhCN: 高
-
 - id: hoa.addon.minimal
   enUS: Minimal
   zhCN: 最低
-
 - id: hoa.addon.full
   enUS: Full
   zhCN: 最高
-
 - id: hoa.addon.show_tutorials
   enUS: Show Tutorials
   zhCN: 显示教程
-
 - id: hoa.addon.tip_of_the_day
   enUS: Tip of the Day
   zhCN: 每日提示
-
 - id: hoa.addon.newbie_tips
   enUS: Newbie Tips
   zhCN: 新手提示
-
 - id: hoa.addon.unbind_key
   enUS: Unbind Key
   zhCN: 取消绑定按键
-
 - id: hoa.addon.spell_detail
   enUS: Spell Detail
   zhCN: 法术细节
-
 - id: hoa.addon.click_this_to_toggle_between_general_key_bindings_and_key_bi
   enUS: Click this to toggle between general key bindings and key bindings specific to this character.
   zhCN: 点击此处在通用按键绑定和此角色的专用按键绑定之间切换。
-
 - id: hoa.addon.yards
   enUS: yards
   zhCN: 码
-
 - id: hoa.addon.show_the_bottom_left_action_bar
   enUS: Show the bottom left action bar.
   zhCN: 显示左下方动作条。
-
 - id: hoa.addon.show_the_bottom_right_action_bar
   enUS: Show the bottom right action bar.
   zhCN: 显示右下方动作条。
-
 - id: hoa.addon.show_the_right_action_bar
   enUS: Show the right action bar.
   zhCN: 显示右侧动作条。
-
 - id: hoa.addon.show_the_second_right_action_bar
   enUS: Show the second right action bar.
   zhCN: 显示第二条右侧动作条。
-
 - id: hoa.addon.always_show_action_bars
   enUS: Always show action bars.
   zhCN: 始终显示动作条。
-
 - id: hoa.addon.lock_the_action_bars_in_place
   enUS: Lock the action bars in place.
   zhCN: 锁定动作条，防止拖动。
-
 - id: hoa.addon.adjust_the_size_of_the_interface_elements
   enUS: Adjust the size of the interface elements.
   zhCN: 调整界面元素的大小。
-
 - id: hoa.addon.adjust_how_far_terrain_is_visible
   enUS: Adjust how far terrain is visible.
   zhCN: 调整地形可见距离。
-
 - id: hoa.addon.adjust_the_level_of_environmental_detail
   enUS: Adjust the level of environmental detail.
   zhCN: 调整环境细节。
-
 - id: hoa.addon.adjust_the_level_of_spell_effect_detail
   enUS: Adjust the level of spell effect detail.
   zhCN: 调整法术效果的细节程度。
-
 - id: hoa.addon.adjust_the_intensity_of_weather_effects
   enUS: Adjust the intensity of weather effects.
   zhCN: 调整天气效果强度。
-
 - id: hoa.addon.synchronize_the_frame_rate_with_the_monitor_s_refresh_rate
   enUS: Synchronize the frame rate with the monitor's refresh rate.
   zhCN: 将帧率与显示器刷新率同步。
+- id: hoa.addon.language_english
+  enUS: English
+  zhCN: English
+- id: hoa.addon.language_simplified_chinese
+  enUS: 简体中文
+  zhCN: 简体中文
+- id: hoa.addon.human
+  enUS: Human
+  zhCN: 人类
+- id: hoa.addon.dwarf
+  enUS: Dwarf
+  zhCN: 矮人
+- id: hoa.addon.night_elf
+  enUS: Night Elf
+  zhCN: 暗夜精灵
+- id: hoa.addon.gnome
+  enUS: Gnome
+  zhCN: 侏儒
+- id: hoa.addon.orc
+  enUS: Orc
+  zhCN: 兽人
+- id: hoa.addon.undead
+  enUS: Undead
+  zhCN: 亡灵
+- id: hoa.addon.tauren
+  enUS: Tauren
+  zhCN: 牛头人
+- id: hoa.addon.troll
+  enUS: Troll
+  zhCN: 巨魔

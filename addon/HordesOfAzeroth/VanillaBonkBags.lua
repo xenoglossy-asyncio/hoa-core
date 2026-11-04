@@ -146,8 +146,8 @@ local function Layout()
     local rows = max(1, ceil(index / COLUMNS))
     frame:SetWidth(PADDING * 2 + COLUMNS * SLOT + (COLUMNS - 1) * SPACING)
     frame:SetHeight(TITLE_HEIGHT + rows * SLOT + (rows - 1) * SPACING + FOOTER_HEIGHT + 4)
-    frame.title:SetText(L("{1}'s Bags", UnitName("player") or L["Character"]))
-    frame.free:SetText(L("{1} of {2} slots free", free, total))
+    frame.title:SetText(L("hoa.addon.1_s_bags", UnitName("player") or L["hoa.addon.character"]))
+    frame.free:SetText(L("hoa.addon.1_of_2_slots_free", free, total))
     MoneyFrame_Update("VanillaBonkBagsMoney", GetMoney())
 end
 

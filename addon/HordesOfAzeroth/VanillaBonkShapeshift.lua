@@ -2,10 +2,10 @@ local L = VanillaBonkL
 local UI = VanillaBonkUI
 
 local SHAPESHIFT = "VANILLABONK_SHAPESHIFT"
-local SPELL_NAME = L["Shapeshift"]
+local SPELL_NAME = L["hoa.addon.shapeshift"]
 local SEND_INTERVAL = 0.25
 local GLYPH_SIZE = 16
-BINDING_NAME_VANILLABONK_SHAPESHIFT = L["Shapeshift"]
+BINDING_NAME_VANILLABONK_SHAPESHIFT = L["hoa.addon.shapeshift"]
 
 local FORM_ICONS = {
     moonkin = "Interface\\Icons\\Spell_Nature_ForceOfNature",

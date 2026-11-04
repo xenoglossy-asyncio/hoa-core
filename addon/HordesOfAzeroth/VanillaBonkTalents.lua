@@ -141,14 +141,14 @@ local function Missing(node)
     local tree = TreeOf(node)
     local gate = Gate(tree, node.row)
     if tree.spent < gate then
-        return L("Requires {1} points in {2}.", gate, tree.name)
+        return L("hoa.addon.requires_1_points_in_2_2", gate, tree.name)
     end
     if not HasParent(node) then
-        return L["Requires a connected talent."]
+        return L["hoa.addon.requires_a_connected_talent"]
     end
     local rival = Excluded(node)
     if rival then
-        return L("Can't be learned with {1}.", rival.name)
+        return L("hoa.addon.can_t_be_learned_with_1", rival.name)
     end
     return nil
 end
@@ -198,7 +198,7 @@ local function ShowTooltip(button)
     local node = button.node
     GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
     if button.pair then
-        GameTooltip:AddLine(L["Choose one"], 1, 1, 1)
+        GameTooltip:AddLine(L["hoa.addon.choose_one"], 1, 1, 1)
         for _, choice in ipairs(button.pair) do
             GameTooltip:AddLine(choice.name, 1, 0.82, 0)
             GameTooltip:AddLine(choice.description, 0.9, 0.9, 0.9, 1)
@@ -208,19 +208,19 @@ local function ShowTooltip(button)
         if missing then
             GameTooltip:AddLine(missing, 1, 0.1, 0.1, 1)
         elseif not VanillaBonkTalents.readOnly then
-            GameTooltip:AddLine(L["Click to choose"], 0.1, 1, 0.1)
+            GameTooltip:AddLine(L["hoa.addon.click_to_choose"], 0.1, 1, 0.1)
         end
         GameTooltip:Show()
         return
     end
     GameTooltip:AddLine(node.name, 1, 1, 1)
     if not IsFree(node) then
-        GameTooltip:AddLine(L("Rank {1}/{2}", node.rank, node.maxRank), 1, 1, 1)
+        GameTooltip:AddLine(L("hoa.addon.rank_1_2_2", node.rank, node.maxRank), 1, 1, 1)
     end
     GameTooltip:AddLine(DescriptionAtRank(node, node.rank), 1, 0.82, 0, 1)
     if node.rank > 0 and node.rank < node.maxRank and not IsFree(node) then
         GameTooltip:AddLine(" ")
-        GameTooltip:AddLine(L["Next rank:"], 1, 1, 1)
+        GameTooltip:AddLine(L["hoa.addon.next_rank"], 1, 1, 1)
         GameTooltip:AddLine(DescriptionAtRank(node, node.rank + 1), 1, 0.82, 0, 1)
     end
     VanillaBonkUI.AddGlossary(GameTooltip, { node.description })
@@ -228,12 +228,12 @@ local function ShowTooltip(button)
     if missing then
         GameTooltip:AddLine(missing, 1, 0.1, 0.1, 1)
     elseif IsFree(node) then
-        GameTooltip:AddLine(L["Always learned"], 0.6, 0.6, 0.6)
+        GameTooltip:AddLine(L["hoa.addon.always_learned"], 0.6, 0.6, 0.6)
     elseif node.rank < node.maxRank and not VanillaBonkTalents.readOnly then
-        GameTooltip:AddLine(L["Click to learn"], 0.1, 1, 0.1)
+        GameTooltip:AddLine(L["hoa.addon.click_to_learn"], 0.1, 1, 0.1)
     end
     if node.rank > 0 and not IsFree(node) and not VanillaBonkTalents.readOnly then
-        GameTooltip:AddLine(L["Right-click to refund"], 0.7, 0.7, 0.7)
+        GameTooltip:AddLine(L["hoa.addon.right_click_to_refund"], 0.7, 0.7, 0.7)
     end
     GameTooltip:Show()
 end
@@ -707,7 +707,7 @@ local function DrawTree(panel, tree, height)
         if tree.spent < gate then
             panel.gates[1] = panel.gates[1] or CreateGate(panel)
             local missing = gate - tree.spent
-            PlaceGate(panel, panel.gates[1], -Snap(TOP_PAD + (row - 0.5) * ROW_STEP), VanillaBonkL(missing == 1 and "{1} point to unlock" or "{1} points to unlock", missing), false)
+            PlaceGate(panel, panel.gates[1], -Snap(TOP_PAD + (row - 0.5) * ROW_STEP), VanillaBonkL(missing == 1 and "hoa.addon.1_point_to_unlock" or "hoa.addon.1_points_to_unlock", missing), false)
             break
         end
     end
@@ -728,7 +728,7 @@ function T.Show(shop, data, top)
         panel:SetHeight(height)
         LayoutArt(panel, tree.background, PANEL_WIDTH, height)
         panel.name:SetText(tree.name)
-        panel.spent:SetText(L(tree.spent == 1 and "{1} point" or "{1} points", tree.spent))
+        panel.spent:SetText(L(tree.spent == 1 and "hoa.addon.1_point" or "hoa.addon.1_points", tree.spent))
         DrawTree(panel, tree, height)
         panel:Show()
     end

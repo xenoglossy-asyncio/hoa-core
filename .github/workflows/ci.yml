@@ -48,8 +48,12 @@ jobs:
         run: python tools/i18n/gen_addon_locale.py --check
       - name: Check generated client language packs
         run: python tools/i18n/gen_client_pack.py --check
+      - name: Check generated launcher strings
+        run: python tools/i18n/gen_launcher_strings.py --check
       - name: Check client UI keys
         run: python tools/i18n/check_ui_xml.py
+      - name: Check addon/Glue call sites
+        run: python tools/i18n/check_code_text.py
       - name: Test the language catalogue
         run: python -m unittest discover -s tools/i18n -p "test_*.py"
 

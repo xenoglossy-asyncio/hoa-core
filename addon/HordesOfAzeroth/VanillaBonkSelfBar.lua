@@ -12,9 +12,9 @@ local FRAME_NUMBER_SIZE = 9
 local NUMBERED_PLATE = { width = 78, height = 14, name = 0, percent = 0 }
 
 UI.HEALTH_BAR_MODES = {
-    { value = "frame", label = L["Unit Frame"] },
-    { value = "plate", label = L["Nameplate"] },
-    { value = "both", label = L["Both"] },
+    { value = "frame", label = L["hoa.addon.unit_frame"] },
+    { value = "plate", label = L["hoa.addon.nameplate"] },
+    { value = "both", label = L["hoa.addon.both"] },
 }
 
 local shield = 0

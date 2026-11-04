@@ -153,7 +153,7 @@ SlashCmdList["VANILLABONKPERF"] = function(text)
     if text == "reset" then
         VanillaBonkPerfLog.slow = {}
         VanillaBonkPerfLog.minutes = {}
-        DEFAULT_CHAT_FRAME:AddMessage(L["Hordes of Azeroth: performance log cleared."])
+        DEFAULT_CHAT_FRAME:AddMessage(L["hoa.addon.hordes_of_azeroth_performance_log_cleared"])
         return
     end
     local minutes = VanillaBonkPerfLog.minutes
@@ -161,5 +161,5 @@ SlashCmdList["VANILLABONKPERF"] = function(text)
     for index = first, getn(minutes) do
         DEFAULT_CHAT_FRAME:AddMessage(minutes[index])
     end
-    DEFAULT_CHAT_FRAME:AddMessage(format(L["Hordes of Azeroth: %d slow seconds logged. Type /bonkperf reset to clear."], getn(VanillaBonkPerfLog.slow)))
+    DEFAULT_CHAT_FRAME:AddMessage(format(L["hoa.addon.hordes_of_azeroth_d_slow_seconds_logged_type_bonkperf_reset_"], getn(VanillaBonkPerfLog.slow)))
 end

@@ -21,7 +21,7 @@ local SECTION_ROWS = {
     {
         {
             name = "Hordes of Azeroth",
-            title = L["Hordes of Azeroth"],
+            title = L["hoa.addon.hordes_of_azeroth"],
             height = 4 * ROW + 20,
             columns = 3,
             own = { { DISPLAY[1], 1, 0 }, { DISPLAY[2], 1, 1 }, { DISPLAY[3], 1, 2 }, { DISPLAY[4], 2, 2 }, { DISPLAY[5], 3, 0 }, { DISPLAY[6], 1, 3 } },
@@ -32,7 +32,7 @@ local SECTION_ROWS = {
     {
         {
             name = "Interact Key",
-            title = L["Interact Key"],
+            title = L["hoa.addon.interact_key"],
             height = 3 * ROW + 20,
             columns = 3,
             own = {
@@ -46,7 +46,7 @@ local SECTION_ROWS = {
     {
         {
             name = "Controls",
-            title = L["Controls"],
+            title = L["hoa.addon.controls"],
             height = 88,
             columns = 2,
             sliders = { { 1, 1, 0 } },
@@ -55,7 +55,7 @@ local SECTION_ROWS = {
         },
         {
             name = "Camera",
-            title = L["Camera"],
+            title = L["hoa.addon.camera"],
             height = 6 * ROW + 20,
             columns = 2,
             dropdowns = { { "UIOptionsFrameCameraDropDown", 1, 0 } },
@@ -66,7 +66,7 @@ local SECTION_ROWS = {
     {
         {
             name = "Display",
-            title = L["Display"],
+            title = L["hoa.addon.display"],
             height = 6 * ROW + 20,
             columns = 2,
             checks = {
@@ -77,7 +77,7 @@ local SECTION_ROWS = {
         },
         {
             name = "Floating Combat Text",
-            title = L["Floating Combat Text"],
+            title = L["hoa.addon.floating_combat_text"],
             height = 6 * ROW + 20,
             columns = 2,
             checks = {
@@ -158,7 +158,7 @@ local function BuildHealthBarDropdown(box)
     local dropdown = CreateFrame("Frame", "VanillaBonkOptionsHealthBar", box, "UIDropDownMenuTemplate")
     local label = dropdown:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
     label:SetPoint("BOTTOMLEFT", dropdown, "TOPLEFT", 16, 3)
-    label:SetText(L["Your Health Bar"])
+    label:SetText(L["hoa.addon.your_health_bar"])
     UIDropDownMenu_SetWidth(110, dropdown)
     UIDropDownMenu_Initialize(dropdown, function()
         for _, mode in ipairs(UI.HEALTH_BAR_MODES) do
@@ -185,7 +185,7 @@ local function BuildLanguageDropdown(box)
     local dropdown = CreateFrame("Frame", "VanillaBonkOptionsLanguage", box, "UIDropDownMenuTemplate")
     local label = dropdown:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
     label:SetPoint("BOTTOMLEFT", dropdown, "TOPLEFT", 16, 3)
-    label:SetText(L["Language"])
+    label:SetText(L["hoa.addon.language"])
     UIDropDownMenu_SetWidth(110, dropdown)
     UIDropDownMenu_Initialize(dropdown, function()
         for _, choice in ipairs(UI.LANGUAGES) do
@@ -211,8 +211,8 @@ local function BuildInteractKey(box)
     row:SetHeight(26)
     row.label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     row.label:SetPoint("LEFT", row, "LEFT", 0, 0)
-    row.label:SetText(L["Interact key"])
-    row.change = UI.Button(row, 70, L["Change"], function()
+    row.label:SetText(L["hoa.addon.interact_key_2"])
+    row.change = UI.Button(row, 70, L["hoa.addon.change"], function()
         PlaySound("igMainMenuOptionCheckBoxOn")
         UI.CaptureKey(binding)
     end)
@@ -282,7 +282,7 @@ end
 local function BuildButtons(last)
     local reset = CreateFrame("Button", "VanillaBonkOptionsResetTutorial", frame, "OptionsButtonTemplate")
     reset:SetWidth(130)
-    reset:SetText(L["Reset Tutorial"])
+    reset:SetText(L["hoa.addon.reset_tutorial"])
     reset:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -12)
     reset:SetScript("OnClick", function()
         PlaySound("igMainMenuOptionCheckBoxOn")
@@ -292,7 +292,7 @@ local function BuildButtons(last)
     end)
     reset:SetScript("OnEnter", function()
         GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-        GameTooltip:SetText(L["Shows the Hordes of Azeroth tips again from the start."], 1, 1, 1, 1, 1)
+        GameTooltip:SetText(L["hoa.addon.shows_the_hordes_of_azeroth_tips_again_from_the_start"], 1, 1, 1, 1, 1)
     end)
     reset:SetScript("OnLeave", function()
         GameTooltip:Hide()

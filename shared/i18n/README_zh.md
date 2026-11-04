@@ -30,12 +30,13 @@
 
 ## 当前种子
 
-目录现在有 995 条服务端消息（`messages/server.yaml`）、1548 条插件文本（`addon/addon.yaml`）和 1324 条客户端界面文本（`ui/options.yaml`、`ui/glue.yaml`、`ui/keybindings.yaml`），都包含 enUS 和 zhCN。`BonkStrings.h/.cpp`、`addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua` 和客户端语言包都由它生成。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
+目录现在有 995 条服务端消息（`messages/server.yaml`）、1558 条插件文本（`addon/addon.yaml`）、1324 条客户端界面文本（`ui/options.yaml`、`ui/glue.yaml`、`ui/keybindings.yaml`）和 304 条启动器文本（`launcher/launcher.yaml`），都包含 enUS 和 zhCN。`BonkStrings.h/.cpp`、`addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua` 和客户端语言包都由它生成。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
 
 ```bash
 python tools/i18n/gen_server_strings.py       # 从目录生成 BonkStrings.h/.cpp
 python tools/i18n/gen_addon_locale.py         # 生成插件语言表
 python tools/i18n/gen_client_pack.py          # 生成客户端界面语言包
+python tools/i18n/gen_launcher_strings.py      # 生成启动器字符串表
 python tools/i18n/check.py                    # 校验 ID、ref、global、占位符和必需语言
 python tools/i18n/build.py                    # 生成 shared/i18n/generated
 python tools/i18n/check_ui_xml.py             # 校验已发布 XML/Glue 的键
@@ -48,6 +49,7 @@ python -m unittest discover -s tools/i18n -p "test_*.py"
 - `server/src/game/Bonk/BonkStrings.h/.cpp`：枚举 + 英文源，由目录生成
 - `shared/i18n/generated/`：JSON 目录（翻译工具/导出）
 - `client/crates/benilla-app/assets/i18n/<locale>.json`：客户端界面语言包
+- `launcher/LauncherStrings.g.cs`：启动器字符串表
 - `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`：生成的插件语言表（文件名由 TOC 固定）
 
 ## 客户端与缓存

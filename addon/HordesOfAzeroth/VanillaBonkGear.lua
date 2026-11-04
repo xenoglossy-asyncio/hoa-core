@@ -15,7 +15,7 @@ local CARD_HEAD = 84
 local CARD_FOOT = 16
 local EMPTY_HEIGHT = 170
 local CARD_GAP = 24
-local SLOT_NAMES = { [10] = L["Ring 1"], [11] = L["Ring 2"], [12] = L["Trinket 1"], [13] = L["Trinket 2"], [15] = L["Main Hand"], [16] = L["Off Hand"] }
+local SLOT_NAMES = { [10] = L["hoa.addon.ring_1"], [11] = L["hoa.addon.ring_2"], [12] = L["hoa.addon.trinket_1"], [13] = L["hoa.addon.trinket_2"], [15] = L["hoa.addon.main_hand"], [16] = L["hoa.addon.off_hand"] }
 
 local offer = nil
 
@@ -34,12 +34,12 @@ frame.title = frame:CreateFontString(nil, "OVERLAY")
 frame.title:SetFont(UI.TITLE_FONT, 40, "OUTLINE")
 frame.title:SetPoint("CENTER", frame, "CENTER", 0, 210)
 frame.title:SetTextColor(1, 0.82, 0)
-frame.title:SetText(L["Loot"])
+frame.title:SetText(L["hoa.addon.loot"])
 
 frame.subtitle = UI.Text(frame, 13)
 frame.subtitle:SetPoint("CENTER", frame, "CENTER", 0, 172)
 frame.subtitle:SetTextColor(0.9, 0.83, 0.64)
-frame.subtitle:SetText(L["Wear it, carry it, or salvage it for Valor"])
+frame.subtitle:SetText(L["hoa.addon.wear_it_carry_it_or_salvage_it_for_valor"])
 for side = 1, 2 do
     local line = frame:CreateTexture(nil, "ARTWORK")
     line:SetTexture(UI.FLAT)
@@ -90,13 +90,13 @@ local function Card(name, label)
     card.empty = UI.Text(card, 13)
     card.empty:SetPoint("CENTER", card, "CENTER", 0, -10)
     card.empty:SetTextColor(0.6, 0.6, 0.6)
-    card.empty:SetText(L["Nothing equipped in this slot"])
+    card.empty:SetText(L["hoa.addon.nothing_equipped_in_this_slot"])
     card:Hide()
     return card
 end
-local newCard = Card("VanillaBonkGearNewTip", L["New"])
-local wornCard = Card("VanillaBonkGearWornTip", L["Equipped"])
-local otherCard = Card("VanillaBonkGearOtherTip", L["Equipped"])
+local newCard = Card("VanillaBonkGearNewTip", L["hoa.addon.new"])
+local wornCard = Card("VanillaBonkGearWornTip", L["hoa.addon.equipped"])
+local otherCard = Card("VanillaBonkGearOtherTip", L["hoa.addon.equipped"])
 local newTip, wornTip, otherTip = newCard.tip, wornCard.tip, otherCard.tip
 
 frame.rule = UI.Text(frame, 12)
@@ -119,30 +119,30 @@ local function EquipIn(slot)
     end
 end
 
-frame.equip = UI.Button(frame, 140, L["Equip"], function()
+frame.equip = UI.Button(frame, 140, L["hoa.addon.equip"], function()
     EquipIn(offer and offer.slot)
 end)
 frame.equip:SetHeight(26)
 frame.equip:SetPoint("CENTER", frame, "CENTER", -80, -186)
-frame.equipOther = UI.Button(frame, 140, L["Replace"], function()
+frame.equipOther = UI.Button(frame, 140, L["hoa.addon.replace"], function()
     EquipIn(offer and offer.otherSlot)
 end)
 frame.equipOther:SetHeight(26)
 frame.equipOther:Hide()
-frame.salvage = UI.Button(frame, 160, L["Salvage"], function()
+frame.salvage = UI.Button(frame, 160, L["hoa.addon.salvage"], function()
     Send("salvage")
 end)
 frame.salvage:SetHeight(26)
 frame.salvage:SetPoint("CENTER", frame, "CENTER", 80, -186)
-frame.loot = UI.Button(frame, 90, L["Loot"], function()
+frame.loot = UI.Button(frame, 90, L["hoa.addon.loot"], function()
     Send("loot")
 end)
 frame.loot:SetHeight(26)
 frame.loot:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
-    GameTooltip:SetText(L["Loot"])
-    GameTooltip:AddLine(L["Carry it in your bags and equip it whenever you like."], 1, 1, 1, 1)
-    GameTooltip:AddLine(L["Found gear is only kept if you put it in the Extraction Vault."], 1, 0.82, 0, 1)
+    GameTooltip:SetText(L["hoa.addon.loot"])
+    GameTooltip:AddLine(L["hoa.addon.carry_it_in_your_bags_and_equip_it_whenever_you_like"], 1, 1, 1, 1)
+    GameTooltip:AddLine(L["hoa.addon.found_gear_is_only_kept_if_you_put_it_in_the_extraction_vaul_2"], 1, 0.82, 0, 1)
     GameTooltip:Show()
 end)
 frame.loot:SetScript("OnLeave", function()
@@ -265,8 +265,8 @@ local function RefreshOneSlot()
     otherCard:Hide()
     otherCard.label:Hide()
     frame.equipOther:Hide()
-    wornCard.label:SetText(ReplacesTwoHander() and L["Main Hand"] or L["Equipped"])
-    frame.equip:SetText(offer.replaced > 0 and L["Replace"] or L["Equip"])
+    wornCard.label:SetText(ReplacesTwoHander() and L["hoa.addon.main_hand"] or L["hoa.addon.equipped"])
+    frame.equip:SetText(offer.replaced > 0 and L["hoa.addon.replace"] or L["hoa.addon.equip"])
     local tallest = max(Fill(newCard, offer.entry, offer.found), Fill(wornCard, offer.replaced, WornFound(offer.slot, offer.replaced)))
     frame.rowTop = RowTop(tallest)
     local center = LayoutRow({ wornCard, newCard })
@@ -277,10 +277,10 @@ local function RefreshOneSlot()
 end
 
 local function RefreshTwoSlots()
-    wornCard.label:SetText(SLOT_NAMES[offer.slot] or L["Equipped"])
-    otherCard.label:SetText(SLOT_NAMES[offer.otherSlot] or L["Equipped"])
-    frame.equip:SetText(offer.replaced > 0 and L["Replace"] or L["Equip"])
-    frame.equipOther:SetText(offer.otherReplaced > 0 and L["Replace"] or L["Equip"])
+    wornCard.label:SetText(SLOT_NAMES[offer.slot] or L["hoa.addon.equipped"])
+    otherCard.label:SetText(SLOT_NAMES[offer.otherSlot] or L["hoa.addon.equipped"])
+    frame.equip:SetText(offer.replaced > 0 and L["hoa.addon.replace"] or L["hoa.addon.equip"])
+    frame.equipOther:SetText(offer.otherReplaced > 0 and L["hoa.addon.replace"] or L["hoa.addon.equip"])
     local tallest = max(Fill(newCard, offer.entry, offer.found), Fill(wornCard, offer.replaced, WornFound(offer.slot, offer.replaced)),
         Fill(otherCard, offer.otherReplaced, WornFound(offer.otherSlot, offer.otherReplaced)))
     frame.rowTop = RowTop(tallest)
@@ -349,14 +349,14 @@ local function HideSheet()
 end
 
 local function Open()
-    frame.salvage:SetText(L("Salvage  |cffffe873+{1} Valor|r", offer.valor))
-    local keep = L["Found gear is only kept if you put it in the Extraction Vault at a stage portal or send it home with a Hearthstone."]
+    frame.salvage:SetText(L("hoa.addon.salvage_cffffe873_1_valor_r", offer.valor))
+    local keep = L["hoa.addon.found_gear_is_only_kept_if_you_put_it_in_the_extraction_vaul"]
     if offer.quality >= QUALITY_EPIC then
-        frame.ruleText = "|cffffd100" .. keep .. L[" A permanent copy arrives by mail when the run ends, even if you die.|r"]
+        frame.ruleText = "|cffffd100" .. keep .. L["hoa.addon.a_permanent_copy_arrives_by_mail_when_the_run_ends_even_if_y"]
     else
-        frame.ruleText = "|cffbbbbbb" .. keep .. L[" Otherwise it sells for gold when the run ends.|r"]
+        frame.ruleText = "|cffbbbbbb" .. keep .. L["hoa.addon.otherwise_it_sells_for_gold_when_the_run_ends_r"]
     end
-    frame.twoHanderText = L["\n|cffff8040Replacing puts your two-handed weapon in your bags. You can equip it again from there.|r"]
+    frame.twoHanderText = L["hoa.addon.cffff8040replacing_puts_your_two_handed_weapon_in_your_bags_"]
     frame.waitUntil = nil
     frame.retries = RETRIES
     frame.retryIn = RETRY

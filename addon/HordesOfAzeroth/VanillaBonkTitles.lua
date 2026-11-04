@@ -2,14 +2,14 @@ local L = VanillaBonkL
 local UI = VanillaBonkUI
 
 local STAT_NAMES = {
-    [0] = L["Power"],
-    [1] = L["Haste"],
-    [4] = L["Maximum health"],
-    [11] = L["Duration"],
-    [15] = L["Critical strike chance"],
-    [16] = L["Critical strike damage"],
+    [0] = L["hoa.addon.power"],
+    [1] = L["hoa.addon.haste"],
+    [4] = L["hoa.addon.maximum_health"],
+    [11] = L["hoa.addon.duration"],
+    [15] = L["hoa.addon.critical_strike_chance"],
+    [16] = L["hoa.addon.critical_strike_damage_2"],
 }
-local NO_TITLE = L["No title"]
+local NO_TITLE = L["hoa.addon.no_title"]
 
 local titles = { active = 0, list = {} }
 

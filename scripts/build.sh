@@ -36,7 +36,9 @@ check_i18n() {
     python "$root/tools/i18n/gen_server_strings.py" --check
     python "$root/tools/i18n/gen_addon_locale.py" --check
     python "$root/tools/i18n/gen_client_pack.py" --check
+    python "$root/tools/i18n/gen_launcher_strings.py" --check
     python "$root/tools/i18n/check_ui_xml.py"
+    python "$root/tools/i18n/check_code_text.py"
     python -m unittest discover -s "$root/tools/i18n" -p "test_*.py"
 }
 

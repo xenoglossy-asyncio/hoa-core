@@ -69,7 +69,7 @@ do
 	end
 
 	local CLASS_NAMES = { warrior = "Warrior", paladin = "Paladin", hunter = "Hunter", rogue = "Rogue", priest = "Priest", shaman = "Shaman", mage = "Mage", warlock = "Warlock", druid = "Druid" };
-	local RACE_NAMES = { HUMAN = "Human", DWARF = "Dwarf", NIGHTELF = "Night Elf", GNOME = "Gnome", ORC = "Orc", SCOURGE = "Undead", TAUREN = "Tauren", TROLL = "Troll" };
+	local RACE_NAMES = { HUMAN = "hoa.addon.human", DWARF = "hoa.addon.dwarf", NIGHTELF = "hoa.addon.night_elf", GNOME = "hoa.addon.gnome", ORC = "hoa.addon.orc", SCOURGE = "hoa.addon.undead", TAUREN = "hoa.addon.tauren", TROLL = "hoa.addon.troll" };
 
 	local function Label(text)
 		return text and L[text] or "";
@@ -127,14 +127,14 @@ do
 		accept:SetWidth(130);
 		accept:SetHeight(26);
 		accept:SetPoint("BOTTOMRIGHT", prompt, "BOTTOM", -6, 16);
-		accept:SetText(L["Accept"]);
+		accept:SetText(L["hoa.addon.accept"]);
 		accept:SetScript("OnClick", function() Answer(prompt, 1); end);
 
 		local decline = CreateFrame("Button", "VanillaBonkCoopDecline"..index, prompt, "UIPanelButtonTemplate");
 		decline:SetWidth(130);
 		decline:SetHeight(26);
 		decline:SetPoint("BOTTOMLEFT", prompt, "BOTTOM", 6, 16);
-		decline:SetText(L["Decline"]);
+		decline:SetText(L["hoa.addon.decline"]);
 		decline:SetScript("OnClick", function() Answer(prompt, nil); end);
 
 		prompts[index] = prompt;
@@ -183,8 +183,8 @@ do
 			local request = waiting[index];
 			if ( request ) then
 				if ( not prompt.request or prompt.request.ask ~= request.ask ) then
-					prompt.title:SetText(L("{1} wants to join.", "|cffffd100"..(request.name or "").."|r"));
-					prompt.sub:SetText(L("Mastery {1} {2} {3} · Best: {4}", request.mastery, Label(RACE_NAMES[string.upper(request.race or "")]), Label(CLASS_NAMES[request.class or ""]), VanillaBonkUI.LevelName(request.best)));
+					prompt.title:SetText(L("hoa.addon.1_wants_to_join", "|cffffd100"..(request.name or "").."|r"));
+					prompt.sub:SetText(L("hoa.addon.mastery_1_2_3_best_4", request.mastery, Label(RACE_NAMES[string.upper(request.race or "")]), Label(CLASS_NAMES[request.class or ""]), VanillaBonkUI.LevelName(request.best)));
 					sound = 1;
 				end
 				prompt.request = request;
@@ -213,8 +213,8 @@ do
 			HidePrompts();
 			return;
 		end
-		lineTitle:SetText(L("Lobby \"{1}\"", host.name or ""));
-		lineSub:SetText(L("{1}/{2} players · Code: {3}", host.members, host.max or "4", host.code or ""));
+		lineTitle:SetText(L("hoa.addon.lobby_1", host.name or ""));
+		lineSub:SetText(L("hoa.addon.1_2_players_code_3", host.members, host.max or "4", host.code or ""));
 		if ( GetRealZoneText() == "GM Island" ) then
 			line:Show();
 		else
@@ -270,7 +270,7 @@ do
 	readyTitle:SetWidth(400);
 	local readySub = ready:CreateFontString(nil, "ARTWORK", "GameFontNormal");
 	readySub:SetPoint("TOP", readyTitle, "BOTTOM", 0, -6);
-	readySub:SetText(L["Ready check"]);
+	readySub:SetText(L["hoa.addon.ready_check"]);
 
 	local readyBar = CreateFrame("StatusBar", nil, ready);
 	readyBar:SetWidth(320);
@@ -291,14 +291,14 @@ do
 	yes:SetWidth(130);
 	yes:SetHeight(26);
 	yes:SetPoint("BOTTOMRIGHT", ready, "BOTTOM", -6, 16);
-	yes:SetText(L["Ready"]);
+	yes:SetText(L["hoa.addon.ready"]);
 	yes:SetScript("OnClick", function() AnswerReady(1); end);
 
 	local no = CreateFrame("Button", "VanillaBonkCoopReadyNo", ready, "UIPanelButtonTemplate");
 	no:SetWidth(130);
 	no:SetHeight(26);
 	no:SetPoint("BOTTOMLEFT", ready, "BOTTOM", 6, 16);
-	no:SetText(L["Not Ready"]);
+	no:SetText(L["hoa.addon.not_ready"]);
 	no:SetScript("OnClick", function() AnswerReady(nil); end);
 
 	ready:SetScript("OnUpdate", function()
@@ -330,14 +330,14 @@ do
 
 	local function ShowLeash(distance, radius, slow)
 		if ( distance > radius ) then
-			leashTitle:SetText(L["You're too far from your party!"]);
+			leashTitle:SetText(L["hoa.addon.you_re_too_far_from_your_party"]);
 		else
-			leashTitle:SetText(L["You're straying too far from your party."]);
+			leashTitle:SetText(L["hoa.addon.you_re_straying_too_far_from_your_party"]);
 		end
 		if ( slow > 0 ) then
-			leashSub:SetText(L("Slowed by {1}%. Return to your party.", slow));
+			leashSub:SetText(L("hoa.addon.slowed_by_1_return_to_your_party", slow));
 		else
-			leashSub:SetText(L["Return to your party."]);
+			leashSub:SetText(L["hoa.addon.return_to_your_party"]);
 		end
 		leash.left = 1.5;
 		leash:SetAlpha(1);
@@ -368,7 +368,7 @@ do
 	downOkay:SetWidth(110);
 	downOkay:SetHeight(24);
 	downOkay:SetPoint("BOTTOM", down, "BOTTOM", 0, 12);
-	downOkay:SetText(L["OK"]);
+	downOkay:SetText(L["hoa.addon.ok"]);
 	downOkay:SetScript("OnClick", function()
 		Coop.outSeen = 1;
 		down:Hide();
@@ -377,7 +377,7 @@ do
 
 	local deadNote = UIParent:CreateFontString("VanillaBonkCoopDeadNote", "OVERLAY", "GameFontNormalLarge");
 	deadNote:SetTextColor(1, 0.82, 0);
-	deadNote:SetText(L["You died"]);
+	deadNote:SetText(L["hoa.addon.you_died"]);
 	deadNote:Hide();
 
 	local function ShowDeadNote(shown)
@@ -423,7 +423,7 @@ do
 			watchBar:Hide();
 			return;
 		end
-		watchName:SetText(L("Watching {1}", name));
+		watchName:SetText(L("hoa.addon.watching_1", name));
 		watchBar:ClearAllPoints();
 		if ( VanillaBonkHeroBar ) then
 			watchBar:SetPoint("BOTTOM", VanillaBonkHeroBar, "TOP", 0, 8);
@@ -512,7 +512,7 @@ do
 		end
 		ShowDeadNote(mine);
 		if ( mine and mine.spectator ) then
-			downTitle:SetText(L["You're out for this stage. Your party fights on."]);
+			downTitle:SetText(L["hoa.addon.you_re_out_for_this_stage_your_party_fights_on"]);
 			down:SetWidth(math.max(DOWN_WIDTH, downTitle:GetStringWidth() + DOWN_PADDING));
 			downBar:Hide();
 			downOkay:Show();
@@ -523,7 +523,7 @@ do
 				down:Show();
 			end
 		elseif ( mine ) then
-			downTitle:SetText(L("You're downed! Bleeding out in {1}s.", mine.seconds));
+			downTitle:SetText(L("hoa.addon.you_re_downed_bleeding_out_in_1_s", mine.seconds));
 			down:SetWidth(math.max(DOWN_WIDTH, downTitle:GetStringWidth() + DOWN_PADDING));
 			downBar:SetStatusBarColor(1, 0.35, 0.25);
 			downBar:SetValue(math.min(100, mine.seconds * 100 / 30));
@@ -536,9 +536,9 @@ do
 		end
 		if ( VanillaBonkUI.SetReviveBar ) then
 			if ( mine and not mine.spectator and mine.reviving ) then
-				VanillaBonkUI.SetReviveBar(L["Being revived..."], mine.progress / 100);
+				VanillaBonkUI.SetReviveBar(L["hoa.addon.being_revived"], mine.progress / 100);
 			elseif ( reviving and UnitIsDeadOrGhost("player") == nil ) then
-				VanillaBonkUI.SetReviveBar(L("Reviving {1}...", reviving.name), reviving.progress / 100);
+				VanillaBonkUI.SetReviveBar(L("hoa.addon.reviving_1", reviving.name), reviving.progress / 100);
 			else
 				VanillaBonkUI.SetReviveBar(nil);
 			end
@@ -566,9 +566,9 @@ do
 			end
 		end
 		if ( mine ) then
-			VanillaBonkUI.SetWaitBar(L["Your party is waiting for you"], seconds, WAIT_TOTAL);
+			VanillaBonkUI.SetWaitBar(L["hoa.addon.your_party_is_waiting_for_you"], seconds, WAIT_TOTAL);
 		else
-			VanillaBonkUI.SetWaitBar(L("Waiting for {1}", table.concat(others, ", ")), seconds, WAIT_TOTAL);
+			VanillaBonkUI.SetWaitBar(L("hoa.addon.waiting_for_1", table.concat(others, ", ")), seconds, WAIT_TOTAL);
 		end
 	end
 

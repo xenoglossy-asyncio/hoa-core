@@ -1,120 +1,120 @@
 local L = VanillaBonkL
 
-local INTERFACE_TITLE = L["Interface Options"]
-local SOUND_TITLE = L["Sound Options"]
-local OKAY_TEXT = L["options window::Okay"]
-local CANCEL_TEXT = L["Cancel"]
-local DEFAULTS_TEXT = L["Defaults"]
-local LOW_TEXT = L["slider::Low"]
-local HIGH_TEXT = L["slider::High"]
+local INTERFACE_TITLE = L["hoa.addon.interface_options"]
+local SOUND_TITLE = L["hoa.addon.sound_options"]
+local OKAY_TEXT = L["hoa.addon.options_window_okay"]
+local CANCEL_TEXT = L["hoa.addon.cancel"]
+local DEFAULTS_TEXT = L["hoa.addon.defaults"]
+local LOW_TEXT = L["hoa.addon.slider_low"]
+local HIGH_TEXT = L["hoa.addon.slider_high"]
 
 local STRINGS = {
-    INVERT_MOUSE = L["Invert Mouse"],
-    CLICK_TO_MOVE = L["Click-to-Move"],
-    USE_UBERTOOLTIPS = L["Enhanced Tooltips"],
-    SHOW_BUFF_DURATION_TEXT = L["Buff Durations"],
-    SHOW_PLAYER_NAMES = L["Player Names"],
-    SHOW_GUILD_NAMES = L["Player Guild Names"],
-    SHOW_PLAYER_TITLES = L["Player Titles"],
-    SHOW_NPC_NAMES = L["NPC Names"],
-    SHOW_OWN_NAME = L["Show Own Name"],
-    SHOW_CLOAK = L["Show Cloak"],
-    SHOW_HELM = L["Show Helm"],
-    FOLLOW_TERRAIN = L["Follow Terrain"],
-    HEAD_BOB = L["Head Bob"],
-    WATER_COLLISION = L["Water Collision"],
-    SMART_PIVOT = L["Smart Pivot"],
-    SHOW_COMBAT_TEXT_TEXT = L["Enable Floating Combat Text"],
-    COMBAT_TEXT_SHOW_LOW_HEALTH_MANA_TEXT = L["Show Low Mana and Health"],
-    COMBAT_TEXT_SHOW_AURAS_TEXT = L["Show Auras"],
-    COMBAT_TEXT_SHOW_AURA_FADE_TEXT = L["Show Fading Auras"],
-    COMBAT_TEXT_SHOW_COMBAT_STATE_TEXT = L["Show Combat State"],
-    COMBAT_TEXT_SHOW_DODGE_PARRY_MISS_TEXT = L["Show Dodge/Parries/Misses"],
-    COMBAT_TEXT_SHOW_RESISTANCES_TEXT = L["Show Damage Reduction"],
-    SHOW_DAMAGE_TEXT = L["Show Target Damage"],
-    LOG_PERIODIC_EFFECTS = L["Periodic Damage"],
-    SHOW_PET_MELEE_DAMAGE = L["Pet Damage"],
-    OPTION_TOOLTIP_INVERT_MOUSE = L["Invert the way that the mouse affects camera pitch."],
-    OPTION_TOOLTIP_CLICK_TO_MOVE = L["Use mouse clicks to move your character to destinations."],
-    OPTION_TOOLTIP_USE_UBERTOOLTIPS = L["Enable detailed tooltips in the lower right hand corner of the screen."],
-    OPTION_TOOLTIP_SHOW_BUFF_DURATION = L["Toggle text counters for buff durations on and off."],
-    OPTION_TOOLTIP_SHOW_PLAYER_NAMES = L["Always display player names in the game world."],
-    OPTION_TOOLTIP_SHOW_GUILD_NAMES = L["Always display player guild names in the game world."],
-    OPTION_TOOLTIP_SHOW_PLAYER_TITLES = L["Always display player titles in the game world."],
-    OPTION_TOOLTIP_SHOW_NPC_NAMES = L["Always display NPC names in the game world."],
-    OPTION_TOOLTIP_SHOW_OWN_NAME = L["Shows your character's name."],
-    OPTION_TOOLTIP_SHOW_CLOAK = L["Uncheck this box to hide your character's cloak."],
-    OPTION_TOOLTIP_SHOW_HELM = L["Uncheck this box to hide your character's helm."],
-    OPTION_TOOLTIP_FOLLOW_TERRAIN = L["Automatically change the camera angle based on the terrain. If your character climbs a slope, the camera will rotate upwards; if you descend, it will rotate downwards."],
-    OPTION_TOOLTIP_HEAD_BOB = L["Simulate head bobbing when in first-person perspective."],
-    OPTION_TOOLTIP_WATER_COLLISION = L["Set the camera to be above water when your character is above water, and below water when your character is below water."],
-    OPTION_TOOLTIP_SMART_PIVOT = L["Lets you free look when the camera is on the ground."],
-    OPTION_TOOLTIP_SHOW_COMBAT_TEXT = L["Checking this will enable additional combat messages to appear in the playfield."],
-    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_LOW_HEALTH_MANA = L["Shows a message when you fall below 20% mana or health."],
-    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_AURAS = L["Shows a message when the player gains an aura."],
-    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_AURA_FADE = L["Shows a message when an aura fades from the player."],
-    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_COMBAT_STATE = L["Shows a message when you enter or leave combat. "],
-    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_DODGE_PARRY_MISS = L["Shows attacks against you that dodge, parry, or miss."],
-    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_RESISTANCES = L["Shows when you resist taking damage from attacks or spells."],
-    OPTION_TOOLTIP_SHOW_DAMAGE = L["Display damage numbers over hostile creatures when damaged."],
-    OPTION_TOOLTIP_LOG_PERIODIC_EFFECTS = L["Display damage caused by periodic effects such as Rend and Shadow Word: Pain."],
-    OPTION_TOOLTIP_SHOW_PET_MELEE_DAMAGE = L["Show damage caused by your pet."],
-    MOUSE_SENSITIVITY = L["Mouse Sensitivity"],
-    AUTO_FOLLOW_SPEED = L["Auto-Follow Speed"],
-    MOUSE_LOOK_SPEED = L["Mouse Look Speed"],
-    MAX_FOLLOW_DIST = L["Max Camera Distance"],
-    OPTION_TOOLTIP_MOUSE_SENSITIVITY = L["Adjust the speed at which the mouse cursor moves."],
-    OPTION_TOOLTIP_AUTO_FOLLOW_SPEED = L["Adjust the camera movement speed in Always and Smart following styles."],
-    OPTION_TOOLTIP_MOUSE_LOOK_SPEED = L["Adjust the speed at which you turn the camera when using mouse look."],
-    OPTION_TOOLTIP_MAX_FOLLOW_DIST = L["Adjust the maximum distance the camera will follow behind you."],
-    CLICK_CAMERA_STYLE = L["Click-to-Move Camera Style"],
-    CAMERA_FOLLOWING_STYLE = L["Camera Following Style"],
-    COMBAT_TEXT_FLOAT_MODE_LABEL = L["Combat Text Float Mode"],
-    CAMERA_SMART = L["camera style::Smart"],
-    CAMERA_LOCKED = L["camera style::Locked"],
-    CAMERA_NEVER = L["camera style::Never"],
-    CAMERA_ALWAYS = L["camera style::Always"],
-    COMBAT_TEXT_SCROLL_UP = L["Scroll Up"],
-    COMBAT_TEXT_SCROLL_DOWN = L["Scroll Down"],
-    COMBAT_TEXT_SCROLL_ARC = L["scroll direction::Arc"],
-    OPTION_TOOLTIP_CLICKCAMERA_SMART = L["Sets the camera to follow your character after a brief delay when changing direction with click-to-move. (Recommended Mode) "],
-    OPTION_TOOLTIP_CLICKCAMERA_LOCKED = L["Sets the camera to always be aligned with your character when changing direction with click-to-move."],
-    OPTION_TOOLTIP_CLICKCAMERA_NEVER = L["Sets the camera to not move when changing direction with click-to-move."],
-    OPTION_TOOLTIP_CLICK_CAMERA1 = L["Sets the camera to follow your character after a brief delay when changing direction with click-to-move. (Recommended Mode)"],
-    OPTION_TOOLTIP_CLICK_CAMERA2 = L["Sets the camera to always be aligned with your character when changing direction with click-to-move."],
-    OPTION_TOOLTIP_CLICK_CAMERA3 = L["Sets the camera to not move when changing direction with click-to-move."],
-    OPTION_TOOLTIP_CAMERA_SMART = L["Set the camera to stay where placed, except when your character is moving.  (Recommended Mode)"],
-    OPTION_TOOLTIP_CAMERA_ALWAYS = L["Set the camera to always prefer being behind your character."],
-    OPTION_TOOLTIP_CAMERA_NEVER = L["Set the camera to stay where set, and never auto-adjust."],
-    OPTION_TOOLTIP_CAMERA1 = L["Set the camera to stay where placed, except when your character is moving."],
-    OPTION_TOOLTIP_CAMERA2 = L["Set the camera to always prefer being behind your character."],
-    OPTION_TOOLTIP_CAMERA3 = L["Set the camera to stay where set, and never auto-adjust."],
-    OPTION_TOOLTIP_COMBAT_TEXT_MODE = L["Sets the direction that combat text scrolls."],
-    OPTION_TOOLTIP_SCROLL_UP = L["Scrolls combat text towards the top of the screen."],
-    OPTION_TOOLTIP_SCROLL_DOWN = L["Scrolls combat text towards the bottom of the screen."],
-    OPTION_TOOLTIP_SCROLL_ARC = L["Scrolls the text in arcs away from the player."],
-    ENABLE_ERROR_SPEECH = L["Enable Error Speech"],
-    ENABLE_MUSIC = L["Enable Music"],
-    ENABLE_AMBIENCE = L["Enable Ambience"],
-    ENABLE_ALL_SOUND = L["Enable All Sound"],
-    ENABLE_SOUND_AT_CHARACTER = L["Enable Sound at Character"],
-    ENABLE_EMOTE_SOUNDS = L["Enable Emote Sounds"],
-    ENABLE_MUSIC_LOOPING = L["Loop Music"],
-    OPTION_TOOLTIP_ENABLE_ERROR_SPEECH = L["Enables speech from errors (e.g. \"Target out of range\")."],
-    OPTION_TOOLTIP_ENABLE_MUSIC = L["Enable background music."],
-    OPTION_TOOLTIP_ENABLE_AMBIENCE = L["Enable ambient sounds."],
-    OPTION_TOOLTIP_ENABLE_ALL_SOUND = L["Enables or disables all game sound."],
-    OPTION_TOOLTIP_ENABLE_SOUND_AT_CHARACTER = L["Listen to sound from the character's point of view rather than the camera."],
-    OPTION_TOOLTIP_ENABLE_EMOTE_SOUNDS = L["Toggles emote sounds on and off."],
-    OPTION_TOOLTIP_ENABLE_MUSIC_LOOPING = L["Enable to continuously play background music."],
-    SOUND_VOLUME = L["Sound Volume"],
-    MUSIC_VOLUME = L["Music Volume"],
-    AMBIENCE_VOLUME = L["Ambience Volume"],
-    MASTER_VOLUME = L["Master Volume"],
-    OPTION_TOOLTIP_SOUND_VOLUME = L["Adjusts the sound effect volume."],
-    OPTION_TOOLTIP_MUSIC_VOLUME = L["Adjusts the background music volume."],
-    OPTION_TOOLTIP_AMBIENCE_VOLUME = L["Adjusts the ambient sound volume."],
-    OPTION_TOOLTIP_MASTER_VOLUME = L["Adjusts the master sound volume."],
+    INVERT_MOUSE = L["hoa.addon.invert_mouse"],
+    CLICK_TO_MOVE = L["hoa.addon.click_to_move"],
+    USE_UBERTOOLTIPS = L["hoa.addon.enhanced_tooltips"],
+    SHOW_BUFF_DURATION_TEXT = L["hoa.addon.buff_durations"],
+    SHOW_PLAYER_NAMES = L["hoa.addon.player_names"],
+    SHOW_GUILD_NAMES = L["hoa.addon.player_guild_names"],
+    SHOW_PLAYER_TITLES = L["hoa.addon.player_titles"],
+    SHOW_NPC_NAMES = L["hoa.addon.npc_names"],
+    SHOW_OWN_NAME = L["hoa.addon.show_own_name"],
+    SHOW_CLOAK = L["hoa.addon.show_cloak"],
+    SHOW_HELM = L["hoa.addon.show_helm"],
+    FOLLOW_TERRAIN = L["hoa.addon.follow_terrain"],
+    HEAD_BOB = L["hoa.addon.head_bob"],
+    WATER_COLLISION = L["hoa.addon.water_collision"],
+    SMART_PIVOT = L["hoa.addon.smart_pivot"],
+    SHOW_COMBAT_TEXT_TEXT = L["hoa.addon.enable_floating_combat_text"],
+    COMBAT_TEXT_SHOW_LOW_HEALTH_MANA_TEXT = L["hoa.addon.show_low_mana_and_health"],
+    COMBAT_TEXT_SHOW_AURAS_TEXT = L["hoa.addon.show_auras"],
+    COMBAT_TEXT_SHOW_AURA_FADE_TEXT = L["hoa.addon.show_fading_auras"],
+    COMBAT_TEXT_SHOW_COMBAT_STATE_TEXT = L["hoa.addon.show_combat_state"],
+    COMBAT_TEXT_SHOW_DODGE_PARRY_MISS_TEXT = L["hoa.addon.show_dodge_parries_misses"],
+    COMBAT_TEXT_SHOW_RESISTANCES_TEXT = L["hoa.addon.show_damage_reduction"],
+    SHOW_DAMAGE_TEXT = L["hoa.addon.show_target_damage"],
+    LOG_PERIODIC_EFFECTS = L["hoa.addon.periodic_damage"],
+    SHOW_PET_MELEE_DAMAGE = L["hoa.addon.pet_damage"],
+    OPTION_TOOLTIP_INVERT_MOUSE = L["hoa.addon.invert_the_way_that_the_mouse_affects_camera_pitch"],
+    OPTION_TOOLTIP_CLICK_TO_MOVE = L["hoa.addon.use_mouse_clicks_to_move_your_character_to_destinations"],
+    OPTION_TOOLTIP_USE_UBERTOOLTIPS = L["hoa.addon.enable_detailed_tooltips_in_the_lower_right_hand_corner_of_t"],
+    OPTION_TOOLTIP_SHOW_BUFF_DURATION = L["hoa.addon.toggle_text_counters_for_buff_durations_on_and_off"],
+    OPTION_TOOLTIP_SHOW_PLAYER_NAMES = L["hoa.addon.always_display_player_names_in_the_game_world"],
+    OPTION_TOOLTIP_SHOW_GUILD_NAMES = L["hoa.addon.always_display_player_guild_names_in_the_game_world"],
+    OPTION_TOOLTIP_SHOW_PLAYER_TITLES = L["hoa.addon.always_display_player_titles_in_the_game_world"],
+    OPTION_TOOLTIP_SHOW_NPC_NAMES = L["hoa.addon.always_display_npc_names_in_the_game_world"],
+    OPTION_TOOLTIP_SHOW_OWN_NAME = L["hoa.addon.shows_your_character_s_name"],
+    OPTION_TOOLTIP_SHOW_CLOAK = L["hoa.addon.uncheck_this_box_to_hide_your_character_s_cloak"],
+    OPTION_TOOLTIP_SHOW_HELM = L["hoa.addon.uncheck_this_box_to_hide_your_character_s_helm"],
+    OPTION_TOOLTIP_FOLLOW_TERRAIN = L["hoa.addon.automatically_change_the_camera_angle_based_on_the_terrain_i"],
+    OPTION_TOOLTIP_HEAD_BOB = L["hoa.addon.simulate_head_bobbing_when_in_first_person_perspective"],
+    OPTION_TOOLTIP_WATER_COLLISION = L["hoa.addon.set_the_camera_to_be_above_water_when_your_character_is_abov"],
+    OPTION_TOOLTIP_SMART_PIVOT = L["hoa.addon.lets_you_free_look_when_the_camera_is_on_the_ground"],
+    OPTION_TOOLTIP_SHOW_COMBAT_TEXT = L["hoa.addon.checking_this_will_enable_additional_combat_messages_to_appe"],
+    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_LOW_HEALTH_MANA = L["hoa.addon.shows_a_message_when_you_fall_below_20_mana_or_health"],
+    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_AURAS = L["hoa.addon.shows_a_message_when_the_player_gains_an_aura"],
+    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_AURA_FADE = L["hoa.addon.shows_a_message_when_an_aura_fades_from_the_player"],
+    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_COMBAT_STATE = L["hoa.addon.shows_a_message_when_you_enter_or_leave_combat"],
+    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_DODGE_PARRY_MISS = L["hoa.addon.shows_attacks_against_you_that_dodge_parry_or_miss"],
+    OPTION_TOOLTIP_COMBAT_TEXT_SHOW_RESISTANCES = L["hoa.addon.shows_when_you_resist_taking_damage_from_attacks_or_spells"],
+    OPTION_TOOLTIP_SHOW_DAMAGE = L["hoa.addon.display_damage_numbers_over_hostile_creatures_when_damaged"],
+    OPTION_TOOLTIP_LOG_PERIODIC_EFFECTS = L["hoa.addon.display_damage_caused_by_periodic_effects_such_as_rend_and_s"],
+    OPTION_TOOLTIP_SHOW_PET_MELEE_DAMAGE = L["hoa.addon.show_damage_caused_by_your_pet"],
+    MOUSE_SENSITIVITY = L["hoa.addon.mouse_sensitivity"],
+    AUTO_FOLLOW_SPEED = L["hoa.addon.auto_follow_speed"],
+    MOUSE_LOOK_SPEED = L["hoa.addon.mouse_look_speed"],
+    MAX_FOLLOW_DIST = L["hoa.addon.max_camera_distance"],
+    OPTION_TOOLTIP_MOUSE_SENSITIVITY = L["hoa.addon.adjust_the_speed_at_which_the_mouse_cursor_moves"],
+    OPTION_TOOLTIP_AUTO_FOLLOW_SPEED = L["hoa.addon.adjust_the_camera_movement_speed_in_always_and_smart_followi"],
+    OPTION_TOOLTIP_MOUSE_LOOK_SPEED = L["hoa.addon.adjust_the_speed_at_which_you_turn_the_camera_when_using_mou"],
+    OPTION_TOOLTIP_MAX_FOLLOW_DIST = L["hoa.addon.adjust_the_maximum_distance_the_camera_will_follow_behind_yo"],
+    CLICK_CAMERA_STYLE = L["hoa.addon.click_to_move_camera_style"],
+    CAMERA_FOLLOWING_STYLE = L["hoa.addon.camera_following_style"],
+    COMBAT_TEXT_FLOAT_MODE_LABEL = L["hoa.addon.combat_text_float_mode"],
+    CAMERA_SMART = L["hoa.addon.camera_style_smart"],
+    CAMERA_LOCKED = L["hoa.addon.camera_style_locked"],
+    CAMERA_NEVER = L["hoa.addon.camera_style_never"],
+    CAMERA_ALWAYS = L["hoa.addon.camera_style_always"],
+    COMBAT_TEXT_SCROLL_UP = L["hoa.addon.scroll_up"],
+    COMBAT_TEXT_SCROLL_DOWN = L["hoa.addon.scroll_down"],
+    COMBAT_TEXT_SCROLL_ARC = L["hoa.addon.scroll_direction_arc"],
+    OPTION_TOOLTIP_CLICKCAMERA_SMART = L["hoa.addon.sets_the_camera_to_follow_your_character_after_a_brief_delay_2"],
+    OPTION_TOOLTIP_CLICKCAMERA_LOCKED = L["hoa.addon.sets_the_camera_to_always_be_aligned_with_your_character_whe"],
+    OPTION_TOOLTIP_CLICKCAMERA_NEVER = L["hoa.addon.sets_the_camera_to_not_move_when_changing_direction_with_cli"],
+    OPTION_TOOLTIP_CLICK_CAMERA1 = L["hoa.addon.sets_the_camera_to_follow_your_character_after_a_brief_delay"],
+    OPTION_TOOLTIP_CLICK_CAMERA2 = L["hoa.addon.sets_the_camera_to_always_be_aligned_with_your_character_whe"],
+    OPTION_TOOLTIP_CLICK_CAMERA3 = L["hoa.addon.sets_the_camera_to_not_move_when_changing_direction_with_cli"],
+    OPTION_TOOLTIP_CAMERA_SMART = L["hoa.addon.set_the_camera_to_stay_where_placed_except_when_your_charact_2"],
+    OPTION_TOOLTIP_CAMERA_ALWAYS = L["hoa.addon.set_the_camera_to_always_prefer_being_behind_your_character"],
+    OPTION_TOOLTIP_CAMERA_NEVER = L["hoa.addon.set_the_camera_to_stay_where_set_and_never_auto_adjust"],
+    OPTION_TOOLTIP_CAMERA1 = L["hoa.addon.set_the_camera_to_stay_where_placed_except_when_your_charact"],
+    OPTION_TOOLTIP_CAMERA2 = L["hoa.addon.set_the_camera_to_always_prefer_being_behind_your_character"],
+    OPTION_TOOLTIP_CAMERA3 = L["hoa.addon.set_the_camera_to_stay_where_set_and_never_auto_adjust"],
+    OPTION_TOOLTIP_COMBAT_TEXT_MODE = L["hoa.addon.sets_the_direction_that_combat_text_scrolls"],
+    OPTION_TOOLTIP_SCROLL_UP = L["hoa.addon.scrolls_combat_text_towards_the_top_of_the_screen"],
+    OPTION_TOOLTIP_SCROLL_DOWN = L["hoa.addon.scrolls_combat_text_towards_the_bottom_of_the_screen"],
+    OPTION_TOOLTIP_SCROLL_ARC = L["hoa.addon.scrolls_the_text_in_arcs_away_from_the_player"],
+    ENABLE_ERROR_SPEECH = L["hoa.addon.enable_error_speech"],
+    ENABLE_MUSIC = L["hoa.addon.enable_music"],
+    ENABLE_AMBIENCE = L["hoa.addon.enable_ambience"],
+    ENABLE_ALL_SOUND = L["hoa.addon.enable_all_sound"],
+    ENABLE_SOUND_AT_CHARACTER = L["hoa.addon.enable_sound_at_character"],
+    ENABLE_EMOTE_SOUNDS = L["hoa.addon.enable_emote_sounds"],
+    ENABLE_MUSIC_LOOPING = L["hoa.addon.loop_music"],
+    OPTION_TOOLTIP_ENABLE_ERROR_SPEECH = L["hoa.addon.enables_speech_from_errors_e_g_target_out_of_range"],
+    OPTION_TOOLTIP_ENABLE_MUSIC = L["hoa.addon.enable_background_music"],
+    OPTION_TOOLTIP_ENABLE_AMBIENCE = L["hoa.addon.enable_ambient_sounds"],
+    OPTION_TOOLTIP_ENABLE_ALL_SOUND = L["hoa.addon.enables_or_disables_all_game_sound"],
+    OPTION_TOOLTIP_ENABLE_SOUND_AT_CHARACTER = L["hoa.addon.listen_to_sound_from_the_character_s_point_of_view_rather_th"],
+    OPTION_TOOLTIP_ENABLE_EMOTE_SOUNDS = L["hoa.addon.toggles_emote_sounds_on_and_off"],
+    OPTION_TOOLTIP_ENABLE_MUSIC_LOOPING = L["hoa.addon.enable_to_continuously_play_background_music"],
+    SOUND_VOLUME = L["hoa.addon.sound_volume"],
+    MUSIC_VOLUME = L["hoa.addon.music_volume"],
+    AMBIENCE_VOLUME = L["hoa.addon.ambience_volume"],
+    MASTER_VOLUME = L["hoa.addon.master_volume"],
+    OPTION_TOOLTIP_SOUND_VOLUME = L["hoa.addon.adjusts_the_sound_effect_volume"],
+    OPTION_TOOLTIP_MUSIC_VOLUME = L["hoa.addon.adjusts_the_background_music_volume"],
+    OPTION_TOOLTIP_AMBIENCE_VOLUME = L["hoa.addon.adjusts_the_ambient_sound_volume"],
+    OPTION_TOOLTIP_MASTER_VOLUME = L["hoa.addon.adjusts_the_master_sound_volume"],
 }
 
 local SOUND_CHECKS = {
@@ -161,18 +161,18 @@ do
     for name, text in pairs(STRINGS) do
         setglobal(name, text)
     end
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR1", L["Show the bottom left action bar."])
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR2", L["Show the bottom right action bar."])
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR3", L["Show the right action bar."])
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR4", L["Show the second right action bar."])
-    setglobal("OPTION_TOOLTIP_ALWAYS_SHOW_MULTIBARS", L["Always show action bars."])
-    setglobal("OPTION_TOOLTIP_LOCK_ACTIONBAR", L["Lock the action bars in place."])
-    setglobal("OPTION_TOOLTIP_UI_SCALE", L["Adjust the size of the interface elements."])
-    setglobal("OPTION_TOOLTIP_FARCLIP", L["Adjust how far terrain is visible."])
-    setglobal("OPTION_TOOLTIP_ENVIRONMENT_DETAIL", L["Adjust the level of environmental detail."])
-    setglobal("OPTION_TOOLTIP_SPELL_DETAIL", L["Adjust the level of spell effect detail."])
-    setglobal("OPTION_TOOLTIP_WEATHER_DETAIL", L["Adjust the intensity of weather effects."])
-    setglobal("OPTION_TOOLTIP_VERTICAL_SYNC", L["Synchronize the frame rate with the monitor's refresh rate."])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR1", L["hoa.addon.show_the_bottom_left_action_bar"])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR2", L["hoa.addon.show_the_bottom_right_action_bar"])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR3", L["hoa.addon.show_the_right_action_bar"])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR4", L["hoa.addon.show_the_second_right_action_bar"])
+    setglobal("OPTION_TOOLTIP_ALWAYS_SHOW_MULTIBARS", L["hoa.addon.always_show_action_bars"])
+    setglobal("OPTION_TOOLTIP_LOCK_ACTIONBAR", L["hoa.addon.lock_the_action_bars_in_place"])
+    setglobal("OPTION_TOOLTIP_UI_SCALE", L["hoa.addon.adjust_the_size_of_the_interface_elements"])
+    setglobal("OPTION_TOOLTIP_FARCLIP", L["hoa.addon.adjust_how_far_terrain_is_visible"])
+    setglobal("OPTION_TOOLTIP_ENVIRONMENT_DETAIL", L["hoa.addon.adjust_the_level_of_environmental_detail"])
+    setglobal("OPTION_TOOLTIP_SPELL_DETAIL", L["hoa.addon.adjust_the_level_of_spell_effect_detail"])
+    setglobal("OPTION_TOOLTIP_WEATHER_DETAIL", L["hoa.addon.adjust_the_intensity_of_weather_effects"])
+    setglobal("OPTION_TOOLTIP_VERTICAL_SYNC", L["hoa.addon.synchronize_the_frame_rate_with_the_monitor_s_refresh_rate"])
 
     SetText("UIOptionsFrameTitle", INTERFACE_TITLE)
     for _, prefix in ipairs({ "UIOptionsFrame", "SoundOptionsFrame" }) do

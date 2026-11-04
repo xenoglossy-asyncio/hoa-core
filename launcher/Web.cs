@@ -53,12 +53,12 @@ namespace HordesOfAzeroth.Launcher
             if (e is HttpRequestException http && http.StatusCode != null)
             {
                 if (http.StatusCode == HttpStatusCode.NotFound)
-                    return Loc.T("No release is published yet.");
-                return Loc.T("GitHub answered with an error ({0}). Try again in a moment.", (int)http.StatusCode);
+                    return Loc.T("hoa.launcher.no_release_is_published_yet");
+                return Loc.T("hoa.launcher.github_answered_with_an_error_0_try_again_in_a_moment", (int)http.StatusCode);
             }
             if (e is HttpRequestException || e is TaskCanceledException)
-                return Loc.T("Couldn't reach GitHub. Check your connection and try again.");
-            return Loc.T("The release information couldn't be read. Try again in a moment.");
+                return Loc.T("hoa.launcher.couldn_t_reach_github_check_your_connection_and_try_again");
+            return Loc.T("hoa.launcher.the_release_information_couldn_t_be_read_try_again_in_a_mome");
         }
 
         public static bool IsProblem(Exception e) => e is HttpRequestException || e is TaskCanceledException;

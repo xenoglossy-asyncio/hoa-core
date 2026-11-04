@@ -5,37 +5,37 @@ local DEFAULT_KEY_DELAY = 1
 local MODIFIER_KEYS = { SHIFT = true, CTRL = true, ALT = true }
 
 UI.INTERACT_TYPES = {
-    { key = "interactPeople", label = L["People"], hint = L["Talk, shop and bank"], units = true },
-    { key = "interactChests", label = L["Chests"], hint = L["Open chests, vaults and hidden finds"], objects = { 900001, 900002, 900041, 900060 }, types = { 3 } },
-    { key = "interactShrines", label = L["Shrines"], hint = L["Touch shrines, totems and altars"], objects = { 900031, 900032, 900033, 900034 } },
-    { key = "interactPortals", label = L["Portals"], hint = L["Step through portals"], objects = { 900003 } },
-    { key = "interactMail", label = L["Mailbox"], hint = L["Read your mail"], types = { 19 } },
+    { key = "interactPeople", label = L["hoa.addon.people"], hint = L["hoa.addon.talk_shop_and_bank"], units = true },
+    { key = "interactChests", label = L["hoa.addon.chests"], hint = L["hoa.addon.open_chests_vaults_and_hidden_finds"], objects = { 900001, 900002, 900041, 900060 }, types = { 3 } },
+    { key = "interactShrines", label = L["hoa.addon.shrines"], hint = L["hoa.addon.touch_shrines_totems_and_altars"], objects = { 900031, 900032, 900033, 900034 } },
+    { key = "interactPortals", label = L["hoa.addon.portals"], hint = L["hoa.addon.step_through_portals"], objects = { 900003 } },
+    { key = "interactMail", label = L["hoa.addon.mailbox"], hint = L["hoa.addon.read_your_mail"], types = { 19 } },
 }
 
 UI.AUTO_CHEST_ENTRIES = { 900001, 900002 }
 
 UI.DISPLAY_SETTINGS = {
-    { key = "enemyPlates", label = L["Enemy Nameplates"], default = true,
-        tooltip = L["Shows health bars over enemies near you."], apply = function() UI.ApplyEnemyPlates() end },
-    { key = "damageMeter", label = L["Damage Meter"], default = true,
-        tooltip = L["Shows how much damage each of your spells has done this run."], apply = function() UI.ApplyDamageMeter() end },
-    { key = "incomingNumbers", label = L["Damage Taken Numbers"], default = true,
-        tooltip = L["Shows the damage you take as numbers beside your character."] },
-    { key = "healthNumbers", label = L["Health Bar Numbers"], default = true,
-        tooltip = L["Shows your health as numbers on your health bars."], apply = function() UI.ApplyHealthNumbers() end },
-    { key = "cooldownNumbers", label = L["Cooldown Numbers"], default = true,
-        tooltip = L["Shows the seconds left on spells with a cooldown of 2 seconds or more."] },
-    { key = "partyPlates", label = L["Party Health Bars"], default = true,
-        tooltip = L["Shows health bars over your party members during a run. They're always hidden in town."],
+    { key = "enemyPlates", label = L["hoa.addon.enemy_nameplates"], default = true,
+        tooltip = L["hoa.addon.shows_health_bars_over_enemies_near_you"], apply = function() UI.ApplyEnemyPlates() end },
+    { key = "damageMeter", label = L["hoa.addon.damage_meter"], default = true,
+        tooltip = L["hoa.addon.shows_how_much_damage_each_of_your_spells_has_done_this_run"], apply = function() UI.ApplyDamageMeter() end },
+    { key = "incomingNumbers", label = L["hoa.addon.damage_taken_numbers"], default = true,
+        tooltip = L["hoa.addon.shows_the_damage_you_take_as_numbers_beside_your_character"] },
+    { key = "healthNumbers", label = L["hoa.addon.health_bar_numbers"], default = true,
+        tooltip = L["hoa.addon.shows_your_health_as_numbers_on_your_health_bars"], apply = function() UI.ApplyHealthNumbers() end },
+    { key = "cooldownNumbers", label = L["hoa.addon.cooldown_numbers"], default = true,
+        tooltip = L["hoa.addon.shows_the_seconds_left_on_spells_with_a_cooldown_of_2_second"] },
+    { key = "partyPlates", label = L["hoa.addon.party_health_bars"], default = true,
+        tooltip = L["hoa.addon.shows_health_bars_over_your_party_members_during_a_run_they_"],
         apply = function() UI.ApplyPartyPlates() end },
 }
 
-UI.OTHER_EFFECTS_SETTING = { key = "otherEffects", label = L["Party Spell Effects"], default = 100,
-    tooltip = L["Lower this to see fewer of your party's spell effects. Your own always show."],
+UI.OTHER_EFFECTS_SETTING = { key = "otherEffects", label = L["hoa.addon.party_spell_effects"], default = 100,
+    tooltip = L["hoa.addon.lower_this_to_see_fewer_of_your_party_s_spell_effects_your_o"],
     apply = function() UI.SendOtherEffects() end }
 
-UI.SIDE_CARD_SCALE_SETTING = { key = "sideCardScale", label = L["Reward Card Scale"], default = 50, min = 50, max = 100, step = 10,
-    tooltip = L["Size of reward cards when Pause on Rewards is disabled."], low = "50%", high = "100%",
+UI.SIDE_CARD_SCALE_SETTING = { key = "sideCardScale", label = L["hoa.addon.reward_card_scale"], default = 50, min = 50, max = 100, step = 10,
+    tooltip = L["hoa.addon.size_of_reward_cards_when_pause_on_rewards_is_disabled"], low = "50%", high = "100%",
     valueText = function(value) return format("%d%%", value) end }
 
 function UI.SideScale(smallest)
@@ -45,7 +45,7 @@ end
 
 function UI.OtherEffectsText(value)
     if value <= 0 then
-        return L["Off"]
+        return L["hoa.addon.off_2"]
     end
     return format("%d%%", value)
 end
@@ -55,19 +55,19 @@ function UI.SendOtherEffects()
 end
 
 UI.REACH_RING_COLORS = {
-    { style = 3, label = L["Blue"], r = 0.65, g = 0.90, b = 1.0 },
-    { style = 1, label = L["Purple"], r = 0.75, g = 0.55, b = 1.0 },
-    { style = 2, label = L["Green"], r = 0.55, g = 1.0, b = 0.45 },
-    { style = 0, label = L["Red"], r = 1.0, g = 0.30, b = 0.18 },
-    { style = 4, label = L["Dark red"], r = 0.85, g = 0.10, b = 0.10 },
+    { style = 3, label = L["hoa.addon.blue"], r = 0.65, g = 0.90, b = 1.0 },
+    { style = 1, label = L["hoa.addon.purple"], r = 0.75, g = 0.55, b = 1.0 },
+    { style = 2, label = L["hoa.addon.green"], r = 0.55, g = 1.0, b = 0.45 },
+    { style = 0, label = L["hoa.addon.red"], r = 1.0, g = 0.30, b = 0.18 },
+    { style = 4, label = L["hoa.addon.dark_red"], r = 0.85, g = 0.10, b = 0.10 },
 }
 UI.REACH_RING_PREVIEW_SECONDS = 5
 
 UI.REACH_RING_COLOR_SETTING = { key = "reachRingColor", default = 3, apply = function() UI.SendReachRing() end }
-UI.REACH_RING_FILL_SETTING = { key = "reachRingFill", label = L["Fill Range Ring"], default = false,
-    tooltip = L["Shades the whole area inside the range ring, not just its edge."], apply = function() UI.SendReachRing() end }
-UI.REACH_RING_OPACITY_SETTING = { key = "reachRingOpacity", label = L["Range Ring Opacity"], default = 60, min = 10,
-    tooltip = L["How strongly the range ring shows on the ground."], low = "10%", high = "100%",
+UI.REACH_RING_FILL_SETTING = { key = "reachRingFill", label = L["hoa.addon.fill_range_ring"], default = false,
+    tooltip = L["hoa.addon.shades_the_whole_area_inside_the_range_ring_not_just_its_edg"], apply = function() UI.SendReachRing() end }
+UI.REACH_RING_OPACITY_SETTING = { key = "reachRingOpacity", label = L["hoa.addon.range_ring_opacity"], default = 60, min = 10,
+    tooltip = L["hoa.addon.how_strongly_the_range_ring_shows_on_the_ground"], low = "10%", high = "100%",
     valueText = function(value) return format("%d%%", value) end, apply = function() UI.SendReachRing() end }
 
 function UI.ReachRingColor()
@@ -121,19 +121,19 @@ end
 UI.INTERACT_SETTINGS = {}
 for _, kind in ipairs(UI.INTERACT_TYPES) do
     tinsert(UI.INTERACT_SETTINGS, { key = kind.key, label = kind.label, default = true,
-        tooltip = L("The interact key interacts with {1}. {2}.", string.lower(kind.label), kind.hint),
+        tooltip = L("hoa.addon.the_interact_key_interacts_with_1_2", string.lower(kind.label), kind.hint),
         apply = function() UI.ApplyInteract() end })
 end
-UI.AUTO_CHEST_SETTING = { key = "autoChests", label = L["Auto Open Chests"], default = false,
-    tooltip = L["When enabled, chests open as you walk up to them. Everything else still uses the interact key."],
+UI.AUTO_CHEST_SETTING = { key = "autoChests", label = L["hoa.addon.auto_open_chests"], default = false,
+    tooltip = L["hoa.addon.when_enabled_chests_open_as_you_walk_up_to_them_everything_e"],
     apply = function() UI.ApplyInteract() end }
 
 UI.KEYS = {
-    { command = "VANILLABONK_INTERACT", label = L["Interact"], default = "F" },
-    { command = "VANILLABONK_HEARTH", label = L["Use Hearthstone"], default = "T" },
-    { command = "VANILLABONK_DASH", label = L["Dash"], modifierAllowed = true },
-    { command = "VANILLABONK_SHAPESHIFT", label = L["Shapeshift (Druid)"], default = "R", class = "Druid", replaces = { REPLY = true } },
-    { command = "VANILLABONK_INSPECT", label = L["Inspect Talents"], default = "N", replaces = { TOGGLETALENTS = true } },
+    { command = "VANILLABONK_INTERACT", label = L["hoa.addon.interact"], default = "F" },
+    { command = "VANILLABONK_HEARTH", label = L["hoa.addon.use_hearthstone"], default = "T" },
+    { command = "VANILLABONK_DASH", label = L["hoa.addon.dash"], modifierAllowed = true },
+    { command = "VANILLABONK_SHAPESHIFT", label = L["hoa.addon.shapeshift_druid"], default = "R", class = "Druid", replaces = { REPLY = true } },
+    { command = "VANILLABONK_INSPECT", label = L["hoa.addon.inspect_talents"], default = "N", replaces = { TOGGLETALENTS = true } },
 }
 
 local settingsWatchers = {}
@@ -167,8 +167,8 @@ function UI.ChangeSetting(setting, value)
 end
 
 UI.LANGUAGES = {
-    { value = "enUS", label = "English" },
-    { value = "zhCN", label = "简体中文" },
+    { value = "enUS", label = L["hoa.addon.language_english"] },
+    { value = "zhCN", label = L["hoa.addon.language_simplified_chinese"] },
 }
 
 UI.LANGUAGE_CVAR = "hoaLanguage"
@@ -314,14 +314,14 @@ function UI.CaptureKey(binding)
     capture.binding = binding
     capture.modifier = nil
     capture.title:SetText(binding.label)
-    capture.body:SetText(L("Press the key you want for {1}. Escape keeps the current key.", binding.label))
+    capture.body:SetText(L("hoa.addon.press_the_key_you_want_for_1_escape_keeps_the_current_key", binding.label))
     capture:Show()
 end
 
 function UI.KeyText(binding)
     local text = UI.BindingText(binding.command)
     if text == "" then
-        return L["None"]
+        return L["hoa.addon.none"]
     end
     return text
 end

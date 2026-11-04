@@ -134,12 +134,12 @@ local function PadPrompts()
 		return nil;
 	end
 	if ( PadCreating() ) then
-		return { { "a", L["Create"] }, { "lbrb", L["Race"] }, { "x", L["Gender"] }, { "y", L["Randomize"] }, { "rs", L["Turn"] }, { "b", L["Back"] } };
+		return { { "a", L["hoa.ui.glue.create"] }, { "lbrb", L["hoa.ui.glue.race"] }, { "x", L["hoa.ui.glue.gender"] }, { "y", L["hoa.ui.glue.randomize"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.back"] } };
 	end
 	if ( PadPreviewing() ) then
-		return { { "a", L("Create {1}", BONK_CLASSES[Bonk.classIndex].display) }, { "dpad", L["Class"] }, { "rs", L["Turn"] }, { "b", L["Quit"] } };
+		return { { "a", L("hoa.ui.glue.create_1", BONK_CLASSES[Bonk.classIndex].display) }, { "dpad", L["hoa.ui.glue.class"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.quit"] } };
 	end
-	return { { "a", L["Play"] }, { "dpad", L["Class"] }, { "view", L["Delete"] }, { "rs", L["Turn"] }, { "b", L["Quit"] } };
+	return { { "a", L["hoa.ui.glue.play"] }, { "dpad", L["hoa.ui.glue.class"] }, { "view", L["hoa.ui.glue.delete"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.quit"] } };
 end
 
 local function PadSetGlyph(texture, name)

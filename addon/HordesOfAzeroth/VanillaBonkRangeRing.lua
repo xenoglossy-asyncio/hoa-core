@@ -9,7 +9,7 @@ local ROW = 22
 
 local window = UI.Window("VanillaBonkRangeRing", WIDTH, 400)
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
-window.title:SetText(L["Range Ring"])
+window.title:SetText(L["hoa.addon.range_ring"])
 window.colors = {}
 
 window.intro = UI.Text(window, 12)
@@ -17,7 +17,7 @@ window.intro:SetWidth(CONTENT_WIDTH)
 window.intro:SetJustifyH("LEFT")
 window.intro:SetTextColor(0.91, 0.86, 0.75)
 window.intro:SetPoint("TOPLEFT", window, "TOPLEFT", LEFT, -84)
-window.intro:SetText(L["During a run, Alt-click a spell on your bar to show a ring of its reach around you. Alt-click it again to hide the ring."])
+window.intro:SetText(L["hoa.addon.during_a_run_alt_click_a_spell_on_your_bar_to_show_a_ring_of"])
 
 local cursor = 0
 
@@ -49,12 +49,12 @@ local function ColorChoice(color)
     tinsert(window.colors, radio)
 end
 
-Header(L["Color"])
+Header(L["hoa.addon.color"])
 for _, color in ipairs(UI.REACH_RING_COLORS) do
     ColorChoice(color)
 end
 
-Header(L["Look"])
+Header(L["hoa.addon.look"])
 window.fill = CreateFrame("CheckButton", "VanillaBonkRangeRingFill", window, "UICheckButtonTemplate")
 window.fill:SetWidth(24)
 window.fill:SetHeight(24)
@@ -99,16 +99,16 @@ window.opacity:SetScript("OnLeave", function() GameTooltip:Hide() end)
 cursor = cursor + 16
 Place(window.opacity, 8, 40)
 
-window.preview = UI.Button(window, 110, L["Preview"], function()
+window.preview = UI.Button(window, 110, L["hoa.addon.preview"], function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     UI.PreviewReachRing()
 end)
 window.preview:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:SetText(L("Shows the ring around you for {1} seconds.", UI.REACH_RING_PREVIEW_SECONDS), 1, 1, 1, 1, 1)
+    GameTooltip:SetText(L("hoa.addon.shows_the_ring_around_you_for_1_seconds", UI.REACH_RING_PREVIEW_SECONDS), 1, 1, 1, 1, 1)
 end)
 window.preview:SetScript("OnLeave", function() GameTooltip:Hide() end)
-window.done = UI.Button(window, 100, L["Done"], function() window:Hide() end)
+window.done = UI.Button(window, 100, L["hoa.addon.done"], function() window:Hide() end)
 
 local footerTop = 84 + window.intro:GetHeight() + cursor + 10
 window.preview:SetPoint("TOPLEFT", window, "TOPLEFT", LEFT, -footerTop)

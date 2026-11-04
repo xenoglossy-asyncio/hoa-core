@@ -4,13 +4,13 @@ local UI = VanillaBonkUI
 local NOTICE_WIDTH = 440
 local BODY_INSET = 52
 
-local GEAR_TITLE = L["Gear has changed"]
-local GEAR_BODY = L["All gear now has a tier and a quality, from Common to Legendary."] .. " " ..
-    L["Higher levels drop higher-tier gear, and each piece's quality is random."] .. "\n\n" ..
-    L["Your gear has been updated to the new system:"]
-local GEAR_CHANGES = L["All your old gear has been converted."] .. "\n" ..
-    L["Item sets and their bonuses are gone."] .. "\n" ..
-    L["Durgan now sells all shop gear and upgrades your found gear with Scrap."]
+local GEAR_TITLE = L["hoa.addon.gear_has_changed"]
+local GEAR_BODY = L["hoa.addon.all_gear_now_has_a_tier_and_a_quality_from_common_to_legenda"] .. " " ..
+    L["hoa.addon.higher_levels_drop_higher_tier_gear_and_each_piece_s_quality"] .. "\n\n" ..
+    L["hoa.addon.your_gear_has_been_updated_to_the_new_system"]
+local GEAR_CHANGES = L["hoa.addon.all_your_old_gear_has_been_converted"] .. "\n" ..
+    L["hoa.addon.item_sets_and_their_bonuses_are_gone"] .. "\n" ..
+    L["hoa.addon.durgan_now_sells_all_shop_gear_and_upgrades_your_found_gear_"]
 
 local OTHER_DIALOGS = { "VanillaBonkControllerTip", "VanillaBonkCurrencyTip", "VanillaBonkPlateGuide", "StaticPopup1" }
 
@@ -58,7 +58,7 @@ gearBox.changes:SetJustifyH("LEFT")
 gearBox.changes:SetTextColor(1, 0.82, 0)
 gearBox.changes:SetPoint("TOP", gearBox.body, "BOTTOM", 8, -8)
 gearBox.changes:SetText(GEAR_CHANGES)
-gearBox.okay = UI.Button(gearBox, 96, L["Okay"], function() gearBox:Hide() end)
+gearBox.okay = UI.Button(gearBox, 96, L["hoa.addon.okay"], function() gearBox:Hide() end)
 gearBox.okay:SetPoint("BOTTOM", gearBox, "BOTTOM", 0, 18)
 UI.NavPrompt(gearBox, gearBox.okay)
 tinsert(UISpecialFrames, "VanillaBonkGearNotice")

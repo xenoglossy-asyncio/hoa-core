@@ -105,7 +105,7 @@ namespace HordesOfAzeroth.Launcher
                         continue;
                     string target = Path.GetFullPath(Path.Combine(root, relative));
                     if (!target.StartsWith(root, StringComparison.Ordinal))
-                        throw new InvalidDataException(Loc.T("{0} contains a path outside the game folder.", Path.GetFileName(tarball)));
+                        throw new InvalidDataException(Loc.T("hoa.launcher.0_contains_a_path_outside_the_game_folder", Path.GetFileName(tarball)));
                     switch (entry.EntryType)
                     {
                         case TarEntryType.Directory:

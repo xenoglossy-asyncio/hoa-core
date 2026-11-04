@@ -37,7 +37,7 @@ end
 
 local window = UI.Window("VanillaBonkLeaderboard", WIDTH, HEIGHT)
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
-window.title:SetText(L["Leaderboard"])
+window.title:SetText(L["hoa.addon.leaderboard"])
 
 local panel = UI.Panel(window)
 panel:SetPoint("TOPLEFT", window, "TOPLEFT", LEFT, PANEL_TOP)
@@ -79,7 +79,7 @@ local function ShowMember(member, name, classId, width)
     member.icon:Show()
     member.name:SetWidth(width)
     if name == "" then
-        member.name:SetText(L["Hidden"])
+        member.name:SetText(L["hoa.addon.hidden"])
         member.name:SetTextColor(0.6, 0.6, 0.6)
     else
         member.name:SetText(name)
@@ -164,9 +164,9 @@ panel.tabs = UI.PanelTabs(panel, 10, function(index)
     ScrollToTop()
     window.Refresh()
 end)
-panel.tabs:SetTabs({ L["Solo"], L["2 players"], L["3 players"], L["4 players"] })
+panel.tabs:SetTabs({ L["hoa.addon.solo"], L["hoa.addon.2_players"], L["hoa.addon.3_players"], L["hoa.addon.4_players"] })
 
-window.allClasses = UI.Button(panel, 96, L["All classes"], function()
+window.allClasses = UI.Button(panel, 96, L["hoa.addon.all_classes"], function()
     board.class = nil
     ScrollToTop()
     window.Refresh()
@@ -211,11 +211,11 @@ local function Heading(text, x, justify, width)
     return heading
 end
 
-Heading(L["Rank"], 10, "RIGHT", RANK_WIDTH)
-window.whoHeading = Heading(L["Character"], 10 + MEMBERS_LEFT, "LEFT", 200)
-Heading(L["Highest Clear"], 420, "LEFT", 76)
-Heading(L["Time"], 502, "RIGHT", 44)
-Heading(L["Date"], 550, "RIGHT", 76)
+Heading(L["hoa.addon.rank"], 10, "RIGHT", RANK_WIDTH)
+window.whoHeading = Heading(L["hoa.addon.character"], 10 + MEMBERS_LEFT, "LEFT", 200)
+Heading(L["hoa.addon.highest_clear"], 420, "LEFT", 76)
+Heading(L["hoa.addon.time"], 502, "RIGHT", 44)
+Heading(L["hoa.addon.date"], 550, "RIGHT", 76)
 
 window.rows = {}
 for index = 1, ROWS do
@@ -249,21 +249,21 @@ window.you.note:SetTextColor(0.6, 0.6, 0.6)
 window.youTitle = UI.Text(panel, 11)
 window.youTitle:SetPoint("BOTTOMLEFT", window.you, "TOPLEFT", 4, 3)
 window.youTitle:SetTextColor(1, 0.82, 0)
-window.youTitle:SetText(L["Your best"])
+window.youTitle:SetText(L["hoa.addon.your_best"])
 
 window.join = CreateFrame("CheckButton", "VanillaBonkLeaderboardJoin", window, "UICheckButtonTemplate")
 window.join:SetWidth(24)
 window.join:SetHeight(24)
 window.join:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", LEFT, 44)
 VanillaBonkLeaderboardJoinText:SetFontObject(GameFontHighlightSmall)
-VanillaBonkLeaderboardJoinText:SetText(L["Show on Leaderboard"])
+VanillaBonkLeaderboardJoinText:SetText(L["hoa.addon.show_on_leaderboard"])
 window.join:SetScript("OnClick", function()
     PlaySound(this:GetChecked() and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff")
     Command("joinboard " .. (this:GetChecked() and "1" or "0"))
 end)
 window.join:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:SetText(L["When enabled, your Mythic clears are listed with your character's name and class, including group clears."], 1, 1, 1, 1, 1)
+    GameTooltip:SetText(L["hoa.addon.when_enabled_your_mythic_clears_are_listed_with_your_charact"], 1, 1, 1, 1, 1)
 end)
 window.join:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
@@ -271,7 +271,7 @@ window.soon = UI.Text(window, 11)
 window.soon:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -LEFT - 10, 50)
 window.soon:SetJustifyH("RIGHT")
 window.soon:SetTextColor(1, 0.82, 0)
-window.soon:SetText(L["Builds will be shown here in a future update."])
+window.soon:SetText(L["hoa.addon.builds_will_be_shown_here_in_a_future_update"])
 
 window.note = UI.Text(window, 11)
 window.note:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", LEFT, 26)
@@ -357,12 +357,12 @@ end
 
 local function SyncText()
     local sync = board.sync
-    local waiting = sync and sync.pending > 0 and L("{1} runs waiting to upload", sync.pending) or nil
+    local waiting = sync and sync.pending > 0 and L("hoa.addon.1_runs_waiting_to_upload", sync.pending) or nil
     if sync and sync.state == "failed" then
-        local text = sync.since ~= "" and L("Leaderboard unreachable since {1}", sync.since) or L["Leaderboard unreachable"]
+        local text = sync.since ~= "" and L("hoa.addon.leaderboard_unreachable_since_1", sync.since) or L["hoa.addon.leaderboard_unreachable"]
         return "|cffff6666" .. text .. (waiting and ("  ·  " .. waiting) or "") .. "|r"
     end
-    local updated = board.updated and L("Updated {1}", board.updated) or ""
+    local updated = board.updated and L("hoa.addon.updated_1", board.updated) or ""
     if waiting then
         return updated ~= "" and (updated .. "  ·  " .. waiting) or waiting
     end
@@ -386,7 +386,7 @@ function window.Refresh()
             button.ring:Hide()
         end
     end
-    window.whoHeading:SetText(board.size == 1 and L["Character"] or L["Group"])
+    window.whoHeading:SetText(board.size == 1 and L["hoa.addon.character"] or L["hoa.addon.group"])
 
     local view = CurrentView()
     if not view.total then
@@ -410,11 +410,11 @@ function window.Refresh()
     if total > 0 then
         window.empty:SetText("")
     elseif not view.total and board.updated then
-        window.empty:SetText(L["Loading..."])
+        window.empty:SetText(L["hoa.addon.loading"])
     elseif board.updated then
-        window.empty:SetText(L["Nobody is on this list yet."])
+        window.empty:SetText(L["hoa.addon.nobody_is_on_this_list_yet"])
     else
-        window.empty:SetText(L["The launcher downloads the leaderboard when it starts."])
+        window.empty:SetText(L["hoa.addon.the_launcher_downloads_the_leaderboard_when_it_starts"])
     end
 
     local best, rank = BestOfMine()
@@ -425,18 +425,18 @@ function window.Refresh()
     else
         ClearRow(window.you)
         if board.choice ~= 1 then
-            window.you.note:SetText(L["Check the box below to be listed."])
+            window.you.note:SetText(L["hoa.addon.check_the_box_below_to_be_listed"])
         elseif UI.WearsLegacyGear() then
-            window.you.note:SetText(L["You're wearing legacy gear, so your runs don't count this season."])
+            window.you.note:SetText(L["hoa.addon.you_re_wearing_legacy_gear_so_your_runs_don_t_count_this_sea"])
         else
-            window.you.note:SetText(L["Not ranked yet."])
+            window.you.note:SetText(L["hoa.addon.not_ranked_yet"])
         end
     end
 
-    window.header:SetText(L("Season {1}", board.season))
+    window.header:SetText(L("hoa.addon.season_1", board.season))
     window.headerRight:SetText(SyncText())
     window.join:SetChecked(board.choice == 1)
-    window.note:SetText(L("Season {1}. Mythic clears with gear found this season. Ties go to the faster clear.", board.season))
+    window.note:SetText(L("hoa.addon.season_1_mythic_clears_with_gear_found_this_season_ties_go_t", board.season))
 end
 
 local function ReadMembers(text)
@@ -462,17 +462,17 @@ window.ask:EnableMouse(true)
 window.ask.title = UI.Text(window.ask, 14)
 window.ask.title:SetPoint("TOP", window.ask, "TOP", 0, -14)
 window.ask.title:SetTextColor(1, 0.82, 0)
-window.ask.title:SetText(L["Join the leaderboard?"])
+window.ask.title:SetText(L["hoa.addon.join_the_leaderboard"])
 window.ask.text = UI.Text(window.ask, 12)
 window.ask.text:SetPoint("TOP", window.ask.title, "BOTTOM", 0, -8)
 window.ask.text:SetWidth(ASK_WIDTH - 32)
-window.ask.text:SetText(L["Show your characters on the public leaderboard? Your solo and group Mythic clears are sent with the character's name and class. You can change this any time at the bottom of this window."])
-window.ask.join = UI.Button(window.ask, 120, L["Join"], function()
+window.ask.text:SetText(L["hoa.addon.show_your_characters_on_the_public_leaderboard_your_solo_and"])
+window.ask.join = UI.Button(window.ask, 120, L["hoa.addon.join"], function()
     window.ask:Hide()
     Command("joinboard 1")
 end)
 window.ask.join:SetPoint("BOTTOMRIGHT", window.ask, "BOTTOM", -6, 14)
-window.ask.decline = UI.Button(window.ask, 120, L["No thanks"], function()
+window.ask.decline = UI.Button(window.ask, 120, L["hoa.addon.no_thanks"], function()
     window.ask:Hide()
     Command("joinboard 0")
 end)

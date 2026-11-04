@@ -24,7 +24,8 @@ function VanillaBonkLocale.Text(language, text)
     local strings = VanillaBonkLocale.tables[language]
     local message_id = VanillaBonkLocale.keys[text]
     local translated = message_id and strings and strings[message_id]
-    return translated or (strings and strings[text]) or WithoutNote(text)
+    local english = VanillaBonkLocale.english[message_id or text]
+    return translated or (strings and strings[text]) or english or WithoutNote(text)
 end
 
 function VanillaBonkLocale.English(text)
@@ -86,7 +87,7 @@ function VanillaBonkLocale.Changed(language)
         return
     end
     local dialog = StaticPopupDialogs["VANILLABONK_LANGUAGE"]
-    dialog.button1 = VanillaBonkLocale.Text(language, "Reload")
-    dialog.button2 = VanillaBonkLocale.Text(language, "Later")
-    StaticPopup_Show("VANILLABONK_LANGUAGE", VanillaBonkLocale.Text(language, "Reload the interface to show it in the new language?"))
+    dialog.button1 = VanillaBonkLocale.Text(language, "hoa.addon.reload")
+    dialog.button2 = VanillaBonkLocale.Text(language, "hoa.addon.later")
+    StaticPopup_Show("VANILLABONK_LANGUAGE", VanillaBonkLocale.Text(language, "hoa.addon.reload_the_interface_to_show_it_in_the_new_language"))
 end
