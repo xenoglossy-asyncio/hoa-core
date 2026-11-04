@@ -1163,8 +1163,12 @@ void BonkRun::DespawnVault()
             vault->Delete();
     m_vaultGuid.Clear();
     m_vaultOpen = false;
-    if (m_player->IsInWorld())
-        m_player->GetBonkPlayer()->SendAddon("vaultclose");
+    if (m_player->IsInWorld() && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::IsOwnVault(GameObject const* vault) const
@@ -1291,23 +1295,36 @@ void BonkRun::SendVault() const
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (!bonk->IsAddonReady())
         return;
-    bonk->SendAddon("vaultclear");
-    bonk->SendAddon("vaultsent");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultSent(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     for (SentHomePiece const& piece : m_sentHome)
-        bonk->SendAddon("vaultsentitem~" + std::to_string(piece.entry) + "~" + std::to_string(piece.stage) + "~" +
-            std::to_string(piece.tier) + "~" + piece.lines + "~" + piece.extra);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultSentItem(data, piece.entry, piece.stage, piece.tier, piece.lines, piece.extra);
+        m_player->GetSession()->SendPacket(&data);
+    }
     std::string chosen;
     for (VaultFind const& find : GetVaultFinds())
     {
-        bonk->SendAddon("vaultitem~" + std::to_string(find.guid.GetCounter()) + "~" + std::to_string(find.entry) + "~" +
-            std::to_string(find.quality) + "~" + (find.worn ? "1" : "0") + "~" + std::to_string(find.sellCopper) + "~" +
-            DescribeBroughtGearFor(find.entry) + "~" + std::to_string(find.tier) + "~" + std::to_string(find.bestOwnedTier) + "~" +
-            (find.owned ? "1" : "0") + "~" + std::to_string(find.scrap) + "~" + find.lines + "~" + find.extra);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultItem(data, find.guid.GetCounter(), find.entry, find.quality, find.worn, find.sellCopper,
+            DescribeBroughtGearFor(find.entry), find.tier, find.bestOwnedTier, find.owned, find.scrap, find.lines, find.extra);
+        m_player->GetSession()->SendPacket(&data);
         if (find.inVault && !m_hearthSending)
             chosen += (chosen.empty() ? "" : ",") + std::to_string(find.guid.GetCounter());
     }
-    bonk->SendAddon("vaultopen~" + std::to_string(m_hearthSending ? 1u : GetVaultSlots()) + "~" + chosen + "~" + (m_hearthSending ? "hearth" : "vault") + "~" +
-        std::to_string(uint32(m_bonuses.scrapBonus + 0.5f)));
+    WorldPacket open(SMSG_HOA_MESSAGE);
+    HoAWriteVaultOpen(open, m_hearthSending ? 1u : GetVaultSlots(), chosen, m_hearthSending ? "hearth" : "vault",
+        uint32(m_bonuses.scrapBonus + 0.5f));
+    m_player->GetSession()->SendPacket(&open);
 }
 
 bool BonkRun::SendHomeFromHearth(uint32 guidLow, std::string& error)
@@ -1358,7 +1375,12 @@ bool BonkRun::SendHomeFromHearth(uint32 guidLow, std::string& error)
             ShowKitAt(BONK_KIT_ASTRAL_RECALL, vault->GetPositionX(), vault->GetPositionY(), vault->GetPositionZ());
     CloseVault();
     DespawnVault();
-    bonk->SendAddon("vaultclose");
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     return true;
 }
 

@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 12
+version: 13
 messages:
   - name: aura_value
     id: 0x0002
@@ -430,5 +430,50 @@ messages:
       - { name: extra, type: string }
   - name: gear_close
     id: 0x0042
+    direction: server_to_client
+    fields: []
+  - name: vault_clear
+    id: 0x0043
+    direction: server_to_client
+    fields: []
+  - name: vault_sent
+    id: 0x0044
+    direction: server_to_client
+    fields: []
+  - name: vault_sent_item
+    id: 0x0045
+    direction: server_to_client
+    fields:
+      - { name: entry, type: u32 }
+      - { name: stage, type: u32 }
+      - { name: tier, type: u32 }
+      - { name: lines, type: string }
+      - { name: extra, type: string }
+  - name: vault_item
+    id: 0x0046
+    direction: server_to_client
+    fields:
+      - { name: guid, type: u32 }
+      - { name: entry, type: u32 }
+      - { name: quality, type: u32 }
+      - { name: worn, type: bool }
+      - { name: sell_copper, type: u32 }
+      - { name: saved, type: string }
+      - { name: tier, type: u32 }
+      - { name: best, type: u32 }
+      - { name: owned, type: bool }
+      - { name: scrap, type: u32 }
+      - { name: lines, type: string }
+      - { name: extra, type: string }
+  - name: vault_open
+    id: 0x0047
+    direction: server_to_client
+    fields:
+      - { name: slots, type: u32 }
+      - { name: chosen, type: string }
+      - { name: mode, type: string }
+      - { name: scrap_bonus, type: u32 }
+  - name: vault_close
+    id: 0x0048
     direction: server_to_client
     fields: []

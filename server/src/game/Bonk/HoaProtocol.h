@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 12
+#define HOA_PROTOCOL_VERSION 13
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -66,6 +66,12 @@
 #define HOA_MSG_FOUND_END 0x0040
 #define HOA_MSG_GEAR_OFFER 0x0041
 #define HOA_MSG_GEAR_CLOSE 0x0042
+#define HOA_MSG_VAULT_CLEAR 0x0043
+#define HOA_MSG_VAULT_SENT 0x0044
+#define HOA_MSG_VAULT_SENT_ITEM 0x0045
+#define HOA_MSG_VAULT_ITEM 0x0046
+#define HOA_MSG_VAULT_OPEN 0x0047
+#define HOA_MSG_VAULT_CLOSE 0x0048
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -559,4 +565,55 @@ inline void HoAWriteGearOffer(WorldPacket& packet, uint32 const& entry, uint32 c
 inline void HoAWriteGearClose(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_GEAR_CLOSE);
+}
+
+inline void HoAWriteVaultClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VAULT_CLEAR);
+}
+
+inline void HoAWriteVaultSent(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VAULT_SENT);
+}
+
+inline void HoAWriteVaultSentItem(WorldPacket& packet, uint32 const& entry, uint32 const& stage, uint32 const& tier, std::string const& lines, std::string const& extra)
+{
+    packet << uint16(HOA_MSG_VAULT_SENT_ITEM);
+    packet << uint32(entry);
+    packet << uint32(stage);
+    packet << uint32(tier);
+    HoAWriteString(packet, lines);
+    HoAWriteString(packet, extra);
+}
+
+inline void HoAWriteVaultItem(WorldPacket& packet, uint32 const& guid, uint32 const& entry, uint32 const& quality, bool const& worn, uint32 const& sellCopper, std::string const& saved, uint32 const& tier, uint32 const& best, bool const& owned, uint32 const& scrap, std::string const& lines, std::string const& extra)
+{
+    packet << uint16(HOA_MSG_VAULT_ITEM);
+    packet << uint32(guid);
+    packet << uint32(entry);
+    packet << uint32(quality);
+    packet << bool(worn);
+    packet << uint32(sellCopper);
+    HoAWriteString(packet, saved);
+    packet << uint32(tier);
+    packet << uint32(best);
+    packet << bool(owned);
+    packet << uint32(scrap);
+    HoAWriteString(packet, lines);
+    HoAWriteString(packet, extra);
+}
+
+inline void HoAWriteVaultOpen(WorldPacket& packet, uint32 const& slots, std::string const& chosen, std::string const& mode, uint32 const& scrapBonus)
+{
+    packet << uint16(HOA_MSG_VAULT_OPEN);
+    packet << uint32(slots);
+    HoAWriteString(packet, chosen);
+    HoAWriteString(packet, mode);
+    packet << uint32(scrapBonus);
+}
+
+inline void HoAWriteVaultClose(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VAULT_CLOSE);
 }

@@ -73,6 +73,12 @@ const HOA_FOUND_ITEM: &str = "HOA_FOUND_ITEM";
 const HOA_FOUND_END: &str = "HOA_FOUND_END";
 const HOA_GEAR_OFFER: &str = "HOA_GEAR_OFFER";
 const HOA_GEAR_CLOSE: &str = "HOA_GEAR_CLOSE";
+const HOA_VAULT_CLEAR: &str = "HOA_VAULT_CLEAR";
+const HOA_VAULT_SENT: &str = "HOA_VAULT_SENT";
+const HOA_VAULT_SENT_ITEM: &str = "HOA_VAULT_SENT_ITEM";
+const HOA_VAULT_ITEM: &str = "HOA_VAULT_ITEM";
+const HOA_VAULT_OPEN: &str = "HOA_VAULT_OPEN";
+const HOA_VAULT_CLOSE: &str = "HOA_VAULT_CLOSE";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -149,6 +155,57 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::VaultClear(_) => {
+                    script.fire_event(HOA_VAULT_CLEAR, Vec::new());
+                }
+                HoaMessage::VaultSent(_) => {
+                    script.fire_event(HOA_VAULT_SENT, Vec::new());
+                }
+                HoaMessage::VaultSentItem(item) => {
+                    script.fire_event(
+                        HOA_VAULT_SENT_ITEM,
+                        vec![lua_table(vec![
+                            ("entry", ScriptValue::Int(i64::from(item.entry))),
+                            ("stage", ScriptValue::Int(i64::from(item.stage))),
+                            ("tier", ScriptValue::Int(i64::from(item.tier))),
+                            ("lines", ScriptValue::Str(item.lines)),
+                            ("extra", ScriptValue::Str(item.extra)),
+                        ])],
+                    );
+                }
+                HoaMessage::VaultItem(item) => {
+                    script.fire_event(
+                        HOA_VAULT_ITEM,
+                        vec![lua_table(vec![
+                            ("guid", ScriptValue::Int(i64::from(item.guid))),
+                            ("entry", ScriptValue::Int(i64::from(item.entry))),
+                            ("quality", ScriptValue::Int(i64::from(item.quality))),
+                            ("worn", ScriptValue::Bool(item.worn)),
+                            ("sell_copper", ScriptValue::Int(i64::from(item.sell_copper))),
+                            ("saved", ScriptValue::Str(item.saved)),
+                            ("tier", ScriptValue::Int(i64::from(item.tier))),
+                            ("best", ScriptValue::Int(i64::from(item.best))),
+                            ("owned", ScriptValue::Bool(item.owned)),
+                            ("scrap", ScriptValue::Int(i64::from(item.scrap))),
+                            ("lines", ScriptValue::Str(item.lines)),
+                            ("extra", ScriptValue::Str(item.extra)),
+                        ])],
+                    );
+                }
+                HoaMessage::VaultOpen(open) => {
+                    script.fire_event(
+                        HOA_VAULT_OPEN,
+                        vec![lua_table(vec![
+                            ("slots", ScriptValue::Int(i64::from(open.slots))),
+                            ("chosen", ScriptValue::Str(open.chosen)),
+                            ("mode", ScriptValue::Str(open.mode)),
+                            ("scrap_bonus", ScriptValue::Int(i64::from(open.scrap_bonus))),
+                        ])],
+                    );
+                }
+                HoaMessage::VaultClose(_) => {
+                    script.fire_event(HOA_VAULT_CLOSE, Vec::new());
+                }
                 HoaMessage::FoundClear(_) => {
                     script.fire_event(HOA_FOUND_CLEAR, Vec::new());
                 }
@@ -759,6 +816,12 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_FOUND_END);
         add_in_game_event(HOA_GEAR_OFFER);
         add_in_game_event(HOA_GEAR_CLOSE);
+        add_in_game_event(HOA_VAULT_CLEAR);
+        add_in_game_event(HOA_VAULT_SENT);
+        add_in_game_event(HOA_VAULT_SENT_ITEM);
+        add_in_game_event(HOA_VAULT_ITEM);
+        add_in_game_event(HOA_VAULT_OPEN);
+        add_in_game_event(HOA_VAULT_CLOSE);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

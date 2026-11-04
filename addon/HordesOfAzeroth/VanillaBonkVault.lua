@@ -976,4 +976,28 @@ UI.ListenHoa({
     end,
 })
 
+UI.ListenHoa({
+    HOA_VAULT_CLEAR = function()
+        handlers["vaultclear"]()
+    end,
+    HOA_VAULT_SENT = function()
+        handlers["vaultsent"]()
+    end,
+    HOA_VAULT_SENT_ITEM = function(item)
+        handlers["vaultsentitem"]({ false, item.entry, item.stage, item.tier, item.lines, item.extra })
+    end,
+    HOA_VAULT_ITEM = function(item)
+        handlers["vaultitem"]({
+            false, tostring(item.guid), item.entry, item.quality, item.worn and "1" or "0", item.sell_copper, item.saved,
+            item.tier, item.best, item.owned and "1" or "0", item.scrap, item.lines, item.extra,
+        })
+    end,
+    HOA_VAULT_OPEN = function(open)
+        handlers["vaultopen"]({ false, open.slots, open.chosen, open.mode, open.scrap_bonus })
+    end,
+    HOA_VAULT_CLOSE = function()
+        handlers["vaultclose"]()
+    end,
+})
+
 UI.Listen(handlers)
