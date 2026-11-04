@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from tables import compile_tables
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "shared" / "content" / "cards" / "cards.yaml"
 TARGET = ROOT / "server" / "sql" / "content" / "bonk_card.sql"
+HASH_TARGET = ROOT / "shared" / "content" / "content.hash"
 
 
 def quote(text: str) -> str:
@@ -116,6 +118,17 @@ def main() -> int:
             print("generated content is out of date: " + ", ".join(stale))
             print("run tools/content/compile.py")
             return 1
+        digest = hashlib.sha256()
+        sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml"))]
+        for source in sources:
+            digest.update(source.relative_to(ROOT).as_posix().encode("utf-8"))
+            digest.update(b"\x00")
+            digest.update(source.read_bytes())
+        expected_hash = "sha256:" + digest.hexdigest() + "\n"
+        current_hash = HASH_TARGET.read_text(encoding="ascii") if HASH_TARGET.exists() else ""
+        if current_hash != expected_hash:
+            print("content.hash is out of date; run tools/content/compile.py")
+            return 1
         print(f"content: {len(generated)} generated files are up to date")
         return 0
 
@@ -123,6 +136,16 @@ def main() -> int:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(sql)
         print(f"wrote {target.relative_to(ROOT)} ({len(sql)} bytes)")
+
+    digest = hashlib.sha256()
+    sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml"))]
+    for source in sources:
+        digest.update(source.relative_to(ROOT).as_posix().encode("utf-8"))
+        digest.update(b"\x00")
+        digest.update(source.read_bytes())
+    content_hash = "sha256:" + digest.hexdigest() + "\n"
+    HASH_TARGET.write_text(content_hash, encoding="ascii")
+    print(f"wrote {HASH_TARGET.relative_to(ROOT)} ({content_hash.strip()})")
     return 0
 
 

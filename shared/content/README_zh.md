@@ -52,6 +52,7 @@ stats: { strength: 12, stamina: 8 }
 - `tables/<table>.yaml` 保存 49 张设计内容 `bonk_*` 表（武器、升级、Glyph、天赋、精通、地图、任务、称号、难度、怪物、物品属性及其语言行）。
 - `tools/content/dump_cards.py` / `dump_tables.py` 从数据库一次性导入。
 - `tools/content/compile.py` 生成 `server/sql/content/*.sql`；`--check` 在 CI 里保证所有生成文件与源同步。
+- `tools/content/apply.py --maria <客户端路径> --database <世界库>` 按顺序应用这些文件；测试库就是这样接收源文件改动的。
 
 每张生成表都应用到测试库并与旧数据逐行对比，49 张全部一致。大型生成表 `bonk_hidden_creature`、`bonk_hidden_gameobject` 按项目决定保留在数据库里，不进入源文件，避免仓库难以审阅。
 
