@@ -3630,13 +3630,40 @@ SetFont(necroticText, 11)
 necroticText:SetPoint("TOPLEFT", PlayerFrameManaBar, "BOTTOMLEFT", 0, -4)
 necroticText:SetTextColor(0.4, 1, 0.3)
 
-handlers["necrotic"] = function(f)
-    local stacks = tonumber(f[2]) or 0
+local NECROTIC_SPELL = 18951
+local necroticPercent = ""
+
+local function RefreshNecrotic()
+    local stacks = 0
+    if C_UnitAuras and C_UnitAuras.GetAuraSlots then
+        local slots = {}
+        local _, slotCount = C_UnitAuras.GetAuraSlots("player", "HARMFUL", nil, nil, slots)
+        for index = 1, slotCount or 0 do
+            local _, _, count, _, _, _, _, _, _, spellId = C_UnitAuras.UnitAuraBySlot("player", slots[index])
+            if spellId == NECROTIC_SPELL then
+                stacks = max(1, count or 1)
+                break
+            end
+        end
+    end
     if stacks > 0 then
-        necroticText:SetText(L("Necrotic x{1}: {2} less healing", stacks, f[3] or ""))
+        necroticText:SetText(L("Necrotic x{1}: {2} less healing", stacks, necroticPercent))
     else
         necroticText:SetText("")
     end
+end
+
+local necroticAura = CreateFrame("Frame")
+necroticAura:RegisterEvent("UNIT_AURA")
+necroticAura:SetScript("OnEvent", function()
+    if arg1 == "player" then
+        RefreshNecrotic()
+    end
+end)
+
+handlers["necroticpct"] = function(f)
+    necroticPercent = f[2] or ""
+    RefreshNecrotic()
 end
 
 do

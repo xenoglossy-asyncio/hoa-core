@@ -1784,7 +1784,6 @@ void BonkRun::StartStage()
     m_dotBurstLookTimes.clear();
     m_dotStacks.clear();
     m_crowdControl.clear();
-    m_buffs.clear();
     ResetWarriorState();
     ResetMageState();
     ResetShamanState();
@@ -4394,29 +4393,39 @@ uint32 BonkRun::MitigateDamage(uint32 damage)
     return damage;
 }
 
+uint32 BonkRun::GetNecroticStacks() const
+{
+    SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(BONK_SPELL_NECROTIC);
+    return holder ? holder->GetStackAmount() : 0;
+}
+
 void BonkRun::AddNecroticStack()
 {
-    if (m_necroticStacks < BONK_NECROTIC_MAX_STACKS)
-        SetNecroticStacks(m_necroticStacks + 1);
+    uint32 const stacks = GetNecroticStacks();
+    if (stacks < BONK_NECROTIC_MAX_STACKS)
+        SetNecroticStacks(stacks + 1);
 }
 
 void BonkRun::SetNecroticStacks(uint32 stacks)
 {
-    if (stacks == m_necroticStacks)
+    if (stacks == GetNecroticStacks())
         return;
 
-    bool const had = m_necroticStacks > 0;
-    m_necroticStacks = stacks;
-    if (stacks && !had && m_player->IsAlive())
-        m_player->AddAura(BONK_SPELL_NECROTIC);
-    else if (!stacks && had)
+    if (stacks && m_player->IsAlive())
+    {
+        if (!m_player->HasAura(BONK_SPELL_NECROTIC))
+            m_player->AddAura(BONK_SPELL_NECROTIC);
+        if (SpellAuraHolder* holder = m_player->GetSpellAuraHolder(BONK_SPELL_NECROTIC))
+            holder->SetStackAmount(stacks);
+    }
+    else if (!stacks)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_NECROTIC);
-    m_player->GetBonkPlayer()->SendAddon("necrotic~" + std::to_string(stacks) + "~" + Percent(stacks * BONK_NECROTIC_PER_STACK));
+    m_player->GetBonkPlayer()->SendAddon("necroticpct~" + Percent(stacks * BONK_NECROTIC_PER_STACK));
 }
 
 void BonkRun::UpdateNecrotic(uint32 diff)
 {
-    if (!m_necroticStacks)
+    if (!GetNecroticStacks())
         return;
     m_necroticCheckMs += diff;
     if (m_necroticCheckMs < BONK_NECROTIC_CHECK_MS)
@@ -4436,7 +4445,7 @@ void BonkRun::UpdateNecrotic(uint32 diff)
 
 uint32 BonkRun::ReduceHealing(uint32 heal) const
 {
-    float const cut = m_necroticStacks * BONK_NECROTIC_PER_STACK + m_bossWoundStacks * m_bossWoundCut + m_bonuses.healingCut;
+    float const cut = GetNecroticStacks() * BONK_NECROTIC_PER_STACK + m_bossWoundStacks * m_bossWoundCut + m_bonuses.healingCut;
     if (cut <= 0.0f)
         return heal;
     float const kept = 1.0f - std::min(100.0f, cut) / 100.0f;
@@ -7913,22 +7922,18 @@ void BonkRun::ClearHunterEvolutions()
 float BonkRun::GetBuffPower() const
 {
     float power = 0.0f;
-    uint32 const now = WorldTimer::getMSTime();
-    for (auto const& itr : m_buffs)
-        if (int32(itr.second - now) > 0)
-            if (OwnedWeapon const* owned = FindOwned(itr.first))
-                power += owned->weapon.behaviorValue * (1.0f + owned->damageBonus / 100.0f);
+    for (OwnedWeapon const& owned : m_weapons)
+        if (owned.weapon.behavior == BONK_BEHAVIOR_BUFF && m_player->HasAura(owned.weapon.spellId))
+            power += owned.weapon.behaviorValue * (1.0f + owned.damageBonus / 100.0f);
     return power;
 }
 
 bool BonkRun::IsReckless() const
 {
-    uint32 const now = WorldTimer::getMSTime();
-    for (auto const& itr : m_buffs)
-        if (int32(itr.second - now) > 0)
-            if (OwnedWeapon const* owned = FindOwned(itr.first))
-                if (owned->weapon.HasFlag(BONK_WEAPON_FLAG_ALWAYS_CRIT))
-                    return true;
+    for (OwnedWeapon const& owned : m_weapons)
+        if (owned.weapon.behavior == BONK_BEHAVIOR_BUFF && owned.weapon.HasFlag(BONK_WEAPON_FLAG_ALWAYS_CRIT) &&
+            m_player->HasAura(owned.weapon.spellId))
+            return true;
     return false;
 }
 
@@ -8069,7 +8074,6 @@ void BonkRun::FireWeapon(OwnedWeapon& owned)
         {
             FiringWeapon firing(m_player->GetBonkPlayer());
             m_player->CastSpell(m_player, spellInfo, true);
-            m_buffs[weapon.id] = now + uint32(weapon.durationMs * tweak.durationScale);
         }
         owned.timer = GetWeaponCooldown(owned);
         return;
@@ -14549,7 +14553,6 @@ void BonkRun::CleanUp()
     m_dotBurstLookTimes.clear();
     m_dotStacks.clear();
     m_crowdControl.clear();
-    m_buffs.clear();
     ResetWarriorState();
     ResetMageState();
     ResetShamanState();

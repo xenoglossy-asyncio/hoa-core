@@ -606,6 +606,7 @@ class BonkRun
         void RefillShield(uint32 target);
         void UpdateNecrotic(uint32 diff);
         void SetNecroticStacks(uint32 stacks);
+        uint32 GetNecroticStacks() const;
         uint32 ReduceHealing(uint32 heal) const;
         void OnAffixedDeath(Creature* mob);
         void UpdatePools(uint32 diff);
@@ -1781,7 +1782,6 @@ class BonkRun
         void DespawnEnchanter();
         bool IsNearEnchanter() const;
         float m_leechCarry = 0.0f;
-        uint32 m_necroticStacks = 0;
         uint32 m_necroticCheckMs = 0;
         struct HeroMark
         {
@@ -2262,7 +2262,6 @@ class BonkRun
         void LandEnemyMissile(EnemyMissile const& missile);
         uint32 m_spellShield = 0;
         bool m_wardBurst = false;
-        std::map<uint32, uint32> m_buffs;
         struct Trap
         {
             uint32 weaponId = 0;

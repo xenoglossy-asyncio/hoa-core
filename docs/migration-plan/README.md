@@ -42,6 +42,7 @@ Deliver phase by phase. At the end of every phase the repository must build, run
 - Migrate category by category: native spell copies → custom buffs → resource/stack states → special values such as shield amounts.
 - Switch the addon to `UnitBuff`/`UNIT_AURA`; delete state timers and `BONK~state`.
 - Acceptance: every HoA effect appears in the buff frame; addon/server/combat-log state agrees; UI reload, reconnect and language switch preserve it.
+- Progress (2026-11-04): the first two effects are migrated. Weapon buffs read the live aura instead of the removed `m_buffs` expiry map; Necrotic stacks live on spell 18951 and the server reads `GetStackAmount`, while the addon reads the stack count through `C_UnitAuras` and only takes the server-computed healing cut from the notice.
 - Risks: custom spell display on the client, aura packet rate, effects that no stock aura type can express.
 
 ## Phase 4: single content source
