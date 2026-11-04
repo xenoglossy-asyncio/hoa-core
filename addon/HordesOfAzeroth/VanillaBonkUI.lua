@@ -901,8 +901,9 @@ function UI.TalkingTo(name)
     if current == english then
         return true
     end
+    local message_id = VanillaBonkLocale.keys[english]
     for _, strings in pairs(VanillaBonkLocale.tables) do
-        if strings[english] == current then
+        if (message_id and strings[message_id] == current) or strings[english] == current then
             return true
         end
     end

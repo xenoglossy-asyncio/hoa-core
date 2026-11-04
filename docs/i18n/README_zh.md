@@ -112,6 +112,7 @@ shared/i18n/
 ## 8. 插件
 
 - 删除 `VanillaBonkLocale*.lua` 中按英文句子索引的表，改为生成的 `locale_<locale>.lua` + 消息 ID。
+- 生成的 `zhCN` 表现在按稳定消息 ID 索引；`L()` 调用点仍传英文查找文本，生成器额外输出英文→ID 映射，迁移期间保持兼容。
 - 删除 `VanillaBonkLocale.English` 反向查找（它现在用于跨语言匹配 NPC 名字）；NPC 窗口改为按 NPC entry/ID 匹配，不按名字。
 - 选项文本（`VanillaBonkOptionsText.lua`）改为语言包驱动，不再在 Lua 里维护英文→中文映射。
 - 文本参数统一用 `L(id, args)`；禁止在 Lua 里拼接可变语序的句子。

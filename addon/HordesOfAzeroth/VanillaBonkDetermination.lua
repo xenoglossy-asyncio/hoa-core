@@ -30,7 +30,7 @@ frame:SetScript("OnLeave", function()
     GameTooltip:Hide()
 end)
 
-local DETERMINATION_SPELL = 60001
+local DETERMINATION_SPELL = HOA_AURA_IDS.determination
 
 local function Refresh()
     local stacks = UI.AuraStacks(DETERMINATION_SPELL, "HELPFUL")

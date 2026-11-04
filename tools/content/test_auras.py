@@ -17,11 +17,14 @@ class AuraRegistryTests(unittest.TestCase):
         cls.spells = {spell["id"]: spell for spell in load_spells()}
 
     def test_keeps_the_expected_aura_set(self) -> None:
-        self.assertEqual(len(self.spells), 75)
+        self.assertEqual(len(self.spells), 102)
         self.assertEqual(len([spell for spell in self.spells.values() if not spell["native"]]), 51)
         for spell_id in (
-            17, 339, 1833, 2070, 5116, 5277, 7922, 8122, 8233, 9484, 17498, 18951, 19255, 20368,
-            21183, 23414, 33461, 33462, 33463, 33464, 33465, 33466, 33467, 33468,
+            17, 339, 594, 1833, 2070, 5116, 5277, 7922, 8122, 8233, 8921, 9484, 12485, 12654,
+            12721, 13496, 14868, 15258, 17364, 17498, 18148, 18798, 18951, 19255, 19448, 19502,
+            19574, 20368, 20374, 21183, 22518, 22577, 22578, 22579, 22580, 22581, 22959, 23414,
+            26388, 27991, 28126, 28419, 31309, 33461, 33462, 33463, 33464, 33465, 33466, 33467,
+            33468,
         ):
             self.assertTrue(self.spells[spell_id]["native"])
         self.assertNotIn(60009, self.spells)
@@ -91,6 +94,26 @@ class AuraRegistryTests(unittest.TestCase):
         self.assertEqual(potency["stack_amount"], 0)
         self.assertIn("5 with Improved Arcane Potency", potency["description"])
         self.assertIn("强化奥术潜能", potency["description_zhCN"])
+
+    def test_keyword_aura_inherits_the_keyword_row(self) -> None:
+        chill = self.spells[12485]
+        self.assertEqual(chill["name"], "Chill")
+        self.assertEqual(chill["name_zhCN"], "冰寒")
+        self.assertTrue(chill["icon"].endswith("Spell_Frost_IceStorm"))
+        self.assertEqual(chill["stack_amount"], 10)
+        self.assertIn("3% per stack", chill["description"])
+
+    def test_pet_aura_binds_to_its_source(self) -> None:
+        bestial = self.spells[19574]
+        self.assertEqual(bestial["name"], "Bestial Wrath")
+        self.assertTrue(bestial["icon"].endswith("Ability_Druid_FerociousBite"))
+        self.assertEqual(bestial["source_kind"], "mastery")
+
+    def test_affix_glow_has_a_state_name(self) -> None:
+        swift = self.spells[22580]
+        self.assertEqual(swift["name"], "Swift")
+        self.assertEqual(swift["name_zhCN"], "迅捷")
+        self.assertEqual(swift["duration_index"], 0)
 
     def test_state_debuffs_keep_their_state_names(self) -> None:
         exposed = self.spells[60047]
@@ -171,6 +194,17 @@ class UsageAuditTests(unittest.TestCase):
             if path.suffix not in (".cpp", ".h") or path.name == "BonkSpellIds.h":
                 continue
             for number, line in enumerate(path.read_text(errors="ignore").splitlines(), 1):
+                for match in re.finditer(r"\b60(0[0-9]{2})\b", line):
+                    value = int("60" + match.group(1))
+                    if 60001 <= value <= 60099:
+                        self.fail(f"{path}:{number} uses raw aura id {value}")
+
+
+    def test_addon_uses_generated_aura_ids(self) -> None:
+        for path in (ROOT / "addon/HordesOfAzeroth").glob("*.lua"):
+            if path.name == "VanillaBonkAuraIds.lua":
+                continue
+            for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                 for match in re.finditer(r"\b60(0[0-9]{2})\b", line):
                     value = int("60" + match.group(1))
                     if 60001 <= value <= 60099:

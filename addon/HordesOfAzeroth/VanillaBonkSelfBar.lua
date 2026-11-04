@@ -198,7 +198,7 @@ UI.Listen({
 
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
-        if tonumber(spellId) == 60005 then
+        if tonumber(spellId) == HOA_AURA_IDS.shield then
             shield = tonumber(value) or 0
         end
     end,

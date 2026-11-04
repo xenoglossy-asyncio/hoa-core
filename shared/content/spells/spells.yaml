@@ -1,7 +1,7 @@
 # Custom auras HoA adds to the 1.12.1 client. Ids 60001-60099 are reserved for HoA.
 #
 # Every aura names its origin under `source`:
-#   card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | behavior:<enum> | none
+#   card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | keyword:<id> | behavior:<enum> | none
 # A sourced aura inherits the source row's name, icon and description. Fields under `display`
 # override the source and MUST explain why. `none` and `behavior` have no single row, so they
 # must spell out the full display and explain it.
@@ -18,6 +18,141 @@
 #
 # The compiler emits spell_template SQL, the server ids and hoa_aura/hoa_aura_locale rows; the
 # client receives the localized display rows from the server at addon-ready.
+- id: 12485
+  key: keyword_chill
+  native: true
+  source: keyword:1
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 18798
+  key: keyword_frozen
+  native: true
+  source: keyword:2
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 12654
+  key: keyword_burning
+  native: true
+  source: keyword:3
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 12721
+  key: keyword_bleed
+  native: true
+  source: keyword:4
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 19448
+  key: keyword_poison
+  native: true
+  source: keyword:5
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 22959
+  key: keyword_fire_vulnerability
+  native: true
+  source: keyword:6
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 27991
+  key: keyword_sunder_armor
+  native: true
+  source: keyword:7
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 15258
+  key: keyword_shadow_vulnerability
+  native: true
+  source: keyword:8
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 20374
+  key: keyword_hunters_mark
+  native: true
+  source: keyword:9
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 13496
+  key: keyword_dazed
+  native: true
+  source: keyword:10
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 18148
+  key: keyword_static
+  native: true
+  source: keyword:11
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 17364
+  key: keyword_nature_vulnerability
+  native: true
+  source: keyword:12
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 594
+  key: keyword_decay
+  native: true
+  source: keyword:13
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 14868
+  key: keyword_agony
+  native: true
+  source: keyword:14
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 8921
+  key: keyword_moonfire
+  native: true
+  source: keyword:15
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
 # Native `bonk_look_*` rows that HoA reskins: the server catalog overrides their installed DBC
 # display, but they are not custom spell ids and are not cloned into spell_template.
 - id: 17
@@ -259,6 +394,184 @@
   stacks:
     source: none
   permanent: false
+  dynamic:
+    kind: none
+- id: 19502
+  key: pet_plague
+  native: true
+  source: weapon:229
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 19574
+  key: pet_bestial_wrath
+  native: true
+  source: mastery:30110
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 28419
+  key: pet_screech
+  native: true
+  source: none
+  reason: Pet state from the Wyvern summoned by weapon 230; the weapon row names the summon skill, not the screech.
+  display:
+    name: Screech
+    name_zhCN: 尖啸
+    description: The Wyvern's screech strengthens your pets.
+    description_zhCN: 翼龙的尖啸强化你的宠物。
+    reason: The native Screech aura is the pet-side state of the Wyvern summon.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22518
+  key: affix_sanguine
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Sanguine
+    name_zhCN: 血色
+    description: Leaves healing blood pools on death.
+    description_zhCN: 死亡时留下治疗血池。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22577
+  key: affix_necrotic
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Necrotic
+    name_zhCN: 死疽
+    description: Attacks apply Necrotic.
+    description_zhCN: 攻击会施加死疽。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22578
+  key: affix_vampiric
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Vampiric
+    name_zhCN: 吸血
+    description: Heals for a share of damage dealt.
+    description_zhCN: 造成伤害时恢复生命。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22579
+  key: affix_explosive
+  native: true
+  source: none
+  reason: Shared by the Explosive and Volcanic affix glows; no content row owns the visual state.
+  display:
+    name: Explosive
+    name_zhCN: 爆炸
+    description: Explodes when killed.
+    description_zhCN: 死亡时爆炸。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22580
+  key: affix_swift
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Swift
+    name_zhCN: 迅捷
+    description: Moves faster.
+    description_zhCN: 移动速度提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22581
+  key: affix_bolstering
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Bolstering
+    name_zhCN: 激励
+    description: Strengthens nearby allies when it dies.
+    description_zhCN: 死亡时强化附近盟友。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 26388
+  key: affix_bulwark
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Bulwark
+    name_zhCN: 壁垒
+    description: Raises a damage shield.
+    description_zhCN: 获得伤害护盾。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 28126
+  key: affix_frenzied
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Frenzied
+    name_zhCN: 狂乱
+    description: Attacks faster.
+    description_zhCN: 攻击速度提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 31309
+  key: affix_raging
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Raging
+    name_zhCN: 狂怒
+    description: Deals more damage.
+    description_zhCN: 伤害提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
   dynamic:
     kind: none
 - id: 33462

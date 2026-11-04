@@ -1,6 +1,6 @@
 RegisterCVar("hoaLanguage", "enUS")
 
-VanillaBonkLocale = { tables = {} }
+VanillaBonkLocale = { tables = {}, keys = {}, english = {} }
 
 local function SavedLanguage()
     local language = GetCVar("hoaLanguage")
@@ -22,7 +22,9 @@ end
 
 function VanillaBonkLocale.Text(language, text)
     local strings = VanillaBonkLocale.tables[language]
-    return strings and strings[text] or WithoutNote(text)
+    local message_id = VanillaBonkLocale.keys[text]
+    local translated = message_id and strings and strings[message_id]
+    return translated or (strings and strings[text]) or WithoutNote(text)
 end
 
 function VanillaBonkLocale.English(text)
@@ -32,8 +34,8 @@ function VanillaBonkLocale.English(text)
     end
     if not VanillaBonkLocale.reverse then
         VanillaBonkLocale.reverse = {}
-        for english, translated in pairs(strings) do
-            VanillaBonkLocale.reverse[translated] = WithoutNote(english)
+        for message_id, translated in pairs(strings) do
+            VanillaBonkLocale.reverse[translated] = VanillaBonkLocale.english[message_id] or message_id
         end
     end
     return VanillaBonkLocale.reverse[text] or text
@@ -57,6 +59,16 @@ VanillaBonkL = setmetatable({}, {
 
 function VanillaBonkLocale.Register(language, strings)
     VanillaBonkLocale.tables[language] = strings
+    VanillaBonkLocale.reverse = nil
+end
+
+function VanillaBonkLocale.RegisterKeys(keys)
+    VanillaBonkLocale.keys = keys
+end
+
+function VanillaBonkLocale.RegisterEnglish(english)
+    VanillaBonkLocale.english = english
+    VanillaBonkLocale.reverse = nil
 end
 
 StaticPopupDialogs["VANILLABONK_LANGUAGE"] = {

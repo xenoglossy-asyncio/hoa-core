@@ -112,6 +112,7 @@ The compiler then generates:
 ## 8. Addon
 
 - Delete tables keyed by English sentences in `VanillaBonkLocale*.lua`; use generated `locale_<locale>.lua` plus message IDs.
+- The generated `zhCN` table is now keyed by stable message IDs. `L()` call sites still pass their English lookup text; a generated English→ID map keeps them working during the migration.
 - Delete the `VanillaBonkLocale.English` reverse lookup (currently used to match NPC names across languages); NPC windows match by NPC entry/ID, not by name.
 - Option text (`VanillaBonkOptionsText.lua`) becomes language-pack driven; no more English→Chinese map in Lua.
 - Text arguments use `L(id, args)`; never concatenate sentences with variable word order in Lua.

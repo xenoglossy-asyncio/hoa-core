@@ -59,7 +59,7 @@ spell:
       amount: 30
 ```
 
-实现使用 `shared/content/spells/spells.yaml` 的精简 schema。每个光环声明 `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | behavior:<enum> | none`；有来源的光环继承来源行的名称、图标和描述，`display` 覆盖必须写 `reason`。`stacks`、`permanent`、`dynamic` 分别描述实时层数、计时和数值文本。编译器校验所有绑定并生成 `hoa_aura`/`hoa_aura_locale`；服务端在 addon ready 和切语言时通过类型化协议下发本地化行，客户端只存字符串，不读语言。
+实现使用 `shared/content/spells/spells.yaml` 的精简 schema。每个光环声明 `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | keyword:<id> | behavior:<enum> | none`；有来源的光环继承来源行的名称、图标和描述，`display` 覆盖必须写 `reason`。`stacks`、`permanent`、`dynamic` 分别描述实时层数、计时和数值文本。编译器校验所有绑定并生成 `hoa_aura`/`hoa_aura_locale`；服务端在 addon ready 和切语言时通过类型化协议下发本地化行，客户端只存字符串，不读语言。
 
 编译后：
 

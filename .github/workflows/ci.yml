@@ -103,6 +103,8 @@ jobs:
           workspaces: client
       - name: Check the client workspace
         run: cargo check --manifest-path client/Cargo.toml -p hoa
+      - name: Test the client workspace
+        run: cargo test --manifest-path client/Cargo.toml -p hoa -p benilla-app --lib
 
   server-build:
     name: server-build

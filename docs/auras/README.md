@@ -59,7 +59,7 @@ spell:
       amount: 30
 ```
 
-The implementation in `shared/content/spells/spells.yaml` uses a smaller schema. Each aura declares `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | behavior:<enum> | none`; a sourced aura inherits the source row's name, icon and description, while `display` overrides require a `reason`. `stacks`, `permanent` and `dynamic` describe the live count, timer and value text. The compiler validates every binding and emits `hoa_aura`/`hoa_aura_locale`; the server pushes the localized rows over the typed protocol at addon-ready and language changes, so the client stores strings without reading a locale.
+The implementation in `shared/content/spells/spells.yaml` uses a smaller schema. Each aura declares `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | keyword:<id> | behavior:<enum> | none`; a sourced aura inherits the source row's name, icon and description, while `display` overrides require a `reason`. `stacks`, `permanent` and `dynamic` describe the live count, timer and value text. The compiler validates every binding and emits `hoa_aura`/`hoa_aura_locale`; the server pushes the localized rows over the typed protocol at addon-ready and language changes, so the client stores strings without reading a locale.
 
 After compilation:
 

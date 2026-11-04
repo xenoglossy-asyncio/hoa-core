@@ -49,7 +49,7 @@ stats: { strength: 12, stamina: 8 }
 设计内容表已经迁到这里：
 
 - `cards/cards.yaml` 是 46 张卡牌的手工源文件（英文 + zhCN）。
-- `spells/spells.yaml` 定义所有 HoA 自定义光环。每一项用 `source` 绑定到对应的卡牌、精通、武器或 Glyph；编译器继承来源行的名称、图标和描述（或使用带理由的 `display` 覆盖）并做校验，然后生成 `spell_template` SQL、`hoa_aura`/`hoa_aura_locale` SQL 和服务端 C++ ID。客户端在登录时从服务端接收已本地化的显示行，不再保留生成副本。
+- `spells/spells.yaml` 定义所有 HoA 自定义光环。每一项用 `source` 绑定到对应的卡牌、精通、武器、Glyph 或 Keyword；编译器继承来源行的名称、图标和描述（或使用带理由的 `display` 覆盖）并做校验，然后生成 `spell_template` SQL、`hoa_aura`/`hoa_aura_locale` SQL、服务端 C++ ID 和附件的 `VanillaBonkAuraIds.lua` 常量。客户端在登录时从服务端接收已本地化的显示行，不再保留生成副本。
 - `tables/<table>.yaml` 保存 49 张设计内容 `bonk_*` 表（武器、升级、Glyph、天赋、精通、地图、任务、称号、难度、怪物、物品属性及其语言行）。
 - `tools/content/dump_cards.py` / `dump_tables.py` 从数据库一次性导入。
 - `tools/content/compile.py` 生成 `server/sql/content/*.sql`；`--check` 在 CI 里保证所有生成文件与源同步，`tools/content/test_auras.py` 检查来源绑定和使用审计。

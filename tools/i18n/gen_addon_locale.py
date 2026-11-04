@@ -35,20 +35,35 @@ def render() -> bytes:
     if not isinstance(data, list):
         raise SystemExit("addon.yaml: top level must be a list")
     seen: set[str] = set()
+    seen_ids: set[str] = set()
     entries = []
     for entry in data:
         key = entry.get("enUS")
         value = entry.get("zhCN")
+        message_id = entry.get("id")
         if not isinstance(key, str) or not isinstance(value, str):
-            raise SystemExit(f"addon.yaml: entry without enUS/zhCN: {entry.get('id')}")
+            raise SystemExit(f"addon.yaml: entry without enUS/zhCN: {message_id}")
+        if not isinstance(message_id, str) or not message_id:
+            raise SystemExit(f"addon.yaml: entry without id: {key!r}")
         if key in seen:
             raise SystemExit(f"addon.yaml: duplicate enUS key: {key!r}")
+        if message_id in seen_ids:
+            raise SystemExit(f"addon.yaml: duplicate id: {message_id!r}")
         seen.add(key)
-        entries.append((key, value))
+        seen_ids.add(message_id)
+        entries.append((message_id, key, value))
     entries.sort(key=lambda item: item[0])
     lines = [BANNER, 'VanillaBonkLocale.Register("zhCN", {']
-    for key, value in entries:
-        lines.append(f"    [{lua_string(key)}] = {lua_string(value)},")
+    for message_id, _key, value in entries:
+        lines.append(f"    [{lua_string(message_id)}] = {lua_string(value)},")
+    lines.append("})")
+    lines += ["VanillaBonkLocale.RegisterKeys({"]
+    for message_id, key, _value in entries:
+        lines.append(f"    [{lua_string(key)}] = {lua_string(message_id)},")
+    lines.append("})")
+    lines += ["VanillaBonkLocale.RegisterEnglish({"]
+    for message_id, key, _value in entries:
+        lines.append(f"    [{lua_string(message_id)}] = {lua_string(key)},")
     lines.append("})")
     lines.append("")
     return "\n".join(lines).encode("utf-8")

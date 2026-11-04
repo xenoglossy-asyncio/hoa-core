@@ -3627,7 +3627,7 @@ end
 
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
-        if tonumber(spellId) == 60005 then
+        if tonumber(spellId) == HOA_AURA_IDS.shield then
             VB.shield = tonumber(value) or 0
             RefreshShield()
         end
@@ -3674,7 +3674,7 @@ UI.ListenHoa({
 })
 
 do
-    local WOUNDS_SPELL = 60003
+    local WOUNDS_SPELL = HOA_AURA_IDS.wounds
     local woundsPercent = ""
     local woundsText = PlayerFrame:CreateFontString(nil, "OVERLAY")
     SetFont(woundsText, 11)
@@ -3705,7 +3705,7 @@ do
 
     UI.ListenHoa({
         HOA_AURA_PERCENT = function(spellId, percent)
-            if tonumber(spellId) == 60003 then
+            if tonumber(spellId) == HOA_AURA_IDS.wounds then
                 woundsPercent = format("%g%%", tonumber(percent) or 0)
                 RefreshWounds()
             end
