@@ -469,6 +469,26 @@ void BonkRun::ApplyTimedAura(uint32 spellId, uint32 durationMs) const
     }
 }
 
+void BonkRun::ApplyTimedAuraTo(Unit* target, uint32 spellId, uint32 durationMs, uint32 flags) const
+{
+    if (!target || !target->IsAlive())
+        return;
+    if (SpellAuraHolder* holder = target->AddAura(spellId, flags, m_player))
+    {
+        holder->SetAuraDuration(int32(durationMs));
+        holder->SetAuraMaxDuration(int32(durationMs));
+        holder->UpdateAuraDuration();
+    }
+}
+
+uint32 BonkRun::RemainingAuraMs(uint32 spellId) const
+{
+    SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(spellId);
+    if (!holder)
+        return 0;
+    return holder->GetAuraDuration() > 0 ? uint32(holder->GetAuraDuration()) : 0;
+}
+
 void BonkRun::SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const
 {
     uint32 stacks = 0;
@@ -836,7 +856,7 @@ void BonkRun::OnTalentDamage(Unit* victim, SpellEntry const* spell)
     }
 
     if (root == BONK_WEAPON_PENANCE && m_mastery.Special(BONK_SPECIAL_SCHISM) > 0.0f)
-        m_schismUntil[victim->GetObjectGuid()] = m_totalMs + BONK_SCHISM_MS;
+        ApplyTimedAuraTo(victim, BONK_SPELL_SCHISM, BONK_SCHISM_MS, ADD_AURA_NEGATIVE);
 
     if (root == BONK_WEAPON_FIRE_BLAST)
     {

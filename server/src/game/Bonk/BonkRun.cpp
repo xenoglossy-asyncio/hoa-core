@@ -9960,9 +9960,9 @@ bool BonkRun::Howl(OwnedWeapon& owned)
 
     wolf->HandleEmote(EMOTE_ONESHOT_ROAR);
     OnTalentHowl(wolf);
-    uint32 const until = WorldTimer::getMSTime() + uint32(owned.weapon.durationMs * GetWeaponDurationScale(owned));
-    if (!IsHowlFrenzied() || int32(until - m_petFrenzyUntil) > 0)
-        m_petFrenzyUntil = until;
+    uint32 const duration = uint32(owned.weapon.durationMs * GetWeaponDurationScale(owned));
+    if (duration > RemainingAuraMs(BONK_SPELL_HOWL_FRENZY))
+        ApplyTimedAura(BONK_SPELL_HOWL_FRENZY, duration);
     for (OwnedWeapon& other : m_weapons)
         if (other.weapon.behavior == BONK_BEHAVIOR_PET)
             UpdatePets(other);
@@ -9986,7 +9986,7 @@ float BonkRun::GetFrenzyDamage() const
 
 bool BonkRun::IsHowlFrenzied() const
 {
-    return int32(m_petFrenzyUntil - WorldTimer::getMSTime()) > 0;
+    return m_player->HasAura(BONK_SPELL_HOWL_FRENZY);
 }
 
 bool BonkRun::IsKeywordAbilityHit(OwnedWeapon const& owned, SpellEntry const* spell) const
@@ -10762,7 +10762,7 @@ void BonkRun::DespawnPets()
     DespawnBeasts();
     DespawnSkeletons();
     m_petStates.clear();
-    m_petFrenzyUntil = 0;
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_HOWL_FRENZY);
 }
 
 std::vector<Creature*> BonkRun::PickGroupCenters(std::vector<Creature*> const& mobs, float radius, uint32 count) const
@@ -11348,12 +11348,11 @@ void BonkRun::FeedFrenzy()
         return;
 
     uint32 const now = WorldTimer::getMSTime();
-    uint32 const cap = now + BONK_FEEDING_FRENZY_MAX_MS;
-    uint32 const fed = m_petFrenzyUntil + BONK_FEEDING_FRENZY_MS;
-    uint32 const until = int32(fed - cap) > 0 ? cap : fed;
-    if (int32(until - m_petFrenzyUntil) <= 0)
+    uint32 const remaining = RemainingAuraMs(BONK_SPELL_HOWL_FRENZY);
+    uint32 const next = std::min(remaining + BONK_FEEDING_FRENZY_MS, BONK_FEEDING_FRENZY_MAX_MS);
+    if (next <= remaining)
         return;
-    m_petFrenzyUntil = until;
+    ApplyTimedAura(BONK_SPELL_HOWL_FRENZY, next);
 
     if (WorldTimer::getMSTimeDiff(m_frenzyGlowMs, now) < BONK_FRENZY_GLOW_GAP_MS)
         return;

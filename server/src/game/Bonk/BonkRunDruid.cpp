@@ -245,7 +245,6 @@ void BonkRun::ResetDruidState()
     m_sentDruidSlots.clear();
     m_starfallReadyMs = 0;
     m_roarReadyMs = 0;
-    m_roaredUntilMs.clear();
     m_tranquilityPulse = 0;
     m_formCycleMs = m_formCycleAtMs = 0;
     ResetDruidEvolutions();
@@ -580,7 +579,7 @@ void BonkRun::RoarAsBear()
     size_t shown = 0;
     for (Creature* mob : mobs)
     {
-        m_roaredUntilMs[mob->GetObjectGuid()] = m_totalMs + BONK_ROAR_MS;
+        ApplyTimedAuraTo(mob, BONK_SPELL_DEMORALIZING_ROAR, BONK_ROAR_MS, ADD_AURA_NEGATIVE);
         ApplyWeaponKeyword(*shapeshift, mob, BONK_KEYWORD_DAZED, 1);
         if (shown++ < BONK_ROAR_LOOKS)
             mob->SendPlaySpellVisualKit(BONK_KIT_ROAR_IMPACT);
@@ -589,8 +588,7 @@ void BonkRun::RoarAsBear()
 
 float BonkRun::GetDruidRoarReduction(Creature const* mob) const
 {
-    auto itr = m_roaredUntilMs.find(mob->GetObjectGuid());
-    return itr != m_roaredUntilMs.end() && itr->second > m_totalMs ? BONK_ROAR_REDUCTION : 0.0f;
+    return mob->GetSpellAuraHolder(BONK_SPELL_DEMORALIZING_ROAR, m_player->GetObjectGuid()) ? BONK_ROAR_REDUCTION : 0.0f;
 }
 
 float BonkRun::GetDruidMoveSpeed() const

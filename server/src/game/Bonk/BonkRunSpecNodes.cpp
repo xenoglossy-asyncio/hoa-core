@@ -180,16 +180,12 @@ void BonkRun::GrantThunderShield()
 
 void BonkRun::ExposeToHammer(Unit* victim)
 {
-    PruneExpired(m_hammerExposedUntil, m_totalMs);
-    m_hammerExposedUntil[victim->GetObjectGuid()] = m_totalMs + BONK_HAMMER_EXPOSE_MS;
+    ApplyTimedAuraTo(victim, BONK_SPELL_HAMMER_EXPOSED, BONK_HAMMER_EXPOSE_MS, ADD_AURA_NEGATIVE);
 }
 
 bool BonkRun::IsExposedToHammer(Unit const* victim) const
 {
-    if (!victim || m_hammerExposedUntil.empty())
-        return false;
-    auto itr = m_hammerExposedUntil.find(victim->GetObjectGuid());
-    return itr != m_hammerExposedUntil.end() && int32(itr->second - m_totalMs) > 0;
+    return victim && victim->GetSpellAuraHolder(BONK_SPELL_HAMMER_EXPOSED, m_player->GetObjectGuid());
 }
 
 void BonkRun::AmbushFromShuriken(Creature* mob)

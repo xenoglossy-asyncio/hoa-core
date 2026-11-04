@@ -328,3 +328,51 @@
   icon: Interface\Icons\Ability_Druid_Rake
   description: Each nearby bleeding enemy grants a stack, increasing your damage.
   description_zhCN: 附近每个流血的敌人提供一层，提高你的伤害。
+- id: 60042
+  key: howl_frenzy
+  cpp: BONK_SPELL_HOWL_FRENZY
+  name: Howl Frenzy
+  name_zhCN: 狂啸
+  icon: Interface\Icons\Ability_Hunter_BeastCall
+  description: Your pets deal more damage for a short time.
+  description_zhCN: 短时间内你的宠物伤害提高。
+- id: 60043
+  key: demoralizing_roar
+  cpp: BONK_SPELL_DEMORALIZING_ROAR
+  name: Demoralizing Roar
+  name_zhCN: 挫志咆哮
+  icon: Interface\Icons\Ability_Druid_DemoralizingRoar
+  description: This enemy deals less damage for a short time.
+  description_zhCN: 短时间内该敌人造成的伤害降低。
+- id: 60044
+  key: strangling_vines
+  cpp: BONK_SPELL_STRANGLING_VINES
+  name: Strangling Vines
+  name_zhCN: 缠绕藤蔓
+  icon: Interface\Icons\Spell_Nature_StrangleVines
+  description: This enemy is rooted and taking damage.
+  description_zhCN: 该敌人被定身并持续受到伤害。
+- id: 60045
+  key: seduced
+  cpp: BONK_SPELL_SEDUCED
+  name: Seduced
+  name_zhCN: 魅惑
+  icon: Interface\Icons\Spell_Shadow_Charm
+  description: This enemy takes more damage for a short time.
+  description_zhCN: 短时间内该敌人受到的伤害提高。
+- id: 60046
+  key: schism
+  cpp: BONK_SPELL_SCHISM
+  name: Schism
+  name_zhCN: 裂隙
+  icon: Interface\Icons\Spell_Shadow_ShadowWordPain
+  description: This enemy takes more damage from you for a short time.
+  description_zhCN: 短时间内该敌人受到的伤害提高。
+- id: 60047
+  key: hammer_exposed
+  cpp: BONK_SPELL_HAMMER_EXPOSED
+  name: Exposed
+  name_zhCN: 破绽
+  icon: Interface\Icons\Spell_Holy_HammerOfWrath
+  description: This enemy takes more damage from you for a short time.
+  description_zhCN: 短时间内该敌人受到的伤害提高。

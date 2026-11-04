@@ -636,6 +636,8 @@ class BonkRun
         void AddKillPowerStack() const;
         void RefreshUnhitPowerAura() const;
         void ApplyTimedAura(uint32 spellId, uint32 durationMs) const;
+        void ApplyTimedAuraTo(Unit* target, uint32 spellId, uint32 durationMs, uint32 flags) const;
+        uint32 RemainingAuraMs(uint32 spellId) const;
         void SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const;
         void SyncStackAura(uint32 spellId, uint32 stacks) const;
         void UpdateTalentAuras();
@@ -2321,7 +2323,6 @@ class BonkRun
         std::map<ObjectGuid, uint32> m_seedHitReadyMs;
         std::map<ObjectGuid, uint32> m_impPrey;
         std::map<ObjectGuid, uint32> m_doomAt;
-        std::map<ObjectGuid, uint32> m_seducedUntil;
         std::map<ObjectGuid, uint32> m_devourAffixReadyMs;
         std::deque<uint32> m_souls;
         uint32 m_darkHarvestReadyMs = 0;
@@ -2332,7 +2333,6 @@ class BonkRun
         std::map<ObjectGuid, uint32> m_consumedShadows;
         std::map<ObjectGuid, uint32> m_spellLockReadyMs;
         uint32 m_devourTimer = 0;
-        uint32 m_petFrenzyUntil = 0;
         bool m_petsFrenzied = false;
         int32 m_defensiveTimer = 0;
         float m_bleedHeal = 0.0f;
@@ -2771,7 +2771,6 @@ class BonkRun
         std::string m_sentDruidSlots;
         uint32 m_starfallReadyMs = 0;
         uint32 m_roarReadyMs = 0;
-        std::map<ObjectGuid, uint32> m_roaredUntilMs;
         uint32 GetClawImpactKit(uint32 spellId) const;
         uint32 GetStillClawKit(uint32 spellId) const;
         void ShowDruidStrike(SpellEntry const* look, Creature* target);
@@ -2981,7 +2980,6 @@ class BonkRun
         std::vector<uint32> m_forcefulUntil;
         uint32 m_smiteCount = 0;
         uint32 m_madnessStacks = 0;
-        std::map<ObjectGuid, uint32> m_schismUntil;
         std::vector<uint32> m_danseUntil;
         uint32 m_mongooseStacks = 0;
         int32 m_mongooseTimer = 0;
@@ -2993,7 +2991,6 @@ class BonkRun
         uint32 m_stormWindfuryAtMs = ~0u;
         std::vector<uint32> m_demonCleaveTimes;
         bool m_spreeStriking = false;
-        std::map<ObjectGuid, uint32> m_hammerExposedUntil;
         std::map<ObjectGuid, uint32> m_shurikenAmbushReady;
         std::vector<std::pair<ObjectGuid, uint32>> m_thaws;
         float GetArcanePowerMultiplier() const;

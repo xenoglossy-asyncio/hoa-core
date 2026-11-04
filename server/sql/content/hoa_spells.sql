@@ -88,6 +88,18 @@ UPDATE `hoa_spell_clone` SET `entry` = 60040, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60041, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60042, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60043, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60044, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60045, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60046, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60047, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 DROP TEMPORARY TABLE `hoa_spell_clone`;
 
 UPDATE `spell_template` SET
@@ -663,3 +675,87 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60041 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Howl Frenzy',
+  `nameSubtext` = '',
+  `description` = 'Your pets deal more damage for a short time.',
+  `auraDescription` = 'Your pets deal more damage for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60042 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Demoralizing Roar',
+  `nameSubtext` = '',
+  `description` = 'This enemy deals less damage for a short time.',
+  `auraDescription` = 'This enemy deals less damage for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60043 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Strangling Vines',
+  `nameSubtext` = '',
+  `description` = 'This enemy is rooted and taking damage.',
+  `auraDescription` = 'This enemy is rooted and taking damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60044 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Seduced',
+  `nameSubtext` = '',
+  `description` = 'This enemy takes more damage for a short time.',
+  `auraDescription` = 'This enemy takes more damage for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60045 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Schism',
+  `nameSubtext` = '',
+  `description` = 'This enemy takes more damage from you for a short time.',
+  `auraDescription` = 'This enemy takes more damage from you for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60046 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Exposed',
+  `nameSubtext` = '',
+  `description` = 'This enemy takes more damage from you for a short time.',
+  `auraDescription` = 'This enemy takes more damage from you for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60047 AND `build` = 5875;

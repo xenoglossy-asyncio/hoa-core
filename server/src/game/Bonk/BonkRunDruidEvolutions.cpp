@@ -576,7 +576,10 @@ void BonkRun::OnDruidRooted(OwnedWeapon const& owned, SpellEntry const* spellInf
 {
     uint32 const id = owned.weapon.id;
     if (id == BONK_WEAPON_STRANGLING_VINES)
+    {
         m_strangledUntilMs[mob->GetObjectGuid()] = m_totalMs + BONK_ROOT_MS;
+        ApplyTimedAuraTo(mob, BONK_SPELL_STRANGLING_VINES, BONK_ROOT_MS, ADD_AURA_NEGATIVE);
+    }
     if (id != BONK_WEAPON_MASS_ENTANGLEMENT || !spreads)
         return;
     for (Creature* neighbor : GetMobsInRange(GetWeaponRadius(owned), mob))

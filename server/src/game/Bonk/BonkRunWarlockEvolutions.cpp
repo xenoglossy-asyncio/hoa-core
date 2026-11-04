@@ -182,7 +182,6 @@ void BonkRun::DespawnWarlockMinions()
     m_seedHitReadyMs.clear();
     m_impPrey.clear();
     m_doomAt.clear();
-    m_seducedUntil.clear();
     m_devourAffixReadyMs.clear();
     if (!m_souls.empty() && m_player->IsInWorld())
         m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_LOOK);
@@ -240,8 +239,8 @@ uint32 BonkRun::CountDemonFamilies() const
 float BonkRun::GetWarlockDamageTakenScale(Unit const* victim) const
 {
     float scale = 1.0f + BONK_SOUL_DAMAGE * m_souls.size();
-    auto seduced = m_seducedUntil.find(victim->GetObjectGuid());
-    if (seduced != m_seducedUntil.end() && int32(seduced->second - m_totalMs) > 0)
+    auto seduced = victim ? victim->GetSpellAuraHolder(BONK_SPELL_SEDUCED, m_player->GetObjectGuid()) : nullptr;
+    if (seduced)
         scale *= BONK_SEDUCED_DAMAGE;
     return scale;
 }
@@ -421,7 +420,6 @@ void BonkRun::OnWarlockEvolvedKill(Unit* victim)
         AddSoul();
 
     m_doomAt.erase(guid);
-    m_seducedUntil.erase(guid);
 }
 
 void BonkRun::PassAffliction(Creature* dead, BonkKeyword keyword, bool halve)
@@ -626,7 +624,7 @@ void BonkRun::SeduceStrongest()
             continue;
         ShowStrike(pet, look, strongest);
         PullMob(strongest, pet->GetPositionX(), pet->GetPositionY(), pet->GetPositionZ());
-        m_seducedUntil[strongest->GetObjectGuid()] = m_totalMs + BONK_SEDUCED_MS;
+        ApplyTimedAuraTo(strongest, BONK_SPELL_SEDUCED, BONK_SEDUCED_MS, ADD_AURA_NEGATIVE);
     }
 }
 
@@ -689,6 +687,4 @@ void BonkRun::UpdateWarlockEvolutions()
     UpdateWarlockMinions();
     for (auto itr = m_impPrey.begin(); itr != m_impPrey.end();)
         itr = int32(itr->second - m_totalMs) > 0 ? std::next(itr) : m_impPrey.erase(itr);
-    for (auto itr = m_seducedUntil.begin(); itr != m_seducedUntil.end();)
-        itr = int32(itr->second - m_totalMs) > 0 ? std::next(itr) : m_seducedUntil.erase(itr);
 }

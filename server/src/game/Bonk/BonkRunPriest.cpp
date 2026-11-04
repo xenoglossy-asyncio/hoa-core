@@ -891,8 +891,7 @@ float BonkRun::GetPriestDamageMultiplier(Unit const* victim) const
         multiplier *= BONK_PSYCHIC_HORROR_BONUS;
     if (FindOwned(BONK_WEAPON_CHAINS_OF_LIGHT) && victim->HasAura(BONK_SPELL_SHACKLE))
         multiplier *= BONK_CHAINS_OF_LIGHT_BONUS;
-    auto schism = m_schismUntil.find(victim->GetObjectGuid());
-    if (schism != m_schismUntil.end() && schism->second > m_totalMs)
+    if (victim->GetSpellAuraHolder(BONK_SPELL_SCHISM, m_player->GetObjectGuid()))
         multiplier *= 1.0f + m_mastery.Special(BONK_SPECIAL_SCHISM) / 100.0f;
     return multiplier;
 }
