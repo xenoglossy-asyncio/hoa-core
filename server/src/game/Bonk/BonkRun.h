@@ -632,6 +632,10 @@ class BonkRun
         uint32 GetBossWoundStacks() const;
         void RefreshSoulstoneAura() const;
         void RefreshThornsAura() const;
+        void RefreshKillPowerAura() const;
+        void AddKillPowerStack() const;
+        void RefreshUnhitPowerAura() const;
+        uint32 GetCardAuraStacks(uint32 spellId) const;
         void ClearBossPressure();
         void ShowImpact(BonkEnemyHit const& hit, float x, float y, float z, float radius = 0.0f);
         void ShowAttackLook(BonkEnemyHit const& hit, BonkTelegraphShape shape, float x, float y, float z, float orientation, float size);
@@ -1236,7 +1240,6 @@ class BonkRun
         bool m_regenerating = false;
         uint32 m_bigMovesUntilMs = 0;
         ObjectGuid m_bigMover;
-        uint32 m_cardKills = 0;
         bool m_cardSwiftActive = false;
         float m_cardValorCarry = 0.0f;
         uint32 m_soulstones = 0;

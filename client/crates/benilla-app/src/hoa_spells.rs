@@ -28,6 +28,8 @@ pub(crate) const SOUL_HARVEST: u32 = 60017;
 pub(crate) const GLYPH_HASTE: u32 = 60018;
 pub(crate) const ICE_BLOCK: u32 = 60019;
 pub(crate) const NOMAD: u32 = 60020;
+pub(crate) const KILL_POWER: u32 = 60021;
+pub(crate) const UNHIT_POWER: u32 = 60022;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -220,6 +222,24 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Nomad",
                 r"Interface\Icons\Spell_Nature_Slow",
                 "The Nomad glyph's drawback: less power for a short time.",
+            ),
+        ),
+        (
+            KILL_POWER,
+            display(
+                KILL_POWER,
+                "Kill Power",
+                r"Interface\Icons\Ability_Warrior_BattleShout",
+                "Each kill grants power.",
+            ),
+        ),
+        (
+            UNHIT_POWER,
+            display(
+                UNHIT_POWER,
+                "Unhit Power",
+                r"Interface\Icons\Spell_Holy_HolyProtection",
+                "Staying unhurt builds power.",
             ),
         ),
     ]

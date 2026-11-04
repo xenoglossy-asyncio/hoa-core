@@ -159,12 +159,13 @@ float BonkRun::GetCardPower(Unit const* victim) const
     float power = 0.0f;
 
     if (BonkCard const* brooch = m_cardByEffect[BONK_CARD_KILL_POWER])
-        power += std::min(brooch->values[1], brooch->values[0] * m_cardKills) * GetCopySum(m_cardCopies[BONK_CARD_KILL_POWER]);
+        power += std::min(brooch->values[1], brooch->values[0] * GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA)) *
+            GetCopySum(m_cardCopies[BONK_CARD_KILL_POWER]);
 
     if (HasCard(BONK_CARD_UNHIT_POWER))
     {
-        float const seconds = float(m_totalMs - (m_hurt ? m_lastHurtMs : 0)) / IN_MILLISECONDS;
-        power += std::min(GetCardTotal(BONK_CARD_UNHIT_POWER, 1), GetCardTotal(BONK_CARD_UNHIT_POWER, 0) * std::floor(seconds));
+        float const seconds = float(GetCardAuraStacks(BONK_SPELL_UNHIT_POWER_AURA));
+        power += std::min(GetCardTotal(BONK_CARD_UNHIT_POWER, 1), GetCardTotal(BONK_CARD_UNHIT_POWER, 0) * seconds);
     }
 
     if (m_player->HasAura(BONK_SPELL_DARKMOON_SURGE))
@@ -378,6 +379,12 @@ void BonkRun::AddCard(BonkCard const& card)
         case BONK_CARD_THORNS:
             RefreshThornsAura();
             break;
+        case BONK_CARD_KILL_POWER:
+            RefreshKillPowerAura();
+            break;
+        case BONK_CARD_UNHIT_POWER:
+            RefreshUnhitPowerAura();
+            break;
         case BONK_CARD_CRIT_HEAL:
             if (m_cardCopies[card.effect] == 1)
                 m_cardCritsSeen = m_crits;
@@ -522,6 +529,7 @@ void BonkRun::UpdateCards(uint32 diff)
     if (m_cardTickMs < IN_MILLISECONDS)
         return;
     m_cardTickMs -= IN_MILLISECONDS;
+    RefreshUnhitPowerAura();
 
     auto healFromCard = [&](BonkCardEffect effect, float percent)
     {
@@ -565,13 +573,14 @@ std::string BonkRun::DescribeCardNow(BonkCard const& card) const
     {
         case BONK_CARD_KILL_POWER:
         {
-            float const power = std::min(card.values[1], card.values[0] * m_cardKills) * GetCopySum(GetCardCopies(card.id));
+            float const power = std::min(card.values[1], card.values[0] * GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA)) *
+                GetCopySum(GetCardCopies(card.id));
             return GetString(BONK_STRING_CARD_NOW_POWER, { percent(power) });
         }
         case BONK_CARD_UNHIT_POWER:
         {
-            float const seconds = float(m_totalMs - (m_hurt ? m_lastHurtMs : 0)) / IN_MILLISECONDS;
-            float const power = std::min(GetCardTotal(BONK_CARD_UNHIT_POWER, 1), GetCardTotal(BONK_CARD_UNHIT_POWER, 0) * std::floor(seconds));
+            float const seconds = float(GetCardAuraStacks(BONK_SPELL_UNHIT_POWER_AURA));
+            float const power = std::min(GetCardTotal(BONK_CARD_UNHIT_POWER, 1), GetCardTotal(BONK_CARD_UNHIT_POWER, 0) * seconds);
             return GetString(BONK_STRING_CARD_NOW_POWER, { percent(power) });
         }
         case BONK_CARD_HASTE_BURST:
@@ -793,6 +802,50 @@ void BonkRun::RefreshSoulstoneAura() const
     }
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_SOULSTONE, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(m_soulstones);
+}
+
+uint32 BonkRun::GetCardAuraStacks(uint32 spellId) const
+{
+    SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(spellId);
+    return holder ? holder->GetStackAmount() : 0;
+}
+
+void BonkRun::RefreshKillPowerAura() const
+{
+    uint32 const stacks = GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA);
+    if (!HasCard(BONK_CARD_KILL_POWER) || !stacks)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
+        return;
+    }
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_KILL_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(stacks);
+}
+
+void BonkRun::AddKillPowerStack() const
+{
+    if (!HasCard(BONK_CARD_KILL_POWER))
+        return;
+    uint32 const stacks = std::min<uint32>(255, GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA) + 1);
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_KILL_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(stacks);
+}
+
+void BonkRun::RefreshUnhitPowerAura() const
+{
+    uint32 stacks = 0;
+    if (HasCard(BONK_CARD_UNHIT_POWER))
+    {
+        float const seconds = float(m_totalMs - (m_hurt ? m_lastHurtMs : 0)) / IN_MILLISECONDS;
+        stacks = std::min<uint32>(255, uint32(std::floor(seconds)));
+    }
+    if (!stacks)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_UNHIT_POWER_AURA);
+        return;
+    }
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_UNHIT_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(stacks);
 }
 
 void BonkRun::RefreshThornsAura() const

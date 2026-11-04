@@ -1239,6 +1239,8 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_GLYPH_HASTE_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_ICE_BLOCK_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_NOMAD_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_UNHIT_POWER_AURA);
 
     return m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error);
 }
@@ -4365,6 +4367,7 @@ uint32 BonkRun::MitigateDamage(uint32 damage)
     OnTrinketHitTaken();
     m_hurt = true;
     m_lastHurtMs = m_totalMs;
+    RefreshUnhitPowerAura();
 
     if (float const reduction = GetArmorReduction())
     {
@@ -12511,7 +12514,7 @@ void BonkRun::RewardKill(Creature* mob, BonkSpawnKind kind, Unit* killer, bool e
     GainValor(uint32(m_cardValorCarry));
     m_cardValorCarry -= float(uint32(m_cardValorCarry));
     if (HasCard(BONK_CARD_KILL_POWER))
-        ++m_cardKills;
+        AddKillPowerStack();
 
     if (kind != BONK_SPAWN_BOSS)
     {
@@ -14565,6 +14568,8 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_GLYPH_HASTE_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_ICE_BLOCK_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_NOMAD_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_UNHIT_POWER_AURA);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     SetNecroticStacks(0);
     ClearBossPressure();

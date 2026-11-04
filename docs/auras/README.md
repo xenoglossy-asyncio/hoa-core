@@ -120,7 +120,7 @@ Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges 
 
 ### 7.3 Class buffs
 
-Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`) and the Nomad drawback (`60020`) are class buffs moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The same pattern covers the remaining class buffs (Shadow Dance, Envenom, Doom Winds, Dark Pact, Soul Harvest, Glyph Haste, and so on).
+Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`) the Nomad drawback (`60020`), Kill Power (`60021`) and Unhit Power (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The same pattern covers the remaining class buffs (Shadow Dance, Envenom, Doom Winds, Dark Pact, Soul Harvest, Glyph Haste, and so on).
 
 ### 7.4 HoA shield/dash/determination
 
