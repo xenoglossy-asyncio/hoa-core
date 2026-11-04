@@ -143,7 +143,7 @@ void BonkRun::ResetDruidEvolutions()
     m_fullMoonNext.clear();
     m_strangledUntilMs.clear();
     m_strangleTickMs = m_shootingStarsMs = m_fullMoonPollMs = 0;
-    m_tigersFuryUntilMs = 0;
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_TIGERS_FURY_AURA);
     m_tigersFuryHaste = 0.0f;
     m_lifebloomTicks = 0;
     std::fill(std::begin(m_surgeReadyMs), std::end(m_surgeReadyMs), 0u);
@@ -450,17 +450,22 @@ void BonkRun::OnRakeDone(OwnedWeapon const& owned, size_t struck)
 {
     if (owned.weapon.id != BONK_WEAPON_TIGERS_FURY || !struck)
         return;
-    bool const fresh = int32(m_tigersFuryUntilMs - m_totalMs) <= 0;
+    bool const fresh = !m_player->HasAura(BONK_SPELL_TIGERS_FURY_AURA);
     m_tigersFuryHaste = std::min(BONK_TIGERS_FURY_MAX, BONK_TIGERS_FURY_PER_ENEMY * float(struck));
-    m_tigersFuryUntilMs = m_totalMs + BONK_TIGERS_FURY_MS;
     if (fresh)
         if (SpellEntry const* look = sSpellMgr.GetSpellEntry(BONK_SPELL_TIGERS_FURY_LOOK))
             ShowStrike(m_player, look, m_player);
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_TIGERS_FURY_AURA, ADD_AURA_POSITIVE))
+    {
+        holder->SetAuraDuration(BONK_TIGERS_FURY_MS);
+        holder->SetAuraMaxDuration(BONK_TIGERS_FURY_MS);
+        holder->UpdateAuraDuration();
+    }
 }
 
 float BonkRun::GetDruidHaste() const
 {
-    return m_tigersFuryUntilMs > m_totalMs ? m_tigersFuryHaste : 0.0f;
+    return m_player->HasAura(BONK_SPELL_TIGERS_FURY_AURA) ? m_tigersFuryHaste : 0.0f;
 }
 
 void BonkRun::OnShredHit(OwnedWeapon const& owned, SpellEntry const* spellInfo, Creature* target, std::vector<Creature*>& queue)

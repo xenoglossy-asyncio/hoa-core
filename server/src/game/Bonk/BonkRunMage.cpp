@@ -288,7 +288,14 @@ void BonkRun::OnDash()
             }
 
     if (HasBehavior(BONK_BEHAVIOR_ARCANE_POWER))
-        m_arcanePowerUntilMs = m_totalMs + BONK_ARCANE_POWER_MS;
+    {
+        if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_ARCANE_POWER_AURA, ADD_AURA_POSITIVE))
+        {
+            holder->SetAuraDuration(BONK_ARCANE_POWER_MS);
+            holder->SetAuraMaxDuration(BONK_ARCANE_POWER_MS);
+            holder->UpdateAuraDuration();
+        }
+    }
 
     if (blink)
     {
@@ -533,7 +540,7 @@ void BonkRun::ResetMageState()
     m_timeBubbleSlowMs = 0;
     m_presenceOfMindMs = 0;
     m_bankedMissiles = 0;
-    m_arcanePowerUntilMs = 0;
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_ARCANE_POWER_AURA);
     m_shiftFamily = 0;
 }
 
@@ -1158,7 +1165,7 @@ float BonkRun::GetTimeBubbleMultiplier(Unit const* victim) const
 
 float BonkRun::GetArcanePowerMultiplier() const
 {
-    return int32(m_arcanePowerUntilMs - m_totalMs) > 0 ? BONK_ARCANE_POWER_DAMAGE : 1.0f;
+    return m_player->HasAura(BONK_SPELL_ARCANE_POWER_AURA) ? BONK_ARCANE_POWER_DAMAGE : 1.0f;
 }
 
 float BonkRun::GetMageDamageMultiplier(Unit const* victim) const

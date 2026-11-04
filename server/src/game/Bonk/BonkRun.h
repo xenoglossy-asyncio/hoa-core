@@ -2834,7 +2834,6 @@ class BonkRun
         uint32 m_strangleTickMs = 0;
         uint32 m_shootingStarsMs = 0;
         uint32 m_fullMoonPollMs = 0;
-        uint32 m_tigersFuryUntilMs = 0;
         float m_tigersFuryHaste = 0.0f;
         uint32 m_lifebloomTicks = 0;
         uint32 m_surgeReadyMs[size_t(BonkDruidForm::Tree) + 1] = {};
@@ -3005,7 +3004,6 @@ class BonkRun
         std::map<ObjectGuid, uint32> m_shurikenAmbushReady;
         std::vector<std::pair<ObjectGuid, uint32>> m_thaws;
         float GetArcanePowerMultiplier() const;
-        uint32 m_arcanePowerUntilMs = 0;
         void PlantHydra(Creature* pet);
         void HoldPet(Creature* pet, bool hold, bool planted);
         static bool IsPlanted(BonkWeapon const& weapon);

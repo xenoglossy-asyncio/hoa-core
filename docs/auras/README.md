@@ -118,7 +118,11 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 
 Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges (`60009`) and Thorns (`60010`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers.
 
-### 7.3 HoA shield/dash/determination
+### 7.3 Class buffs
+
+Tiger's Fury (`60012`) and Arcane Power (`60013`) are the first class buffs moved off internal timers onto real auras: the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The same pattern covers the remaining class buffs (Shadow Dance, Envenom, Doom Winds, Dark Pact, Soul Harvest, Glyph Haste, and so on).
+
+### 7.4 HoA shield/dash/determination
 
 - Shield: custom aura `60005` (visual/presence); the remaining amount is still `m_spellShield` and reaches the addon as a value message until `AuraState` lands. The buff frame has the icon; the hero bar shows the value.
 - Dash: custom aura `60002`; charges are aura stacks and the addon reads them through `UI.AuraStacks`. The recharge countdown is aura `60011`; the server reads its remaining duration, and the addon message carries that value until the client UI reads the aura directly.
@@ -127,7 +131,7 @@ Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges 
 - Necrotic: spell `18951` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
 - Weapon buffs: the server reads the live aura instead of the removed `m_buffs` expiry map.
 
-### 7.4 Native spells
+### 7.5 Native spells
 
 - Blade Flurry/Enrage: use the stock spell ID; the server only refreshes/removes. Delete the addon timer and read `UnitBuff`.
 - If a native spell needs HoA-specific numbers, change the server spell data; do not start a second system.

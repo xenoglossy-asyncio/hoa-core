@@ -19,6 +19,8 @@ pub(crate) const CARD_IMMUNE: u32 = 60008;
 pub(crate) const SOULSTONE: u32 = 60009;
 pub(crate) const CARD_THORNS: u32 = 60010;
 pub(crate) const DASH_RECHARGE: u32 = 60011;
+pub(crate) const TIGERS_FURY: u32 = 60012;
+pub(crate) const ARCANE_POWER: u32 = 60013;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -130,6 +132,24 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Dash Recharge",
                 r"Interface\Icons\Spell_Nature_Slow",
                 "Your next dash charge is recharging.",
+            ),
+        ),
+        (
+            TIGERS_FURY,
+            display(
+                TIGERS_FURY,
+                "Tiger's Fury",
+                r"Interface\Icons\Ability_Druid_TigersRoar",
+                "Your attacks are faster for a short time.",
+            ),
+        ),
+        (
+            ARCANE_POWER,
+            display(
+                ARCANE_POWER,
+                "Arcane Power",
+                r"Interface\Icons\Spell_Nature_StarFall",
+                "Your spells deal more damage for a short time.",
             ),
         ),
     ]
