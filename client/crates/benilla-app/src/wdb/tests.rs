@@ -224,7 +224,8 @@ impl<T: SavedCache> Session<T> {
         let mut app = App::new();
         app.insert_resource(roster(realm))
             .init_resource::<T>()
-            .init_resource::<WdbFile<T>>();
+            .init_resource::<WdbFile<T>>()
+            .init_resource::<crate::cvars::Cvars>();
         app.world_mut()
             .run_system_once(load::<T>)
             .expect("the load runs");
@@ -403,22 +404,32 @@ fn a_header_from_another_realm_build_locale_or_format_discards_the_file() {
     let good = encode(
         tag,
         "Hydraxian Waterlords",
+        "zhCN",
         [(CREATURE, body.as_slice())].into_iter(),
     );
     assert_eq!(
-        decode(&good, tag, "Hydraxian Waterlords"),
+        decode(&good, tag, "Hydraxian Waterlords", "zhCN"),
         Some(vec![(CREATURE, body.clone())])
     );
-    assert_eq!(decode(&good, tag, "Another Realm"), None, "another realm");
     assert_eq!(
-        decode(&good, GameObjectTemplates::TAG, "Hydraxian Waterlords"),
+        decode(&good, tag, "Another Realm", "zhCN"),
+        None,
+        "another realm"
+    );
+    assert_eq!(
+        decode(&good, GameObjectTemplates::TAG, "Hydraxian Waterlords", "zhCN"),
         None
+    );
+    assert_eq!(
+        decode(&good, tag, "Hydraxian Waterlords", "enUS"),
+        None,
+        "another HOA language"
     );
     for (dword, what) in [(0, "tag"), (1, "build"), (2, "locale"), (3, "format")] {
         let mut bad = good.clone();
         bad[4 * dword] ^= 1;
         assert_eq!(
-            decode(&bad, tag, "Hydraxian Waterlords"),
+            decode(&bad, tag, "Hydraxian Waterlords", "zhCN"),
             None,
             "another {what}"
         );
@@ -430,10 +441,10 @@ fn a_header_from_another_realm_build_locale_or_format_discards_the_file() {
     );
     // A short read keeps nothing (`0x557665`).
     assert_eq!(
-        decode(&good[..good.len() - 12], tag, "Hydraxian Waterlords"),
+        decode(&good[..good.len() - 12], tag, "Hydraxian Waterlords", "zhCN"),
         None
     );
-    assert_eq!(decode(&[], tag, "Hydraxian Waterlords"), None);
+    assert_eq!(decode(&[], tag, "Hydraxian Waterlords", "zhCN"), None);
 
     // At the load: the other realm's file is left, and its records are not served.
     let _home = Home::new("realm");
@@ -548,7 +559,9 @@ fn a_disconnect_keeps_the_saved_quest_and_item_text_records() {
 #[test]
 fn the_session_only_stores_are_empty_after_world_entry() {
     let mut app = App::new();
-    app.init_resource::<Time>().add_plugins(WdbPlugin);
+    app.init_resource::<Time>()
+        .init_resource::<crate::cvars::Cvars>()
+        .add_plugins(WdbPlugin);
     app.world_mut()
         .resource_mut::<GuildState>()
         .land_for_test(9, "Wardens");
@@ -690,4 +703,10 @@ fn each_answer_reaches_its_own_stores_file_through_the_live_handlers() {
     assert!(held_next_session::<QuestLog>(QUEST), "quest");
     assert!(held_next_session::<PageTexts>(PAGE), "page text");
     assert!(held_next_session::<MailOpen>(ITEM_TEXT), "item text");
+}
+
+#[test]
+fn the_language_hash_is_case_insensitive() {
+    assert_eq!(language_hash("zhCN"), language_hash("zhcn"));
+    assert_ne!(language_hash("zhCN"), language_hash("enUS"));
 }

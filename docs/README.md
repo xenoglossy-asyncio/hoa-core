@@ -14,6 +14,7 @@
 | Content | Single source in `shared/content`; tools generate each artifact |
 | Co-op | LAN and `ip/domain:port` direct connections only; no public lobby or registration server |
 | First step | Phase 0 docs/skeleton and phase 1 code import are complete; phase 2 i18n is in progress |
+| Merge gate | CI runs six checks; branch protection is deferred (private repo without GitHub Pro), enable it with `scripts/protect-main.sh` once the repository is public |
 
 ## Documentation convention
 

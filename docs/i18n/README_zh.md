@@ -104,7 +104,7 @@ shared/i18n/
 - **DBC 名称**：法术书、地图、天赋、职业/种族等显示名称从语言包按 ID 取（生成自官方 1.12.1 名称表 + HOA 内容），不再依赖安装数据的本地化列。英文安装也能显示中文。
 - **字体**：按语言选字体回退链（zhCN：Noto Sans SC；zhTW：Noto Sans TC；enUS：原版字体），缺字回退顺序固定。
 - **排版**：CJK 无空格换行、禁则处理、按钮/标签最小宽度；长文本自动缩放或换行。排版引擎的 shaping locale 不能写死 `"en-US"`（`ui_text/engine/mod.rs:169`）。
-- **缓存**：WDB/模板缓存文件名或头部加入 `(locale, contentVersion)`；语言或内容变化时旧缓存自动失效。这同时解决“切换语言后装备名还是英文”的问题。
+- **缓存**：WDB/模板缓存文件名或头部加入 `(locale, contentVersion)`；语言或内容变化时旧缓存自动失效。这同时解决“切换语言后装备名还是英文”的问题。第一块已落在 `client/crates/benilla-app/src/wdb.rs`：WDB 头部（格式 2）把 HOA 账号语言折进 locale tag，另一种语言写的缓存会被丢弃；内容版本等内容包落地后再加。
 - **自定义法术**：客户端没有 spell 查询通道（`benilla-app/src/net.rs:1034-1058`），`Spell.dbc` 里没有的 ID 会显示空白（`ui_spellbook.rs:351-355`、`ui_aura.rs:256-260`）。内容包必须提供 spell ID → 名称/图标/描述/施法信息，客户端在 DBC 查询失败时回退到内容包。
 - **GlueXML**：登录/选人/建号界面使用同一语言包；语言选择可放在 Glue 或启动器。
 

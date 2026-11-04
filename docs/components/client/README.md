@@ -10,7 +10,7 @@ benilla: a from-scratch 1.12.1 client written in Rust + Bevy.
 
 - **Content overlay:** custom spells/auras/items are absent from the installed DBCs. The client reads name, icon and description from a content pack generated from `shared/content` and overrides DBC lookups at runtime.
 - **Language packs:** the client's own UI text (options, menus, Glue, error messages) comes from language packs; the language is supplied by the server at login and no longer decided by the installed data language.
-- **Cache keys:** WDB/template caches are keyed by `(locale, content version)` and expire when either changes, so switching language no longer leaves old names behind.
+- **Cache keys:** WDB/template caches are keyed by `(locale, content version)` and expire when either changes, so switching language no longer leaves old names behind. The account language is folded into the WDB header tag now; the content version comes with the content pack.
 - **Native capabilities:** buffs, levels, casting and cooldowns use the client's existing systems; HoA state no longer travels through custom chat lines.
 - **Kernel kept:** networking, movement, combat, rendering and the Lua/FrameXML engine stay benilla's; only HoA integration points and hot spots change.
 

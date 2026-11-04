@@ -69,8 +69,9 @@ const SAVE_DEBOUNCE: f32 = 10.0;
 const BUILD: u32 = 0x16f3;
 
 /// Our container's version, the header's fourth dword: bump it when the layout changes. The
-/// records need none, being the wire's.
-const FORMAT: u32 = 1;
+/// records need none, being the wire's. 2 folds the HOA language into the locale tag so a cache
+/// written in another language is discarded.
+const FORMAT: u32 = 2;
 
 /// A store the reference saves: the answer whose body is its record, and how a record read off
 /// disk is filed.
@@ -405,15 +406,21 @@ impl<T> WdbFile<T> {
 
 /// Loads the realm's file the first frame its identity is known, and on a realm change, after
 /// saving the realm left.
-fn load<T: SavedCache>(roster: Res<Roster>, mut file: ResMut<WdbFile<T>>, mut cache: ResMut<T>) {
+fn load<T: SavedCache>(
+    roster: Res<Roster>,
+    mut file: ResMut<WdbFile<T>>,
+    mut cache: ResMut<T>,
+    cvars: Res<crate::cvars::Cvars>,
+) {
     let Some((realm, _)) = crate::ui_macro::identity(&roster) else {
         return;
     };
     if file.realm.as_deref() == Some(realm.as_str()) {
         return;
     }
+    let language = hoa_language(&cvars);
     if file.realm.is_some() {
-        write_now(&mut file, &cache);
+        write_now(&mut file, &cache, &language);
         cache.forget();
         file.bodies.clear();
         file.dirty = false;
@@ -431,7 +438,7 @@ fn load<T: SavedCache>(roster: Res<Roster>, mut file: ResMut<WdbFile<T>>, mut ca
     let Ok(bytes) = std::fs::read(&path) else {
         return; // no file yet
     };
-    let Some(entries) = decode(&bytes, T::TAG, &realm) else {
+    let Some(entries) = decode(&bytes, T::TAG, &realm, &language) else {
         // The first save overwrites it.
         debug!(
             "wdb: discarding {} — not this build, locale or realm",
@@ -459,21 +466,30 @@ fn load<T: SavedCache>(roster: Res<Roster>, mut file: ResMut<WdbFile<T>>, mut ca
 }
 
 /// Writes the store when its records have changed and the debounce has elapsed.
-fn save<T: SavedCache>(time: Res<Time>, mut file: ResMut<WdbFile<T>>, cache: Res<T>) {
+fn save<T: SavedCache>(
+    time: Res<Time>,
+    mut file: ResMut<WdbFile<T>>,
+    cache: Res<T>,
+    cvars: Res<crate::cvars::Cvars>,
+) {
     file.since_save += time.delta_secs();
     if file.since_save < SAVE_DEBOUNCE {
         return;
     }
     file.since_save = 0.0;
-    write_now(&mut file, &cache);
+    write_now(&mut file, &cache, &hoa_language(&cvars));
 }
 
 /// The exit write, regardless of the debounce.
-fn save_on_exit<T: SavedCache>(mut file: ResMut<WdbFile<T>>, cache: Res<T>) {
-    write_now(&mut file, &cache);
+fn save_on_exit<T: SavedCache>(
+    mut file: ResMut<WdbFile<T>>,
+    cache: Res<T>,
+    cvars: Res<crate::cvars::Cvars>,
+) {
+    write_now(&mut file, &cache, &hoa_language(&cvars));
 }
 
-fn write_now<T: SavedCache>(file: &mut WdbFile<T>, cache: &T) {
+fn write_now<T: SavedCache>(file: &mut WdbFile<T>, cache: &T, language: &str) {
     let generation = cache.store().generation();
     if generation == file.saved && !file.dirty {
         return;
@@ -486,7 +502,7 @@ fn write_now<T: SavedCache>(file: &mut WdbFile<T>, cache: &T) {
     let entries = keys
         .into_iter()
         .filter_map(|k| file.bodies.get(&k).map(|b| (k, b.as_slice())));
-    let bytes = encode(T::TAG, realm, entries);
+    let bytes = encode(T::TAG, realm, language, entries);
     match crate::local_state::write_atomic_bytes(path, &bytes) {
         Ok(()) => {
             file.saved = generation;
@@ -499,15 +515,54 @@ fn write_now<T: SavedCache>(file: &mut WdbFile<T>, cache: &T) {
 
 /// The header's locale, the client's locale tag as each `.wdb` header carries it (`[0xc2a2a4]`,
 /// written at `0x5567d9` and compared at `0x5573c6`): the server answers in the locale the logon
-/// challenge sent, so another locale's file is discarded.
-fn locale_tag() -> u32 {
-    crate::ui_script::client_locale().tag()
+/// challenge sent, so another locale's file is discarded. The HOA language is folded in because
+/// the server also localizes item/creature text by account language, which the install locale
+/// cannot see.
+fn cache_tag(language: &str) -> u32 {
+    crate::ui_script::client_locale().tag() ^ language_hash(language)
+}
+
+fn language_hash(language: &str) -> u32 {
+    let mut hash = 0x811c_9dc5u32;
+    for byte in language.bytes() {
+        hash ^= u32::from(byte.to_ascii_lowercase());
+        hash = hash.wrapping_mul(0x0100_0193);
+    }
+    hash
+}
+
+/// The account language, from the registered CVar or the config file before the addon registers
+/// it. Defaults to enUS, the same default as the launcher.
+fn hoa_language(cvars: &crate::cvars::Cvars) -> String {
+    cvars
+        .get("hoaLanguage")
+        .map(str::to_string)
+        .or_else(|| {
+            cvars
+                .orphans()
+                .into_iter()
+                .find(|(name, _)| name.eq_ignore_ascii_case("hoaLanguage"))
+                .map(|(_, value)| value)
+        })
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| "enUS".to_string())
 }
 
 /// A store's file: the header, each `{key, size, body}` entry, then two zero dwords.
-fn encode<'a>(tag: u32, realm: &str, entries: impl Iterator<Item = (u32, &'a [u8])>) -> Vec<u8> {
+fn encode<'a>(
+    tag: u32,
+    realm: &str,
+    language: &str,
+    entries: impl Iterator<Item = (u32, &'a [u8])>,
+) -> Vec<u8> {
     let mut out = Vec::new();
-    for word in [tag, BUILD, locale_tag(), FORMAT, realm.len() as u32] {
+    for word in [
+        tag,
+        BUILD,
+        cache_tag(language),
+        FORMAT,
+        realm.len() as u32,
+    ] {
         out.extend_from_slice(&word.to_le_bytes());
     }
     out.extend_from_slice(realm.as_bytes());
@@ -528,7 +583,7 @@ fn take_u32(r: &mut &[u8]) -> Option<u32> {
 }
 
 /// [`encode`]'s entries, `None` when any header field differs or the file is cut short.
-fn decode(bytes: &[u8], tag: u32, realm: &str) -> Option<Vec<(u32, Vec<u8>)>> {
+fn decode(bytes: &[u8], tag: u32, realm: &str, language: &str) -> Option<Vec<(u32, Vec<u8>)>> {
     let mut r = bytes;
     let header = [
         take_u32(&mut r)?,
@@ -536,7 +591,7 @@ fn decode(bytes: &[u8], tag: u32, realm: &str) -> Option<Vec<(u32, Vec<u8>)>> {
         take_u32(&mut r)?,
         take_u32(&mut r)?,
     ];
-    if header != [tag, BUILD, locale_tag(), FORMAT] {
+    if header != [tag, BUILD, cache_tag(language), FORMAT] {
         return None;
     }
     let len = take_u32(&mut r)? as usize;
