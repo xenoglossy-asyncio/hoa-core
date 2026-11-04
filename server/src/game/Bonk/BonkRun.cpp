@@ -2017,11 +2017,18 @@ void BonkRun::DropOffers()
 {
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (!m_offer.empty())
-        bonk->SendAddon("picked");
+        SendOfferClosed();
     if (!m_glyphOffer.empty())
         bonk->SendAddon("glyphclose");
     if (!m_leyOffer.empty())
-        bonk->SendAddon("leyofferclose");
+    {
+        if (m_player->GetBonkPlayer()->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteLeyClosed(data);
+            m_player->GetSession()->SendPacket(&data);
+        }
+    }
     CloseGearOffer();
     m_offer.clear();
     m_glyphOffer.clear();
@@ -13772,7 +13779,7 @@ bool BonkRun::Pick(uint32 choice, std::string& error)
     if ((m_state != STATE_RUNNING && m_state != STATE_PORTAL) || m_offer.empty())
     {
         error = GetString(BONK_STRING_THERE_IS_NOTHING_TO_CHOOSE);
-        m_player->GetBonkPlayer()->SendAddon("picked");
+        SendOfferClosed();
         return false;
     }
 
@@ -13838,7 +13845,7 @@ void BonkRun::CloseOffer(uint32 pickedIndex)
         --m_pendingLevels;
 
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    bonk->SendAddon("picked");
+    SendOfferClosed();
     SendLoadout();
 
     ResumeUnlessChoiceOpen();
@@ -13850,7 +13857,7 @@ bool BonkRun::Reroll(std::string& error)
     if ((m_state != STATE_RUNNING && m_state != STATE_PORTAL) || m_offer.empty())
     {
         error = GetString(BONK_STRING_THERE_IS_NOTHING_TO_REROLL);
-        m_player->GetBonkPlayer()->SendAddon("picked");
+        SendOfferClosed();
         return false;
     }
 
@@ -13870,7 +13877,7 @@ bool BonkRun::Reroll(std::string& error)
     if (!OfferUpgrades(m_offerSource, &previous, &kept))
     {
         SetPaused(false);
-        m_player->GetBonkPlayer()->SendAddon("picked");
+        SendOfferClosed();
     }
     return true;
 }
@@ -13880,7 +13887,7 @@ bool BonkRun::Banish(uint32 choice, std::string& error)
     if ((m_state != STATE_RUNNING && m_state != STATE_PORTAL) || m_offer.empty())
     {
         error = GetString(BONK_STRING_THERE_IS_NOTHING_TO_BANISH);
-        m_player->GetBonkPlayer()->SendAddon("picked");
+        SendOfferClosed();
         return false;
     }
 
@@ -13912,7 +13919,7 @@ bool BonkRun::Banish(uint32 choice, std::string& error)
     if (!OfferUpgrades(m_offerSource, nullptr, &none))
     {
         SetPaused(false);
-        m_player->GetBonkPlayer()->SendAddon("picked");
+        SendOfferClosed();
     }
     return true;
 }
@@ -13944,7 +13951,7 @@ bool BonkRun::Skip(std::string& error)
     if ((m_state != STATE_RUNNING && m_state != STATE_PORTAL) || m_offer.empty())
     {
         error = GetString(BONK_STRING_THERE_IS_NOTHING_TO_SKIP);
-        m_player->GetBonkPlayer()->SendAddon("picked");
+        SendOfferClosed();
         return false;
     }
 
@@ -14267,9 +14274,10 @@ void BonkRun::SendOffer() const
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (bonk->IsAddonReady())
     {
-        bonk->SendAddon("offer~" + std::to_string(m_player->GetLevel() + m_overcapLevel) + "~" + std::to_string(m_offer.size()) + "~" +
-            (m_offerSource == OFFER_CHEST ? "chest" : "level") + "~" + std::to_string(m_rerolls) + "~" + std::to_string(m_banishes) + "~" +
-            std::to_string(m_skips));
+        WorldPacket open(SMSG_HOA_MESSAGE);
+        HoAWriteOfferOpen(open, m_player->GetLevel() + m_overcapLevel, m_offer.size(), m_offerSource == OFFER_CHEST ? "chest" : "level",
+            m_rerolls, m_banishes, m_skips);
+        m_player->GetSession()->SendPacket(&open);
         for (size_t i = 0; i < m_offer.size(); ++i)
         {
             Offer const& offer = m_offer[i];
@@ -14290,13 +14298,21 @@ void BonkRun::SendOffer() const
             std::vector<BonkStatChange> stats;
             DescribeOfferStats(offer, stats);
 
-            bonk->SendAddon("opt~" + std::to_string(i + 1) + "~" + (offer.isCard ? "c" : offer.step == BONK_STEP_EVOLVE ? "e" : offer.isWeapon ? "w" : "p") + "~" +
-                std::to_string(offer.newLevel) + "~" + std::to_string(maxRank) + "~" + name + "~" + icon + "~" + DescribeStep(offer) + "~" +
-                (ranked ? std::to_string(offer.rarity) : "") + "~" + (offer.locked ? "1" : "0") + "~" + before + "~" + after + "~" + label + "~" + (CanBanish(offer) ? "1" : "0"));
+            WorldPacket option(SMSG_HOA_MESSAGE);
+            HoAWriteOfferOption(option, i + 1, offer.isCard ? "c" : offer.step == BONK_STEP_EVOLVE ? "e" : offer.isWeapon ? "w" : "p",
+                offer.newLevel, maxRank, name, icon, DescribeStep(offer), ranked ? std::to_string(offer.rarity) : "",
+                offer.locked, before, after, label, CanBanish(offer));
+            m_player->GetSession()->SendPacket(&option);
             for (BonkStatChange const& stat : stats)
-                bonk->SendAddon("ostat~" + std::to_string(i + 1) + "~" + stat.label + "~" + stat.before + "~" + stat.after);
+            {
+                WorldPacket statPacket(SMSG_HOA_MESSAGE);
+                HoAWriteOfferStat(statPacket, i + 1, stat.label, stat.before, stat.after);
+                m_player->GetSession()->SendPacket(&statPacket);
+            }
         }
-        bonk->SendAddon("offerend");
+        WorldPacket end(SMSG_HOA_MESSAGE);
+        HoAWriteOfferEnd(end);
+        m_player->GetSession()->SendPacket(&end);
         return;
     }
 
@@ -14327,6 +14343,15 @@ void BonkRun::SendOffer() const
         handler.PSendSysMessage("  %s", GetString(BONK_STRING_OFFER_CHAT_BANISH, { std::to_string(m_banishes) }).c_str());
     if (m_skips)
         handler.PSendSysMessage("  %s", GetString(BONK_STRING_OFFER_CHAT_SKIP, { std::to_string(m_skips) }).c_str());
+}
+
+void BonkRun::SendOfferClosed() const
+{
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteOfferClosed(data);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkRun::Finish(bool wentHome)

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 8
+#define HOA_PROTOCOL_VERSION 9
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -35,6 +35,15 @@
 #define HOA_MSG_ALLY 0x0021
 #define HOA_MSG_ALLY_DONE 0x0022
 #define HOA_MSG_AFFIX_INFO 0x0023
+#define HOA_MSG_OFFER_OPEN 0x0024
+#define HOA_MSG_OFFER_OPTION 0x0025
+#define HOA_MSG_OFFER_STAT 0x0026
+#define HOA_MSG_OFFER_END 0x0027
+#define HOA_MSG_OFFER_CLOSED 0x0028
+#define HOA_MSG_LEY_OPEN 0x0029
+#define HOA_MSG_LEY_OPTION 0x002A
+#define HOA_MSG_LEY_END 0x002B
+#define HOA_MSG_LEY_CLOSED 0x002C
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -277,4 +286,81 @@ inline void HoAWriteAffixInfo(WorldPacket& packet, std::string const& name, std:
     HoAWriteString(packet, name);
     HoAWriteString(packet, icon);
     HoAWriteString(packet, description);
+}
+
+inline void HoAWriteOfferOpen(WorldPacket& packet, uint32 const& level, uint32 const& count, std::string const& source, uint32 const& rerolls, uint32 const& banishes, uint32 const& skips)
+{
+    packet << uint16(HOA_MSG_OFFER_OPEN);
+    packet << uint32(level);
+    packet << uint32(count);
+    HoAWriteString(packet, source);
+    packet << uint32(rerolls);
+    packet << uint32(banishes);
+    packet << uint32(skips);
+}
+
+inline void HoAWriteOfferOption(WorldPacket& packet, uint32 const& index, std::string const& kind, uint32 const& newLevel, uint32 const& maxLevel, std::string const& name, std::string const& icon, std::string const& description, std::string const& rarity, bool const& locked, std::string const& damageBefore, std::string const& damageAfter, std::string const& damageLabel, bool const& banishable)
+{
+    packet << uint16(HOA_MSG_OFFER_OPTION);
+    packet << uint32(index);
+    HoAWriteString(packet, kind);
+    packet << uint32(newLevel);
+    packet << uint32(maxLevel);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, rarity);
+    packet << bool(locked);
+    HoAWriteString(packet, damageBefore);
+    HoAWriteString(packet, damageAfter);
+    HoAWriteString(packet, damageLabel);
+    packet << bool(banishable);
+}
+
+inline void HoAWriteOfferStat(WorldPacket& packet, uint32 const& index, std::string const& label, std::string const& before, std::string const& after)
+{
+    packet << uint16(HOA_MSG_OFFER_STAT);
+    packet << uint32(index);
+    HoAWriteString(packet, label);
+    HoAWriteString(packet, before);
+    HoAWriteString(packet, after);
+}
+
+inline void HoAWriteOfferEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_OFFER_END);
+}
+
+inline void HoAWriteOfferClosed(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_OFFER_CLOSED);
+}
+
+inline void HoAWriteLeyOpen(WorldPacket& packet, uint32 const& count)
+{
+    packet << uint16(HOA_MSG_LEY_OPEN);
+    packet << uint32(count);
+}
+
+inline void HoAWriteLeyOption(WorldPacket& packet, uint32 const& index, std::string const& name, std::string const& icon, std::string const& description, uint32 const& rarity, std::string const& kind, uint32 const& newLevel, uint32 const& maxLevel)
+{
+    packet << uint16(HOA_MSG_LEY_OPTION);
+    packet << uint32(index);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, description);
+    packet << uint32(rarity);
+    HoAWriteString(packet, kind);
+    packet << uint32(newLevel);
+    packet << uint32(maxLevel);
+}
+
+inline void HoAWriteLeyEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_LEY_END);
+}
+
+inline void HoAWriteLeyClosed(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_LEY_CLOSED);
 }

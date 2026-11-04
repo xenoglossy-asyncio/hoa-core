@@ -6,10 +6,12 @@
 #include "Chat.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "Utilities/Random.h"
+#include "WorldSession.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -361,25 +363,36 @@ void BonkRun::SendLeyOffer() const
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (bonk->IsAddonReady())
     {
-        bonk->SendAddon("leyoffer~" + std::to_string(m_leyOffer.size()));
+        WorldPacket open(SMSG_HOA_MESSAGE);
+        HoAWriteLeyOpen(open, m_leyOffer.size());
+        m_player->GetSession()->SendPacket(&open);
         for (size_t i = 0; i < m_leyOffer.size(); ++i)
         {
             LeyBuff const& buff = m_leyOffer[i];
             if (buff.cardId)
             {
                 if (BonkCard const* card = sBonkMgr.GetCard(buff.cardId))
-                    bonk->SendAddon("leyopt~" + std::to_string(i + 1) + "~" + Localize(BONK_FIELD_CARD_NAME, card->id, card->name) + "~" + card->icon + "~" +
-                        Localize(BONK_FIELD_CARD_DESCRIPTION, card->id, card->description) + "~" +
-                        std::to_string(buff.rarity) + "~c~" + std::to_string(GetCardCopies(card->id) + 1) + "~" + std::to_string(uint32(card->maxCopies)));
+                {
+                    WorldPacket option(SMSG_HOA_MESSAGE);
+                    HoAWriteLeyOption(option, i + 1, Localize(BONK_FIELD_CARD_NAME, card->id, card->name), card->icon,
+                        Localize(BONK_FIELD_CARD_DESCRIPTION, card->id, card->description), buff.rarity, "c",
+                        GetCardCopies(card->id) + 1, card->maxCopies);
+                    m_player->GetSession()->SendPacket(&option);
+                }
                 continue;
             }
             LeyStat const* stat = GetLeyStat(buff.effect);
             if (!stat)
                 continue;
-            bonk->SendAddon("leyopt~" + std::to_string(i + 1) + "~" + GetString(stat->name) + "~" + LeyStatIcon(*stat) + "~" +
-                GetString(BONK_STRING_LEY_FOR_THE_RUN, { FormatLeyValue(*stat, buff.value, GetLocale()) }) + "~" + std::to_string(buff.rarity));
+            WorldPacket option(SMSG_HOA_MESSAGE);
+            HoAWriteLeyOption(option, i + 1, GetString(stat->name), LeyStatIcon(*stat),
+                GetString(BONK_STRING_LEY_FOR_THE_RUN, { FormatLeyValue(*stat, buff.value, GetLocale()) }), buff.rarity, "",
+                0, 0);
+            m_player->GetSession()->SendPacket(&option);
         }
-        bonk->SendAddon("leyofferend");
+        WorldPacket end(SMSG_HOA_MESSAGE);
+        HoAWriteLeyEnd(end);
+        m_player->GetSession()->SendPacket(&end);
         return;
     }
 
@@ -427,7 +440,12 @@ bool BonkRun::PickLeyBuff(uint32 index, std::string& error)
     LeyBuff const buff = m_leyOffer[index - 1];
     m_leyOffer.clear();
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    bonk->SendAddon("leyofferclose");
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteLeyClosed(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     if (buff.cardId)
     {
         if (BonkCard const* card = sBonkMgr.GetCard(buff.cardId))

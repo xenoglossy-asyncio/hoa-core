@@ -2821,6 +2821,43 @@ handlers["leyofferclose"] = function()
 end
 
 UI.ListenHoa({
+    HOA_OFFER_OPEN = function(offer)
+        handlers["offer"]({ false, offer.level, offer.count, offer.source, offer.rerolls, offer.banishes, offer.skips })
+    end,
+    HOA_OFFER_OPTION = function(option)
+        handlers["opt"]({
+            false, tostring(option.index), option.kind, option.new_level, option.max_level, option.name, option.icon,
+            option.description, option.rarity, option.locked and "1" or "0", option.damage_before, option.damage_after,
+            option.damage_label, option.banishable and "1" or "0",
+        })
+    end,
+    HOA_OFFER_STAT = function(stat)
+        handlers["ostat"]({ false, tostring(stat.index), stat.label, stat.before, stat.after })
+    end,
+    HOA_OFFER_END = function()
+        handlers["offerend"]()
+    end,
+    HOA_OFFER_CLOSED = function()
+        handlers["picked"]()
+    end,
+    HOA_LEY_OPEN = function()
+        handlers["leyoffer"]()
+    end,
+    HOA_LEY_OPTION = function(option)
+        handlers["leyopt"]({
+            false, tostring(option.index), option.name, option.icon, option.description, option.rarity, option.kind,
+            option.new_level, option.max_level,
+        })
+    end,
+    HOA_LEY_END = function()
+        handlers["leyofferend"]()
+    end,
+    HOA_LEY_CLOSED = function()
+        handlers["leyofferclose"]()
+    end,
+})
+
+UI.ListenHoa({
     HOA_COOP_NO_PAUSE = function(state)
         VB.sideOffers = state.no_pause and true or false
     end,

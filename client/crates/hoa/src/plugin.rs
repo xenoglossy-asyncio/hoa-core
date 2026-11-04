@@ -42,6 +42,15 @@ const HOA_MOB_CLEAR: &str = "HOA_MOB_CLEAR";
 const HOA_ALLY: &str = "HOA_ALLY";
 const HOA_ALLY_DONE: &str = "HOA_ALLY_DONE";
 const HOA_AFFIX_INFO: &str = "HOA_AFFIX_INFO";
+const HOA_OFFER_OPEN: &str = "HOA_OFFER_OPEN";
+const HOA_OFFER_OPTION: &str = "HOA_OFFER_OPTION";
+const HOA_OFFER_STAT: &str = "HOA_OFFER_STAT";
+const HOA_OFFER_END: &str = "HOA_OFFER_END";
+const HOA_OFFER_CLOSED: &str = "HOA_OFFER_CLOSED";
+const HOA_LEY_OPEN: &str = "HOA_LEY_OPEN";
+const HOA_LEY_OPTION: &str = "HOA_LEY_OPTION";
+const HOA_LEY_END: &str = "HOA_LEY_END";
+const HOA_LEY_CLOSED: &str = "HOA_LEY_CLOSED";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -118,6 +127,83 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::OfferOpen(offer) => {
+                    script.fire_event(
+                        HOA_OFFER_OPEN,
+                        vec![lua_table(vec![
+                            ("level", ScriptValue::Int(i64::from(offer.level))),
+                            ("count", ScriptValue::Int(i64::from(offer.count))),
+                            ("source", ScriptValue::Str(offer.source)),
+                            ("rerolls", ScriptValue::Int(i64::from(offer.rerolls))),
+                            ("banishes", ScriptValue::Int(i64::from(offer.banishes))),
+                            ("skips", ScriptValue::Int(i64::from(offer.skips))),
+                        ])],
+                    );
+                }
+                HoaMessage::OfferOption(option) => {
+                    script.fire_event(
+                        HOA_OFFER_OPTION,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(option.index))),
+                            ("kind", ScriptValue::Str(option.kind)),
+                            ("new_level", ScriptValue::Int(i64::from(option.new_level))),
+                            ("max_level", ScriptValue::Int(i64::from(option.max_level))),
+                            ("name", ScriptValue::Str(option.name)),
+                            ("icon", ScriptValue::Str(option.icon)),
+                            ("description", ScriptValue::Str(option.description)),
+                            ("rarity", ScriptValue::Str(option.rarity)),
+                            ("locked", ScriptValue::Bool(option.locked)),
+                            ("damage_before", ScriptValue::Str(option.damage_before)),
+                            ("damage_after", ScriptValue::Str(option.damage_after)),
+                            ("damage_label", ScriptValue::Str(option.damage_label)),
+                            ("banishable", ScriptValue::Bool(option.banishable)),
+                        ])],
+                    );
+                }
+                HoaMessage::OfferStat(stat) => {
+                    script.fire_event(
+                        HOA_OFFER_STAT,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(stat.index))),
+                            ("label", ScriptValue::Str(stat.label)),
+                            ("before", ScriptValue::Str(stat.before)),
+                            ("after", ScriptValue::Str(stat.after)),
+                        ])],
+                    );
+                }
+                HoaMessage::OfferEnd(_) => {
+                    script.fire_event(HOA_OFFER_END, Vec::new());
+                }
+                HoaMessage::OfferClosed(_) => {
+                    script.fire_event(HOA_OFFER_CLOSED, Vec::new());
+                }
+                HoaMessage::LeyOpen(open) => {
+                    script.fire_event(
+                        HOA_LEY_OPEN,
+                        vec![lua_table(vec![("count", ScriptValue::Int(i64::from(open.count)))])],
+                    );
+                }
+                HoaMessage::LeyOption(option) => {
+                    script.fire_event(
+                        HOA_LEY_OPTION,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(option.index))),
+                            ("name", ScriptValue::Str(option.name)),
+                            ("icon", ScriptValue::Str(option.icon)),
+                            ("description", ScriptValue::Str(option.description)),
+                            ("rarity", ScriptValue::Int(i64::from(option.rarity))),
+                            ("kind", ScriptValue::Str(option.kind)),
+                            ("new_level", ScriptValue::Int(i64::from(option.new_level))),
+                            ("max_level", ScriptValue::Int(i64::from(option.max_level))),
+                        ])],
+                    );
+                }
+                HoaMessage::LeyEnd(_) => {
+                    script.fire_event(HOA_LEY_END, Vec::new());
+                }
+                HoaMessage::LeyClosed(_) => {
+                    script.fire_event(HOA_LEY_CLOSED, Vec::new());
+                }
                 HoaMessage::Mob(mob) => {
                     script.fire_event(
                         HOA_MOB,
@@ -442,6 +528,15 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_ALLY);
         add_in_game_event(HOA_ALLY_DONE);
         add_in_game_event(HOA_AFFIX_INFO);
+        add_in_game_event(HOA_OFFER_OPEN);
+        add_in_game_event(HOA_OFFER_OPTION);
+        add_in_game_event(HOA_OFFER_STAT);
+        add_in_game_event(HOA_OFFER_END);
+        add_in_game_event(HOA_OFFER_CLOSED);
+        add_in_game_event(HOA_LEY_OPEN);
+        add_in_game_event(HOA_LEY_OPTION);
+        add_in_game_event(HOA_LEY_END);
+        add_in_game_event(HOA_LEY_CLOSED);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
@@ -730,5 +825,38 @@ mod tests {
             panic!("empty mob clear did not decode");
         };
         assert!(protocol_generated::decode(protocol_generated::MSG_MOB_CLEAR, &[1]).is_none());
+    }
+
+    #[test]
+    fn the_offer_option_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        body.extend_from_slice(&2u32.to_le_bytes());
+        let kind = "w";
+        body.extend_from_slice(&(kind.len() as u16).to_le_bytes());
+        body.extend_from_slice(kind.as_bytes());
+        body.extend_from_slice(&3u32.to_le_bytes());
+        body.extend_from_slice(&5u32.to_le_bytes());
+        for text in ["Arcane Orb", "icon", "desc", "2"] {
+            body.extend_from_slice(&(text.len() as u16).to_le_bytes());
+            body.extend_from_slice(text.as_bytes());
+        }
+        body.push(1);
+        for text in ["10", "20", "damage"] {
+            body.extend_from_slice(&(text.len() as u16).to_le_bytes());
+            body.extend_from_slice(text.as_bytes());
+        }
+        body.push(0);
+
+        let Some(HoaMessage::OfferOption(option)) = protocol_generated::decode(protocol_generated::MSG_OFFER_OPTION, &body) else {
+            panic!("offer option did not decode");
+        };
+        assert_eq!(option.index, 2);
+        assert_eq!(option.kind, "w");
+        assert_eq!(option.new_level, 3);
+        assert_eq!(option.max_level, 5);
+        assert_eq!(option.name, "Arcane Orb");
+        assert_eq!(option.rarity, "2");
+        assert!(option.locked);
+        assert!(!option.banishable);
     }
 }

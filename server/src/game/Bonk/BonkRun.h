@@ -1380,6 +1380,7 @@ class BonkRun
         void NoteWeaponFired(OwnedWeapon& owned);
         void SendCooldownPie(uint32 index, OwnedWeapon const& owned) const;
         void SendOffer() const;
+        void SendOfferClosed() const;
 
         void Revive(bool soulstone = false, BonkGlyph const* glyph = nullptr, bool stillAlive = false);
         uint32 PreventDeath(uint32 damage);

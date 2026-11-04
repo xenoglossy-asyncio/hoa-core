@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 8
+version: 9
 messages:
   - name: aura_value
     id: 0x0002
@@ -212,3 +212,71 @@ messages:
       - { name: name, type: string }
       - { name: icon, type: string }
       - { name: description, type: string }
+  - name: offer_open
+    id: 0x0024
+    direction: server_to_client
+    fields:
+      - { name: level, type: u32 }
+      - { name: count, type: u32 }
+      - { name: source, type: string }
+      - { name: rerolls, type: u32 }
+      - { name: banishes, type: u32 }
+      - { name: skips, type: u32 }
+  - name: offer_option
+    id: 0x0025
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: kind, type: string }
+      - { name: new_level, type: u32 }
+      - { name: max_level, type: u32 }
+      - { name: name, type: string }
+      - { name: icon, type: string }
+      - { name: description, type: string }
+      - { name: rarity, type: string }
+      - { name: locked, type: bool }
+      - { name: damage_before, type: string }
+      - { name: damage_after, type: string }
+      - { name: damage_label, type: string }
+      - { name: banishable, type: bool }
+  - name: offer_stat
+    id: 0x0026
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: label, type: string }
+      - { name: before, type: string }
+      - { name: after, type: string }
+  - name: offer_end
+    id: 0x0027
+    direction: server_to_client
+    fields: []
+  - name: offer_closed
+    id: 0x0028
+    direction: server_to_client
+    fields: []
+  - name: ley_open
+    id: 0x0029
+    direction: server_to_client
+    fields:
+      - { name: count, type: u32 }
+  - name: ley_option
+    id: 0x002A
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: name, type: string }
+      - { name: icon, type: string }
+      - { name: description, type: string }
+      - { name: rarity, type: u32 }
+      - { name: kind, type: string }
+      - { name: new_level, type: u32 }
+      - { name: max_level, type: u32 }
+  - name: ley_end
+    id: 0x002B
+    direction: server_to_client
+    fields: []
+  - name: ley_closed
+    id: 0x002C
+    direction: server_to_client
+    fields: []
