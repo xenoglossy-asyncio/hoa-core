@@ -36,6 +36,7 @@ hoa-core/
 
 ## 设计文档
 
+- [文档索引与当前决策](docs/README.md)
 - [总体架构](docs/architecture.md)
 - [i18n](docs/i18n.md)
 - [光环与效果](docs/auras.md)
