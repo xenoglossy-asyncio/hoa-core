@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 13
+#define HOA_PROTOCOL_VERSION 14
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -72,6 +72,13 @@
 #define HOA_MSG_VAULT_ITEM 0x0046
 #define HOA_MSG_VAULT_OPEN 0x0047
 #define HOA_MSG_VAULT_CLOSE 0x0048
+#define HOA_MSG_ENCHANT_CLEAR 0x0049
+#define HOA_MSG_ENCHANT_INFO 0x004A
+#define HOA_MSG_ENCHANT_SLOT 0x004B
+#define HOA_MSG_ENCHANT_OFFER 0x004C
+#define HOA_MSG_ENCHANT_END 0x004D
+#define HOA_MSG_ENCHANT_OPEN 0x004E
+#define HOA_MSG_ENCHANT_CLOSE 0x004F
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -616,4 +623,52 @@ inline void HoAWriteVaultOpen(WorldPacket& packet, uint32 const& slots, std::str
 inline void HoAWriteVaultClose(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_VAULT_CLOSE);
+}
+
+inline void HoAWriteEnchantClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_ENCHANT_CLEAR);
+}
+
+inline void HoAWriteEnchantInfo(WorldPacket& packet, uint32 const& cost, uint32 const& valor)
+{
+    packet << uint16(HOA_MSG_ENCHANT_INFO);
+    packet << uint32(cost);
+    packet << uint32(valor);
+}
+
+inline void HoAWriteEnchantSlot(WorldPacket& packet, uint32 const& slot, uint32 const& effect, uint32 const& grade, float const& value, float const& percent)
+{
+    packet << uint16(HOA_MSG_ENCHANT_SLOT);
+    packet << uint32(slot);
+    packet << uint32(effect);
+    packet << uint32(grade);
+    packet << float(value);
+    packet << float(percent);
+}
+
+inline void HoAWriteEnchantOffer(WorldPacket& packet, uint32 const& slot, uint32 const& index, uint32 const& effect, uint32 const& grade, float const& value, float const& percent)
+{
+    packet << uint16(HOA_MSG_ENCHANT_OFFER);
+    packet << uint32(slot);
+    packet << uint32(index);
+    packet << uint32(effect);
+    packet << uint32(grade);
+    packet << float(value);
+    packet << float(percent);
+}
+
+inline void HoAWriteEnchantEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_ENCHANT_END);
+}
+
+inline void HoAWriteEnchantOpen(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_ENCHANT_OPEN);
+}
+
+inline void HoAWriteEnchantClose(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_ENCHANT_CLOSE);
 }

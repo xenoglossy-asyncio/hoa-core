@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 13
+version: 14
 messages:
   - name: aura_value
     id: 0x0002
@@ -475,5 +475,46 @@ messages:
       - { name: scrap_bonus, type: u32 }
   - name: vault_close
     id: 0x0048
+    direction: server_to_client
+    fields: []
+  - name: enchant_clear
+    id: 0x0049
+    direction: server_to_client
+    fields: []
+  - name: enchant_info
+    id: 0x004A
+    direction: server_to_client
+    fields:
+      - { name: cost, type: u32 }
+      - { name: valor, type: u32 }
+  - name: enchant_slot
+    id: 0x004B
+    direction: server_to_client
+    fields:
+      - { name: slot, type: u32 }
+      - { name: effect, type: u32 }
+      - { name: grade, type: u32 }
+      - { name: value, type: f32 }
+      - { name: percent, type: f32 }
+  - name: enchant_offer
+    id: 0x004C
+    direction: server_to_client
+    fields:
+      - { name: slot, type: u32 }
+      - { name: index, type: u32 }
+      - { name: effect, type: u32 }
+      - { name: grade, type: u32 }
+      - { name: value, type: f32 }
+      - { name: percent, type: f32 }
+  - name: enchant_end
+    id: 0x004D
+    direction: server_to_client
+    fields: []
+  - name: enchant_open
+    id: 0x004E
+    direction: server_to_client
+    fields: []
+  - name: enchant_close
+    id: 0x004F
     direction: server_to_client
     fields: []

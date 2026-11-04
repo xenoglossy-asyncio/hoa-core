@@ -116,13 +116,23 @@ BonkString BonkEnchanting::GetGradeName(uint8 grade)
     return grade < BONK_ENCHANT_GRADE_COUNT ? BONK_ENCHANT_GRADES[grade].name : BonkString(0);
 }
 
+BonkEnchantDisplay BonkEnchanting::DescribeDisplay(BonkEnchant const& enchant, float const* pieceStats)
+{
+    BonkEnchantDisplay display;
+    if (!enchant.IsSet())
+        return display;
+    BonkEnchantStat const* stat = FindStat(enchant.effect);
+    display.effect = enchant.effect;
+    display.grade = enchant.grade;
+    display.value = GetValue(enchant, pieceStats);
+    display.percent = stat && stat->ofPiece && enchant.grade < BONK_ENCHANT_GRADE_COUNT ? BONK_ENCHANT_GRADES[enchant.grade].piecePercent : 0.0f;
+    return display;
+}
+
 std::string BonkEnchanting::Describe(BonkEnchant const& enchant, float const* pieceStats)
 {
-    if (!enchant.IsSet())
-        return std::to_string(BONK_ENCHANT_NONE) + "~0~0~0";
-    BonkEnchantStat const* stat = FindStat(enchant.effect);
-    float const percent = stat && stat->ofPiece && enchant.grade < BONK_ENCHANT_GRADE_COUNT ? BONK_ENCHANT_GRADES[enchant.grade].piecePercent : 0.0f;
+    BonkEnchantDisplay const display = DescribeDisplay(enchant, pieceStats);
     char value[64];
-    snprintf(value, sizeof(value), "%.1f~%.0f", GetValue(enchant, pieceStats), percent);
-    return std::to_string(enchant.effect) + "~" + std::to_string(enchant.grade) + "~" + value;
+    snprintf(value, sizeof(value), "%.1f~%.0f", display.value, display.percent);
+    return std::to_string(display.effect) + "~" + std::to_string(display.grade) + "~" + value;
 }

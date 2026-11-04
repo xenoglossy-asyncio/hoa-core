@@ -4,8 +4,10 @@
 #include "BonkPlayer.h"
 #include "BonkStrings.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "Player.h"
+#include "WorldSession.h"
 
 namespace
 {
@@ -85,14 +87,23 @@ void BonkRun::DespawnEnchanter()
                 enchanter->DespawnOrUnsummon();
     m_enchanterGuid.Clear();
     m_enchantOffers.clear();
-    if (m_player->IsInWorld())
-        m_player->GetBonkPlayer()->SendAddon("enchantclose");
+    if (m_player->IsInWorld() && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEnchantClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::OpenEnchanter()
 {
     SendEnchants();
-    m_player->GetBonkPlayer()->SendAddon("enchantopen");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEnchantOpen(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::RollEnchant(uint8 slot, std::string& error)
@@ -158,8 +169,16 @@ void BonkRun::SendEnchants() const
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (!bonk || !bonk->IsAddonReady())
         return;
-    bonk->SendAddon("enchantclear");
-    bonk->SendAddon("enchantinfo~" + std::to_string(GetEnchantPrice()) + "~" + std::to_string(m_coins));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEnchantClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEnchantInfo(data, GetEnchantPrice(), m_coins);
+        m_player->GetSession()->SendPacket(&data);
+    }
     float pieceStats[MAX_BONK_PASSIVE_EFFECT];
     uint8 const* slots = BonkEnchanting::GetSlots();
     for (uint8 index = 0; index < BonkEnchanting::GetSlotCount(); ++index)
@@ -168,11 +187,20 @@ void BonkRun::SendEnchants() const
         auto itr = m_enchants.find(slot);
         BonkEnchant const enchant = itr != m_enchants.end() ? itr->second : BonkEnchant();
         GetPieceStats(slot, pieceStats);
-        bonk->SendAddon("enchantslot~" + std::to_string(slot) + "~" + BonkEnchanting::Describe(enchant, pieceStats));
+        BonkEnchantDisplay const display = BonkEnchanting::DescribeDisplay(enchant, pieceStats);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEnchantSlot(data, slot, display.effect, display.grade, display.value, display.percent);
+        m_player->GetSession()->SendPacket(&data);
     }
     GetPieceStats(m_enchantOfferSlot, pieceStats);
     for (uint8 index = 0; index < m_enchantOffers.size(); ++index)
-        bonk->SendAddon("enchantoffer~" + std::to_string(m_enchantOfferSlot) + "~" + std::to_string(index) + "~" +
-            BonkEnchanting::Describe(m_enchantOffers[index], pieceStats));
-    bonk->SendAddon("enchantend");
+    {
+        BonkEnchantDisplay const display = BonkEnchanting::DescribeDisplay(m_enchantOffers[index], pieceStats);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEnchantOffer(data, m_enchantOfferSlot, index, display.effect, display.grade, display.value, display.percent);
+        m_player->GetSession()->SendPacket(&data);
+    }
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteEnchantEnd(end);
+    m_player->GetSession()->SendPacket(&end);
 }

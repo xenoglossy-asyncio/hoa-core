@@ -79,6 +79,13 @@ const HOA_VAULT_SENT_ITEM: &str = "HOA_VAULT_SENT_ITEM";
 const HOA_VAULT_ITEM: &str = "HOA_VAULT_ITEM";
 const HOA_VAULT_OPEN: &str = "HOA_VAULT_OPEN";
 const HOA_VAULT_CLOSE: &str = "HOA_VAULT_CLOSE";
+const HOA_ENCHANT_CLEAR: &str = "HOA_ENCHANT_CLEAR";
+const HOA_ENCHANT_INFO: &str = "HOA_ENCHANT_INFO";
+const HOA_ENCHANT_SLOT: &str = "HOA_ENCHANT_SLOT";
+const HOA_ENCHANT_OFFER: &str = "HOA_ENCHANT_OFFER";
+const HOA_ENCHANT_END: &str = "HOA_ENCHANT_END";
+const HOA_ENCHANT_OPEN: &str = "HOA_ENCHANT_OPEN";
+const HOA_ENCHANT_CLOSE: &str = "HOA_ENCHANT_CLOSE";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -155,6 +162,52 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::EnchantClear(_) => {
+                    script.fire_event(HOA_ENCHANT_CLEAR, Vec::new());
+                }
+                HoaMessage::EnchantInfo(info) => {
+                    script.fire_event(
+                        HOA_ENCHANT_INFO,
+                        vec![lua_table(vec![
+                            ("cost", ScriptValue::Int(i64::from(info.cost))),
+                            ("valor", ScriptValue::Int(i64::from(info.valor))),
+                        ])],
+                    );
+                }
+                HoaMessage::EnchantSlot(slot) => {
+                    script.fire_event(
+                        HOA_ENCHANT_SLOT,
+                        vec![lua_table(vec![
+                            ("slot", ScriptValue::Int(i64::from(slot.slot))),
+                            ("effect", ScriptValue::Int(i64::from(slot.effect))),
+                            ("grade", ScriptValue::Int(i64::from(slot.grade))),
+                            ("value", ScriptValue::Number(f64::from(slot.value))),
+                            ("percent", ScriptValue::Number(f64::from(slot.percent))),
+                        ])],
+                    );
+                }
+                HoaMessage::EnchantOffer(offer) => {
+                    script.fire_event(
+                        HOA_ENCHANT_OFFER,
+                        vec![lua_table(vec![
+                            ("slot", ScriptValue::Int(i64::from(offer.slot))),
+                            ("index", ScriptValue::Int(i64::from(offer.index))),
+                            ("effect", ScriptValue::Int(i64::from(offer.effect))),
+                            ("grade", ScriptValue::Int(i64::from(offer.grade))),
+                            ("value", ScriptValue::Number(f64::from(offer.value))),
+                            ("percent", ScriptValue::Number(f64::from(offer.percent))),
+                        ])],
+                    );
+                }
+                HoaMessage::EnchantEnd(_) => {
+                    script.fire_event(HOA_ENCHANT_END, Vec::new());
+                }
+                HoaMessage::EnchantOpen(_) => {
+                    script.fire_event(HOA_ENCHANT_OPEN, Vec::new());
+                }
+                HoaMessage::EnchantClose(_) => {
+                    script.fire_event(HOA_ENCHANT_CLOSE, Vec::new());
+                }
                 HoaMessage::VaultClear(_) => {
                     script.fire_event(HOA_VAULT_CLEAR, Vec::new());
                 }
@@ -822,6 +875,13 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_VAULT_ITEM);
         add_in_game_event(HOA_VAULT_OPEN);
         add_in_game_event(HOA_VAULT_CLOSE);
+        add_in_game_event(HOA_ENCHANT_CLEAR);
+        add_in_game_event(HOA_ENCHANT_INFO);
+        add_in_game_event(HOA_ENCHANT_SLOT);
+        add_in_game_event(HOA_ENCHANT_OFFER);
+        add_in_game_event(HOA_ENCHANT_END);
+        add_in_game_event(HOA_ENCHANT_OPEN);
+        add_in_game_event(HOA_ENCHANT_CLOSE);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

@@ -268,6 +268,30 @@ handlers["enchantclose"] = function()
     end
 end
 
+UI.ListenHoa({
+    HOA_ENCHANT_CLEAR = function()
+        handlers["enchantclear"]()
+    end,
+    HOA_ENCHANT_INFO = function(info)
+        handlers["enchantinfo"]({ false, info.cost, info.valor })
+    end,
+    HOA_ENCHANT_SLOT = function(slot)
+        handlers["enchantslot"]({ false, slot.slot, slot.effect, slot.grade, slot.value, slot.percent })
+    end,
+    HOA_ENCHANT_OFFER = function(offer)
+        handlers["enchantoffer"]({ false, offer.slot, offer.index, offer.effect, offer.grade, offer.value, offer.percent })
+    end,
+    HOA_ENCHANT_END = function()
+        handlers["enchantend"]()
+    end,
+    HOA_ENCHANT_OPEN = function()
+        handlers["enchantopen"]()
+    end,
+    HOA_ENCHANT_CLOSE = function()
+        handlers["enchantclose"]()
+    end,
+})
+
 UI.Listen(handlers)
 
 window:RegisterEvent("UNIT_INVENTORY_CHANGED")

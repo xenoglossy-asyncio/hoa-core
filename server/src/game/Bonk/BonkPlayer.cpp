@@ -3325,8 +3325,15 @@ void BonkPlayer::SendGearInfo() const
         m_run->SendEnchants();
     else
     {
-        SendAddon("enchantclear");
-        SendAddon("enchantend");
+        if (m_addonReady)
+        {
+            WorldPacket clear(SMSG_HOA_MESSAGE);
+            HoAWriteEnchantClear(clear);
+            m_player->GetSession()->SendPacket(&clear);
+            WorldPacket end(SMSG_HOA_MESSAGE);
+            HoAWriteEnchantEnd(end);
+            m_player->GetSession()->SendPacket(&end);
+        }
     }
     SendStats();
 }
