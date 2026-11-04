@@ -60,6 +60,7 @@ Deliver phase by phase. At the end of every phase the repository must build, run
 - Expose the client Lua API; migrate presentation data in the addon.
 - Delete the `BONK~` parser and string assembly.
 - Acceptance: all state uses native auras; presentation data uses the typed protocol; version mismatches are explicit.
+- Progress (2026-11-04): `shared/protocol/messages.yaml` and `tools/protocol/gen.py` generate the C++ writer and Rust decoder; `SMSG_HOA_MESSAGE` (826) carries `hoa.hello`, `hoa.aura_value`, `hoa.dash` and `hoa.aura_percent`. The client fires `HOA_HELLO`/`HOA_AURA_VALUE`/`HOA_DASH`/`HOA_AURA_PERCENT` into Lua, and the old `BONK~` lines are still sent as a fallback while the rest of the message inventory moves over.
 
 ## Phase 6: performance and kernel cleanup
 

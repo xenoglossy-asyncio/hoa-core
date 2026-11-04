@@ -60,6 +60,7 @@
 - 客户端暴露 Lua API；插件迁移展示类数据。
 - 删除 `BONK~` 解析器和字符串拼接。
 - 验收：状态全部走原生 aura；展示数据走类型化协议；版本不匹配有明确提示。
+- 进度（2026-11-04）：`shared/protocol/messages.yaml` 和 `tools/protocol/gen.py` 生成 C++ 写入端和 Rust 解码端；`SMSG_HOA_MESSAGE`（826）承载 `hoa.hello`、`hoa.aura_value`、`hoa.dash`、`hoa.aura_percent`。客户端向 Lua 触发 `HOA_HELLO`/`HOA_AURA_VALUE`/`HOA_DASH`/`HOA_AURA_PERCENT`；其余消息盘点迁移期间仍保留 `BONK~` 作为回退。
 
 ## 阶段 6：性能与内核整理
 
