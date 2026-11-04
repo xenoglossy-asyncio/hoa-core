@@ -26,7 +26,7 @@ namespace
     uint32 const BONK_SPELL_CARD_FIRE      = 13342;
     uint32 const BONK_SPELL_CARD_CHAIN_THREE = 22355;
     uint32 const BONK_SPELL_CARD_CHAIN_FIVE  = 25021;
-    uint32 const BONK_SPELL_CARD_THORNS    = 467;
+    uint32 const BONK_SPELL_STOCK_THORNS   = 467;
     uint32 const BONK_SPELL_CARD_NOVA      = 11307;
     uint32 const BONK_SPELL_CARD_SHADOW    = 16583;
     uint32 const BONK_SPELL_HEALTHSTONE    = 11732;
@@ -51,7 +51,7 @@ namespace
             case BONK_SPELL_CARD_FIRE:
             case BONK_SPELL_CARD_CHAIN_THREE:
             case BONK_SPELL_CARD_CHAIN_FIVE:
-            case BONK_SPELL_CARD_THORNS:
+            case BONK_SPELL_STOCK_THORNS:
             case BONK_SPELL_CARD_NOVA:
             case BONK_SPELL_CARD_SHADOW:
                 return true;
@@ -375,6 +375,9 @@ void BonkRun::AddCard(BonkCard const& card)
             ++m_soulstones;
             RefreshSoulstoneAura();
             break;
+        case BONK_CARD_THORNS:
+            RefreshThornsAura();
+            break;
         case BONK_CARD_CRIT_HEAL:
             if (m_cardCopies[card.effect] == 1)
                 m_cardCritsSeen = m_crits;
@@ -690,7 +693,7 @@ void BonkRun::OnHeroHitBy(Creature* attacker, uint32 damage)
     BonkCard const* choker = m_cardByEffect[BONK_CARD_THORNS];
     if (!damage || !attacker || !choker || m_cardProc || m_cardCooldowns[BONK_CARD_THORNS] > 0)
         return;
-    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(BONK_SPELL_CARD_THORNS);
+    SpellEntry const* spellInfo = sSpellMgr.GetSpellEntry(BONK_SPELL_STOCK_THORNS);
     if (!spellInfo)
         return;
     m_cardCooldowns[BONK_CARD_THORNS] = int32(choker->values[2]);
@@ -790,6 +793,18 @@ void BonkRun::RefreshSoulstoneAura() const
     }
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_SOULSTONE, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(m_soulstones);
+}
+
+void BonkRun::RefreshThornsAura() const
+{
+    uint32 const copies = m_cardCopies[BONK_CARD_THORNS];
+    if (!copies)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_THORNS);
+        return;
+    }
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_CARD_THORNS, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(copies);
 }
 
 bool BonkRun::IsCardImmune() const

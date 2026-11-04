@@ -17,6 +17,7 @@ pub(crate) const CARD_HASTE: u32 = 60006;
 pub(crate) const CARD_SWIFT: u32 = 60007;
 pub(crate) const CARD_IMMUNE: u32 = 60008;
 pub(crate) const SOULSTONE: u32 = 60009;
+pub(crate) const CARD_THORNS: u32 = 60010;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -110,6 +111,15 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Soulstone",
                 r"Interface\Icons\INV_Misc_Orb_03",
                 "A Darkmoon card saves you from death.",
+            ),
+        ),
+        (
+            CARD_THORNS,
+            display(
+                CARD_THORNS,
+                "Thorns",
+                r"Interface\Icons\Spell_Nature_Thorns",
+                "A Darkmoon card reflects damage back at attackers.",
             ),
         ),
     ]
