@@ -59,6 +59,18 @@ namespace
     size_t const BONK_SOUL_OF_THE_FOREST_STACKS = 10;
     uint32 const BONK_BLOODTALONS_MAX_STACKS    = 10;
 
+    // Spec ids as `bonk_weapon.spec` stores them, shared by every weapon in the spec.
+    uint32 CastHasteAura(uint32 spec)
+    {
+        switch (spec)
+        {
+            case 201: return BONK_SPELL_AVENGING_WRATH;
+            case 203: return BONK_SPELL_ZEALOTRY;
+            case 801: return BONK_SPELL_ARCANE_TEMPO;
+            default: return 0;
+        }
+    }
+
     void PushTimedStack(std::vector<uint32>& stacks, uint32 now, uint32 lengthMs, size_t cap)
     {
         stacks.erase(std::remove_if(stacks.begin(), stacks.end(), [now](uint32 until) { return until <= now; }), stacks.end());
@@ -455,6 +467,79 @@ void BonkRun::ApplyTimedAura(uint32 spellId, uint32 durationMs) const
         holder->SetAuraMaxDuration(int32(durationMs));
         holder->UpdateAuraDuration();
     }
+}
+
+void BonkRun::SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const
+{
+    uint32 stacks = 0;
+    uint32 longest = 0;
+    for (uint32 until : untils)
+    {
+        int32 const left = int32(until - m_totalMs);
+        if (left <= 0)
+            continue;
+        ++stacks;
+        longest = std::max(longest, uint32(left));
+    }
+    SpellAuraHolder* holder = m_player->GetSpellAuraHolder(spellId);
+    if (!stacks)
+    {
+        if (holder)
+            m_player->RemoveAurasDueToSpell(spellId);
+        return;
+    }
+    if (holder)
+    {
+        int32 delta = holder->GetAuraDuration() - int32(longest);
+        if (delta < 0)
+            delta = -delta;
+        if (holder->GetStackAmount() == stacks && delta <= 600)
+            return;
+    }
+    holder = m_player->AddAura(spellId, ADD_AURA_POSITIVE);
+    if (!holder)
+        return;
+    holder->SetStackAmount(stacks);
+    holder->SetAuraDuration(int32(longest));
+    holder->SetAuraMaxDuration(int32(longest));
+    holder->UpdateAuraDuration();
+}
+
+void BonkRun::SyncStackAura(uint32 spellId, uint32 stacks) const
+{
+    SpellAuraHolder* holder = m_player->GetSpellAuraHolder(spellId);
+    if (!stacks)
+    {
+        if (holder)
+            m_player->RemoveAurasDueToSpell(spellId);
+        return;
+    }
+    if (holder && holder->GetStackAmount() == stacks)
+        return;
+    holder = m_player->AddAura(spellId, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT);
+    if (holder)
+        holder->SetStackAmount(stacks);
+}
+
+void BonkRun::UpdateTalentAuras()
+{
+    if (m_totalMs < m_nextTalentAuraSyncMs)
+        return;
+    m_nextTalentAuraSyncMs = m_totalMs + 400;
+    SyncTimedStackAura(BONK_SPELL_BLOODSURGE, m_bloodsurgeUntil);
+    SyncTimedStackAura(BONK_SPELL_FORCEFUL_WINDS, m_forcefulUntil);
+    SyncTimedStackAura(BONK_SPELL_DANSE_MACABRE, m_danseUntil);
+    SyncTimedStackAura(BONK_SPELL_STARLORD, m_starlordUntil);
+    SyncTimedStackAura(BONK_SPELL_SOUL_OF_THE_FOREST, m_forestUntil);
+    SyncTimedStackAura(BONK_SPELL_HARVESTER_OF_SOULS, m_harvestUntil);
+    SyncTimedStackAura(BONK_SPELL_UNRELENTING_STORM, m_unrelentingUntil);
+    for (auto const& itr : m_castHasteUntil)
+        if (uint32 const spellId = CastHasteAura(itr.first))
+            SyncTimedStackAura(spellId, itr.second);
+    SyncStackAura(BONK_SPELL_MONGOOSE_FURY, m_mongooseStacks);
+    SyncStackAura(BONK_SPELL_BULWARK, m_bulwarkStacks);
+    SyncStackAura(BONK_SPELL_ANCIENT_MADNESS, m_madnessStacks);
+    SyncStackAura(BONK_SPELL_BLOODTALONS, m_bloodtalonsStacks);
 }
 
 void BonkRun::UpdateTalents()

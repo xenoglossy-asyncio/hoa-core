@@ -216,3 +216,115 @@
   icon: Interface\Icons\Spell_Nature_Regeneration
   description: Your spells are faster for a short time.
   description_zhCN: 短时间内你的施法速度提高。
+- id: 60028
+  key: bloodsurge
+  cpp: BONK_SPELL_BLOODSURGE
+  name: Bloodsurge
+  name_zhCN: 鲜血涌动
+  icon: Interface\Icons\Ability_Warrior_BattleShout
+  description: Each stack increases your damage.
+  description_zhCN: 每层提高你的伤害。
+- id: 60029
+  key: forceful_winds
+  cpp: BONK_SPELL_FORCEFUL_WINDS
+  name: Forceful Winds
+  name_zhCN: 强风
+  icon: Interface\Icons\Spell_Nature_Cyclone
+  description: Each stack increases your damage.
+  description_zhCN: 每层提高你的伤害。
+- id: 60030
+  key: danse_macabre
+  cpp: BONK_SPELL_DANSE_MACABRE
+  name: Danse Macabre
+  name_zhCN: 死亡之舞
+  icon: Interface\Icons\Spell_Shadow_Shadowform
+  description: Each stack increases your damage.
+  description_zhCN: 每层提高你的伤害。
+- id: 60031
+  key: avenging_wrath
+  cpp: BONK_SPELL_AVENGING_WRATH
+  name: Avenging Wrath
+  name_zhCN: 复仇之怒
+  icon: Interface\Icons\Spell_Holy_HolyProtection
+  description: Each Holy spell grants a stack of haste.
+  description_zhCN: 每次施放神圣法术都会获得一层急速。
+- id: 60032
+  key: zealotry
+  cpp: BONK_SPELL_ZEALOTRY
+  name: Zealotry
+  name_zhCN: 狂热
+  icon: Interface\Icons\Spell_Holy_SealOfMight
+  description: Each Retribution spell grants a stack of haste.
+  description_zhCN: 每次施放惩戒法术都会获得一层急速。
+- id: 60033
+  key: arcane_tempo
+  cpp: BONK_SPELL_ARCANE_TEMPO
+  name: Arcane Tempo
+  name_zhCN: 奥术节奏
+  icon: Interface\Icons\Spell_Nature_StarFall
+  description: Each Arcane spell grants a stack of haste.
+  description_zhCN: 每次施放奥术法术都会获得一层急速。
+- id: 60034
+  key: starlord
+  cpp: BONK_SPELL_STARLORD
+  name: Starlord
+  name_zhCN: 星辰领主
+  icon: Interface\Icons\Spell_Nature_StarFall
+  description: Each stack increases your haste.
+  description_zhCN: 每层提高你的急速。
+- id: 60035
+  key: soul_of_the_forest
+  cpp: BONK_SPELL_SOUL_OF_THE_FOREST
+  name: Soul of the Forest
+  name_zhCN: 森林之魂
+  icon: Interface\Icons\Spell_Nature_Regeneration
+  description: Each stack increases your haste.
+  description_zhCN: 每层提高你的急速。
+- id: 60036
+  key: harvester_of_souls
+  cpp: BONK_SPELL_HARVESTER_OF_SOULS
+  name: Harvester of Souls
+  name_zhCN: 灵魂收割者
+  icon: Interface\Icons\Spell_Shadow_SoulGem
+  description: Each stack increases your haste.
+  description_zhCN: 每层提高你的急速。
+- id: 60037
+  key: unrelenting_storm
+  cpp: BONK_SPELL_UNRELENTING_STORM
+  name: Unrelenting Storm
+  name_zhCN: 无情风暴
+  icon: Interface\Icons\Spell_Nature_Lightning
+  description: Each stack increases your haste.
+  description_zhCN: 每层提高你的急速。
+- id: 60038
+  key: mongoose_fury
+  cpp: BONK_SPELL_MONGOOSE_FURY
+  name: Mongoose Fury
+  name_zhCN: 獴之狂怒
+  icon: Interface\Icons\Ability_Hunter_SwiftStrike
+  description: Each poisoned enemy grants a stack of haste.
+  description_zhCN: 每个中毒的敌人提供一层急速。
+- id: 60039
+  key: bulwark
+  cpp: BONK_SPELL_BULWARK
+  name: Bulwark
+  name_zhCN: 壁垒
+  icon: Interface\Icons\Spell_Holy_DevotionAura
+  description: Each nearby enemy grants a stack, increasing your damage.
+  description_zhCN: 附近每个敌人提供一层，提高你的伤害。
+- id: 60040
+  key: ancient_madness
+  cpp: BONK_SPELL_ANCIENT_MADNESS
+  name: Ancient Madness
+  name_zhCN: 远古疯狂
+  icon: Interface\Icons\Spell_Shadow_Shadowform
+  description: Each nearby decaying enemy grants a stack, increasing your damage.
+  description_zhCN: 附近每个带有腐蚀的敌人提供一层，提高你的伤害。
+- id: 60041
+  key: bloodtalons
+  cpp: BONK_SPELL_BLOODTALONS
+  name: Bloodtalons
+  name_zhCN: 血爪
+  icon: Interface\Icons\Ability_Druid_Rake
+  description: Each nearby bleeding enemy grants a stack, increasing your damage.
+  description_zhCN: 附近每个流血的敌人提供一层，提高你的伤害。

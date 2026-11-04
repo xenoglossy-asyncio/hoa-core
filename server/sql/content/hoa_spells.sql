@@ -60,6 +60,34 @@ UPDATE `hoa_spell_clone` SET `entry` = 60026, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60027, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60028, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60029, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60030, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60031, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60032, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60033, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60034, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60035, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60036, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60037, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60038, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60039, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60040, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60041, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 DROP TEMPORARY TABLE `hoa_spell_clone`;
 
 UPDATE `spell_template` SET
@@ -439,3 +467,199 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60027 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Bloodsurge',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your damage.',
+  `auraDescription` = 'Each stack increases your damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60028 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Forceful Winds',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your damage.',
+  `auraDescription` = 'Each stack increases your damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60029 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Danse Macabre',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your damage.',
+  `auraDescription` = 'Each stack increases your damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60030 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Avenging Wrath',
+  `nameSubtext` = '',
+  `description` = 'Each Holy spell grants a stack of haste.',
+  `auraDescription` = 'Each Holy spell grants a stack of haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60031 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Zealotry',
+  `nameSubtext` = '',
+  `description` = 'Each Retribution spell grants a stack of haste.',
+  `auraDescription` = 'Each Retribution spell grants a stack of haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60032 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Arcane Tempo',
+  `nameSubtext` = '',
+  `description` = 'Each Arcane spell grants a stack of haste.',
+  `auraDescription` = 'Each Arcane spell grants a stack of haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60033 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Starlord',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your haste.',
+  `auraDescription` = 'Each stack increases your haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60034 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Soul of the Forest',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your haste.',
+  `auraDescription` = 'Each stack increases your haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60035 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Harvester of Souls',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your haste.',
+  `auraDescription` = 'Each stack increases your haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60036 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Unrelenting Storm',
+  `nameSubtext` = '',
+  `description` = 'Each stack increases your haste.',
+  `auraDescription` = 'Each stack increases your haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60037 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Mongoose Fury',
+  `nameSubtext` = '',
+  `description` = 'Each poisoned enemy grants a stack of haste.',
+  `auraDescription` = 'Each poisoned enemy grants a stack of haste.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60038 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Bulwark',
+  `nameSubtext` = '',
+  `description` = 'Each nearby enemy grants a stack, increasing your damage.',
+  `auraDescription` = 'Each nearby enemy grants a stack, increasing your damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60039 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Ancient Madness',
+  `nameSubtext` = '',
+  `description` = 'Each nearby decaying enemy grants a stack, increasing your damage.',
+  `auraDescription` = 'Each nearby decaying enemy grants a stack, increasing your damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60040 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Bloodtalons',
+  `nameSubtext` = '',
+  `description` = 'Each nearby bleeding enemy grants a stack, increasing your damage.',
+  `auraDescription` = 'Each nearby bleeding enemy grants a stack, increasing your damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60041 AND `build` = 5875;

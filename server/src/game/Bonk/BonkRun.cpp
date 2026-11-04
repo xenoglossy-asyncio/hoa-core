@@ -1884,6 +1884,7 @@ void BonkRun::UpdateOwnCombat(uint32 diff)
     UpdateWarlock(diff);
     UpdateDruid(diff);
     UpdateTalents();
+    UpdateTalentAuras();
     UpdateIcePath(diff);
     UpdateWeaponOrbs(diff);
     UpdateProjectiles(diff);

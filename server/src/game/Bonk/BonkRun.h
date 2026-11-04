@@ -636,6 +636,9 @@ class BonkRun
         void AddKillPowerStack() const;
         void RefreshUnhitPowerAura() const;
         void ApplyTimedAura(uint32 spellId, uint32 durationMs) const;
+        void SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const;
+        void SyncStackAura(uint32 spellId, uint32 stacks) const;
+        void UpdateTalentAuras();
         uint32 GetCardAuraStacks(uint32 spellId) const;
         void ClearBossPressure();
         void ShowImpact(BonkEnemyHit const& hit, float x, float y, float z, float radius = 0.0f);
@@ -2965,6 +2968,7 @@ class BonkRun
         float m_castCritBonus = 0.0f;
         bool m_clearcastBoostReady = false;
         uint32 m_potencyCasts = 0;
+        uint32 m_nextTalentAuraSyncMs = 0;
         std::map<uint32, std::vector<uint32>> m_castHasteUntil;
         uint32 m_bulwarkStacks = 0;
         std::vector<uint32> m_bloodsurgeUntil;
