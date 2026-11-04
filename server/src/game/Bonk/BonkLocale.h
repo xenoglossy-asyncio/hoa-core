@@ -65,6 +65,15 @@ class BonkLocale
 
         static bool ParseLocale(std::string const& name, LocaleConstant& locale);
         static std::string ListLocales();
+        static char const* Tag(LocaleConstant locale)
+        {
+            switch (locale)
+            {
+                case LOCALE_zhCN: return "zhCN";
+                case LOCALE_zhTW: return "zhTW";
+                default: return "enUS";
+            }
+        }
         static std::vector<std::string> SplitSentences(std::string const& text);
         static std::string AfterFirstSentence(std::string const& text);
         static uint32 SourceHash(std::string const& text);

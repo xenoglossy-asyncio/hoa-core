@@ -8,6 +8,7 @@ mod keys;
 mod lua_api;
 mod nameplates;
 mod pad;
+mod protocol_generated;
 mod server_draw;
 mod snapshot;
 mod telegraphs;

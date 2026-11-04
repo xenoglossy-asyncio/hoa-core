@@ -6,7 +6,7 @@
 | --- | --- |
 | `docs-check` | 检查中英文 README 配对、相对链接，以及 `provenance.yaml` / `UPSTREAM.md` 记录 |
 | `i18n-check` | 校验共享消息目录和生成产物 |
-| `content-check` | 重新生成卡牌内容 SQL 并检查与源文件一致 |
+| `content-check` | 重新生成内容 SQL 和类型化协议，并检查与源文件一致 |
 | `addon-lua` | 用 LuaJIT 解析插件和 GlueXML 的所有 Lua 文件 |
 | `launcher-build` | Avalonia 启动器 `dotnet build` |
 | `client-check` | 客户端 workspace `cargo check -p hoa` |

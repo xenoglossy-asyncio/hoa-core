@@ -2,6 +2,16 @@ local L = VanillaBonkL
 VanillaBonkUI = {}
 local UI = VanillaBonkUI
 
+-- The server's typed hello, once the Rust client has decoded it.
+UI.Protocol = {}
+local protocolFrame = CreateFrame("Frame")
+protocolFrame:RegisterEvent("HOA_HELLO")
+protocolFrame:SetScript("OnEvent", function(self, event, version, contentHash, language)
+    UI.Protocol.version = tonumber(version)
+    UI.Protocol.contentHash = contentHash
+    UI.Protocol.serverLanguage = language
+end)
+
 local SendChatWhileAlive = SendChatMessage
 function SendChatMessage(text, kind, language, target)
     if kind == "SAY" and text and strsub(text, 1, 1) == "." and UnitIsDeadOrGhost("player") then

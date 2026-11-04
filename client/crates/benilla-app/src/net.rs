@@ -41,7 +41,7 @@ use apply::tag_self_player;
 #[cfg(test)]
 pub(crate) use game_time::GameTime;
 pub(crate) use game_time::{clock_tick, ServerTime};
-pub(crate) use handlers::NetHandlerApp;
+pub use handlers::NetHandlerApp;
 
 pub(crate) use io::LoginRequest;
 use motion::{

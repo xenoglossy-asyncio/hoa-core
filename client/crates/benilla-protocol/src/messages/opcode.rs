@@ -419,6 +419,7 @@ pub const SMSG_SERVER_MESSAGE: u16 = 0x0291; // 657
 pub const SMSG_CHAT_RESTRICTED: u16 = 0x02FD; // 765
 /// A defense broadcast (the Eastern Plaguelands towers): `u32 zoneId`, `u32 length`, the text
 /// (`Map.cpp:1868-1884`). Posted like [`SMSG_ZONE_UNDER_ATTACK`] (`0x49de30`).
+pub const SMSG_HOA_MESSAGE: u16 = 0x033A; // 826
 pub const SMSG_DEFENSE_MESSAGE: u16 = 0x033B; // 827
 
 /// `/played`: an empty request; the reply is `u32 total`, `u32 level` seconds (`Misc.cpp:278-282`).

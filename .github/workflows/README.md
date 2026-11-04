@@ -6,7 +6,7 @@
 | --- | --- |
 | `docs-check` | Checks English/Chinese README pairs, relative links and `provenance.yaml`/`UPSTREAM.md` records |
 | `i18n-check` | Validates the shared message catalogue and its generated output |
-| `content-check` | Regenerates the card content SQL and checks it matches the sources |
+| `content-check` | Regenerates the content SQL and typed protocol, and checks they match the sources |
 | `addon-lua` | Parses every addon and GlueXML Lua file with LuaJIT |
 | `launcher-build` | `dotnet build` for the Avalonia launcher |
 | `client-check` | `cargo check -p hoa` for the client workspace |

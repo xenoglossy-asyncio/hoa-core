@@ -1300,6 +1300,11 @@ pub enum ServerPacket {
         /// [`super::pair_with_sent`] gives them.
         records: Vec<super::AddonRecord>,
     },
+    /// A HoA typed message (`SMSG_HOA_MESSAGE`): the message id and its undecoded body.
+    HoaMessage {
+        id: u16,
+        body: Vec<u8>,
+    },
     Other {
         opcode: u16,
     },
@@ -1664,6 +1669,7 @@ impl ServerPacket {
             ServerPacket::InitWorldStates(_) => "SMSG_INIT_WORLD_STATES".into(),
             ServerPacket::UpdateWorldState { .. } => "SMSG_UPDATE_WORLD_STATE".into(),
             ServerPacket::AddonInfo { .. } => "SMSG_ADDON_INFO".into(),
+            ServerPacket::HoaMessage { .. } => "SMSG_HOA_MESSAGE".into(),
             ServerPacket::Other { opcode } => format!("opcode {opcode:#06x}"),
         }
     }

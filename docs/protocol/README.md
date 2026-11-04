@@ -6,6 +6,7 @@
 - The Rust client recognizes only the `HOA~` prefix (`client/crates/hoa/src/world_fx.rs:62-65`); `parse_line` explicitly rejects `BONK~` (`hoa/src/server_draw.rs:342`), and unmatched lines fall through to system chat (`benilla-app/src/ui_chat/net.rs:14-20,46-61`).
 - The client has no spell query path (`benilla-app/src/net.rs:1034-1058`), so custom spell metadata has nowhere to come from.
 - State data (shield amount, dash, determination, card procs) all depends on this string channel; field order is by convention and every change must touch both sides.
+- First typed slice (2026-11-04): opcode `SMSG_HOA_MESSAGE` (826) carries `hoa.hello` — protocol version, content hash and account language — after the addon's `.bonk hello`. `shared/protocol/messages.yaml` is the source; `tools/protocol/gen.py` generates `HoaProtocol.h` and `protocol_generated.rs`; the client compares version/hash, warns on a mismatch and fires `HOA_HELLO` into Lua. Everything else still uses `BONK~`.
 
 ## 1. Goals
 

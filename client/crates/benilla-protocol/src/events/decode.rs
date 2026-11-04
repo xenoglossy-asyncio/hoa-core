@@ -307,6 +307,7 @@ pub fn decode(packet: ServerPacket) -> Vec<SessionEvent> {
         ServerPacket::UpdateAuraDuration { slot, remaining_ms } => {
             vec![SessionEvent::AuraDuration { slot, remaining_ms }]
         }
+        ServerPacket::HoaMessage { id, body } => vec![SessionEvent::HoaMessage { id, body }],
         ServerPacket::PlaySpellVisual { unit, kit_id } => {
             vec![SessionEvent::PlaySpellVisual { unit, kit_id }]
         }

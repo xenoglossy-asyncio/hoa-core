@@ -1,30 +1,26 @@
-# shared/protocol / 协议
+# shared/protocol / 类型化协议
 
-服务端、客户端、插件、启动器之间的消息定义与代码生成输入。
+`messages.yaml` 定义服务端、Rust 客户端和客户端 Lua 桥之间的 HoA 消息，是消息 ID 和字段顺序的唯一来源。
 
-## 目标
+`tools/protocol/gen.py` 生成：
 
-- 用一份 schema 生成 C++ 和 Rust 两端代码，消除手写解析器的重复和偏差。
-- HoA 状态（护盾、冲刺、决心、层数、计时）走真正的游戏状态/光环，不再用 `BONK~state~...` 聊天行同步。
-- 保留原版 opcode 处理原生能力（移动、战斗、buff、施法、物品查询）；HoA 只定义缺失的消息。
-- 每条消息带协议版本/内容哈希；不一致时握手阶段就拒绝或降级。
+- `server/src/game/Bonk/HoaProtocol.h`：消息 ID 和每条消息的写入函数。
+- `client/crates/hoa/src/protocol_generated.rs`：常量、结构体和解码函数。
 
-## 建议分类
+`tools/content/compile.py` 会一并运行协议生成器；`--check` 在任一产物过期时失败。
 
-```
-protocol/
-  handshake.yaml    版本、内容哈希、语言协商
-  content.yaml      内容清单/增量下发
-  run.yaml          远征流程（开始、波次、奖励、结算）
-  ui.yaml           仅 HoA 界面需要的展示数据（卡牌、图鉴、排行榜）
-```
+## 线上格式
 
-## 生成
+- 自定义 opcode `SMSG_HOA_MESSAGE`（826）。
+- 消息体：`u16 消息 ID`，然后按 schema 顺序排列字段。
+- `string` 是 `u16` 字节长度加 UTF-8 内容。
+- 整数小端，无填充。
 
-`tools/protocol-gen` 读取 schema，生成：
+当前 `hello` 消息在插件发送 `.bonk hello` 后下发：包含协议版本、本次构建的内容哈希和账号语言。客户端比较版本和哈希，然后向 Lua 触发 `HOA_HELLO`。
 
-- `server/src/game/Hoa/protocol/generated/`
-- `client/crates/hoa-protocol/src/generated/`
-- `addon/` 需要的 Lua 常量（如仍有插件通道）
+## 新增消息
 
-生成物不手改；CI 校验 schema 与生成结果一致。
+1. 在 `messages.yaml` 里加唯一 ID 和类型化字段。
+2. 运行 `python tools/content/compile.py`。
+3. 服务端使用生成的写入函数，客户端用 `protocol_generated::decode` 解码。
+4. 不兼容的字段变更要提升 `version`。

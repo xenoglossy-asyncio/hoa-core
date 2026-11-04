@@ -57,8 +57,10 @@ jobs:
           python-version: '3.x'
       - name: Install PyYAML
         run: python -m pip install --quiet pyyaml
-      - name: Check generated card content
-        run: python tools/content/compile.py --check
+      - name: Check generated content and protocol
+        run: |
+          python tools/content/compile.py --check
+          python tools/protocol/gen.py --check
 
   addon-lua:
     name: addon-lua

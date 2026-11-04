@@ -938,6 +938,7 @@ Handlers BuildOpcodeList()
     INVALID_PACKET(SMSG_LOTTERY_RESULT_OBSOLETE,      UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHARACTER_PROFILE,            UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_CHARACTER_PROFILE_REALM_CONNECTED, UnhandleReason::SendByServer);
+    INVALID_PACKET(SMSG_HOA_MESSAGE, UnhandleReason::SendByServer);
     INVALID_PACKET(SMSG_DEFENSE_MESSAGE,              UnhandleReason::SendByServer);
 #endif
 

@@ -9,9 +9,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "protocol"))
 
 import yaml
 
+from gen import outputs as protocol_outputs
 from tables import compile_tables
 from spells import spell_outputs
 
@@ -150,6 +152,7 @@ def main() -> int:
     generated = [
         ("cards", TARGET, compile_cards()),
         *spell_outputs(),
+        *protocol_outputs(hash_value),
         ("content hash sql", HASH_SQL_TARGET, compile_hash_sql(hash_value)),
         ("content hash header", HASH_HEADER_TARGET, compile_hash_header(hash_value)),
     ]

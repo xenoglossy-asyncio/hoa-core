@@ -320,7 +320,8 @@ class BonkPlayer
         void SetTestGod(bool on) { m_testGod = on; }
         bool IsTestGod() const { return m_testGod; }
 
-        void SetAddonReady() { m_addonReady = true; m_zoneArtSent = false; }
+        void SetAddonReady();
+        void SendProtocolHello() const;
         bool IsAddonReady() const { return m_addonReady; }
         void SetLocale(LocaleConstant locale);
         void ApplyLocale(LocaleConstant locale);

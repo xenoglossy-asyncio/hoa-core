@@ -1,0 +1,11 @@
+# HoA typed protocol between the server, the client and the addon bridge.
+# `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
+version: 1
+messages:
+  - name: hello
+    id: 0x0001
+    direction: server_to_client
+    fields:
+      - { name: protocol_version, type: u16 }
+      - { name: content_hash, type: string }
+      - { name: language, type: string }

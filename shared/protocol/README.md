@@ -1,30 +1,30 @@
-# shared/protocol / protocol
+# shared/protocol / typed protocol
 
-Message definitions and codegen inputs shared by the server, client and addon.
+`messages.yaml` defines the HoA messages that travel between the server, the Rust client and the
+client's Lua bridge. It is the single source for message ids and field order.
 
-## Goals
+`tools/protocol/gen.py` emits:
 
-- Generate C++ and Rust from one schema, eliminating duplicate hand-written parsers.
-- HoA state (shield, dash, determination, stacks, timers) travels as real game state/auras, not `BONK~state~...` chat lines.
-- Keep vanilla opcodes for native capabilities (movement, combat, buffs, casting, item queries); define only the messages vanilla lacks.
-- Every message carries a protocol/content version; mismatches are rejected or downgraded at the handshake.
+- `server/src/game/Bonk/HoaProtocol.h`: message ids and one writer per message.
+- `client/crates/hoa/src/protocol_generated.rs`: constants, structs and decoders.
 
-## Suggested layout
+`tools/content/compile.py` runs the generator together with the content compiler; `--check` fails
+when either output is stale.
 
-```
-protocol/
-  handshake.yaml    version, content hash, language negotiation
-  content.yaml      content manifest/incremental delivery
-  run.yaml          run flow (start, waves, rewards, results)
-  ui.yaml           presentation data needed only by HoA UI (cards, codex, leaderboard)
-```
+## Wire format
 
-## Generation
+- Custom opcode `SMSG_HOA_MESSAGE` (826).
+- Body: `u16 message id`, then the fields in schema order.
+- `string` is a `u16` byte length followed by UTF-8 bytes.
+- Integers are little-endian. There is no padding.
 
-`tools/protocol-gen` reads the schema and generates:
+The current `hello` message is sent after the addon's `.bonk hello`: it carries the protocol
+version, this build's content hash and the account language. The client compares the version and
+hash, then fires `HOA_HELLO` into Lua.
 
-- `server/src/game/Hoa/protocol/generated/`
-- `client/crates/hoa-protocol/src/generated/`
-- Lua constants for the addon (while an addon channel remains)
+## Adding a message
 
-Never hand-edit generated artifacts; CI verifies schema and output agree.
+1. Add it to `messages.yaml` with a unique id and typed fields.
+2. Run `python tools/content/compile.py`.
+3. Use the generated writer on the server and `protocol_generated::decode` in the client.
+4. Bump `version` for an incompatible field change.

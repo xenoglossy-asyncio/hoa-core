@@ -1671,6 +1671,12 @@ fn parse_server_body(
         opcode::SMSG_ADDON_INFO => ServerPacket::AddonInfo {
             records: read_addon_info(&mut r),
         },
+        opcode::SMSG_HOA_MESSAGE => {
+            let id = read_u16_le(&mut r)?;
+            let body = r.to_vec();
+            r = &[];
+            ServerPacket::HoaMessage { id, body }
+        }
         other => ServerPacket::Other { opcode: other },
     };
     *cursor = r;

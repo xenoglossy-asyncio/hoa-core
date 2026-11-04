@@ -1,4 +1,5 @@
 #include "BonkPlayer.h"
+#include "BonkContentHash.h"
 #include "BonkCoop.h"
 #include "Bag.h"
 #include "BonkEnchant.h"
@@ -17,6 +18,7 @@
 #include "Database/DatabaseEnv.h"
 #include "DBCStores.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "Log.h"
@@ -3023,6 +3025,20 @@ void BonkPlayer::RecordFinaleBest(uint32 level, uint32 score, uint32 seconds)
     LevelBest& best = m_levelBests[{ classId, level }];
     if (MergeFinaleBest(best, score, seconds))
         SaveLevelBest(GetProgressAccount(), classId, level, best);
+}
+
+void BonkPlayer::SetAddonReady()
+{
+    m_addonReady = true;
+    m_zoneArtSent = false;
+    SendProtocolHello();
+}
+
+void BonkPlayer::SendProtocolHello() const
+{
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteHello(data, uint16(HOA_PROTOCOL_VERSION), HOA_CONTENT_HASH, BonkLocale::Tag(GetLocale()));
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::SendAddon(std::string const& line) const

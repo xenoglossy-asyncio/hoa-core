@@ -1255,6 +1255,9 @@ pub enum SessionEvent {
         scope: Option<(u32, u32)>,
         states: Vec<(u32, u32)>,
     },
+    /// A HoA typed message (`SMSG_HOA_MESSAGE`): its message id and undecoded body. The `hoa`
+    /// crate owns the schema-generated decoder.
+    HoaMessage { id: u16, body: Vec<u8> },
 }
 
 impl SessionEventKind {
