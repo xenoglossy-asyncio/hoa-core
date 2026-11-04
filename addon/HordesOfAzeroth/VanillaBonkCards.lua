@@ -353,6 +353,18 @@ local function Clear()
     Refresh()
 end
 UI.ListenHoa({
+    HOA_CARDS = function(cards)
+        handlers["cards"]({ false, cards.entries })
+    end,
+    HOA_CARD_TIP = function(tip)
+        handlers["cardtip"]({ false, tostring(tip.id), tip.name, tip.description })
+    end,
+    HOA_CARD_COOLDOWN = function(cooldown)
+        handlers["cardcd"]({ false, tostring(cooldown.id), cooldown.left_ms, cooldown.total_ms })
+    end,
+    HOA_CARD_NOW = function(now)
+        handlers["cardnow"]({ false, tostring(now.id), now.text })
+    end,
     HOA_RUN_START = Clear,
     HOA_RUN_END = Clear,
 })

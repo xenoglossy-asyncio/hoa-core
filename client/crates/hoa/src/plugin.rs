@@ -86,6 +86,10 @@ const HOA_ENCHANT_OFFER: &str = "HOA_ENCHANT_OFFER";
 const HOA_ENCHANT_END: &str = "HOA_ENCHANT_END";
 const HOA_ENCHANT_OPEN: &str = "HOA_ENCHANT_OPEN";
 const HOA_ENCHANT_CLOSE: &str = "HOA_ENCHANT_CLOSE";
+const HOA_CARDS: &str = "HOA_CARDS";
+const HOA_CARD_TIP: &str = "HOA_CARD_TIP";
+const HOA_CARD_COOLDOWN: &str = "HOA_CARD_COOLDOWN";
+const HOA_CARD_NOW: &str = "HOA_CARD_NOW";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -162,6 +166,41 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Cards(cards) => {
+                    script.fire_event(
+                        HOA_CARDS,
+                        vec![lua_table(vec![("entries", ScriptValue::Str(cards.entries))])],
+                    );
+                }
+                HoaMessage::CardTip(tip) => {
+                    script.fire_event(
+                        HOA_CARD_TIP,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(tip.id))),
+                            ("name", ScriptValue::Str(tip.name)),
+                            ("description", ScriptValue::Str(tip.description)),
+                        ])],
+                    );
+                }
+                HoaMessage::CardCooldown(cooldown) => {
+                    script.fire_event(
+                        HOA_CARD_COOLDOWN,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(cooldown.id))),
+                            ("left_ms", ScriptValue::Int(i64::from(cooldown.left_ms))),
+                            ("total_ms", ScriptValue::Int(i64::from(cooldown.total_ms))),
+                        ])],
+                    );
+                }
+                HoaMessage::CardNow(now) => {
+                    script.fire_event(
+                        HOA_CARD_NOW,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(now.id))),
+                            ("text", ScriptValue::Str(now.text)),
+                        ])],
+                    );
+                }
                 HoaMessage::EnchantClear(_) => {
                     script.fire_event(HOA_ENCHANT_CLEAR, Vec::new());
                 }
@@ -882,6 +921,10 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_ENCHANT_END);
         add_in_game_event(HOA_ENCHANT_OPEN);
         add_in_game_event(HOA_ENCHANT_CLOSE);
+        add_in_game_event(HOA_CARDS);
+        add_in_game_event(HOA_CARD_TIP);
+        add_in_game_event(HOA_CARD_COOLDOWN);
+        add_in_game_event(HOA_CARD_NOW);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

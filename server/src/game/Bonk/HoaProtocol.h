@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 14
+#define HOA_PROTOCOL_VERSION 15
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -79,6 +79,10 @@
 #define HOA_MSG_ENCHANT_END 0x004D
 #define HOA_MSG_ENCHANT_OPEN 0x004E
 #define HOA_MSG_ENCHANT_CLOSE 0x004F
+#define HOA_MSG_CARDS 0x0050
+#define HOA_MSG_CARD_TIP 0x0051
+#define HOA_MSG_CARD_COOLDOWN 0x0052
+#define HOA_MSG_CARD_NOW 0x0053
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -671,4 +675,33 @@ inline void HoAWriteEnchantOpen(WorldPacket& packet)
 inline void HoAWriteEnchantClose(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_ENCHANT_CLOSE);
+}
+
+inline void HoAWriteCards(WorldPacket& packet, std::string const& entries)
+{
+    packet << uint16(HOA_MSG_CARDS);
+    HoAWriteString(packet, entries);
+}
+
+inline void HoAWriteCardTip(WorldPacket& packet, uint32 const& id, std::string const& name, std::string const& description)
+{
+    packet << uint16(HOA_MSG_CARD_TIP);
+    packet << uint32(id);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, description);
+}
+
+inline void HoAWriteCardCooldown(WorldPacket& packet, uint32 const& id, int32 const& leftMs, uint32 const& totalMs)
+{
+    packet << uint16(HOA_MSG_CARD_COOLDOWN);
+    packet << uint32(id);
+    packet << int32(leftMs);
+    packet << uint32(totalMs);
+}
+
+inline void HoAWriteCardNow(WorldPacket& packet, uint32 const& id, std::string const& text)
+{
+    packet << uint16(HOA_MSG_CARD_NOW);
+    packet << uint32(id);
+    HoAWriteString(packet, text);
 }

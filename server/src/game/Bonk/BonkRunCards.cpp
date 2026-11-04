@@ -6,6 +6,7 @@
 #include "BonkPlayer.h"
 #include "BonkQuests.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Item.h"
 #include "Log.h"
 #include "Player.h"
@@ -643,7 +644,12 @@ void BonkRun::SendCardStatus(bool force) const
         if (!force && (sent != m_cardNowSent.end() ? sent->second == text : text.empty()))
             continue;
         m_cardNowSent[owned.card->id] = text;
-        bonk->SendAddon("cardnow~" + std::to_string(owned.card->id) + "~" + text);
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCardNow(data, owned.card->id, text);
+            m_player->GetSession()->SendPacket(&data);
+        }
     }
 }
 
@@ -1010,16 +1016,26 @@ void BonkRun::SendCardAuraText(uint32 spellId, BonkCard const& card) const
 void BonkRun::SendCards() const
 {
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    std::string line = "cards~";
+    if (!bonk->IsAddonReady())
+        return;
+    std::string entries;
     for (OwnedCard const& owned : m_cards)
         if (!m_glyphCardIds.count(owned.card->id))
-            line += std::to_string(owned.card->id) + ":" + std::to_string(owned.copies) + ":" + std::to_string(owned.card->rarity) + ":" +
+            entries += std::to_string(owned.card->id) + ":" + std::to_string(owned.copies) + ":" + std::to_string(owned.card->rarity) + ":" +
                 owned.card->icon + ":" + std::to_string(owned.card->maxCopies) + ",";
-    bonk->SendAddon(line);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCards(data, entries);
+        m_player->GetSession()->SendPacket(&data);
+    }
     for (OwnedCard const& owned : m_cards)
         if (!m_glyphCardIds.count(owned.card->id))
-            bonk->SendAddon("cardtip~" + std::to_string(owned.card->id) + "~" + Localize(BONK_FIELD_CARD_NAME, owned.card->id, owned.card->name) + "~" +
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCardTip(data, owned.card->id, Localize(BONK_FIELD_CARD_NAME, owned.card->id, owned.card->name),
                 DescribeHeldCard(*owned.card, owned.copies, GetLocale()));
+            m_player->GetSession()->SendPacket(&data);
+        }
     SendCardCooldowns();
     SendCardStatus(true);
 }
@@ -1036,8 +1052,11 @@ void BonkRun::SendCardCooldown(BonkCardEffect effect) const
     BonkCard const* card = m_cardByEffect[effect];
     if (!card)
         return;
-    m_player->GetBonkPlayer()->SendAddon("cardcd~" + std::to_string(card->id) + "~" + std::to_string(std::max(0, m_cardCooldowns[effect])) + "~" +
-        std::to_string(m_cardCooldownTotals[effect]));
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteCardCooldown(data, card->id, std::max(0, m_cardCooldowns[effect]), m_cardCooldownTotals[effect]);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkRun::SendCardCooldowns() const
