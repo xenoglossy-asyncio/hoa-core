@@ -635,6 +635,7 @@ class BonkRun
         void RefreshKillPowerAura() const;
         void AddKillPowerStack() const;
         void RefreshUnhitPowerAura() const;
+        void ApplyTimedAura(uint32 spellId, uint32 durationMs) const;
         uint32 GetCardAuraStacks(uint32 spellId) const;
         void ClearBossPressure();
         void ShowImpact(BonkEnemyHit const& hit, float x, float y, float z, float radius = 0.0f);
@@ -2967,11 +2968,6 @@ class BonkRun
         std::map<uint32, std::vector<uint32>> m_castHasteUntil;
         uint32 m_bulwarkStacks = 0;
         std::vector<uint32> m_bloodsurgeUntil;
-        uint32 m_rapidFireUntil = 0;
-        uint32 m_sliceAndDiceUntil = 0;
-        uint32 m_borrowedTimeUntil = 0;
-        uint32 m_flurryUntil = 0;
-        uint32 m_bloomHasteUntil = 0;
         uint32 m_shadowBoltHits = 0;
         uint32 m_bloodtalonsStacks = 0;
         std::vector<uint32> m_starlordUntil;

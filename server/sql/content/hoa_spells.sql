@@ -50,6 +50,16 @@ UPDATE `hoa_spell_clone` SET `entry` = 60021, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60022, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60023, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60024, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60025, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60026, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60027, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 DROP TEMPORARY TABLE `hoa_spell_clone`;
 
 UPDATE `spell_template` SET
@@ -359,3 +369,73 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60022 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Rapid Fire',
+  `nameSubtext` = '',
+  `description` = 'Your ranged attacks are faster for a short time.',
+  `auraDescription` = 'Your ranged attacks are faster for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60023 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Slice and Dice',
+  `nameSubtext` = '',
+  `description` = 'Your attacks are faster for a short time.',
+  `auraDescription` = 'Your attacks are faster for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60024 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Borrowed Time',
+  `nameSubtext` = '',
+  `description` = 'Your spell haste is increased for a short time.',
+  `auraDescription` = 'Your spell haste is increased for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60025 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Flurry',
+  `nameSubtext` = '',
+  `description` = 'Your attack speed is increased for a short time.',
+  `auraDescription` = 'Your attack speed is increased for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60026 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Lifebloom',
+  `nameSubtext` = '',
+  `description` = 'Your spells are faster for a short time.',
+  `auraDescription` = 'Your spells are faster for a short time.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60027 AND `build` = 5875;

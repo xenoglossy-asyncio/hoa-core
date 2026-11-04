@@ -176,3 +176,43 @@
   icon: Interface\Icons\Spell_Holy_HolyProtection
   description: Staying unhurt builds power.
   description_zhCN: 保持不受伤会积累力量。
+- id: 60023
+  key: rapid_fire
+  cpp: BONK_SPELL_RAPID_FIRE
+  name: Rapid Fire
+  name_zhCN: 急速射击
+  icon: Interface\Icons\Ability_Hunter_RapidFire
+  description: Your ranged attacks are faster for a short time.
+  description_zhCN: 短时间内你的远程攻击速度提高。
+- id: 60024
+  key: slice_and_dice
+  cpp: BONK_SPELL_SLICE_AND_DICE
+  name: Slice and Dice
+  name_zhCN: 切割
+  icon: Interface\Icons\Ability_Rogue_SliceDice
+  description: Your attacks are faster for a short time.
+  description_zhCN: 短时间内你的攻击速度提高。
+- id: 60025
+  key: borrowed_time
+  cpp: BONK_SPELL_BORROWED_TIME
+  name: Borrowed Time
+  name_zhCN: 借来的时间
+  icon: Interface\Icons\Spell_Holy_PowerWordShield
+  description: Your spell haste is increased for a short time.
+  description_zhCN: 短时间内你的施法急速提高。
+- id: 60026
+  key: flurry
+  cpp: BONK_SPELL_FLURRY
+  name: Flurry
+  name_zhCN: 乱舞
+  icon: Interface\Icons\Ability_Warrior_BattleShout
+  description: Your attack speed is increased for a short time.
+  description_zhCN: 短时间内你的攻击速度提高。
+- id: 60027
+  key: lifebloom
+  cpp: BONK_SPELL_LIFEBLOOM_HASTE
+  name: Lifebloom
+  name_zhCN: 生命绽放
+  icon: Interface\Icons\Spell_Nature_Regeneration
+  description: Your spells are faster for a short time.
+  description_zhCN: 短时间内你的施法速度提高。

@@ -231,7 +231,6 @@ bool BonkRun::IsDruidHero() const
 
 void BonkRun::ResetDruidState()
 {
-    m_bloomHasteUntil = 0;
     m_druidLookMs.clear();
     m_thornsTimes.clear();
     m_tranquilityPulsesLeft = 0;
@@ -805,7 +804,7 @@ void BonkRun::BloomRejuvenation(OwnedWeapon& owned, SpellEntry const* spellInfo)
     if (TakeDruidLookSlot(owned.weapon.id))
         ShowStrike(m_player, spellInfo, m_player);
     if (HealDruid(owned, owned.weapon.healPct) > 0.0f)
-        m_bloomHasteUntil = m_totalMs + BONK_BLOOM_HASTE_MS;
+        ApplyTimedAura(BONK_SPELL_LIFEBLOOM_HASTE, BONK_BLOOM_HASTE_MS);
 
     std::vector<Creature*> mobs = GetDruidTargets(owned.weapon.range * GetWeaponArea(owned));
     mobs.resize(std::min<size_t>(mobs.size(), GetWeaponTargets(owned)));

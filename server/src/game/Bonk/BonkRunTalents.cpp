@@ -445,6 +445,18 @@ void BonkRun::CastOnStruck()
     }
 }
 
+void BonkRun::ApplyTimedAura(uint32 spellId, uint32 durationMs) const
+{
+    if (!m_player || !m_player->IsAlive())
+        return;
+    if (SpellAuraHolder* holder = m_player->AddAura(spellId, ADD_AURA_POSITIVE))
+    {
+        holder->SetAuraDuration(int32(durationMs));
+        holder->SetAuraMaxDuration(int32(durationMs));
+        holder->UpdateAuraDuration();
+    }
+}
+
 void BonkRun::UpdateTalents()
 {
     BurstIceBlock();
@@ -510,7 +522,7 @@ void BonkRun::OnTalentCastDone(OwnedWeapon& owned)
     if (root == BONK_WEAPON_POWER_WORD_SHIELD)
     {
         if (m_mastery.Special(BONK_SPECIAL_BORROWED_TIME) > 0.0f)
-            m_borrowedTimeUntil = m_totalMs + BONK_BORROWED_TIME_MS;
+            ApplyTimedAura(BONK_SPELL_BORROWED_TIME, BONK_BORROWED_TIME_MS);
         if (m_mastery.Special(BONK_SPECIAL_SHINING_FORCE) > 0.0f)
             for (Creature* mob : GetMobsInRange(BONK_SHINING_FORCE_RADIUS))
                 m_pendingStuns.push_back(mob->GetObjectGuid());
@@ -528,11 +540,11 @@ void BonkRun::OnTalentCastDone(OwnedWeapon& owned)
         if (adrenaline > 0.0f)
             ReduceTimer(BONK_WEAPON_BLADE_FLURRY, int32(adrenaline * IN_MILLISECONDS));
         if (m_mastery.Special(BONK_SPECIAL_SLICE_AND_DICE) > 0.0f)
-            m_sliceAndDiceUntil = m_totalMs + BONK_SLICE_AND_DICE_MS;
+            ApplyTimedAura(BONK_SPELL_SLICE_AND_DICE, BONK_SLICE_AND_DICE_MS);
     }
 
     if (root == BONK_WEAPON_HUNTERS_MARK && m_mastery.Special(BONK_SPECIAL_RAPID_FIRE) > 0.0f)
-        m_rapidFireUntil = m_totalMs + BONK_RAPID_FIRE_MS;
+        ApplyTimedAura(BONK_SPELL_RAPID_FIRE, BONK_RAPID_FIRE_MS);
 
     if (root == BONK_WEAPON_THUNDER_CLAP && m_mastery.Special(BONK_SPECIAL_THUNDERLORD) > 0.0f)
     {
@@ -556,15 +568,15 @@ float BonkRun::GetTalentHaste() const
 {
     uint32 const now = m_totalMs;
     float haste = m_mastery.Special(BONK_SPECIAL_MONGOOSE_FURY) * float(m_mongooseStacks);
-    if (m_rapidFireUntil > now)
+    if (m_player->HasAura(BONK_SPELL_RAPID_FIRE))
         haste += m_mastery.Special(BONK_SPECIAL_RAPID_FIRE);
-    if (m_sliceAndDiceUntil > now)
+    if (m_player->HasAura(BONK_SPELL_SLICE_AND_DICE))
         haste += m_mastery.Special(BONK_SPECIAL_SLICE_AND_DICE);
-    if (m_borrowedTimeUntil > now)
+    if (m_player->HasAura(BONK_SPELL_BORROWED_TIME))
         haste += m_mastery.Special(BONK_SPECIAL_BORROWED_TIME);
-    if (m_flurryUntil > now)
+    if (m_player->HasAura(BONK_SPELL_FLURRY))
         haste += m_mastery.Special(BONK_SPECIAL_FLURRY);
-    if (m_bloomHasteUntil > now)
+    if (m_player->HasAura(BONK_SPELL_LIFEBLOOM_HASTE))
         haste += BONK_BLOOM_HASTE;
     haste += m_mastery.Special(BONK_SPECIAL_UNRELENTING_STORM) * CountTimedStacks(m_unrelentingUntil, now);
     haste += m_mastery.Special(BONK_SPECIAL_HARVESTER_OF_SOULS) * CountTimedStacks(m_harvestUntil, now);
@@ -773,7 +785,7 @@ void BonkRun::OnTalentDamage(Unit* victim, SpellEntry const* spell)
 void BonkRun::OnTalentWindfury()
 {
     if (m_mastery.Special(BONK_SPECIAL_FLURRY) > 0.0f)
-        m_flurryUntil = m_totalMs + BONK_FLURRY_MS;
+        ApplyTimedAura(BONK_SPELL_FLURRY, BONK_FLURRY_MS);
     if (m_mastery.Special(BONK_SPECIAL_FORCEFUL_WINDS) > 0.0f)
         PushTimedStack(m_forcefulUntil, m_totalMs, BONK_FORCEFUL_WINDS_MS, BONK_FORCEFUL_WINDS_STACKS);
 }
