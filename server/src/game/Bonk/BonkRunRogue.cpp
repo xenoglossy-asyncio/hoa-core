@@ -149,11 +149,8 @@ void BonkRun::ResetRogueState()
     m_ambushReadyMs.clear();
     m_riposteTimes.clear();
     m_roguePruneMs = 0;
-    m_bladeFlurryUntilMs = 0;
     m_player->RemoveAurasDueToSpell(BONK_SPELL_ENVENOM_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_SHADOW_DANCE_AURA);
-    m_envenomUntilMs = 0;
-    m_shadowDanceUntilMs = 0;
     m_smokeUntilMs = 0;
     m_spreeBonus = 0;
     for (uint32 spellId : { BONK_SPELL_BLADE_FLURRY, BONK_SPELL_EVASION })
@@ -313,7 +310,7 @@ void BonkRun::PoisonFromCoatings(Creature* target)
     if (!target || !target->IsAlive())
         return;
     OwnedWeapon const* deadly = FindOwnedByBehavior(BONK_BEHAVIOR_DEADLY_POISON);
-    OwnedWeapon const* envenom = m_envenomUntilMs > m_totalMs ? FindOwnedByBehavior(BONK_BEHAVIOR_ENVENOM) : nullptr;
+    OwnedWeapon const* envenom = m_player->HasAura(BONK_SPELL_ENVENOM_AURA) ? FindOwnedByBehavior(BONK_BEHAVIOR_ENVENOM) : nullptr;
     OwnedWeapon const* source = deadly ? deadly : envenom;
     bool const masterPoisoner = m_mastery.Has(BONK_CAPSTONE_MASTER_POISONER);
     if (!source)
@@ -338,7 +335,7 @@ void BonkRun::OpenOnRogueTarget(Creature* target, bool forced)
     if (!target)
         return;
     bool const fresh = m_rogueTouched.insert(target->GetObjectGuid()).second;
-    bool const dancing = m_shadowDanceUntilMs > m_totalMs;
+    bool const dancing = m_player->HasAura(BONK_SPELL_SHADOW_DANCE_AURA);
     if (!fresh && !dancing && !forced)
         return;
     OwnedWeapon const* ambush = FindOwnedByBehavior(BONK_BEHAVIOR_AMBUSH);
@@ -380,7 +377,7 @@ void BonkRun::OpenOnRogueTarget(Creature* target, bool forced)
 
 bool BonkRun::IsBladeFlurryActive(OwnedWeapon const& flurry) const
 {
-    return flurry.weapon.id == BONK_WEAPON_ENDLESS_FLURRY || m_bladeFlurryUntilMs > m_totalMs;
+    return flurry.weapon.id == BONK_WEAPON_ENDLESS_FLURRY || m_player->HasAura(BONK_SPELL_BLADE_FLURRY);
 }
 
 void BonkRun::FlurryFrom(Creature* target, float damage, uint32 creditSpellId)
@@ -422,7 +419,8 @@ void BonkRun::StartBladeFlurry(OwnedWeapon& owned)
 {
     if (owned.weapon.id != BONK_WEAPON_ENDLESS_FLURRY)
     {
-        OpenRogueWindow(owned, m_bladeFlurryUntilMs, BONK_SPELL_BLADE_FLURRY);
+        uint32 bladeFlurryUntilMs = 0;
+        OpenRogueWindow(owned, bladeFlurryUntilMs, BONK_SPELL_BLADE_FLURRY);
         return;
     }
     owned.timer = BONK_ROGUE_IDLE_MS;
@@ -563,7 +561,8 @@ bool BonkRun::OpenRogueWindow(OwnedWeapon& owned, uint32& untilMs, uint32 auraSp
 
 void BonkRun::StartShadowDance(OwnedWeapon& owned)
 {
-    if (!OpenRogueWindow(owned, m_shadowDanceUntilMs, BONK_SPELL_SHADOW_DANCE_AURA))
+    uint32 shadowDanceUntilMs = 0;
+    if (!OpenRogueWindow(owned, shadowDanceUntilMs, BONK_SPELL_SHADOW_DANCE_AURA))
         return;
     if (m_mastery.Special(BONK_SPECIAL_SECRET_TECHNIQUE) > 0.0f)
         for (Creature* mob : GetMobsInRange(BONK_SECRET_TECHNIQUE_RADIUS))
@@ -792,10 +791,10 @@ void BonkRun::CastEnvenom(OwnedWeapon& owned, SpellEntry const* spellInfo)
         else if (owned.weapon.id == BONK_WEAPON_EXSANGUINATE)
             Exsanguinate(owned, spellInfo, target);
     }
-    m_envenomUntilMs = m_totalMs + uint32(owned.weapon.durationMs * GetWeaponDurationScale(owned));
+    int32 const envenomDuration = int32(owned.weapon.durationMs * GetWeaponDurationScale(owned));
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_ENVENOM_AURA, ADD_AURA_POSITIVE))
     {
-        int32 const duration = int32(m_envenomUntilMs - m_totalMs);
+        int32 const duration = envenomDuration;
         holder->SetAuraDuration(duration);
         holder->SetAuraMaxDuration(duration);
         holder->UpdateAuraDuration();
@@ -1027,7 +1026,7 @@ void BonkRun::OnRogueDodge(Unit* attacker)
 
 float BonkRun::GetRogueDamageMultiplier(Unit const* victim) const
 {
-    float multiplier = m_shadowDanceUntilMs > m_totalMs ? BONK_SHADOW_DANCE_BONUS : 1.0f;
+    float multiplier = m_player->HasAura(BONK_SPELL_SHADOW_DANCE_AURA) ? BONK_SHADOW_DANCE_BONUS : 1.0f;
     if (!victim)
         return multiplier;
     auto weak = m_findWeakness.find(victim->GetObjectGuid());

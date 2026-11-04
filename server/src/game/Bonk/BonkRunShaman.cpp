@@ -132,7 +132,6 @@ void BonkRun::ResetShamanState()
     m_shamanTickMs = 0;
     m_shamanTicks = 0;
     m_doomWindsReadyMs = 0;
-    m_doomWindsUntilMs = 0;
     m_lavaSurgeReadyMs = 0;
     m_spiritPackUntil.clear();
     m_staticDischargeTimes.clear();
@@ -237,7 +236,6 @@ void BonkRun::OnShamanStrike(OwnedWeapon& owned, SpellEntry const*, Creature* ta
             uint32 const now = WorldTimer::getMSTime();
             if (int32(now - m_doomWindsReadyMs) >= 0)
             {
-                m_doomWindsUntilMs = now + BONK_DOOM_WINDS_LASTS_MS;
                 m_doomWindsReadyMs = now + BONK_DOOM_WINDS_EVERY_MS;
                 if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DOOM_WINDS_LOOK))
                 {
@@ -246,7 +244,7 @@ void BonkRun::OnShamanStrike(OwnedWeapon& owned, SpellEntry const*, Creature* ta
                     holder->RefreshHolder();
                 }
             }
-            doomWinds = int32(m_doomWindsUntilMs - now) > 0;
+            doomWinds = m_player->HasAura(BONK_SPELL_DOOM_WINDS_LOOK);
         }
         if (doomWinds || owned.casts % GetWindfuryEvery() == 0)
             QueueWindfury(owned, target, share);

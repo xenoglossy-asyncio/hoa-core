@@ -312,7 +312,7 @@ float BonkRun::GetGlyphPower() const
             power += float(m_soulSiphonKills / uint32(siphon->values[0])) * siphon->values[1];
     if (BonkGlyph const* nomad = GetGlyph(BONK_GLYPH_NOMAD))
     {
-        if (m_nomadPenaltyUntilMs > m_totalMs)
+        if (m_player->HasAura(BONK_SPELL_NOMAD_AURA))
             power -= nomad->values[1];
         else if (!m_glyphStill)
             power += nomad->values[0];
@@ -673,7 +673,7 @@ void BonkRun::UpdateGlyphStances()
         m_glyphMovedMs = m_totalMs;
     bool const still = m_totalMs - m_glyphMovedMs >= BONK_GLYPH_STILL_MS;
     bool const lastStand = IsLastStand();
-    bool const penalty = m_nomadPenaltyUntilMs > m_totalMs;
+    bool const penalty = m_player->HasAura(BONK_SPELL_NOMAD_AURA);
     if (still == m_glyphStill && lastStand == m_glyphLastStand && penalty == m_nomadPenalty)
         return;
     m_glyphStill = still;

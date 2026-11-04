@@ -156,7 +156,6 @@ void BonkRun::ResetPaladinState()
     m_sealOfLightTimes.clear();
     m_retributionTimes.clear();
     m_paladinStrikes = 0;
-    m_divineShieldUntilMs = 0;
     m_divineShieldCharged = false;
     m_artOfWarReadyMs = 0;
     m_layOnHandsReadyMs = 0;
@@ -749,7 +748,6 @@ void BonkRun::TryPaladinLastStands()
     if (FindOwned(BONK_WEAPON_ARDENT_DEFENDER) && health < BONK_ARDENT_DEFENDER_HEALTH && m_totalMs >= m_ardentDefenderReadyMs)
     {
         m_ardentDefenderReadyMs = m_totalMs + BONK_ARDENT_DEFENDER_EVERY_MS;
-        m_divineShieldUntilMs = m_totalMs + uint32(BONK_ARDENT_DEFENDER_MS);
         ShowDivineBubble(BONK_ARDENT_DEFENDER_MS);
     }
     if (FindOwned(BONK_WEAPON_LAY_ON_HANDS) && health < BONK_LAY_ON_HANDS_HEALTH && m_totalMs >= m_layOnHandsReadyMs)
@@ -861,7 +859,7 @@ void BonkRun::ShowDivineBubble(int32 lengthMs)
 
 bool BonkRun::IsDivinelyShielded() const
 {
-    return m_divineShieldUntilMs > m_totalMs;
+    return m_player->HasAura(BONK_SPELL_DIVINE_SHIELD);
 }
 
 float BonkRun::GetSealOfLightHeal(float damageBonus) const

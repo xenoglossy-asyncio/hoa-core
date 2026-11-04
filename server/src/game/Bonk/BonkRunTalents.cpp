@@ -825,7 +825,7 @@ void BonkRun::OnTalentKill(Unit* victim)
     if (dead && m_mastery.Special(BONK_SPECIAL_SOUL_OF_THE_FOREST) > 0.0f && dead->HasAuraType(SPELL_AURA_MOD_ROOT))
         PushTimedStack(m_forestUntil, m_totalMs, BONK_SOUL_OF_THE_FOREST_MS, BONK_SOUL_OF_THE_FOREST_STACKS);
     float const deepening = m_mastery.Special(BONK_SPECIAL_DEEPENING_SHADOWS);
-    if (deepening > 0.0f && m_shadowDanceUntilMs > m_totalMs)
+    if (deepening > 0.0f && m_player->HasAura(BONK_SPELL_SHADOW_DANCE_AURA))
         ReduceTimer(BONK_WEAPON_SHADOW_DANCE, int32(deepening * IN_MILLISECONDS));
     if (share <= 0.0f || !dead || !IsFrozen(dead))
         return;

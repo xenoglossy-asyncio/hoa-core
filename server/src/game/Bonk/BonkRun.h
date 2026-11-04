@@ -851,7 +851,6 @@ class BonkRun
         uint32 m_glyphKills = 0;
         uint32 m_glyphHasteUntilMs = 0;
         uint32 m_glyphMovedMs = 0;
-        uint32 m_nomadPenaltyUntilMs = 0;
         bool m_glyphStill = false;
         bool m_glyphLastStand = false;
         bool m_nomadPenalty = false;
@@ -2336,7 +2335,8 @@ class BonkRun
         float m_bleedHeal = 0.0f;
 
         static bool IsPeriodicHit();
-        bool IsEnraged() const { return m_enrageUntilMs > m_totalMs; }
+        bool IsEnraged() const;
+
         float GetEnrageHaste() const;
         void Enrage();
         void EnrageOnKill(uint32 killingSpell);
@@ -2731,7 +2731,6 @@ class BonkRun
         std::vector<uint32> m_sealOfLightTimes;
         std::vector<uint32> m_retributionTimes;
         uint32 m_paladinStrikes = 0;
-        uint32 m_divineShieldUntilMs = 0;
         bool m_divineShieldCharged = false;
         uint32 m_artOfWarReadyMs = 0;
         uint32 m_layOnHandsReadyMs = 0;
@@ -2876,9 +2875,6 @@ class BonkRun
         std::map<ObjectGuid, uint32> m_ambushReadyMs;
         std::vector<uint32> m_riposteTimes;
         uint32 m_roguePruneMs = 0;
-        uint32 m_bladeFlurryUntilMs = 0;
-        uint32 m_envenomUntilMs = 0;
-        uint32 m_shadowDanceUntilMs = 0;
         uint32 m_spreeBonus = 0;
         float m_smokeX = 0.0f;
         float m_smokeY = 0.0f;
@@ -2896,7 +2892,6 @@ class BonkRun
         uint32 m_shamanTickMs = 0;
         uint32 m_shamanTicks = 0;
         uint32 m_doomWindsReadyMs = 0;
-        uint32 m_doomWindsUntilMs = 0;
         uint32 m_lavaSurgeReadyMs = 0;
         std::vector<uint32> m_spiritPackUntil;
         std::vector<uint32> m_staticDischargeTimes;
@@ -3055,7 +3050,6 @@ class BonkRun
         std::vector<uint32> m_chainExecutionTimes;
         uint32 m_chainExecutionCast = 0;
         uint32 m_chainExecutionsLeft = 0;
-        uint32 m_enrageUntilMs = 0;
         bool m_struck = false;
         uint32 m_struckAtMs = 0;
         std::vector<std::pair<ObjectGuid, uint32>> m_criticalStrikes;

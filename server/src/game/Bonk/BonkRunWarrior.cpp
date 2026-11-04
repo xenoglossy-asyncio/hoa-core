@@ -191,6 +191,11 @@ bool BonkRun::IsPeriodicHit()
     return t_periodicHit;
 }
 
+bool BonkRun::IsEnraged() const
+{
+    return m_player->HasAura(BONK_SPELL_ENRAGE_LOOK);
+}
+
 float BonkRun::GetEnrageHaste() const
 {
     return IsEnraged() ? (BONK_ENRAGE_HASTE + m_mastery.enrageHaste) * m_mastery.EnrageBoost() : 0.0f;
@@ -201,11 +206,11 @@ void BonkRun::Enrage()
     if (m_state != STATE_RUNNING || !m_player->IsAlive())
         return;
     uint32 const length = BONK_ENRAGE_MS + uint32(m_mastery.enrageDuration * IN_MILLISECONDS);
-    if (IsEnraged() && m_enrageUntilMs - m_totalMs + BONK_ENRAGE_REFRESH_GAP_MS > length)
+    SpellAuraHolder* current = m_player->GetSpellAuraHolder(BONK_SPELL_ENRAGE_LOOK, m_player->GetObjectGuid());
+    if (current && current->GetAuraDuration() + int32(BONK_ENRAGE_REFRESH_GAP_MS) > int32(length))
         return;
 
-    m_enrageUntilMs = m_totalMs + length;
-    if (SpellAuraHolder* holder = m_player->GetSpellAuraHolder(BONK_SPELL_ENRAGE_LOOK, m_player->GetObjectGuid()))
+    if (SpellAuraHolder* holder = current)
     {
         holder->SetAuraMaxDuration(int32(length));
         holder->RefreshHolder();
@@ -436,7 +441,6 @@ void BonkRun::ResetWarriorState()
 {
     m_player->RemoveAurasDueToSpell(BONK_SPELL_ENRAGE_LOOK);
     RemoveHeroLooks();
-    m_enrageUntilMs = 0;
     m_struck = false;
     m_struckAtMs = 0;
     m_criticalStrikes.clear();

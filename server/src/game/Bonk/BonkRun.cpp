@@ -1238,6 +1238,7 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_HARVEST_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_GLYPH_HASTE_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_ICE_BLOCK_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_NOMAD_AURA);
 
     return m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error);
 }
@@ -4391,7 +4392,15 @@ uint32 BonkRun::MitigateDamage(uint32 damage)
     m_damageAbsorbed += unshielded - damage;
     damage = PreventDeath(GuardLowHealth(damage));
     if (damage && GetGlyph(BONK_GLYPH_NOMAD))
-        m_nomadPenaltyUntilMs = m_totalMs + uint32(GetGlyphValue(BONK_GLYPH_NOMAD, 2));
+    {
+        if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_NOMAD_AURA, ADD_AURA_NEGATIVE))
+        {
+            int32 const duration = int32(GetGlyphValue(BONK_GLYPH_NOMAD, 2));
+            holder->SetAuraDuration(duration);
+            holder->SetAuraMaxDuration(duration);
+            holder->UpdateAuraDuration();
+        }
+    }
     if (!m_spellShield)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_PLAYER_SHIELD);
     NoteHeroHit(unshielded, damage);
@@ -14555,6 +14564,7 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_HARVEST_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_GLYPH_HASTE_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_ICE_BLOCK_AURA);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_NOMAD_AURA);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     SetNecroticStacks(0);
     ClearBossPressure();

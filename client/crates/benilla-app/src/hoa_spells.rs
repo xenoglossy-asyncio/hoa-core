@@ -27,6 +27,7 @@ pub(crate) const DARK_PACT: u32 = 60016;
 pub(crate) const SOUL_HARVEST: u32 = 60017;
 pub(crate) const GLYPH_HASTE: u32 = 60018;
 pub(crate) const ICE_BLOCK: u32 = 60019;
+pub(crate) const NOMAD: u32 = 60020;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -210,6 +211,15 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Ice Block",
                 r"Interface\Icons\Spell_Frost_FrostNova",
                 "You are protected from damage for a short time.",
+            ),
+        ),
+        (
+            NOMAD,
+            display(
+                NOMAD,
+                "Nomad",
+                r"Interface\Icons\Spell_Nature_Slow",
+                "The Nomad glyph's drawback: less power for a short time.",
             ),
         ),
     ]
