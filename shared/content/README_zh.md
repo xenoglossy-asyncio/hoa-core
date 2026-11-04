@@ -54,6 +54,7 @@ stats: { strength: 12, stamina: 8 }
 - `tools/content/dump_cards.py` / `dump_tables.py` 从数据库一次性导入。
 - `tools/content/compile.py` 生成 `server/sql/content/*.sql`；`--check` 在 CI 里保证所有生成文件与源同步。
 - `tools/content/apply.py --maria <客户端路径> --database <世界库>` 按顺序应用这些文件；测试库就是这样接收源文件改动的。
+- 编译器还会生成 `hoa_content.sql` 和 `BonkContentHash.h`；服务端启动时对比数据库哈希和构建哈希，不一致就记一条错误日志。
 
 每张生成表都应用到测试库并与旧数据逐行对比，49 张全部一致。大型生成表 `bonk_hidden_creature`、`bonk_hidden_gameobject` 按项目决定保留在数据库里，不进入源文件，避免仓库难以审阅。
 

@@ -54,6 +54,7 @@ The design-content tables are now sourced here:
 - `tools/content/dump_cards.py` / `dump_tables.py` imported them once from the database.
 - `tools/content/compile.py` emits `server/sql/content/*.sql`; `--check` keeps every generated file in sync in CI.
 - `tools/content/apply.py --maria <client> --database <world db>` applies those files in order; this is how the test database picks up source changes.
+- The compiler also emits `hoa_content.sql` and `BonkContentHash.h`; the server compares the database hash with the build's hash at startup and logs an error when they differ.
 
 Every generated table was applied to the test database and compared row for row with the old data; all 49 matched. The large generated spawn tables (`bonk_hidden_creature`, `bonk_hidden_gameobject`) deliberately stay in the database, per the project decision, so the source tree stays reviewable.
 

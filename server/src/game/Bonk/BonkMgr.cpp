@@ -1,4 +1,5 @@
 #include "BonkMgr.h"
+#include "BonkContentHash.h"
 #include "BonkCoop.h"
 #include "BonkEnchant.h"
 #include "BonkFoundGear.h"
@@ -260,8 +261,30 @@ namespace
     }
 }
 
+void BonkMgr::CheckContentHash()
+{
+    std::unique_ptr<QueryResult> result(WorldDatabase.Query("SELECT `hash` FROM `hoa_content` WHERE `id` = 1"));
+    if (!result)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR,
+            "HoA content: table `hoa_content` is missing; apply server/sql/content/*.sql (expected %s)",
+            HOA_CONTENT_HASH);
+        return;
+    }
+    std::string const hash = result->Fetch()[0].GetCppString();
+    if (hash != HOA_CONTENT_HASH)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR,
+            "HoA content: database hash %s does not match this build's %s; apply server/sql/content/*.sql",
+            hash.c_str(), HOA_CONTENT_HASH);
+        return;
+    }
+    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> HoA content hash %s", HOA_CONTENT_HASH);
+}
+
 void BonkMgr::Load()
 {
+    CheckContentHash();
     LoadTiers();
     LoadArchetypes();
     LoadWaves();

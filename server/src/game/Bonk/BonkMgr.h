@@ -1351,6 +1351,7 @@ class BonkMgr
 {
     public:
         void Load();
+        void CheckContentHash();
 
         BonkTier const* GetTier(uint32 id) const;
         BonkTier const* FindTier(std::string const& keyOrId) const;
