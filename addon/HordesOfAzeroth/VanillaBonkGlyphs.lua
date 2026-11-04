@@ -506,6 +506,12 @@ handlers["glyphcount"] = function(f)
 end
 
 UI.ListenHoa({
+    HOA_COOP_NO_PAUSE = function(state)
+        frame.side = state.no_pause and true or false
+        if frame.open then
+            Fill()
+        end
+    end,
     HOA_RUN_START = function()
         taken = {}
         counts = {}
@@ -518,12 +524,5 @@ UI.ListenHoa({
         frame:Hide()
     end,
 })
-
-handlers["coopnopause"] = function(f)
-    frame.side = f[2] == "1"
-    if frame.open then
-        Fill()
-    end
-end
 
 UI.Listen(handlers)

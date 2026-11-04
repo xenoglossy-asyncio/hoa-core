@@ -439,17 +439,16 @@ local function HideNow()
     frame:Hide()
 end
 UI.ListenHoa({
+    HOA_COOP_NO_PAUSE = function(state)
+        frame.side = state.no_pause and true or false
+        if frame.open then
+            Open()
+        end
+    end,
     HOA_RUN_START = HideNow,
     HOA_RUN_END = function()
         frame.side = false
         HideNow()
     end,
 })
-handlers["coopnopause"] = function(f)
-    frame.side = f[2] == "1"
-    if frame.open then
-        Open()
-    end
-end
-
 UI.Listen(handlers)

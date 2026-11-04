@@ -1846,8 +1846,12 @@ void BonkRun::SendFullState() const
             levelName, !m_sandbox && IsFinale(), m_sandbox);
         m_player->GetSession()->SendPacket(&data);
     }
-    if (m_coopNoPause)
-        bonk->SendAddon("coopnopause~1");
+    if (m_coopNoPause && bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCoopNoPause(data, true);
+        m_player->GetSession()->SendPacket(&data);
+    }
     SendLoadout();
     SendState();
     SendRunXp();
@@ -2579,8 +2583,15 @@ void BonkRun::UpdateWaves()
         m_waveWarned = next;
         BonkWave const& coming = waves[next];
         if (coming.beat == BONK_BEAT_WALL || coming.beat == BONK_BEAT_MINIBOSS)
-            m_player->GetBonkPlayer()->SendAddon("beat~" + Localize(BONK_FIELD_WAVE_NAME, coming.startSecond, coming.name) + "~" + std::to_string(coming.beat) + "~" +
-                std::to_string(coming.startSecond > second ? coming.startSecond - second : 0));
+        {
+            if (m_player->GetBonkPlayer()->IsAddonReady())
+            {
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteWaveBeat(data, Localize(BONK_FIELD_WAVE_NAME, coming.startSecond, coming.name), coming.beat,
+                    coming.startSecond > second ? coming.startSecond - second : 0);
+                m_player->GetSession()->SendPacket(&data);
+            }
+        }
     }
 }
 
@@ -2612,7 +2623,14 @@ void BonkRun::EnterWave(size_t index)
     else if (elites)
         bonk->Notify(BONK_STRING_ELITES_ARE_CLOSING_IN);
     if (wave.beat == BONK_BEAT_WALL || wave.beat == BONK_BEAT_MINIBOSS)
-        bonk->SendAddon("beat~" + Localize(BONK_FIELD_WAVE_NAME, wave.startSecond, wave.name) + "~" + std::to_string(wave.beat) + "~0");
+    {
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteWaveBeat(data, Localize(BONK_FIELD_WAVE_NAME, wave.startSecond, wave.name), wave.beat, 0);
+            m_player->GetSession()->SendPacket(&data);
+        }
+    }
 }
 
 bool BonkRun::SpawnBosses()
@@ -4250,7 +4268,12 @@ void BonkRun::SetCoopPlayers(uint32 players, bool sharedPause, bool sharedXp)
     m_coopNoPause = !sharedPause;
     m_coopOwnXp = !sharedXp;
     ApplyPause(WantsPause());
-    m_player->GetBonkPlayer()->SendAddon(std::string("coopnopause~") + (m_coopNoPause ? "1" : "0"));
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCoopNoPause(data, m_coopNoPause);
+        m_player->GetSession()->SendPacket(&data);
+    }
     sLog.Player(m_player->GetSession(), LOG_LEVELUP, LOG_LVL_BASIC,
         "Bonk coop: %s runs with %u players (stage %u, %s, %s, class %u, %s, pause %s, xp %s)", m_player->GetName(), m_coopPlayers, m_stage,
         m_map.key.c_str(), m_tier.key.c_str(), uint32(m_player->GetClass()), IsCoopGuest() ? "guest" : "host",
@@ -11480,8 +11503,12 @@ void BonkRun::SendRunXp() const
 {
     uint32 const maxLevel = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
     uint32 const xp = m_player->GetLevel() >= maxLevel ? m_overcapXp : m_player->GetUInt32Value(PLAYER_XP);
-    m_player->GetBonkPlayer()->SendAddon("runxp~" + std::to_string(m_player->GetLevel() + m_overcapLevel) + "~" + std::to_string(xp) + "~" +
-        std::to_string(GetNextLevelXp()) + "~" + std::to_string(m_orbsSinceXpSent));
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunXp(data, m_player->GetLevel() + m_overcapLevel, xp, GetNextLevelXp(), m_orbsSinceXpSent);
+        m_player->GetSession()->SendPacket(&data);
+    }
     m_orbsSinceXpSent = 0;
 }
 
@@ -14494,7 +14521,11 @@ void BonkRun::ApplyPause(bool paused)
     }
 
     if (m_player->GetBonkPlayer()->IsAddonReady())
-        m_player->GetBonkPlayer()->SendAddon(std::string("paused~") + (paused ? "1" : "0"));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunPaused(data, paused);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::ResyncPause()
@@ -14543,7 +14574,11 @@ void BonkRun::ResyncPause()
     sLog.Player(m_player->GetSession(), LOG_LEVELUP, LOG_LVL_BASIC, "Bonk resync: %s at run minute %.2f (stage %u, %s, %s): %s, menu flag %s",
         m_player->GetName(), GetRunMinutes(), m_stage, m_map.key.c_str(), m_tier.key.c_str(), resent, menuWasOpen ? "set" : "clear");
     if (!m_paused && m_player->GetBonkPlayer()->IsAddonReady())
-        m_player->GetBonkPlayer()->SendAddon("paused~0");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunPaused(data, false);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::HoldPet(Creature* pet, bool hold, bool planted)

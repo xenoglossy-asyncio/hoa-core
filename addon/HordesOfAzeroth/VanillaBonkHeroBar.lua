@@ -1032,17 +1032,14 @@ local function QueueXpPickupSounds(orbs)
     xpSounds.queued = min(xpSounds.queued + orbs, XP_SOUND_MAX_QUEUED)
 end
 
-handlers["runxp"] = function(f)
-    run.xp = { level = tonumber(f[2] or "") or 1, xp = tonumber(f[3] or "") or 0, next = tonumber(f[4] or "") or 0 }
-    if inRun then
-        QueueXpPickupSounds(tonumber(f[5] or "") or 0)
-    end
-    if inRun then
-        RefreshXp()
-    end
-end
-
 UI.ListenHoa({
+    HOA_RUN_XP = function(xp)
+        run.xp = { level = tonumber(xp.level) or 1, xp = tonumber(xp.xp) or 0, next = tonumber(xp.next) or 0 }
+        if inRun then
+            QueueXpPickupSounds(tonumber(xp.orbs) or 0)
+            RefreshXp()
+        end
+    end,
     HOA_RUN_START = function()
         run.info = {}
         run.stats = {}

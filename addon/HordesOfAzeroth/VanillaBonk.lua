@@ -2820,11 +2820,10 @@ handlers["leyofferclose"] = function()
     CloseOffer()
 end
 
-handlers["coopnopause"] = function(f)
-    VB.sideOffers = f[2] == "1"
-end
-
 UI.ListenHoa({
+    HOA_COOP_NO_PAUSE = function(state)
+        VB.sideOffers = state.no_pause and true or false
+    end,
     HOA_RUN_END = function(ending)
         VB.inRun = false
         VB.sideOffers = false

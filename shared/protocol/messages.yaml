@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 4
+version: 5
 messages:
   - name: aura_value
     id: 0x0002
@@ -104,3 +104,28 @@ messages:
       - { name: best_before, type: u32 }
       - { name: level_name, type: string }
       - { name: finale_seconds, type: u32 }
+  - name: run_paused
+    id: 0x0013
+    direction: server_to_client
+    fields:
+      - { name: paused, type: bool }
+  - name: coop_no_pause
+    id: 0x0014
+    direction: server_to_client
+    fields:
+      - { name: no_pause, type: bool }
+  - name: run_xp
+    id: 0x0015
+    direction: server_to_client
+    fields:
+      - { name: level, type: u32 }
+      - { name: xp, type: u32 }
+      - { name: next, type: u32 }
+      - { name: orbs, type: u32 }
+  - name: wave_beat
+    id: 0x0016
+    direction: server_to_client
+    fields:
+      - { name: name, type: string }
+      - { name: beat, type: u32 }
+      - { name: seconds, type: u32 }

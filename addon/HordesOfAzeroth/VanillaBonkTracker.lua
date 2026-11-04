@@ -215,23 +215,22 @@ end
 
 local handlers = {}
 
-handlers["beat"] = function(f)
-    local seconds = tonumber(f[4] or "") or 0
-    if seconds <= 0 then
-        callout.at = nil
-        callout.want = 0
-        return
-    end
-    callout.name = f[2] ~= "" and f[2] or L["hoa.addon.mini_boss"]
-    callout.at = (run.elapsed or 0) + seconds
-    callout.icon:SetTexture(UI.ICON_PATH .. (BEAT_ICONS[tonumber(f[3] or "")] or BEAT_ICONS[BEAT_WALL]))
-    CalloutText()
-    callout.want = 1
-    callout:Show()
-    PlaySound("RaidWarning")
-end
-
 UI.ListenHoa({
+    HOA_WAVE_BEAT = function(beat)
+        local seconds = tonumber(beat.seconds) or 0
+        if seconds <= 0 then
+            callout.at = nil
+            callout.want = 0
+            return
+        end
+        callout.name = beat.name ~= "" and beat.name or L["hoa.addon.mini_boss"]
+        callout.at = (run.elapsed or 0) + seconds
+        callout.icon:SetTexture(UI.ICON_PATH .. (BEAT_ICONS[tonumber(beat.beat)] or BEAT_ICONS[BEAT_WALL]))
+        CalloutText()
+        callout.want = 1
+        callout:Show()
+        PlaySound("RaidWarning")
+    end,
     HOA_RUN_START = function(start)
         run.map = start.map_name or ""
         run.difficulty = start.difficulty or ""

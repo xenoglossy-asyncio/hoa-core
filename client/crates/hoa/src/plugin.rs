@@ -25,6 +25,10 @@ const HOA_AURA_PERCENT: &str = "HOA_AURA_PERCENT";
 const HOA_RUN_STATE: &str = "HOA_RUN_STATE";
 const HOA_RUN_START: &str = "HOA_RUN_START";
 const HOA_RUN_END: &str = "HOA_RUN_END";
+const HOA_RUN_PAUSED: &str = "HOA_RUN_PAUSED";
+const HOA_COOP_NO_PAUSE: &str = "HOA_COOP_NO_PAUSE";
+const HOA_RUN_XP: &str = "HOA_RUN_XP";
+const HOA_WAVE_BEAT: &str = "HOA_WAVE_BEAT";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -101,6 +105,39 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::RunPaused(paused) => {
+                    script.fire_event(
+                        HOA_RUN_PAUSED,
+                        vec![lua_table(vec![("paused", ScriptValue::Bool(paused.paused))])],
+                    );
+                }
+                HoaMessage::CoopNoPause(no_pause) => {
+                    script.fire_event(
+                        HOA_COOP_NO_PAUSE,
+                        vec![lua_table(vec![("no_pause", ScriptValue::Bool(no_pause.no_pause))])],
+                    );
+                }
+                HoaMessage::RunXp(xp) => {
+                    script.fire_event(
+                        HOA_RUN_XP,
+                        vec![lua_table(vec![
+                            ("level", ScriptValue::Int(i64::from(xp.level))),
+                            ("xp", ScriptValue::Int(i64::from(xp.xp))),
+                            ("next", ScriptValue::Int(i64::from(xp.next))),
+                            ("orbs", ScriptValue::Int(i64::from(xp.orbs))),
+                        ])],
+                    );
+                }
+                HoaMessage::WaveBeat(beat) => {
+                    script.fire_event(
+                        HOA_WAVE_BEAT,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(beat.name)),
+                            ("beat", ScriptValue::Int(i64::from(beat.beat))),
+                            ("seconds", ScriptValue::Int(i64::from(beat.seconds))),
+                        ])],
+                    );
+                }
                 HoaMessage::RunStart(start) => {
                     script.fire_event(
                         HOA_RUN_START,
@@ -281,6 +318,10 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_RUN_STATE);
         add_in_game_event(HOA_RUN_START);
         add_in_game_event(HOA_RUN_END);
+        add_in_game_event(HOA_RUN_PAUSED);
+        add_in_game_event(HOA_COOP_NO_PAUSE);
+        add_in_game_event(HOA_RUN_XP);
+        add_in_game_event(HOA_WAVE_BEAT);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
@@ -495,5 +536,39 @@ mod tests {
         assert!(end.victory);
         assert_eq!(end.level_name, "Hero");
         assert_eq!(end.finale_seconds, 30);
+    }
+
+    #[test]
+    fn the_run_xp_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        body.extend_from_slice(&61u32.to_le_bytes());
+        body.extend_from_slice(&1000u32.to_le_bytes());
+        body.extend_from_slice(&2000u32.to_le_bytes());
+        body.extend_from_slice(&3u32.to_le_bytes());
+
+        let Some(HoaMessage::RunXp(xp)) = protocol_generated::decode(protocol_generated::MSG_RUN_XP, &body) else {
+            panic!("run xp did not decode");
+        };
+        assert_eq!(xp.level, 61);
+        assert_eq!(xp.xp, 1000);
+        assert_eq!(xp.next, 2000);
+        assert_eq!(xp.orbs, 3);
+    }
+
+    #[test]
+    fn the_wave_beat_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        let name = "Boss";
+        body.extend_from_slice(&(name.len() as u16).to_le_bytes());
+        body.extend_from_slice(name.as_bytes());
+        body.extend_from_slice(&2u32.to_le_bytes());
+        body.extend_from_slice(&15u32.to_le_bytes());
+
+        let Some(HoaMessage::WaveBeat(beat)) = protocol_generated::decode(protocol_generated::MSG_WAVE_BEAT, &body) else {
+            panic!("wave beat did not decode");
+        };
+        assert_eq!(beat.name, "Boss");
+        assert_eq!(beat.beat, 2);
+        assert_eq!(beat.seconds, 15);
     }
 }

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 4
+#define HOA_PROTOCOL_VERSION 5
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -18,6 +18,10 @@
 #define HOA_MSG_RUN_STATE 0x0010
 #define HOA_MSG_RUN_START 0x0011
 #define HOA_MSG_RUN_END 0x0012
+#define HOA_MSG_RUN_PAUSED 0x0013
+#define HOA_MSG_COOP_NO_PAUSE 0x0014
+#define HOA_MSG_RUN_XP 0x0015
+#define HOA_MSG_WAVE_BEAT 0x0016
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -135,4 +139,33 @@ inline void HoAWriteRunEnd(WorldPacket& packet, bool const& wentHome, uint32 con
     packet << uint32(bestBefore);
     HoAWriteString(packet, levelName);
     packet << uint32(finaleSeconds);
+}
+
+inline void HoAWriteRunPaused(WorldPacket& packet, bool const& paused)
+{
+    packet << uint16(HOA_MSG_RUN_PAUSED);
+    packet << bool(paused);
+}
+
+inline void HoAWriteCoopNoPause(WorldPacket& packet, bool const& noPause)
+{
+    packet << uint16(HOA_MSG_COOP_NO_PAUSE);
+    packet << bool(noPause);
+}
+
+inline void HoAWriteRunXp(WorldPacket& packet, uint32 const& level, uint32 const& xp, uint32 const& next, uint32 const& orbs)
+{
+    packet << uint16(HOA_MSG_RUN_XP);
+    packet << uint32(level);
+    packet << uint32(xp);
+    packet << uint32(next);
+    packet << uint32(orbs);
+}
+
+inline void HoAWriteWaveBeat(WorldPacket& packet, std::string const& name, uint32 const& beat, uint32 const& seconds)
+{
+    packet << uint16(HOA_MSG_WAVE_BEAT);
+    HoAWriteString(packet, name);
+    packet << uint32(beat);
+    packet << uint32(seconds);
 }
