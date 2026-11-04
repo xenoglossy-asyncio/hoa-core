@@ -106,9 +106,9 @@ spell:
 
 ### 7.1 暗月卡牌：30 秒循环的爆发加成
 
-以 Zandalarian Hero Charm 为例：每 30 秒获得 25% 能量，持续 10 秒（`20261027710000_world.sql:46-47`）。
+以 Zandalarian Hero Charm 为例：每 30 秒获得 25% 力量，持续 10 秒（`20261027710000_world.sql:46-47`）。
 
-- 内容定义：`hoa.aura.darkmoon.zandalarian_surge`，`duration 10s`，`mod_damage_percent 25`，`internal_cooldown 30s`。
+- 内容定义：`hoa.aura.darkmoon.zandalarian_surge`，`duration 10s`，`hoa_power_percent 25`，`internal_cooldown 30s`。
 - 服务端：战斗/计时钩子触发 → `Apply` → 真实 aura 生效；伤害计算由 VMaNGOS 的 aura 系统完成。删除 `m_cardSurgeUntilMs`、`GetCardPower` 里的手工加成和每秒 `cardnow~`。
 - 客户端：buff 栏出现图标和剩余时间；提示文本来自内容包。
 - 插件：不再自己计时/拼 tooltip；最多在自定义 UI 中读取该 aura 的剩余时间。
