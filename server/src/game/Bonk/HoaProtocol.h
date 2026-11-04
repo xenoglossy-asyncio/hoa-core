@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 17
+#define HOA_PROTOCOL_VERSION 18
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -99,6 +99,12 @@
 #define HOA_MSG_LEASH 0x0061
 #define HOA_MSG_COOP_READY 0x0062
 #define HOA_MSG_COOP_READY_END 0x0063
+#define HOA_MSG_STARTER 0x0064
+#define HOA_MSG_STARTER_END 0x0065
+#define HOA_MSG_REACH_RING 0x0066
+#define HOA_MSG_DRUID_FORM 0x0067
+#define HOA_MSG_GREED 0x0068
+#define HOA_MSG_HEARTH 0x0069
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -828,4 +834,50 @@ inline void HoAWriteCoopReady(WorldPacket& packet, std::string const& text, uint
 inline void HoAWriteCoopReadyEnd(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_COOP_READY_END);
+}
+
+inline void HoAWriteStarter(WorldPacket& packet, uint32 const& id, std::string const& icon, std::string const& name, bool const& unlocked, bool const& chosen, std::string const& hint, std::string const& description)
+{
+    packet << uint16(HOA_MSG_STARTER);
+    packet << uint32(id);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, name);
+    packet << bool(unlocked);
+    packet << bool(chosen);
+    HoAWriteString(packet, hint);
+    HoAWriteString(packet, description);
+}
+
+inline void HoAWriteStarterEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_STARTER_END);
+}
+
+inline void HoAWriteReachRing(WorldPacket& packet, uint32 const& spellId, uint32 const& slot)
+{
+    packet << uint16(HOA_MSG_REACH_RING);
+    packet << uint32(spellId);
+    packet << uint32(slot);
+}
+
+inline void HoAWriteDruidForm(WorldPacket& packet, std::string const& form)
+{
+    packet << uint16(HOA_MSG_DRUID_FORM);
+    HoAWriteString(packet, form);
+}
+
+inline void HoAWriteGreed(WorldPacket& packet, uint32 const& stacks, uint32 const& rewardPercent, uint32 const& mobPercent)
+{
+    packet << uint16(HOA_MSG_GREED);
+    packet << uint32(stacks);
+    packet << uint32(rewardPercent);
+    packet << uint32(mobPercent);
+}
+
+inline void HoAWriteHearth(WorldPacket& packet, int32 const& percent, bool const& inside, uint32 const& seconds)
+{
+    packet << uint16(HOA_MSG_HEARTH);
+    packet << int32(percent);
+    packet << bool(inside);
+    packet << uint32(seconds);
 }

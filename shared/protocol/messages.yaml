@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 17
+version: 18
 messages:
   - name: aura_value
     id: 0x0002
@@ -635,3 +635,43 @@ messages:
     id: 0x0063
     direction: server_to_client
     fields: []
+  - name: starter
+    id: 0x0064
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: icon, type: string }
+      - { name: name, type: string }
+      - { name: unlocked, type: bool }
+      - { name: chosen, type: bool }
+      - { name: hint, type: string }
+      - { name: description, type: string }
+  - name: starter_end
+    id: 0x0065
+    direction: server_to_client
+    fields: []
+  - name: reach_ring
+    id: 0x0066
+    direction: server_to_client
+    fields:
+      - { name: spell_id, type: u32 }
+      - { name: slot, type: u32 }
+  - name: druid_form
+    id: 0x0067
+    direction: server_to_client
+    fields:
+      - { name: form, type: string }
+  - name: greed
+    id: 0x0068
+    direction: server_to_client
+    fields:
+      - { name: stacks, type: u32 }
+      - { name: reward_percent, type: u32 }
+      - { name: mob_percent, type: u32 }
+  - name: hearth
+    id: 0x0069
+    direction: server_to_client
+    fields:
+      - { name: percent, type: i32 }
+      - { name: inside, type: bool }
+      - { name: seconds, type: u32 }

@@ -216,6 +216,9 @@ end
 local handlers = {}
 
 UI.ListenHoa({
+    HOA_GREED = function(greed)
+        handlers["greed"]({ false, greed.stacks, greed.reward_percent, greed.mob_percent })
+    end,
     HOA_COOP_DOWN = function(down)
         handlers["coopdown"]({ false, down.pool, down.cap, down.list })
     end,

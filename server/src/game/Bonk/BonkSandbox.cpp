@@ -1197,7 +1197,12 @@ void BonkRun::ClearSandboxEnemies()
     m_dotStacks.clear();
     m_crowdControl.clear();
     SetNecroticStacks(0);
-    m_player->GetBonkPlayer()->SendAddon("mobclear");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMobClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::HealInSandbox()

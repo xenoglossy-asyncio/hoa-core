@@ -106,6 +106,12 @@ const HOA_COOP_DOWN: &str = "HOA_COOP_DOWN";
 const HOA_LEASH: &str = "HOA_LEASH";
 const HOA_COOP_READY: &str = "HOA_COOP_READY";
 const HOA_COOP_READY_END: &str = "HOA_COOP_READY_END";
+const HOA_STARTER: &str = "HOA_STARTER";
+const HOA_STARTER_END: &str = "HOA_STARTER_END";
+const HOA_REACH_RING: &str = "HOA_REACH_RING";
+const HOA_DRUID_FORM: &str = "HOA_DRUID_FORM";
+const HOA_GREED: &str = "HOA_GREED";
+const HOA_HEARTH: &str = "HOA_HEARTH";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -182,6 +188,58 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Starter(starter) => {
+                    script.fire_event(
+                        HOA_STARTER,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(starter.id))),
+                            ("icon", ScriptValue::Str(starter.icon)),
+                            ("name", ScriptValue::Str(starter.name)),
+                            ("unlocked", ScriptValue::Bool(starter.unlocked)),
+                            ("chosen", ScriptValue::Bool(starter.chosen)),
+                            ("hint", ScriptValue::Str(starter.hint)),
+                            ("description", ScriptValue::Str(starter.description)),
+                        ])],
+                    );
+                }
+                HoaMessage::StarterEnd(_) => {
+                    script.fire_event(HOA_STARTER_END, Vec::new());
+                }
+                HoaMessage::ReachRing(ring) => {
+                    script.fire_event(
+                        HOA_REACH_RING,
+                        vec![lua_table(vec![
+                            ("spell_id", ScriptValue::Int(i64::from(ring.spell_id))),
+                            ("slot", ScriptValue::Int(i64::from(ring.slot))),
+                        ])],
+                    );
+                }
+                HoaMessage::DruidForm(form) => {
+                    script.fire_event(
+                        HOA_DRUID_FORM,
+                        vec![lua_table(vec![("form", ScriptValue::Str(form.form))])],
+                    );
+                }
+                HoaMessage::Greed(greed) => {
+                    script.fire_event(
+                        HOA_GREED,
+                        vec![lua_table(vec![
+                            ("stacks", ScriptValue::Int(i64::from(greed.stacks))),
+                            ("reward_percent", ScriptValue::Int(i64::from(greed.reward_percent))),
+                            ("mob_percent", ScriptValue::Int(i64::from(greed.mob_percent))),
+                        ])],
+                    );
+                }
+                HoaMessage::Hearth(hearth) => {
+                    script.fire_event(
+                        HOA_HEARTH,
+                        vec![lua_table(vec![
+                            ("percent", ScriptValue::Int(i64::from(hearth.percent))),
+                            ("inside", ScriptValue::Bool(hearth.inside)),
+                            ("seconds", ScriptValue::Int(i64::from(hearth.seconds))),
+                        ])],
+                    );
+                }
                 HoaMessage::CoopWait(wait) => {
                     script.fire_event(
                         HOA_COOP_WAIT,
@@ -1075,6 +1133,12 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_LEASH);
         add_in_game_event(HOA_COOP_READY);
         add_in_game_event(HOA_COOP_READY_END);
+        add_in_game_event(HOA_STARTER);
+        add_in_game_event(HOA_STARTER_END);
+        add_in_game_event(HOA_REACH_RING);
+        add_in_game_event(HOA_DRUID_FORM);
+        add_in_game_event(HOA_GREED);
+        add_in_game_event(HOA_HEARTH);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

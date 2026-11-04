@@ -2821,6 +2821,15 @@ handlers["leyofferclose"] = function()
 end
 
 UI.ListenHoa({
+    HOA_STARTER = function(starter)
+        handlers["starter"]({
+            false, tostring(starter.id), starter.icon, starter.name, starter.unlocked and "1" or "0",
+            starter.chosen and "1" or "0", starter.hint, starter.description,
+        })
+    end,
+    HOA_STARTER_END = function()
+        handlers["starterend"]()
+    end,
     HOA_NPC_NAME = function(name)
         handlers["npcname"]({ false, name.name, name.npc_name })
     end,

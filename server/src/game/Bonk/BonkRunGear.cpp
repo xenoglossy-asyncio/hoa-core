@@ -1072,8 +1072,12 @@ void BonkRun::SendHearthBar(bool inside)
     m_hearthSendMs = 0;
     m_hearthShown = true;
     m_hearthInside = inside;
-    m_player->GetBonkPlayer()->SendAddon("hearth~" + std::to_string(std::min(m_hearthMs, needed) * 100 / needed) + "~" + (inside ? "1" : "0") + "~" +
-        std::to_string((left + IN_MILLISECONDS - 1) / IN_MILLISECONDS));
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteHearth(data, std::min(m_hearthMs, needed) * 100 / needed, inside, (left + IN_MILLISECONDS - 1) / IN_MILLISECONDS);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::IsHeroInHearthRing() const
@@ -1084,8 +1088,12 @@ bool BonkRun::IsHeroInHearthRing() const
 
 void BonkRun::EndHearth()
 {
-    if (m_hearthShown)
-        m_player->GetBonkPlayer()->SendAddon("hearth~-1");
+    if (m_hearthShown && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteHearth(data, -1, false, 0);
+        m_player->GetSession()->SendPacket(&data);
+    }
     m_hearthShown = false;
     m_hearthActive = false;
     SendBonkUnmark(m_player, BONK_HEARTH_MARK);

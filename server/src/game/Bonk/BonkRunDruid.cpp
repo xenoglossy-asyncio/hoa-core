@@ -3,11 +3,13 @@
 #include "BonkPlayer.h"
 #include "BonkRunStats.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Utilities/Random.h"
+#include "WorldSession.h"
 
 #include <algorithm>
 #include <set>
@@ -248,8 +250,12 @@ void BonkRun::ResetDruidState()
     m_tranquilityPulse = 0;
     m_formCycleMs = m_formCycleAtMs = 0;
     ResetDruidEvolutions();
-    if (IsDruidHero())
-        m_player->GetBonkPlayer()->SendAddon("druidform~caster");
+    if (IsDruidHero() && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteDruidForm(data, "caster");
+        m_player->GetSession()->SendPacket(&data);
+    }
     if (IsDruidHero() && m_player->GetDisplayId() != m_player->GetNativeDisplayId())
         m_player->SetDisplayId(m_player->GetNativeDisplayId());
 }

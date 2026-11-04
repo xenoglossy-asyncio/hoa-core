@@ -4,6 +4,7 @@
 #include "BonkMgr.h"
 #include "BonkQuests.h"
 #include "Database/DatabaseEnv.h"
+#include "HoaProtocol.h"
 #include "Player.h"
 #include "WorldSession.h"
 
@@ -113,13 +114,18 @@ bool BonkPlayer::ChooseStarter(uint32 weaponId, std::string& error)
 
 void BonkPlayer::SendStarters() const
 {
+    if (!m_addonReady)
+        return;
     BonkWeapon const* chosen = GetStarterWeapon();
     for (StarterOption const& option : GetStarterOptions())
     {
         BonkWeapon const& weapon = *option.weapon;
-        SendAddon("starter~" + std::to_string(weapon.id) + "~" + weapon.icon + "~" + Localize(BONK_FIELD_WEAPON_NAME, weapon.id, weapon.name) + "~" +
-            (option.unlocked ? "1" : "0") + "~" + (&weapon == chosen ? "1" : "0") + "~" + option.hint + "~" +
-            Localize(BONK_FIELD_WEAPON_DESCRIPTION, weapon.id, weapon.description));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteStarter(data, weapon.id, weapon.icon, Localize(BONK_FIELD_WEAPON_NAME, weapon.id, weapon.name), option.unlocked,
+            &weapon == chosen, option.hint, Localize(BONK_FIELD_WEAPON_DESCRIPTION, weapon.id, weapon.description));
+        m_player->GetSession()->SendPacket(&data);
     }
-    SendAddon("starterend");
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteStarterEnd(end);
+    m_player->GetSession()->SendPacket(&end);
 }

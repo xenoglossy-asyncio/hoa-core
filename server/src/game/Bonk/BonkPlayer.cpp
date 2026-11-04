@@ -2292,7 +2292,11 @@ void BonkPlayer::RefreshReachRing()
 void BonkPlayer::SendReachRingSlot()
 {
     m_reachRingSlotSent = m_run ? m_run->GetReachRingSlot(m_reachRingRoot) : 0;
-    SendAddon("reachring~" + std::to_string(m_reachRingRoot) + "~" + std::to_string(m_reachRingSlotSent));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteReachRing(data, m_reachRingRoot, m_reachRingSlotSent);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 bool BonkPlayer::IsTierCleared(BonkTier const& tier) const

@@ -127,6 +127,12 @@ driver:SetScript("OnUpdate", function()
     end
 end)
 
+UI.ListenHoa({
+    HOA_DRUID_FORM = function(form)
+        current = FORM_ICONS[form.form] and form.form or nil
+    end,
+})
+
 UI.Listen({
     druidform = function(f)
         current = FORM_ICONS[f[2]] and f[2] or nil

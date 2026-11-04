@@ -480,8 +480,11 @@ float BonkRun::GetGreedCrowdPercent() const
 
 void BonkRun::SendGreed() const
 {
-    m_player->GetBonkPlayer()->SendAddon("greed~" + std::to_string(m_greedStacks) + "~" + std::to_string(GetGreedRewardPercent()) + "~" +
-        std::to_string(uint32(GetGreedCrowdPercent() + 0.5f)));
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteGreed(data, m_greedStacks, GetGreedRewardPercent(), uint32(GetGreedCrowdPercent() + 0.5f));
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkRun::UseShrine(GameObject* go)

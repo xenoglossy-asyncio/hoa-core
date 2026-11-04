@@ -1033,6 +1033,9 @@ local function QueueXpPickupSounds(orbs)
 end
 
 UI.ListenHoa({
+    HOA_REACH_RING = function(ring)
+        handlers["reachring"]({ false, ring.spell_id, ring.slot })
+    end,
     HOA_MASTERY_STATE = function(mastery)
         handlers["mastery"]({
             false, mastery.class_name, mastery.level, mastery.xp, mastery.next, mastery.max_level, mastery.unspent,
