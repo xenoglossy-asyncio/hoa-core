@@ -4445,6 +4445,7 @@ void BonkRun::SetNecroticStacks(uint32 stacks)
     else if (!stacks)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_NECROTIC);
     m_player->GetBonkPlayer()->SendAddon("necroticpct~" + Percent(stacks * BONK_NECROTIC_PER_STACK));
+    m_player->GetBonkPlayer()->SendAuraPercent(BONK_SPELL_NECROTIC, stacks * BONK_NECROTIC_PER_STACK);
 }
 
 void BonkRun::UpdateNecrotic(uint32 diff)
@@ -4674,6 +4675,7 @@ void BonkRun::SetBossWoundStacks(uint32 stacks)
     else if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_WOUNDS, ADD_AURA_NEGATIVE))
         holder->SetStackAmount(stacks);
     m_player->GetBonkPlayer()->SendAddon("woundspct~" + Percent(stacks * m_bossWoundCut));
+    m_player->GetBonkPlayer()->SendAuraPercent(BONK_SPELL_WOUNDS, stacks * m_bossWoundCut);
 }
 
 void BonkRun::UpdateBossWounds(uint32)

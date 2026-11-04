@@ -2337,6 +2337,7 @@ void BonkPlayer::SendDetermination() const
     RefreshDeterminationAura();
     uint8 const stacks = GetDetermination();
     SendAddon("determinationpct~" + FormatStat(stacks * BONK_DETERMINATION_PER_STACK));
+    SendAuraPercent(BONK_SPELL_DETERMINATION, stacks * BONK_DETERMINATION_PER_STACK);
 }
 
 void BonkPlayer::RefreshDeterminationAura() const
@@ -3047,6 +3048,15 @@ void BonkPlayer::SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) co
         return;
     WorldPacket data(SMSG_HOA_MESSAGE);
     HoAWriteAuraValue(data, spellId, value, maxValue);
+    m_player->GetSession()->SendPacket(&data);
+}
+
+void BonkPlayer::SendAuraPercent(uint32 spellId, float percent) const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteAuraPercent(data, spellId, percent);
     m_player->GetSession()->SendPacket(&data);
 }
 

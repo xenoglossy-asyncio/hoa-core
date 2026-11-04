@@ -10,6 +10,7 @@
 #define HOA_PROTOCOL_VERSION 1
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
+#define HOA_MSG_AURA_PERCENT 0x0004
 #define HOA_MSG_HELLO 0x0001
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
@@ -33,6 +34,13 @@ inline void HoAWriteDash(WorldPacket& packet, uint8 const& maxCharges, uint32 co
     packet << uint32(rechargeMs);
     packet << uint32(cooldownMs);
     packet << bool(blink);
+}
+
+inline void HoAWriteAuraPercent(WorldPacket& packet, uint32 const& spellId, float const& percent)
+{
+    packet << uint16(HOA_MSG_AURA_PERCENT);
+    packet << uint32(spellId);
+    packet << float(percent);
 }
 
 inline void HoAWriteHello(WorldPacket& packet, uint16 const& protocolVersion, std::string const& contentHash, std::string const& language)

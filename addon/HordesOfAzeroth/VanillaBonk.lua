@@ -3664,6 +3664,15 @@ handlers["necroticpct"] = function(f)
     RefreshNecrotic()
 end
 
+UI.ListenHoa({
+    HOA_AURA_PERCENT = function(spellId, percent)
+        if tonumber(spellId) == 18951 then
+            necroticPercent = format("%g%%", tonumber(percent) or 0)
+            RefreshNecrotic()
+        end
+    end,
+})
+
 do
     local WOUNDS_SPELL = 60003
     local woundsPercent = ""
@@ -3693,6 +3702,15 @@ do
         woundsPercent = f[2] or ""
         RefreshWounds()
     end
+
+    UI.ListenHoa({
+        HOA_AURA_PERCENT = function(spellId, percent)
+            if tonumber(spellId) == 60003 then
+                woundsPercent = format("%g%%", tonumber(percent) or 0)
+                RefreshWounds()
+            end
+        end,
+    })
 end
 
 local shieldEvents = CreateFrame("Frame")

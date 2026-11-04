@@ -6,6 +6,7 @@ pub const CONTENT_HASH: &str = "sha256:f6fc37b622d3ad4fd7c6dd6c7914040b7f93c7d67
 
 pub const MSG_AURA_VALUE: u16 = 0x0002;
 pub const MSG_DASH: u16 = 0x0003;
+pub const MSG_AURA_PERCENT: u16 = 0x0004;
 pub const MSG_HELLO: u16 = 0x0001;
 
 pub struct AuraValue {
@@ -21,6 +22,11 @@ pub struct Dash {
     pub blink: bool,
 }
 
+pub struct AuraPercent {
+    pub spell_id: u32,
+    pub percent: f32,
+}
+
 pub struct Hello {
     pub protocol_version: u16,
     pub content_hash: String,
@@ -30,6 +36,7 @@ pub struct Hello {
 pub enum HoaMessage {
     AuraValue(AuraValue),
     Dash(Dash),
+    AuraPercent(AuraPercent),
     Hello(Hello),
 }
 
@@ -37,6 +44,7 @@ pub fn decode(id: u16, body: &[u8]) -> Option<HoaMessage> {
     match id {
         MSG_AURA_VALUE => decode_aura_value(body).map(HoaMessage::AuraValue),
         MSG_DASH => decode_dash(body).map(HoaMessage::Dash),
+        MSG_AURA_PERCENT => decode_aura_percent(body).map(HoaMessage::AuraPercent),
         MSG_HELLO => decode_hello(body).map(HoaMessage::Hello),
         _ => None,
     }
@@ -74,6 +82,19 @@ fn decode_dash(body: &[u8]) -> Option<Dash> {
     })
 }
 
+fn decode_aura_percent(body: &[u8]) -> Option<AuraPercent> {
+    let mut body = body;
+    let spell_id = read_u32(&mut body)?;
+    let percent = read_f32(&mut body)?;
+    if !body.is_empty() {
+        return None;
+    }
+    Some(AuraPercent {
+        spell_id,
+        percent,
+    })
+}
+
 fn decode_hello(body: &[u8]) -> Option<Hello> {
     let mut body = body;
     let protocol_version = read_u16(&mut body)?;
@@ -105,6 +126,12 @@ fn read_u32(body: &mut &[u8]) -> Option<u32> {
     let bytes: [u8; 4] = body.get(..4)?.try_into().ok()?;
     *body = &body[4..];
     Some(u32::from_le_bytes(bytes))
+}
+
+fn read_f32(body: &mut &[u8]) -> Option<f32> {
+    let bytes: [u8; 4] = body.get(..4)?.try_into().ok()?;
+    *body = &body[4..];
+    Some(f32::from_le_bytes(bytes))
 }
 
 fn read_bool(body: &mut &[u8]) -> Option<bool> {

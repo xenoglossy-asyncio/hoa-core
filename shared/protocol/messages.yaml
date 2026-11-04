@@ -17,6 +17,12 @@ messages:
       - { name: recharge_ms, type: u32 }
       - { name: cooldown_ms, type: u32 }
       - { name: blink, type: bool }
+  - name: aura_percent
+    id: 0x0004
+    direction: server_to_client
+    fields:
+      - { name: spell_id, type: u32 }
+      - { name: percent, type: f32 }
   - name: hello
     id: 0x0001
     direction: server_to_client

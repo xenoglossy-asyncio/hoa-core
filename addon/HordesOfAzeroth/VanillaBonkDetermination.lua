@@ -58,3 +58,12 @@ handlers["determinationpct"] = function(f)
 end
 
 UI.Listen(handlers)
+
+UI.ListenHoa({
+    HOA_AURA_PERCENT = function(spellId, percent)
+        if tonumber(spellId) == DETERMINATION_SPELL then
+            state.percent = format("%g%%", tonumber(percent) or 0)
+            Refresh()
+        end
+    end,
+})
