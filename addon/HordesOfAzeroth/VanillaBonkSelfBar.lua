@@ -190,12 +190,6 @@ driver:SetScript("OnEvent", function()
     end
 end)
 
-UI.Listen({
-    shield = function(f)
-        shield = tonumber(f[2]) or 0
-    end,
-})
-
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
         if tonumber(spellId) == HOA_AURA_IDS.shield then

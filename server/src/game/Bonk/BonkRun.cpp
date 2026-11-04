@@ -4445,7 +4445,6 @@ void BonkRun::SetNecroticStacks(uint32 stacks)
     }
     else if (!stacks)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_NECROTIC);
-    m_player->GetBonkPlayer()->SendAddon("necroticpct~" + Percent(stacks * BONK_NECROTIC_PER_STACK));
     m_player->GetBonkPlayer()->SendAuraPercent(BONK_SPELL_NECROTIC, stacks * BONK_NECROTIC_PER_STACK);
     if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_NECROTIC))
         m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_NECROTIC,
@@ -4678,7 +4677,6 @@ void BonkRun::SetBossWoundStacks(uint32 stacks)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_WOUNDS);
     else if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_WOUNDS, ADD_AURA_NEGATIVE))
         holder->SetStackAmount(stacks);
-    m_player->GetBonkPlayer()->SendAddon("woundspct~" + Percent(stacks * m_bossWoundCut));
     m_player->GetBonkPlayer()->SendAuraPercent(BONK_SPELL_WOUNDS, stacks * m_bossWoundCut);
     if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_WOUNDS))
         m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_WOUNDS,
@@ -4824,7 +4822,6 @@ void BonkRun::SendShieldState() const
     uint32 const total = m_spellShield;
     uint32 const max = GetMaxShield();
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    bonk->SendAddon("shield~" + std::to_string(total) + "~" + std::to_string(max));
     bonk->SendAuraValue(BONK_SPELL_PLAYER_SHIELD, total, max);
     if (total)
         if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_PLAYER_SHIELD))
@@ -14626,7 +14623,6 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_NOMAD_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_UNHIT_POWER_AURA);
-    m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     m_player->GetBonkPlayer()->SendAuraValue(BONK_SPELL_PLAYER_SHIELD, 0, 0);
     SetNecroticStacks(0);
     ClearBossPressure();

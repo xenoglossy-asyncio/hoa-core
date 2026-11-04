@@ -971,8 +971,11 @@ UI.Listen({
             tutorial:Show()
         end
     end,
-    dash = function(f)
-        local charges = tonumber(f[2]) or 0
+})
+
+UI.ListenHoa({
+    HOA_DASH = function(_, _, _, _, available)
+        local charges = tonumber(available) or 0
         if step == "dash" and lastCharges and charges < lastCharges and not dashedAt then
             dashedAt = GetTime()
         end

@@ -320,16 +320,6 @@ owner:SetScript("OnEvent", function()
     end
 end)
 
-UI.Listen({
-    dash = function(f)
-        charges = tonumber(f[6]) or 0
-        if not active then
-            active = true
-            SyncKeys()
-        end
-    end,
-})
-
 UI.ListenHoa({
     HOA_DASH = function(_, _, _, _, available)
         charges = tonumber(available) or 0

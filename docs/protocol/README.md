@@ -2,11 +2,11 @@
 
 ## 0. Current state
 
-- HoA state and UI data travel as `BONK~type~field...` chat lines: the server builds strings, the client shows them as ordinary system messages, and the addon parses them from `CHAT_MSG_SYSTEM` (`Interface/AddOns/HordesOfAzeroth/VanillaBonkUI.lua:231-243`) after hiding them from the chat frame.
+- HoA UI data still travels as `BONK~type~field...` chat lines: the server builds strings, the client shows them as ordinary system messages, and the addon parses them from `CHAT_MSG_SYSTEM` (`Interface/AddOns/HordesOfAzeroth/VanillaBonkUI.lua:231-243`) after hiding them from the chat frame. State messages have moved to the typed channel.
 - The Rust client recognizes only the `HOA~` prefix (`client/crates/hoa/src/world_fx.rs:62-65`); `parse_line` explicitly rejects `BONK~` (`hoa/src/server_draw.rs:342`), and unmatched lines fall through to system chat (`benilla-app/src/ui_chat/net.rs:14-20,46-61`).
 - The client has no spell query path (`benilla-app/src/net.rs:1034-1058`), so custom spell metadata has nowhere to come from.
-- State data (shield amount, dash, determination, card procs) all depends on this string channel; field order is by convention and every change must touch both sides.
-- First typed slice (2026-11-04): opcode `SMSG_HOA_MESSAGE` (826) carries `hoa.hello` — protocol version, content hash and account language — after the addon's `.bonk hello`. `shared/protocol/messages.yaml` is the source; `tools/protocol/gen.py` generates `HoaProtocol.h` and `protocol_generated.rs`; the client compares version/hash, warns on a mismatch and fires `HOA_HELLO` into Lua. `hoa.aura_value` (`spell_id`, `value`, `max_value`) is sent alongside the shield text and fires `HOA_AURA_VALUE`, so the addon can read the amount without parsing the chat line. `hoa.dash` carries the max charges, recharge, cooldown, blink flag and available charges and fires `HOA_DASH`. `hoa.aura_percent` (`spell_id`, `percent`) covers determination, necrotic and wounds and fires `HOA_AURA_PERCENT`. Everything else still uses `BONK~`.
+- State data (shield amount, dash, determination, card procs) used to depend on this string channel; field order was by convention and every change touched both sides. The state messages now use the typed channel below; the remaining `BONK~` traffic is presentation data.
+- First typed slice (2026-11-04): opcode `SMSG_HOA_MESSAGE` (826) carries `hoa.hello` — protocol version, content hash and account language — after the addon's `.bonk hello`. `shared/protocol/messages.yaml` is the source; `tools/protocol/gen.py` generates `HoaProtocol.h` and `protocol_generated.rs`; the client compares version/hash, warns on a mismatch and fires `HOA_HELLO` into Lua. `hoa.aura_value` (`spell_id`, `value`, `max_value`) replaces the shield chat text and fires `HOA_AURA_VALUE`. `hoa.dash` carries the max charges, recharge, cooldown, blink flag and available charges and fires `HOA_DASH`. `hoa.aura_percent` (`spell_id`, `percent`) covers determination, necrotic and wounds and fires `HOA_AURA_PERCENT`. `hoa.aura_text` and `hoa.aura_catalog_entry`/`aura_catalog_end` carry the localized aura display data. The five state paths no longer send a `BONK~` fallback; everything else still uses `BONK~`.
 
 ## 1. Goals
 
@@ -87,7 +87,7 @@ Generated files are committed; CI checks the diff.
 
 ## 6. How the addon receives data
 
-Current: the server sends state and UI data as `BONK~type~...` chat lines and the addon parses strings.
+Current: the server sends presentation data as `BONK~type~...` chat lines and the addon parses strings; state uses the typed channel.
 
 New design:
 

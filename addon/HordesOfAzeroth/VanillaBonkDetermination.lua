@@ -51,14 +51,6 @@ aura:SetScript("OnEvent", function()
     end
 end)
 
-local handlers = {}
-handlers["determinationpct"] = function(f)
-    state.percent = f[2] or "0"
-    Refresh()
-end
-
-UI.Listen(handlers)
-
 UI.ListenHoa({
     HOA_AURA_PERCENT = function(spellId, percent)
         if tonumber(spellId) == DETERMINATION_SPELL then

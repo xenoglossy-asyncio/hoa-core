@@ -2337,7 +2337,6 @@ void BonkPlayer::SendDetermination() const
 {
     RefreshDeterminationAura();
     uint8 const stacks = GetDetermination();
-    SendAddon("determinationpct~" + FormatStat(stacks * BONK_DETERMINATION_PER_STACK));
     SendAuraPercent(BONK_SPELL_DETERMINATION, stacks * BONK_DETERMINATION_PER_STACK);
     SendDeterminationText();
 }

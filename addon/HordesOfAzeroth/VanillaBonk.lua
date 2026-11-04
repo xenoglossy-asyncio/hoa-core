@@ -3620,11 +3620,6 @@ local function RefreshShield()
     shieldBar:Show()
 end
 
-handlers["shield"] = function(f)
-    VB.shield = tonumber(f[2]) or 0
-    RefreshShield()
-end
-
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
         if tonumber(spellId) == HOA_AURA_IDS.shield then
@@ -3659,11 +3654,6 @@ necroticAura:SetScript("OnEvent", function()
     end
 end)
 
-handlers["necroticpct"] = function(f)
-    necroticPercent = f[2] or ""
-    RefreshNecrotic()
-end
-
 UI.ListenHoa({
     HOA_AURA_PERCENT = function(spellId, percent)
         if tonumber(spellId) == 18951 then
@@ -3697,11 +3687,6 @@ do
             RefreshWounds()
         end
     end)
-
-    handlers["woundspct"] = function(f)
-        woundsPercent = f[2] or ""
-        RefreshWounds()
-    end
 
     UI.ListenHoa({
         HOA_AURA_PERCENT = function(spellId, percent)

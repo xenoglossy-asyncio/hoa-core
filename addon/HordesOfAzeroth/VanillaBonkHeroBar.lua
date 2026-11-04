@@ -1069,16 +1069,6 @@ handlers["end"] = function()
     SetMode(false)
 end
 
-handlers["dash"] = function(f)
-    dash.max = tonumber(f[2] or "") or 0
-    dash.untilNext = tonumber(f[3] or "") or 0
-    dash.cooldown = tonumber(f[4] or "") or 0
-    dash.blink = f[5] == "1"
-    dash.charges = tonumber(f[6] or "") or 0
-    dash.left = (dash.charges < dash.max and dash.untilNext > 0) and dash.untilNext / 1000 or nil
-    RefreshDash()
-end
-
 UI.ListenHoa({
     HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink, available)
         dash.max = tonumber(maxCharges) or 0

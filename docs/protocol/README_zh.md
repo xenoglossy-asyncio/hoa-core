@@ -2,11 +2,11 @@
 
 ## 0. 现状
 
-- HoA 的状态和 UI 数据走 `BONK~type~field...` 聊天行：服务端拼字符串，客户端当普通系统消息显示，插件在 `CHAT_MSG_SYSTEM` 里解析（`Interface/AddOns/HordesOfAzeroth/VanillaBonkUI.lua:231-243`），并把这些行从聊天框隐藏。
+- HoA 的 UI 数据仍走 `BONK~type~field...` 聊天行：服务端拼字符串，客户端当普通系统消息显示，插件在 `CHAT_MSG_SYSTEM` 里解析（`Interface/AddOns/HordesOfAzeroth/VanillaBonkUI.lua:231-243`），并把这些行从聊天框隐藏。状态类消息已经改走类型化通道。
 - Rust 客户端只识别 `HOA~` 前缀（`client/crates/hoa/src/world_fx.rs:62-65`），`parse_line` 明确拒绝 `BONK~`（`hoa/src/server_draw.rs:342`）；未匹配的行落回系统聊天（`benilla-app/src/ui_chat/net.rs:14-20,46-61`）。
 - 客户端没有 spell 查询通道（`benilla-app/src/net.rs:1034-1058`），自定义 spell 的元数据无处可查。
 - 状态类数据（护盾量、冲刺、决心、卡牌 proc）全部依赖这套字符串通道，字段顺序靠约定，改一处就要两边同时改。
-- 第一块类型化协议（2026-11-04）：opcode `SMSG_HOA_MESSAGE`（826）在插件发送 `.bonk hello` 后下发 `hoa.hello`——协议版本、内容哈希和账号语言。源文件是 `shared/protocol/messages.yaml`；`tools/protocol/gen.py` 生成 `HoaProtocol.h` 和 `protocol_generated.rs`；客户端比较版本/哈希，不一致时警告，并向 Lua 触发 `HOA_HELLO`。`hoa.aura_value`（`spell_id`、`value`、`max_value`）与护盾文本同时下发并触发 `HOA_AURA_VALUE`，插件不用再解析聊天行就能读到数值。`hoa.dash` 携带最大充能、恢复时间、冷却、闪现标记和可用充能数，触发 `HOA_DASH`。`hoa.aura_percent`（`spell_id`、`percent`）覆盖决心、坏死和伤口，触发 `HOA_AURA_PERCENT`。其余数据仍走 `BONK~`。
+- 第一块类型化协议（2026-11-04）：opcode `SMSG_HOA_MESSAGE`（826）在插件发送 `.bonk hello` 后下发 `hoa.hello`——协议版本、内容哈希和账号语言。源文件是 `shared/protocol/messages.yaml`；`tools/protocol/gen.py` 生成 `HoaProtocol.h` 和 `protocol_generated.rs`；客户端比较版本/哈希，不一致时警告，并向 Lua 触发 `HOA_HELLO`。`hoa.aura_value`（`spell_id`、`value`、`max_value`）取代护盾聊天行并触发 `HOA_AURA_VALUE`。`hoa.dash` 携带最大充能、恢复时间、冷却、闪现标记和可用充能数，触发 `HOA_DASH`。`hoa.aura_percent`（`spell_id`、`percent`）覆盖决心、坏死和伤口，触发 `HOA_AURA_PERCENT`。`hoa.aura_text` 和 `hoa.aura_catalog_entry`/`aura_catalog_end` 承载本地化光环显示数据。这五条状态路径不再发送 `BONK~` 回退；其余展示数据仍走 `BONK~`。
 
 ## 1. 目标
 
@@ -87,7 +87,7 @@ handshake:
 
 ## 6. 插件如何拿到数据
 
-现状：服务端用 `BONK~type~...` 聊天行传状态和 UI 数据，插件解析字符串。
+现状：服务端用 `BONK~type~...` 聊天行传展示数据，插件解析字符串；状态类数据走类型化通道。
 
 新设计：
 
