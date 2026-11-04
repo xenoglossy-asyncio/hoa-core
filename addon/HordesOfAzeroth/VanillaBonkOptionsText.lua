@@ -156,23 +156,23 @@ local function TranslateSoundTitle(english)
     end
 end
 
-if VanillaBonkLocale.language ~= "enUS" then
+do
     local soundTitle = SOUNDOPTIONS_MENU
     for name, text in pairs(STRINGS) do
         setglobal(name, text)
     end
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR1", "显示左下方动作条。")
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR2", "显示右下方动作条。")
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR3", "显示右侧动作条。")
-    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR4", "显示第二条右侧动作条。")
-    setglobal("OPTION_TOOLTIP_ALWAYS_SHOW_MULTIBARS", "始终显示动作条。")
-    setglobal("OPTION_TOOLTIP_LOCK_ACTIONBAR", "锁定动作条，防止拖动。")
-    setglobal("OPTION_TOOLTIP_UI_SCALE", "调整界面元素的大小。")
-    setglobal("OPTION_TOOLTIP_FARCLIP", "调整地形可见距离。")
-    setglobal("OPTION_TOOLTIP_ENVIRONMENT_DETAIL", "调整环境细节。")
-    setglobal("OPTION_TOOLTIP_SPELL_DETAIL", "调整法术效果的细节程度。")
-    setglobal("OPTION_TOOLTIP_WEATHER_DETAIL", "调整天气效果强度。")
-    setglobal("OPTION_TOOLTIP_VERTICAL_SYNC", "将帧率与显示器刷新率同步。")
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR1", L["Show the bottom left action bar."])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR2", L["Show the bottom right action bar."])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR3", L["Show the right action bar."])
+    setglobal("OPTION_TOOLTIP_SHOW_MULTIBAR4", L["Show the second right action bar."])
+    setglobal("OPTION_TOOLTIP_ALWAYS_SHOW_MULTIBARS", L["Always show action bars."])
+    setglobal("OPTION_TOOLTIP_LOCK_ACTIONBAR", L["Lock the action bars in place."])
+    setglobal("OPTION_TOOLTIP_UI_SCALE", L["Adjust the size of the interface elements."])
+    setglobal("OPTION_TOOLTIP_FARCLIP", L["Adjust how far terrain is visible."])
+    setglobal("OPTION_TOOLTIP_ENVIRONMENT_DETAIL", L["Adjust the level of environmental detail."])
+    setglobal("OPTION_TOOLTIP_SPELL_DETAIL", L["Adjust the level of spell effect detail."])
+    setglobal("OPTION_TOOLTIP_WEATHER_DETAIL", L["Adjust the intensity of weather effects."])
+    setglobal("OPTION_TOOLTIP_VERTICAL_SYNC", L["Synchronize the frame rate with the monitor's refresh rate."])
 
     SetText("UIOptionsFrameTitle", INTERFACE_TITLE)
     for _, prefix in ipairs({ "UIOptionsFrame", "SoundOptionsFrame" }) do
@@ -210,147 +210,11 @@ if VanillaBonkLocale.language ~= "enUS" then
     TranslateSoundTitle(soundTitle)
 end
 
-local BENILLA_OPTIONS_ZHCN = {
-    ["Action Bars"] = "动作条",
-    ["AddOns"] = "插件",
-    ["Always"] = "始终",
-    ["Always Show ActionBars"] = "始终显示动作条",
-    ["Ambience Volume"] = "环境音音量",
-    ["Apply"] = "应用",
-    ["Arc"] = "弧形",
-    ["Attack on assist"] = "协助攻击",
-    ["Audio"] = "声音",
-    ["Auto Clear AFK"] = "自动取消暂离",
-    ["Auto Loot"] = "自动拾取",
-    ["Auto Self Cast"] = "自动自我施法",
-    ["Auto-Follow Speed"] = "自动跟随速度",
-    ["Automatic"] = "自动",
-    ["Automatic Quest Tracking"] = "自动追踪任务",
-    ["Automatic fills your screen at its own resolution.\n\nPick a size to run the game in a window of that size instead. On Steam Deck and other handhelds the window is stretched to fill the screen. To keep fullscreen and only draw the 3D world at a lower or higher resolution, use Render Scale."] = "“自动”会以屏幕自身的分辨率铺满屏幕。\n\n选择某个尺寸后，游戏会改为在相应大小的窗口中运行。在 Steam Deck 和掌机上，窗口会被拉伸以铺满屏幕。如果想保持全屏、只以更低或更高的分辨率绘制 3D 世界，请使用渲染缩放。",
-    ["Block Trades"] = "拒绝交易",
-    ["Buff Durations"] = "增益持续时间",
-    ["Camera Following Style"] = "镜头跟随方式",
-    ["Character Specific Key Bindings"] = "角色专用按键绑定",
-    ["Chat"] = "聊天",
-    ["Click-to-Move"] = "点击移动",
-    ["Close"] = "关闭",
-    ["Combat"] = "战斗",
-    ["Combat Text Float Mode"] = "战斗文字浮动方式",
-    ["Controls"] = "控制",
-    ["Defaults"] = "默认",
-    ["Detailed Loot Information"] = "详细拾取信息",
-    ["Disable Spam Filter"] = "禁用广告过滤",
-    ["Display Mode"] = "显示模式",
-    ["Draws the 3D world at a fraction of the window's resolution, or larger than it. The interface is unaffected at any setting.\n\nBelow 100% trades sharpness for frame rate; above 100% is supersampling, which smooths edges at the cost of frame rate. Applies when you click Apply."] = "以窗口分辨率的一部分（或更高）绘制 3D 世界，界面在任何设置下都不受影响。\n\n低于100%会用清晰度换取帧率；高于100%则是超级采样，以帧率为代价让边缘更平滑。点击“应用”后生效。",
-    ["Enable All Sound"] = "启用所有声音",
-    ["Enable Ambience"] = "启用环境音",
-    ["Enable Error Speech"] = "启用错误语音",
-    ["Enable Floating Combat Text"] = "启用浮动战斗文字",
-    ["Enable Music"] = "启用音乐",
-    ["Enable Sound in Background"] = "后台播放声音",
-    ["Enhanced Tooltips"] = "增强提示信息",
-    ["Environment Detail"] = "环境细节",
-    ["Follow Terrain"] = "跟随地形",
-    ["Game"] = "游戏",
-    ["Gameplay"] = "游戏性",
-    ["Graphics"] = "图像",
-    ["Guild Member Alert"] = "公会成员提示",
-    ["Head Bob"] = "头部晃动",
-    ["Instant Quest Text"] = "任务文本即时显示",
-    ["Interface"] = "界面",
-    ["Invert Mouse"] = "反转鼠标",
-    ["Keeps the game's sound playing while you are working in another window.\n\nWith this off, switching away silences the game and switching back restores it. Sounds keep running while they are silenced, so a long one may have finished by the time you return."] = "当你在其他窗口中工作时，让游戏继续播放声音。\n\n关闭时，切换到其他窗口会让游戏静音，切回来再恢复。静音期间声音仍在继续播放，所以你回来时较长的音效可能已经放完了。",
-    ["Keybindings"] = "按键设置",
-    ["Lightens or darkens the whole picture — nights, caves and interiors are what it is for.\n\nThis is the same correction 1.12 applied through the display's own gamma ramp, which it could only do in exclusive fullscreen. benilla applies it to the finished image instead, so it works in both display modes."] = "提亮或压暗整个画面——夜晚、洞穴和室内场景最需要它。\n\n它与 1.12 通过显示器自身的伽马曲线所做的校正相同，只是当年只能在独占全屏下生效。benilla 改为对最终画面进行校正，因此在两种显示模式下都能使用。",
-    ["Lock ActionBars"] = "锁定动作条",
-    ["Master Volume"] = "主音量",
-    ["Max Camera Distance"] = "最大镜头距离",
-    ["Mouse Look Speed"] = "鼠标视角速度",
-    ["Mouse Sensitivity"] = "鼠标灵敏度",
-    ["Music Volume"] = "音乐音量",
-    ["NPC Names"] = "NPC姓名",
-    ["Nameplates"] = "姓名板",
-    ["Never"] = "从不",
-    ["No results found."] = "未找到结果。",
-    ["Options"] = "选项",
-    ["Party"] = "小队",
-    ["Party or Raid"] = "小队或团队",
-    ["Periodic Damage"] = "持续伤害",
-    ["Pet Damage"] = "宠物伤害",
-    ["Player Guild Names"] = "玩家公会名称",
-    ["Player Names"] = "玩家姓名",
-    ["Player Titles"] = "玩家头衔",
-    ["Profanity Filter"] = "语言过滤器",
-    ["Raid"] = "团队",
-    ["Remove Chat Hover Delay"] = "移除聊天悬停延迟",
-    ["Render Scale"] = "渲染缩放",
-    ["Resolution"] = "分辨率",
-    ["Scroll Down"] = "向下滚动",
-    ["Scroll Up"] = "向上滚动",
-    ["Search"] = "搜索",
-    ["Search Results"] = "搜索结果",
-    ["Show Auras"] = "显示光环",
-    ["Show Chat Bubbles"] = "显示聊天气泡",
-    ["Show Combat State"] = "显示战斗状态",
-    ["Show Combo Points"] = "显示连击点",
-    ["Show Damage Reduction"] = "显示伤害减免",
-    ["Show Detailed Tooltips"] = "显示详细提示",
-    ["Show Dodge/Parries/Misses"] = "显示闪躲/招架/未命中",
-    ["Show Energy Gains"] = "显示能量获得",
-    ["Show Fading Auras"] = "显示渐隐光环",
-    ["Show Friendly Healer Names"] = "显示友方治疗者姓名",
-    ["Show Honor Gained"] = "显示荣誉获得",
-    ["Show Loading Screen Tips"] = "显示载入界面提示",
-    ["Show Low Mana and Health"] = "显示低法力与低生命",
-    ["Show Own Name"] = "显示自己的姓名",
-    ["Show Party Chat Bubbles"] = "显示小队聊天气泡",
-    ["Show Reactive Spells and Abilities"] = "显示可触发法术和技能",
-    ["Show Reputation"] = "显示声望",
-    ["Show Target Damage"] = "显示目标伤害",
-    ["Show Target of Target"] = "显示目标的目标",
-    ["Show When"] = "显示时机",
-    ["Smart"] = "智能",
-    ["Smart Pivot"] = "智能转向",
-    ["Solo"] = "单人",
-    ["Sound Volume"] = "音效音量",
-    ["Status Bar Text"] = "状态栏文字",
-    ["Sticky Targeting"] = "粘性目标",
-    ["System"] = "系统",
-    ["Terrain Distance"] = "地形距离",
-    ["UI Scale"] = "界面缩放",
-    ["Vertical Sync"] = "垂直同步",
-    ["Water Collision"] = "水面碰撞",
-    ["Weather Intensity"] = "天气强度",
-    ["Windowed"] = "窗口",
-    ["Windowed (Fullscreen)"] = "窗口（全屏）",
-    ["Windowed (Fullscreen) fills the screen with a borderless window; Windowed runs in an ordinary one.\n\nThere is no exclusive fullscreen mode. WoW itself removed one in 8.0.1, and modern Classic offers these same two."] = "“窗口（全屏）”用无边窗口铺满屏幕；“窗口”则在普通窗口中运行。\n\n没有独占全屏模式。WoW 本身在 8.0.1 中移除了它，现代魔兽经典版也只提供这两种方式。",
-    ["Show Bottom Left ActionBar"] = "显示左下方动作条",
-    ["Show Bottom Right ActionBar"] = "显示右下方动作条",
-    ["Show Right ActionBar"] = "显示右侧动作条",
-    ["Show Right ActionBar 2"] = "显示右侧动作条 2",
-    ["Show Cloak"] = "显示披风",
-    ["Show Helm"] = "显示头盔",
-    ["Enemy Name Plates"] = "敌方姓名板",
-    ["Friendly Name Plates"] = "友方姓名板",
-    ["Brightness"] = "亮度",
-    ["Low"] = "低",
-    ["Medium"] = "中",
-    ["High"] = "高",
-    ["Minimal"] = "最低",
-    ["Full"] = "最高",
-    ["Show Tutorials"] = "显示教程",
-    ["Tip of the Day"] = "每日提示",
-    ["Newbie Tips"] = "新手提示",
-    ["Unbind Key"] = "取消绑定按键",
-    ["Spell Detail"] = "法术细节",
-    ["Click this to toggle between general key bindings and key bindings specific to this character."] = "点击此处在通用按键绑定和此角色的专用按键绑定之间切换。",
-    ["yards"] = "码",
-}
 
 local function TranslateOptions(frame)
     if frame.GetText and frame.SetText then
         local text = frame:GetText()
-        local translated = text and BENILLA_OPTIONS_ZHCN[text]
+        local translated = text and L[text]
         if translated then
             frame:SetText(translated)
         end
@@ -361,7 +225,7 @@ local function TranslateOptions(frame)
             local region = regions[index]
             if region.GetText and region.SetText then
                 local text = region:GetText()
-                local translated = text and BENILLA_OPTIONS_ZHCN[text]
+                local translated = text and L[text]
                 if translated then
                     region:SetText(translated)
                 end
@@ -376,7 +240,7 @@ local function TranslateOptions(frame)
     end
 end
 
-if VanillaBonkLocale.language == "zhCN" then
+do
     local ticker = CreateFrame("Frame")
     local nextCheck = GetTime() + 0.5
     ticker:SetScript("OnUpdate", function()
@@ -392,7 +256,7 @@ if VanillaBonkLocale.language == "zhCN" then
     local originalSetText = GameTooltip.SetText
     GameTooltip.SetText = function(tooltip, text, red, green, blue, wrap)
         if BenillaOptionsFrame and BenillaOptionsFrame:IsShown() and type(text) == "string" then
-            text = BENILLA_OPTIONS_ZHCN[text] or text
+            text = L[text] or text
         end
         return originalSetText(tooltip, text, red, green, blue, wrap)
     end
@@ -401,7 +265,7 @@ if VanillaBonkLocale.language == "zhCN" then
     local originalAddButton = UIDropDownMenu_AddButton
     UIDropDownMenu_AddButton = function(info, level)
         if type(info) == "table" and type(info.text) == "string" then
-            info.text = BENILLA_OPTIONS_ZHCN[info.text] or info.text
+            info.text = L[info.text] or info.text
         end
         return originalAddButton(info, level)
     end
