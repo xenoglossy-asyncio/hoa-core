@@ -2642,7 +2642,11 @@ void BonkPlayer::SendFoundItems() const
 {
     if (!m_addonReady)
         return;
-    SendAddon("foundclear");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFoundClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     auto send = [&](Item const* item, std::string const& place)
     {
         if (!item)
@@ -2651,8 +2655,10 @@ void BonkPlayer::SendFoundItems() const
         uint32 const tier = BonkFound::GetItemTier(item);
         if (!sBonkFound.Get(item->GetGUIDLow(), found) && !tier)
             return;
-        SendAddon("founditem~" + place + "~" + std::to_string(item->GetEntry()) + "~" + std::to_string(tier) + "~" +
-            BonkFound::DescribeLines(found, tier) + "~" + BonkFound::DescribeExtra(item, tier) + "~" + (found.season != BONK_LEADERBOARD_SEASON ? "1" : "0"));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFoundItem(data, place, item->GetEntry(), tier, BonkFound::DescribeLines(found, tier),
+            BonkFound::DescribeExtra(item, tier), found.season != BONK_LEADERBOARD_SEASON);
+        m_player->GetSession()->SendPacket(&data);
     };
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
         send(m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot), "inv:" + std::to_string(slot + 1));
@@ -2668,7 +2674,11 @@ void BonkPlayer::SendFoundItems() const
         if (Bag const* container = dynamic_cast<Bag const*>(m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
             for (uint32 slot = 0; slot < container->GetBagSize(); ++slot)
                 send(container->GetItemByPos(uint8(slot)), std::to_string(bag - BANK_SLOT_BAG_START + 5) + ":" + std::to_string(slot + 1));
-    SendAddon("foundend");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFoundEnd(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkPlayer::SendUpdateNotices()

@@ -439,6 +439,15 @@ local function HideNow()
     frame:Hide()
 end
 UI.ListenHoa({
+    HOA_GEAR_OFFER = function(offer)
+        handlers["gearoffer"]({
+            false, offer.entry, offer.replaced, offer.valor, offer.quality, offer.tier, offer.lines,
+            offer.slot, offer.other_slot, offer.other_replaced, offer.extra,
+        })
+    end,
+    HOA_GEAR_CLOSE = function()
+        handlers["gearclose"]()
+    end,
     HOA_COOP_NO_PAUSE = function(state)
         frame.side = state.no_pause and true or false
         if frame.open then

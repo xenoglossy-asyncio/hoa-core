@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 11
+#define HOA_PROTOCOL_VERSION 12
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -61,6 +61,11 @@
 #define HOA_MSG_VENDOR_CLOSE 0x003B
 #define HOA_MSG_PORTAL_HOME 0x003C
 #define HOA_MSG_PORTAL_ENDLESS 0x003D
+#define HOA_MSG_FOUND_CLEAR 0x003E
+#define HOA_MSG_FOUND_ITEM 0x003F
+#define HOA_MSG_FOUND_END 0x0040
+#define HOA_MSG_GEAR_OFFER 0x0041
+#define HOA_MSG_GEAR_CLOSE 0x0042
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -513,4 +518,45 @@ inline void HoAWritePortalHome(WorldPacket& packet, bool const& vaultEmpty, bool
 inline void HoAWritePortalEndless(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_PORTAL_ENDLESS);
+}
+
+inline void HoAWriteFoundClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_FOUND_CLEAR);
+}
+
+inline void HoAWriteFoundItem(WorldPacket& packet, std::string const& place, uint32 const& entry, uint32 const& tier, std::string const& lines, std::string const& extra, bool const& legacy)
+{
+    packet << uint16(HOA_MSG_FOUND_ITEM);
+    HoAWriteString(packet, place);
+    packet << uint32(entry);
+    packet << uint32(tier);
+    HoAWriteString(packet, lines);
+    HoAWriteString(packet, extra);
+    packet << bool(legacy);
+}
+
+inline void HoAWriteFoundEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_FOUND_END);
+}
+
+inline void HoAWriteGearOffer(WorldPacket& packet, uint32 const& entry, uint32 const& replaced, uint32 const& valor, uint32 const& quality, uint32 const& tier, std::string const& lines, uint32 const& slot, uint32 const& otherSlot, uint32 const& otherReplaced, std::string const& extra)
+{
+    packet << uint16(HOA_MSG_GEAR_OFFER);
+    packet << uint32(entry);
+    packet << uint32(replaced);
+    packet << uint32(valor);
+    packet << uint32(quality);
+    packet << uint32(tier);
+    HoAWriteString(packet, lines);
+    packet << uint32(slot);
+    packet << uint32(otherSlot);
+    packet << uint32(otherReplaced);
+    HoAWriteString(packet, extra);
+}
+
+inline void HoAWriteGearClose(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_GEAR_CLOSE);
 }

@@ -10,6 +10,7 @@
 #include "Creature.h"
 #include "Database/DatabaseEnv.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "Item.h"
 #include "Mail.h"
 #include "Map.h"
@@ -700,17 +701,17 @@ void BonkRun::SendGearOffer() const
     uint8 const slot = twoSlots ? choices[0] : m_player->FindEquipSlot(proto, NULL_SLOT, true);
     bool const blockedByTwoHander = slot == EQUIPMENT_SLOT_OFFHAND && m_player->IsTwoHandUsed();
     uint32 const replaced = wornIn(blockedByTwoHander ? uint8(EQUIPMENT_SLOT_MAINHAND) : slot);
-    std::string const slotChoice = twoSlots ? "~" + std::to_string(choices[0]) + "~" + std::to_string(choices[1]) + "~" +
-        std::to_string(wornIn(choices[1])) : std::string("~~~");
 
     uint32 const valor = GetGearSalvage(m_gearOfferEntry);
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (bonk->IsAddonReady())
     {
-        bonk->SendAddon("gearoffer~" + std::to_string(m_gearOfferEntry) + "~" + std::to_string(replaced) + "~" + std::to_string(valor) + "~" +
-            std::to_string(proto->Quality) + "~" + std::to_string(m_gearOffer.gear.tier) + "~" +
-            BonkFound::DescribeLines(m_gearOffer.gear, m_gearOffer.gear.tier) + slotChoice + "~" +
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGearOffer(data, m_gearOfferEntry, replaced, valor, proto->Quality, m_gearOffer.gear.tier,
+            BonkFound::DescribeLines(m_gearOffer.gear, m_gearOffer.gear.tier), twoSlots ? choices[0] : 0,
+            twoSlots ? choices[1] : 0, twoSlots ? wornIn(choices[1]) : 0,
             BonkFound::DescribeExtra(m_gearOfferEntry, m_gearOffer.gear.tier));
+        m_player->GetSession()->SendPacket(&data);
         return;
     }
 
@@ -724,7 +725,12 @@ void BonkRun::CloseGearOffer()
         return;
     m_gearOfferEntry = 0;
     m_gearOffer = PendingGear();
-    m_player->GetBonkPlayer()->SendAddon("gearclose");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGearClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::ChooseGear(GearChoice choice, uint8 slot, std::string& error)

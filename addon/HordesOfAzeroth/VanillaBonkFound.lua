@@ -140,6 +140,18 @@ handlers["foundend"] = function()
     end
 end
 
+UI.ListenHoa({
+    HOA_FOUND_CLEAR = function()
+        handlers["foundclear"]()
+    end,
+    HOA_FOUND_ITEM = function(item)
+        handlers["founditem"]({ false, item.place, item.entry, item.tier, item.lines, item.extra, item.legacy and "1" or "0" })
+    end,
+    HOA_FOUND_END = function()
+        handlers["foundend"]()
+    end,
+})
+
 UI.Listen(handlers)
 
 local refresh = CreateFrame("Frame")

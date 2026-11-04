@@ -68,6 +68,11 @@ const HOA_VENDOR_END: &str = "HOA_VENDOR_END";
 const HOA_VENDOR_CLOSE: &str = "HOA_VENDOR_CLOSE";
 const HOA_PORTAL_HOME: &str = "HOA_PORTAL_HOME";
 const HOA_PORTAL_ENDLESS: &str = "HOA_PORTAL_ENDLESS";
+const HOA_FOUND_CLEAR: &str = "HOA_FOUND_CLEAR";
+const HOA_FOUND_ITEM: &str = "HOA_FOUND_ITEM";
+const HOA_FOUND_END: &str = "HOA_FOUND_END";
+const HOA_GEAR_OFFER: &str = "HOA_GEAR_OFFER";
+const HOA_GEAR_CLOSE: &str = "HOA_GEAR_CLOSE";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -144,6 +149,45 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::FoundClear(_) => {
+                    script.fire_event(HOA_FOUND_CLEAR, Vec::new());
+                }
+                HoaMessage::FoundItem(item) => {
+                    script.fire_event(
+                        HOA_FOUND_ITEM,
+                        vec![lua_table(vec![
+                            ("place", ScriptValue::Str(item.place)),
+                            ("entry", ScriptValue::Int(i64::from(item.entry))),
+                            ("tier", ScriptValue::Int(i64::from(item.tier))),
+                            ("lines", ScriptValue::Str(item.lines)),
+                            ("extra", ScriptValue::Str(item.extra)),
+                            ("legacy", ScriptValue::Bool(item.legacy)),
+                        ])],
+                    );
+                }
+                HoaMessage::FoundEnd(_) => {
+                    script.fire_event(HOA_FOUND_END, Vec::new());
+                }
+                HoaMessage::GearOffer(offer) => {
+                    script.fire_event(
+                        HOA_GEAR_OFFER,
+                        vec![lua_table(vec![
+                            ("entry", ScriptValue::Int(i64::from(offer.entry))),
+                            ("replaced", ScriptValue::Int(i64::from(offer.replaced))),
+                            ("valor", ScriptValue::Int(i64::from(offer.valor))),
+                            ("quality", ScriptValue::Int(i64::from(offer.quality))),
+                            ("tier", ScriptValue::Int(i64::from(offer.tier))),
+                            ("lines", ScriptValue::Str(offer.lines)),
+                            ("slot", ScriptValue::Int(i64::from(offer.slot))),
+                            ("other_slot", ScriptValue::Int(i64::from(offer.other_slot))),
+                            ("other_replaced", ScriptValue::Int(i64::from(offer.other_replaced))),
+                            ("extra", ScriptValue::Str(offer.extra)),
+                        ])],
+                    );
+                }
+                HoaMessage::GearClose(_) => {
+                    script.fire_event(HOA_GEAR_CLOSE, Vec::new());
+                }
                 HoaMessage::QuestLogOpen(open) => {
                     script.fire_event(
                         HOA_QUEST_LOG_OPEN,
@@ -710,6 +754,11 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_VENDOR_CLOSE);
         add_in_game_event(HOA_PORTAL_HOME);
         add_in_game_event(HOA_PORTAL_ENDLESS);
+        add_in_game_event(HOA_FOUND_CLEAR);
+        add_in_game_event(HOA_FOUND_ITEM);
+        add_in_game_event(HOA_FOUND_END);
+        add_in_game_event(HOA_GEAR_OFFER);
+        add_in_game_event(HOA_GEAR_CLOSE);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

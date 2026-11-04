@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 11
+version: 12
 messages:
   - name: aura_value
     id: 0x0002
@@ -394,5 +394,41 @@ messages:
       - { name: finale, type: bool }
   - name: portal_endless
     id: 0x003D
+    direction: server_to_client
+    fields: []
+  - name: found_clear
+    id: 0x003E
+    direction: server_to_client
+    fields: []
+  - name: found_item
+    id: 0x003F
+    direction: server_to_client
+    fields:
+      - { name: place, type: string }
+      - { name: entry, type: u32 }
+      - { name: tier, type: u32 }
+      - { name: lines, type: string }
+      - { name: extra, type: string }
+      - { name: legacy, type: bool }
+  - name: found_end
+    id: 0x0040
+    direction: server_to_client
+    fields: []
+  - name: gear_offer
+    id: 0x0041
+    direction: server_to_client
+    fields:
+      - { name: entry, type: u32 }
+      - { name: replaced, type: u32 }
+      - { name: valor, type: u32 }
+      - { name: quality, type: u32 }
+      - { name: tier, type: u32 }
+      - { name: lines, type: string }
+      - { name: slot, type: u32 }
+      - { name: other_slot, type: u32 }
+      - { name: other_replaced, type: u32 }
+      - { name: extra, type: string }
+  - name: gear_close
+    id: 0x0042
     direction: server_to_client
     fields: []
