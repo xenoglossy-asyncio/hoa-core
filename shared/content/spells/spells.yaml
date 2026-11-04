@@ -526,6 +526,22 @@
   permanent: true
   dynamic:
     kind: none
+- id: 22576
+  key: affix_fortified
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Fortified
+    name_zhCN: 坚定
+    description: Has more health.
+    description_zhCN: 生命值提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
 - id: 26388
   key: affix_bulwark
   native: true
@@ -569,6 +585,23 @@
     description: Deals more damage.
     description_zhCN: 伤害提高。
     reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 60055
+  key: weapon_orb
+  cpp: BONK_SPELL_WEAPON_ORB
+  source: none
+  reason: A summoned weapon orb carries this visual aura; no skill or content row owns it.
+  display:
+    name: Weapon Orb
+    name_zhCN: 武器宝珠
+    icon: Interface\Icons\Spell_Nature_Lightning
+    description: A weapon orb circles you.
+    description_zhCN: 一颗武器宝珠环绕着你。
+    reason: The visual aura on the summoned orb, split from the Fortified affix glow.
   stacks:
     source: none
   permanent: true

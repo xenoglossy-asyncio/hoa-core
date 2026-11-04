@@ -160,7 +160,7 @@ float BonkRun::GetCardPower(Unit const* victim) const
     float power = 0.0f;
 
     if (BonkCard const* brooch = m_cardByEffect[BONK_CARD_KILL_POWER])
-        power += std::min(brooch->values[1], brooch->values[0] * GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA)) *
+        power += std::min(brooch->values[1], brooch->values[0] * m_killPowerKills) *
             GetCopySum(m_cardCopies[BONK_CARD_KILL_POWER]);
 
     if (HasCard(BONK_CARD_UNHIT_POWER))
@@ -596,7 +596,7 @@ std::string BonkRun::DescribeCardNow(BonkCard const& card) const
     {
         case BONK_CARD_KILL_POWER:
         {
-            float const power = std::min(card.values[1], card.values[0] * GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA)) *
+            float const power = std::min(card.values[1], card.values[0] * m_killPowerKills) *
                 GetCopySum(GetCardCopies(card.id));
             return GetString(BONK_STRING_CARD_NOW_POWER, { percent(power) });
         }
@@ -827,7 +827,9 @@ uint32 BonkRun::GetCardAuraStacks(uint32 spellId) const
 
 void BonkRun::RefreshKillPowerAura() const
 {
-    uint32 const stacks = GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA);
+    if (!HasCard(BONK_CARD_KILL_POWER))
+        m_killPowerKills = 0;
+    uint32 const stacks = std::min<uint32>(255, m_killPowerKills);
     if (!HasCard(BONK_CARD_KILL_POWER) || !stacks)
     {
         m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
@@ -843,7 +845,8 @@ void BonkRun::AddKillPowerStack() const
 {
     if (!HasCard(BONK_CARD_KILL_POWER))
         return;
-    uint32 const stacks = std::min<uint32>(255, GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA) + 1);
+    ++m_killPowerKills;
+    uint32 const stacks = std::min<uint32>(255, m_killPowerKills);
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_KILL_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(stacks);
     if (BonkCard const* card = m_cardByEffect[BONK_CARD_KILL_POWER])

@@ -310,7 +310,6 @@ float const BONK_START_POLY_REACH   = 10.0f;
     float const BONK_ECHO_AREA             = 1.5f;
     float const BONK_FREEZE_ARC            = 2.0f * M_PI_F / 3.0f;
     float const BONK_FROZEN_CRIT_BONUS     = 0.5f;
-    uint32 const BONK_SPELL_WEAPON_ORB     = 22576;
     float const BONK_WEAPON_ORB_SCALE      = 1.2f;
     uint32 const BONK_DISPLAY_SPELL_ORB    = 17998;
     float const BONK_WEAPON_ORB_SPEED      = 0.35f;

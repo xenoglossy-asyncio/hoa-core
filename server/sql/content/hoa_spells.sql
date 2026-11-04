@@ -6,6 +6,8 @@ DELETE FROM `spell_template` WHERE `entry` BETWEEN 60001 AND 60099;
 DROP TEMPORARY TABLE IF EXISTS `hoa_spell_clone`;
 CREATE TEMPORARY TABLE `hoa_spell_clone` LIKE `spell_template`;
 INSERT INTO `hoa_spell_clone` SELECT * FROM `spell_template` WHERE `entry` = 5302 AND `build` = 5086;
+UPDATE `hoa_spell_clone` SET `entry` = 60055, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60001, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60003, `build` = 5875;
@@ -109,6 +111,21 @@ INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60054, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 DROP TEMPORARY TABLE `hoa_spell_clone`;
+
+UPDATE `spell_template` SET
+  `name` = 'Weapon Orb',
+  `nameSubtext` = '',
+  `description` = 'A weapon orb circles you.',
+  `auraDescription` = 'A weapon orb circles you.',
+  `spellIconId` = 60055,
+  `stackAmount` = 0,
+  `durationIndex` = 0,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60055 AND `build` = 5875;
 
 UPDATE `spell_template` SET
   `name` = 'Determination',

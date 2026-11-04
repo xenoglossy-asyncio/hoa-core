@@ -10,6 +10,11 @@ protocolFrame:SetScript("OnEvent", function(self, event, version, contentHash, l
     UI.Protocol.version = tonumber(version)
     UI.Protocol.contentHash = contentHash
     UI.Protocol.serverLanguage = language
+    -- The account language is authoritative; the local CVar is only the pre-login default.
+    if type(language) == "string" and language ~= VanillaBonkLocale.language then
+        SetCVar("hoaLanguage", language)
+        VanillaBonkLocale.Changed(language)
+    end
 end)
 
 local SendChatWhileAlive = SendChatMessage

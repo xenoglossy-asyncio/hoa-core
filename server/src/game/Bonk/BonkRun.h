@@ -1242,6 +1242,7 @@ class BonkRun
         std::vector<OwnedCard> m_cards;
         float m_cardStats[MAX_BONK_PASSIVE_EFFECT] = {};
         uint32 m_cardCopies[MAX_BONK_CARD_EFFECT] = {};
+        mutable uint32 m_killPowerKills = 0;
         BonkCard const* m_cardByEffect[MAX_BONK_CARD_EFFECT] = {};
         int32 m_cardCooldowns[MAX_BONK_CARD_EFFECT] = {};
         uint32 m_cardTickMs = 0;
