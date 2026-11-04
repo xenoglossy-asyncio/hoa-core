@@ -33,6 +33,9 @@ const HOA_RUN_SUPPORT: &str = "HOA_RUN_SUPPORT";
 const HOA_RUN_GLYPH_METER: &str = "HOA_RUN_GLYPH_METER";
 const HOA_RUN_OTHER_METER: &str = "HOA_RUN_OTHER_METER";
 const HOA_RUN_PARTY_METER: &str = "HOA_RUN_PARTY_METER";
+const HOA_OBJECTIVE: &str = "HOA_OBJECTIVE";
+const HOA_OBJECTIVE_CLEAR: &str = "HOA_OBJECTIVE_CLEAR";
+const HOA_OBJECTIVE_PING: &str = "HOA_OBJECTIVE_PING";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -109,6 +112,34 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Objective(objective) => {
+                    script.fire_event(
+                        HOA_OBJECTIVE,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(objective.id))),
+                            ("kind", ScriptValue::Str(objective.kind)),
+                            ("x", ScriptValue::Number(f64::from(objective.x))),
+                            ("y", ScriptValue::Number(f64::from(objective.y))),
+                            ("map_id", ScriptValue::Int(i64::from(objective.map_id))),
+                            ("label", ScriptValue::Str(objective.label)),
+                            ("seconds", ScriptValue::Int(i64::from(objective.seconds))),
+                            ("icon", ScriptValue::Str(objective.icon)),
+                            ("description", ScriptValue::Str(objective.description)),
+                        ])],
+                    );
+                }
+                HoaMessage::ObjectiveClear(clear) => {
+                    script.fire_event(
+                        HOA_OBJECTIVE_CLEAR,
+                        vec![lua_table(vec![("id", ScriptValue::Int(i64::from(clear.id)))])],
+                    );
+                }
+                HoaMessage::ObjectivePing(ping) => {
+                    script.fire_event(
+                        HOA_OBJECTIVE_PING,
+                        vec![lua_table(vec![("id", ScriptValue::Int(i64::from(ping.id)))])],
+                    );
+                }
                 HoaMessage::RunSupport(support) => {
                     script.fire_event(HOA_RUN_SUPPORT, vec![lua_table(vec![("text", ScriptValue::Str(support.text))])]);
                 }
@@ -342,6 +373,9 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_RUN_GLYPH_METER);
         add_in_game_event(HOA_RUN_OTHER_METER);
         add_in_game_event(HOA_RUN_PARTY_METER);
+        add_in_game_event(HOA_OBJECTIVE);
+        add_in_game_event(HOA_OBJECTIVE_CLEAR);
+        add_in_game_event(HOA_OBJECTIVE_PING);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
@@ -590,5 +624,37 @@ mod tests {
         assert_eq!(beat.name, "Boss");
         assert_eq!(beat.beat, 2);
         assert_eq!(beat.seconds, 15);
+    }
+
+    #[test]
+    fn the_objective_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        body.extend_from_slice(&7u32.to_le_bytes());
+        let kind = "shrine";
+        body.extend_from_slice(&(kind.len() as u16).to_le_bytes());
+        body.extend_from_slice(kind.as_bytes());
+        body.extend_from_slice(&1.5f32.to_le_bytes());
+        body.extend_from_slice(&2.5f32.to_le_bytes());
+        body.extend_from_slice(&1u32.to_le_bytes());
+        let label = "Shrine";
+        body.extend_from_slice(&(label.len() as u16).to_le_bytes());
+        body.extend_from_slice(label.as_bytes());
+        body.extend_from_slice(&30u32.to_le_bytes());
+        for text in ["icon", "desc"] {
+            body.extend_from_slice(&(text.len() as u16).to_le_bytes());
+            body.extend_from_slice(text.as_bytes());
+        }
+
+        let Some(HoaMessage::Objective(objective)) = protocol_generated::decode(protocol_generated::MSG_OBJECTIVE, &body) else {
+            panic!("objective did not decode");
+        };
+        assert_eq!(objective.id, 7);
+        assert_eq!(objective.kind, "shrine");
+        assert_eq!(objective.x, 1.5);
+        assert_eq!(objective.y, 2.5);
+        assert_eq!(objective.label, "Shrine");
+        assert_eq!(objective.seconds, 30);
+        assert_eq!(objective.icon, "icon");
+        assert_eq!(objective.description, "desc");
     }
 }

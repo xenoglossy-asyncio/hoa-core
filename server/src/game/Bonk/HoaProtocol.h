@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 6
+#define HOA_PROTOCOL_VERSION 7
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -26,6 +26,9 @@
 #define HOA_MSG_RUN_GLYPH_METER 0x0018
 #define HOA_MSG_RUN_OTHER_METER 0x0019
 #define HOA_MSG_RUN_PARTY_METER 0x001A
+#define HOA_MSG_OBJECTIVE 0x001B
+#define HOA_MSG_OBJECTIVE_CLEAR 0x001C
+#define HOA_MSG_OBJECTIVE_PING 0x001D
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -196,4 +199,30 @@ inline void HoAWriteRunPartyMeter(WorldPacket& packet, std::string const& text)
 {
     packet << uint16(HOA_MSG_RUN_PARTY_METER);
     HoAWriteString(packet, text);
+}
+
+inline void HoAWriteObjective(WorldPacket& packet, uint32 const& id, std::string const& kind, float const& x, float const& y, uint32 const& mapId, std::string const& label, uint32 const& seconds, std::string const& icon, std::string const& description)
+{
+    packet << uint16(HOA_MSG_OBJECTIVE);
+    packet << uint32(id);
+    HoAWriteString(packet, kind);
+    packet << float(x);
+    packet << float(y);
+    packet << uint32(mapId);
+    HoAWriteString(packet, label);
+    packet << uint32(seconds);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, description);
+}
+
+inline void HoAWriteObjectiveClear(WorldPacket& packet, uint32 const& id)
+{
+    packet << uint16(HOA_MSG_OBJECTIVE_CLEAR);
+    packet << uint32(id);
+}
+
+inline void HoAWriteObjectivePing(WorldPacket& packet, uint32 const& id)
+{
+    packet << uint16(HOA_MSG_OBJECTIVE_PING);
+    packet << uint32(id);
 }

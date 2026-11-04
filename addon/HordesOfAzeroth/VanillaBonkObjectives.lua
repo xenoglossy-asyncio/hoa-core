@@ -333,7 +333,23 @@ handlers["objectiveclear"] = function(f)
     end
 end
 
+local function ObjectiveFields(objective)
+    return {
+        false, tostring(objective.id), objective.kind, objective.x, objective.y, objective.map_id,
+        objective.label, objective.seconds, objective.icon, objective.description,
+    }
+end
+
 UI.ListenHoa({
+    HOA_OBJECTIVE = function(objective)
+        handlers["objective"](ObjectiveFields(objective))
+    end,
+    HOA_OBJECTIVE_CLEAR = function(objective)
+        handlers["objectiveclear"]({ false, objective.id ~= 0 and tostring(objective.id) or nil })
+    end,
+    HOA_OBJECTIVE_PING = function(objective)
+        handlers["objectiveping"]({ false, tostring(objective.id) })
+    end,
     HOA_RUN_END = RemoveAll,
 })
 
