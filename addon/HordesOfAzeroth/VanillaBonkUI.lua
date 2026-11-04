@@ -275,10 +275,10 @@ function UI.ListenHoa(handlers)
     for event in pairs(handlers) do
         frame:RegisterEvent(event)
     end
-    frame:SetScript("OnEvent", function(self, event, ...)
+    frame:SetScript("OnEvent", function()
         local handler = handlers[event]
         if handler then
-            handler(...)
+            handler(arg1, arg2, arg3, arg4)
         end
     end)
     return frame
