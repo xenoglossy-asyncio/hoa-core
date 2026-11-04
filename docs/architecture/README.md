@@ -17,6 +17,8 @@ The new repository therefore puts all components together, hard-forks, and evolv
 
 **Goal:** language is an account/session property. The client install only supplies resources (models, textures, audio, base DBCs) and never decides the display language. Any 1.12.1 install language can run Chinese or English.
 
+**Progress (2026-11-04):** the first client slice is in. `shared/i18n/ui` + `tools/i18n/gen_client_pack.py` generate enUS/zhCN packs; HoA-authored UI and GlueXML read `HOA_UI_*` keys; `GetLocale` uses an account/launcher locale while the install locale stays for DBC columns and name charsets. Stock FrameXML/GlobalStrings, DBC name overlays, zhTW and the hardcoded shaper locale remain.
+
 ### 2.2 Buffs/effects have three representations
 
 - **Real auras, but only half-done:** move speed/max health use spells 17498/19255 (`BonkRun.cpp:11365-11376`); Necrotic has aura 18951 (`BonkRun.cpp:4411`) but the healing cut reads `m_necroticStacks` (`BonkRun.cpp:4439`); shield visual is 16051 (`BonkRun.cpp:4754-4758`); weapon buffs are cast as auras but their expiry is also stored in `m_buffs` (`BonkRun.cpp:8071-8072,7913-7922`).

@@ -17,6 +17,8 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 
 **目标**：语言是账号/会话属性。客户端安装只需提供资源（模型、贴图、音频、基础 DBC），不决定显示语言。任何语言的 1.12.1 安装都能运行中文或英文。
 
+**进度（2026-11-04）**：客户端第一阶段已落地。`shared/i18n/ui` + `tools/i18n/gen_client_pack.py` 生成 enUS/zhCN 语言包；HoA 自有 UI 和 GlueXML 读取 `HOA_UI_*` 键；`GetLocale` 使用账号/启动器语言，安装 locale 仍用于 DBC 列和名字字符集。原生 FrameXML/GlobalStrings、DBC 名称覆盖、zhTW 和写死的 shaper locale 仍待后续。
+
 ### 2.2 buff/效果有三套表示
 
 - **真光环，但只做了一半**：移速/最大生命用 spell 17498/19255（`BonkRun.cpp:11365-11376`）；坏死有 aura 18951（`BonkRun.cpp:4411`），但治疗削减实际读的是 `m_necroticStacks`（`BonkRun.cpp:4439`）；护盾视觉 16051（`BonkRun.cpp:4754-4758`）；武器 buff 施放后又在 `m_buffs` 存了一份到期时间（`BonkRun.cpp:8071-8072,7913-7922`）。

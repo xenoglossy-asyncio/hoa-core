@@ -752,6 +752,9 @@ pub(crate) struct Model {
     /// The client's locale index, `[0xc0e080]` (0, enUS, until the host seats the install's): the
     /// name `GetLocale` answers is the table `0x8558a4` at it ([`crate::toc::LOCALES`]).
     pub(crate) locale: usize,
+    /// The language-pack locale [`UiScript::set_ui_locale`] seats for `GetLocale`; `None` falls
+    /// back to `locale`. It leaves `locale` alone, which DBC columns and the name charsets read.
+    pub(crate) ui_locale: Option<usize>,
     /// `Wow.ini`'s `Region` as start-up hands it to the name check (`0x402b7f` → `0x6c91b8`,
     /// `[0x86c9e0]`): 0 until the host seats the install's.
     pub(crate) client_region: i32,
@@ -1601,6 +1604,7 @@ impl Model {
             layout_mode: 0,
             european_numbers: false,
             locale: 0,
+            ui_locale: None,
             client_region: 0,
             name_lists: None,
             slider_drag: None,

@@ -24,7 +24,11 @@ def render() -> tuple[bytes, bytes]:
         raise SystemExit("i18n errors; run tools/i18n/check.py")
     messages: dict[str, dict] = {}
     for entry in result.entries:
-        message = {key: value for key, value in entry.items() if key != "id"}
+        message = {
+            key: value
+            for key, value in entry.items()
+            if key not in ("id", "global", "ref")
+        }
         messages[entry["id"]] = message
     document = {"version": 1, "source": result.source, "messages": messages}
     payload = (

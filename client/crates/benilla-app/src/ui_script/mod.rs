@@ -364,17 +364,22 @@ impl Plugin for UiScriptPlugin {
             .init_resource::<UiClock>()
             .init_resource::<benilla_world::frame_pace::FrameStep>()
             .init_resource::<AddOnIdentity>()
+            .init_resource::<crate::client_language::UiLanguage>()
             // After `AssetSet::Open`: the VM's first load is the chain's `GlobalStrings.lua`.
             .add_systems(
                 Startup,
-                // After the CVars load: the glue screens read the agreements as they come up. After
-                // the glyph cache, which measures the text their first show sizes frames by. After
-                // the word lists, which every VM is seated with as it is made.
-                setup_script
-                    .after(benilla_assets::AssetSet::Open)
-                    .after(crate::text_filter::TextFilterLoad)
-                    .after(crate::cvars::CvarLoad)
-                    .after(crate::ui_text::FontAtlasInit),
+                (
+                    crate::client_language::load_ui_language.after(crate::cvars::CvarLoad),
+                    // After the CVars load: the glue screens read the agreements as they come up. After
+                    // the glyph cache, which measures the text their first show sizes frames by. After
+                    // the word lists, which every VM is seated with as it is made.
+                    setup_script
+                        .after(benilla_assets::AssetSet::Open)
+                        .after(crate::text_filter::TextFilterLoad)
+                        .after(crate::cvars::CvarLoad)
+                        .after(crate::client_language::load_ui_language)
+                        .after(crate::ui_text::FontAtlasInit),
+                ),
             )
             // The in-game UI loads on world entry, as the reference's does, once the loading cover
             // has presented, so its ~0.5 s never stalls the cover's first frame.

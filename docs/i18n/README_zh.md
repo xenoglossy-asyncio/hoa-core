@@ -97,14 +97,17 @@ shared/i18n/
 
 ## 7. 客户端
 
-- **语言包**：客户端启动时根据启动器/上次语言加载 `assets/i18n/<locale>.json`；登录后用账号语言覆盖。内置 enUS，其他语言随内容包分发。
-- **GlobalStrings**：目前直接读安装 MPQ 里的 `GlobalStrings.lua`（`benilla-app/src/ui_script/lifecycle.rs:1165-1188`）。改为仓库自带的多语言 GlobalStrings/语言包，安装数据不再提供界面字符串。
-- **`GetLocale`**：登录前返回启动器/上次语言，登录后返回账号语言；插件调用 `GetLocale()` 得到的是游戏语言，不是安装语言。安装 `Wow.ini` 的 locale 只用于解析 DBC 列和资源。
-- **界面文本**：替换 `assets/ui/OptionsFrame.xml`、`GameMenuAdapters.xml`、`ScriptLogFrame.xml`、`AccountLoginRealmlist.xml` 等硬编码英文，改为从语言包取；Lua/FrameXML 读取同一个语言表。
-- **DBC 名称**：法术书、地图、天赋、职业/种族等显示名称从语言包按 ID 取（生成自官方 1.12.1 名称表 + HOA 内容），不再依赖安装数据的本地化列。英文安装也能显示中文。
-- **字体**：按语言选字体回退链（zhCN：Noto Sans SC；zhTW：Noto Sans TC；enUS：原版字体），缺字回退顺序固定。
-- **排版**：CJK 无空格换行、禁则处理、按钮/标签最小宽度；长文本自动缩放或换行。排版引擎的 shaping locale 不能写死 `"en-US"`（`ui_text/engine/mod.rs:169`）。
-- **缓存**：WDB/模板缓存文件名或头部加入 `(locale, contentVersion)`；语言或内容变化时旧缓存自动失效。这同时解决“切换语言后装备名还是英文”的问题。第一块已落在 `client/crates/benilla-app/src/wdb.rs`：WDB 头部（格式 2）把 HOA 账号语言折进 locale tag，另一种语言写的缓存会被丢弃；内容版本等内容包落地后再加。
+- **语言包**：客户端启动时根据启动器/上次语言加载 `client/crates/benilla-app/assets/i18n/<locale>.json`；登录后用账号语言覆盖。第一阶段内置 enUS + zhCN，并编译进客户端。
+- **GlobalStrings**：原生界面仍读安装 MPQ 里的 `GlobalStrings.lua`（`benilla-app/src/ui_script/lifecycle.rs:1165-1188`）。第一阶段只替换 HoA 自有 UI 和 GlueXML；仓库自带原生 GlobalStrings 是下一阶段。
+- **`GetLocale`**：已用独立的 UI locale 实现：登录前返回启动器/上次语言，登录后返回账号语言；插件调用 `GetLocale()` 得到的是游戏语言，不是安装语言。安装 `Wow.ini` 的 locale 仍用于解析 DBC 列、资源和名字字符集。
+- **界面文本**：`OptionsFrame.xml`、`GameMenuAdapters.xml`、`ScriptLogFrame.xml`、`AccountLoginRealmlist.xml`、`KeyBindingsPage.xml` 和 GlueXML 已改为读取语言包生成的 `HOA_UI_*` 键；Lua/FrameXML 读同一张表。
+- **DBC 名称**：法术书、地图、天赋、职业/种族等显示名称目前仍来自安装数据的本地化列；内容包名称覆盖留到后续。
+- **字体**：按语言选字体回退链（zhCN：Noto Sans SC；zhTW：Noto Sans TC；enUS：原版字体），缺字回退顺序固定。第一阶段只带 Noto Sans SC，zhTW/韩文字体后续补。
+- **排版**：CJK 无空格换行、禁则处理、按钮/标签最小宽度；长文本自动缩放或换行。排版引擎的 shaping locale 仍写死 `"en-US"`（`ui_text/engine/mod.rs:169`），随 zhTW 阶段一起改。
+
+**进度（2026-11-04）**：`shared/i18n/ui` + `tools/i18n/gen_client_pack.py` 已生成 enUS/zhCN 语言包；`HOA_UI_*` 覆盖 HoA 的 Options、GameMenu、ScriptLog、Realmlist、KeyBindings 和 GlueXML，`GetLocale` 已跟账号语言。原生 GlobalStrings、DBC 名称、zhTW 和 shaper locale 仍待后续。
+
+- **缓存**：WDB/模板缓存文件名或头部加入 `(locale, contentVersion)`；语言或内容变化时旧缓存自动失效。第一块已落在 `client/crates/benilla-app/src/wdb.rs`：WDB 头部（格式 2）把 HOA 账号语言折进 locale tag，另一种语言写的缓存会被丢弃。
 - **自定义法术**：客户端没有 spell 查询通道（`benilla-app/src/net.rs:1034-1058`），`Spell.dbc` 里没有的 ID 会显示空白（`ui_spellbook.rs:351-355`、`ui_aura.rs:256-260`）。自定义光环行由服务端在 addon ready 和切语言时下发（`aura_catalog_entry`/`aura_catalog_end`）；Rust 侧只保存已本地化的名称/图标/描述，不再自行选择语言。
 - **Glue 职业名**：Glue 代码不能硬编码本地化职业名。优先用服务端下发的职业 ID 映射；拿不到时通过 `GetClassesForRace`/`GetSelectedClass` 在运行时学习客户端当前语言的职业名。旧的硬编码中文表已删除。
 - **GlueXML**：登录/选人/建号界面使用同一语言包；语言选择可放在 Glue 或启动器。

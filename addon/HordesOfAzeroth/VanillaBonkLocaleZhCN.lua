@@ -933,7 +933,7 @@ VanillaBonkLocale.Register("zhCN", {
     ["hoa.addon.open_all"] = "全部打开",
     ["hoa.addon.open_chests_vaults_and_hidden_finds"] = "打开宝箱、保险库和隐藏发现",
     ["hoa.addon.open_zone"] = "开阔地带",
-    ["hoa.addon.options"] = "选项键",
+    ["hoa.addon.options"] = "选项",
     ["hoa.addon.options_window_okay"] = "确定",
     ["hoa.addon.or"] = "或",
     ["hoa.addon.other_players_spell_effects"] = "其他玩家的法术特效",

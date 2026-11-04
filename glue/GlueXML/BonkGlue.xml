@@ -369,7 +369,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="BonkLoginTitle" inherits="GlueFontNormalHuge" text="Hordes of Azeroth">
+				<FontString name="BonkLoginTitle" inherits="GlueFontNormalHuge" text="HOA_UI_GLUE_HORDES_OF_AZEROTH_2">
 					<Anchors>
 						<Anchor point="TOP">
 							<Offset>
@@ -390,7 +390,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="BonkLoginConnectButton" inherits="GlueButtonSmallTemplate" text="Connect">
+			<Button name="BonkLoginConnectButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_CONNECT">
 				<Anchors>
 					<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOM">
 						<Offset>
@@ -404,7 +404,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkLoginQuitButton" inherits="GlueButtonSmallTemplate" text="QUIT">
+			<Button name="BonkLoginQuitButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_QUIT_2">
 				<Anchors>
 					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOM">
 						<Offset>
@@ -424,7 +424,7 @@
 	<Frame name="BonkHeroFrame" parent="GlueParent" setAllPoints="true" frameStrata="HIGH" enableMouse="true" hidden="true">
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="BonkHeroTitle" inherits="GlueFontNormalHuge" text="HORDES OF AZEROTH">
+				<FontString name="BonkHeroTitle" inherits="GlueFontNormalHuge" text="HOA_UI_GLUE_HORDES_OF_AZEROTH">
 					<Anchors>
 						<Anchor point="TOP">
 							<Offset>
@@ -433,7 +433,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkHeroSubtitle" inherits="GlueFontHighlightLarge" text="Choose your character">
+				<FontString name="BonkHeroSubtitle" inherits="GlueFontHighlightLarge" text="HOA_UI_GLUE_CHOOSE_YOUR_CHARACTER">
 					<Anchors>
 						<Anchor point="TOP" relativeTo="BonkHeroTitle" relativePoint="BOTTOM">
 							<Offset>
@@ -519,7 +519,7 @@
 						</Anchors>
 						<Layers>
 							<Layer level="ARTWORK">
-								<FontString name="BonkRaceNote" inherits="BonkFontTiny" text="Cosmetic only, no racial bonuses" justifyH="RIGHT">
+								<FontString name="BonkRaceNote" inherits="BonkFontTiny" text="HOA_UI_GLUE_COSMETIC_ONLY_NO_RACIAL_BONUSES" justifyH="RIGHT">
 									<Anchors>
 										<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT">
 											<Offset>
@@ -616,7 +616,7 @@
 							</Frame>
 						</Frames>
 					</Frame>
-					<Button name="BonkHeroRandomizeButton" inherits="GlueButtonSmallTemplate" text="Random look">
+					<Button name="BonkHeroRandomizeButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_RANDOM_LOOK">
 						<Anchors>
 							<Anchor point="TOP" relativeTo="BonkFeatureBox" relativePoint="BOTTOM">
 								<Offset>
@@ -646,7 +646,7 @@
 						</HitRectInsets>
 						<Layers>
 							<Layer level="ARTWORK">
-								<FontString name="BonkHeroIronmanText" inherits="GlueFontNormalSmall" text="Ironman mode">
+								<FontString name="BonkHeroIronmanText" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_IRONMAN_MODE_2">
 									<Anchors>
 										<Anchor point="LEFT" relativePoint="RIGHT">
 											<Offset>
@@ -780,7 +780,7 @@
 										<Anchor point="TOPLEFT"/>
 									</Anchors>
 								</FontString>
-								<FontString name="BonkClassRacesLabel" inherits="GlueFontNormalSmall" text="Races" justifyH="LEFT">
+								<FontString name="BonkClassRacesLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_RACES" justifyH="LEFT">
 									<Anchors>
 										<Anchor point="TOPLEFT" relativeTo="BonkClassBlurb" relativePoint="BOTTOMLEFT">
 											<Offset>
@@ -789,7 +789,7 @@
 										</Anchor>
 									</Anchors>
 								</FontString>
-								<FontString name="BonkClassStarterLabel" inherits="GlueFontNormalSmall" text="Starts with" justifyH="LEFT">
+								<FontString name="BonkClassStarterLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_STARTS_WITH" justifyH="LEFT">
 									<Anchors>
 										<Anchor point="TOPLEFT" relativeTo="BonkClassRacesLabel" relativePoint="BOTTOMLEFT">
 											<Offset>
@@ -903,7 +903,7 @@
 								</Size>
 								<Layers>
 									<Layer level="ARTWORK">
-										<FontString name="BonkSpecNote" inherits="BonkFontTiny" text="Just a preview. You don't pick a spec here.">
+										<FontString name="BonkSpecNote" inherits="BonkFontTiny" text="HOA_UI_GLUE_JUST_A_PREVIEW_YOU_DON_T_PICK_A_SPEC_HERE">
 											<Anchors>
 												<Anchor point="TOP">
 													<Offset>
@@ -1017,7 +1017,7 @@
 						</Frames>
 					</Frame>
 
-					<Button name="BonkHeroRetireButton" inherits="GlueButtonSmallTemplate" text="Delete character" hidden="true">
+					<Button name="BonkHeroRetireButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_DELETE_CHARACTER_2" hidden="true">
 						<Anchors>
 							<Anchor point="BOTTOM">
 								<Offset>
@@ -1047,7 +1047,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="BonkHeroNameLabel" inherits="GlueFontNormalSmall" text="Name">
+						<FontString name="BonkHeroNameLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_NAME">
 							<Anchors>
 								<Anchor point="BOTTOM" relativePoint="TOP">
 									<Offset>
@@ -1103,7 +1103,7 @@
 				</Scripts>
 			</Button>
 
-			<Button name="BonkHeroQuitButton" inherits="GlueButtonSmallTemplate" text="QUIT">
+			<Button name="BonkHeroQuitButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_QUIT_2">
 				<Anchors>
 					<Anchor point="BOTTOMLEFT">
 						<Offset>
@@ -1118,7 +1118,7 @@
 				</Scripts>
 			</Button>
 
-			<Button name="BonkHeroWipeButton" inherits="GlueButtonSmallTemplate" text="Wipe account">
+			<Button name="BonkHeroWipeButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_WIPE_ACCOUNT_2">
 				<Anchors>
 					<Anchor point="BOTTOMRIGHT">
 						<Offset>
@@ -1133,7 +1133,7 @@
 				</Scripts>
 			</Button>
 
-			<Button name="BonkHeroBackButton" inherits="GlueButtonSmallTemplate" text="Back" hidden="true">
+			<Button name="BonkHeroBackButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_BACK" hidden="true">
 				<Anchors>
 					<Anchor point="BOTTOMLEFT">
 						<Offset>

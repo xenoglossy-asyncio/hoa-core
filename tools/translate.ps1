@@ -26,11 +26,9 @@ $Files = @{
     'glossary'    = Join-Path $LocaleDir 'glossary.json'
     'addon'       = Join-Path $AddonDir "VanillaBonkLocale$($Locale.Substring(0, 1).ToUpper())$($Locale.Substring(1)).lua"
     'toc'         = Join-Path $AddonDir 'HordesOfAzeroth.toc'
-    'glue'        = Join-Path $GlueDir "BonkGlueLocale$($Locale.Substring(0, 1).ToUpper())$($Locale.Substring(1)).lua"
-    'glue-toc'    = Join-Path $GlueDir 'GlueXML.toc'
     'export'      = $ExportFile
 }
-$Writable     = @('server', 'glossary', 'addon', 'toc', 'glue', 'glue-toc')
+$Writable     = @('server', 'glossary', 'addon', 'toc')
 $Token        = [guid]::NewGuid().ToString('N')
 $Utf8         = New-Object System.Text.UTF8Encoding($false)
 $ContentTypes = @{ '.html' = 'text/html; charset=utf-8'; '.js' = 'text/javascript; charset=utf-8'; '.css' = 'text/css; charset=utf-8' }

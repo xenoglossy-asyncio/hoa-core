@@ -1,6 +1,9 @@
-BonkGlueLocale = { tables = {} };
+BonkGlueLocale = {};
 
 local function SavedLanguage()
+	if ( HOA_UI_LOCALE and HOA_UI_LOCALE ~= "" ) then
+		return HOA_UI_LOCALE;
+	end
 	if ( HOA_LANGUAGE and HOA_LANGUAGE ~= "" ) then
 		return HOA_LANGUAGE;
 	end
@@ -22,8 +25,13 @@ local function WithoutNote(text)
 end
 
 function BonkGlueLocale.Text(language, text)
-	local strings = BonkGlueLocale.tables[language];
-	return strings and strings[text] or WithoutNote(text);
+	if ( HOA_UI_TEXT ) then
+		local translated = HOA_UI_TEXT(text);
+		if ( translated ~= text ) then
+			return translated;
+		end
+	end
+	return WithoutNote(text);
 end
 
 local function Fill(text, values)
@@ -44,7 +52,3 @@ BonkGlueL = setmetatable({}, {
 		return Fill(BonkGlueLocale.Text(BonkGlueLocale.language, text), { a, b, c, d, e, f, g, h, i });
 	end,
 });
-
-function BonkGlueLocale.Register(language, strings)
-	BonkGlueLocale.tables[language] = strings;
-end

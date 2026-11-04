@@ -89,7 +89,7 @@
             end
         end
     </Script>
-    <Button name="BenillaRealmlistButton" inherits="GlueButtonSmallTemplate" parent="AccountLoginUI" text="Realmlist">
+    <Button name="BenillaRealmlistButton" inherits="GlueButtonSmallTemplate" parent="AccountLoginUI" text="HOA_UI_REALMLIST">
         <Anchors>
             <Anchor point="BOTTOM" relativeTo="AccountLoginCinematicsButton" relativePoint="TOP">
                 <Offset>

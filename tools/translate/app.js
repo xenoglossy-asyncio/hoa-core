@@ -310,14 +310,8 @@
                 await postFile('toc', toc);
                 state.toc = toc;
             }
-            if (state.hasGlue) {
-                await postFile('glue', L.writeLocaleTable(state.locale, L.glueTable(state.model.entries), state.eol.glue, 'BonkGlueLocale'));
-                const glueToc = L.ensureTocLine(state.glueToc, state.locale, 'BonkGlueLocale');
-                if (glueToc !== state.glueToc) {
-                    await postFile('glue-toc', glueToc);
-                    state.glueToc = glueToc;
-                }
-            }
+            // Glue text now lives in shared/i18n/ui/glue.yaml; this tool no longer writes the
+            // retired BonkGlueLocale<locale>.lua table or re-adds it to GlueXML.toc.
             for (const entry of state.model.entries) entry.original = entry.translation;
             state.model.entries = state.model.entries.filter(e => !e.removed);
             state.structural = false;

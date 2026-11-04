@@ -157,8 +157,17 @@ fn new_vm<E: std::fmt::Display>(
         }
     };
     script.set_european_numbers(european_numbers);
-    // `[0xc0e080]`, which start-up sets once from `Wow.ini`, so every VM answers `GetLocale` alike.
+    // `[0xc0e080]`, which start-up sets once from `Wow.ini`, so every VM answers the install
+    // locale for DBC columns and name charsets. The account/launcher language overrides only
+    // `GetLocale` and the client's own UI text.
     script.set_locale(super::client_locale().index());
+    let language = world
+        .get_resource::<crate::client_language::UiLanguage>()
+        .map(|language| language.selected.clone())
+        .unwrap_or_else(|| crate::client_language::language_for(world));
+    let ui_locale = crate::client_language::locale_for_code(&language);
+    script.set_ui_locale(Some(ui_locale.index()));
+    crate::client_language::install_for_script(&script);
     // `[0x882730]`, `Wow.ini`'s `Region`, read once alike and handed to the name check.
     script.set_client_region(super::client_region());
     // The name checks' word lists, client globals start-up compiles once (`0x402b7f` → `0x6c91a0`).
@@ -1442,19 +1451,40 @@ mod tests {
         assert_ne!(draws(false), [42, 18468, 6335, 26501]);
     }
 
-    /// Every VM, glue and in-game, answers `GetLocale` with the install's locale (`[0xc0e080]`).
+    /// Without a language resource every VM falls back to the install locale (`[0xc0e080]`) for
+    /// both the DBC columns and `GetLocale`.
     #[test]
-    fn every_new_vm_is_seated_with_the_installs_locale() {
+    fn every_new_vm_falls_back_to_the_installs_locale() {
         let mut world = World::new();
         let want = super::super::client_locale();
         let in_game = new_vm(&mut world, UiScript::new).expect("a VM");
         let glue = new_vm(&mut world, UiScript::new_glue).expect("a glue VM");
         for script in [in_game, glue] {
             assert_eq!(script.locale(), want.index());
+            assert_eq!(script.ui_locale(), Some(want.index()));
             let answer = script.eval::<String>("return GetLocale()").unwrap();
             assert_eq!(answer, want.name());
             assert_eq!(script.client_region(), super::super::client_region());
         }
+    }
+
+    /// The account language seats only `GetLocale`; the install locale stays for DBC columns and
+    /// the name charsets.
+    #[test]
+    fn a_new_vm_seats_the_account_language_for_get_locale() {
+        let mut world = World::new();
+        let install = super::super::client_locale();
+        world.insert_resource(crate::client_language::UiLanguage {
+            selected: "zhCN".to_string(),
+        });
+        let mut script = new_vm(&mut world, UiScript::new).expect("a VM");
+        script.set_locale(install.index());
+        assert_eq!(script.locale(), install.index());
+        assert_eq!(script.eval::<String>("return GetLocale()").unwrap(), "zhCN");
+        assert_eq!(
+            script.eval::<String>("return HOA_UI_OPTIONS_TITLE").unwrap(),
+            "选项"
+        );
     }
 
     /// The word lists are client globals start-up compiles once (`0x402b7f` → `0x6c91a0`), so a

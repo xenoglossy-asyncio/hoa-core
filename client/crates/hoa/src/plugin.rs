@@ -73,6 +73,17 @@ fn deliver_hoa_messages(world: &mut World) {
         )
     };
     let mut catalog_done = false;
+    // The account language arrives with hello. Seat it before the closure fires HOA_HELLO, so the
+    // addon's handler and GetLocale already read the new language.
+    let account_language = pending.iter().find_map(|(id, body)| {
+        match protocol_generated::decode(*id, body) {
+            Some(HoaMessage::Hello(hello)) => Some(hello.language),
+            _ => None,
+        }
+    });
+    if let Some(language) = account_language {
+        benilla_app::set_hoa_account_language(world, &language);
+    }
     benilla_app::run_hosted(world, |script| {
         let Some(script) = script else {
             return;
