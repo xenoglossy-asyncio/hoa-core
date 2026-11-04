@@ -216,6 +216,9 @@ end
 local handlers = {}
 
 UI.ListenHoa({
+    HOA_COOP_DOWN = function(down)
+        handlers["coopdown"]({ false, down.pool, down.cap, down.list })
+    end,
     HOA_WAVE_BEAT = function(beat)
         local seconds = tonumber(beat.seconds) or 0
         if seconds <= 0 then

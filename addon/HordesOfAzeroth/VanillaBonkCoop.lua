@@ -600,4 +600,33 @@ do
 			ready:Hide();
 		end,
 	});
+
+	VanillaBonkUI.ListenHoa({
+		HOA_COOP_WAIT = function(wait)
+			ShowWait(wait.names, tonumber(wait.seconds) or 0);
+		end,
+		HOA_COOP_WATCH = function(watch)
+			ShowWatchChoice(watch.name or "", tonumber(watch.choices) or 0);
+		end,
+		HOA_COOP_REMOVED = function()
+			Call("POST", "/join/removed");
+		end,
+		HOA_COOP_DOWN = function(down)
+			ShowDowned(ReadDowned(down.list));
+		end,
+		HOA_LEASH = function(leash)
+			ShowLeash(tonumber(leash.distance) or 0, tonumber(leash.radius) or 80, tonumber(leash.slow_percent) or 0);
+		end,
+		HOA_COOP_READY = function(readyCheck)
+			local seconds = tonumber(readyCheck.seconds) or 20;
+			readyTitle:SetText(readyCheck.text or "");
+			readyBar:SetMinMaxValues(0, seconds);
+			ready.left = seconds;
+			ready:Show();
+			PlaySound("ReadyCheck");
+		end,
+		HOA_COOP_READY_END = function()
+			ready:Hide();
+		end,
+	});
 end

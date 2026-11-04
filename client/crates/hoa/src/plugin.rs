@@ -99,6 +99,13 @@ const HOA_NPC_NAME: &str = "HOA_NPC_NAME";
 const HOA_SHARD: &str = "HOA_SHARD";
 const HOA_VALOR: &str = "HOA_VALOR";
 const HOA_EPIC_LUCK: &str = "HOA_EPIC_LUCK";
+const HOA_COOP_WAIT: &str = "HOA_COOP_WAIT";
+const HOA_COOP_WATCH: &str = "HOA_COOP_WATCH";
+const HOA_COOP_REMOVED: &str = "HOA_COOP_REMOVED";
+const HOA_COOP_DOWN: &str = "HOA_COOP_DOWN";
+const HOA_LEASH: &str = "HOA_LEASH";
+const HOA_COOP_READY: &str = "HOA_COOP_READY";
+const HOA_COOP_READY_END: &str = "HOA_COOP_READY_END";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -175,6 +182,59 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::CoopWait(wait) => {
+                    script.fire_event(
+                        HOA_COOP_WAIT,
+                        vec![lua_table(vec![
+                            ("names", ScriptValue::Str(wait.names)),
+                            ("seconds", ScriptValue::Int(i64::from(wait.seconds))),
+                        ])],
+                    );
+                }
+                HoaMessage::CoopWatch(watch) => {
+                    script.fire_event(
+                        HOA_COOP_WATCH,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(watch.name)),
+                            ("choices", ScriptValue::Int(i64::from(watch.choices))),
+                        ])],
+                    );
+                }
+                HoaMessage::CoopRemoved(_) => {
+                    script.fire_event(HOA_COOP_REMOVED, Vec::new());
+                }
+                HoaMessage::CoopDown(down) => {
+                    script.fire_event(
+                        HOA_COOP_DOWN,
+                        vec![lua_table(vec![
+                            ("pool", ScriptValue::Int(i64::from(down.pool))),
+                            ("cap", ScriptValue::Int(i64::from(down.cap))),
+                            ("list", ScriptValue::Str(down.list)),
+                        ])],
+                    );
+                }
+                HoaMessage::Leash(leash) => {
+                    script.fire_event(
+                        HOA_LEASH,
+                        vec![lua_table(vec![
+                            ("distance", ScriptValue::Int(i64::from(leash.distance))),
+                            ("radius", ScriptValue::Int(i64::from(leash.radius))),
+                            ("slow_percent", ScriptValue::Int(i64::from(leash.slow_percent))),
+                        ])],
+                    );
+                }
+                HoaMessage::CoopReady(ready) => {
+                    script.fire_event(
+                        HOA_COOP_READY,
+                        vec![lua_table(vec![
+                            ("text", ScriptValue::Str(ready.text)),
+                            ("seconds", ScriptValue::Int(i64::from(ready.seconds))),
+                        ])],
+                    );
+                }
+                HoaMessage::CoopReadyEnd(_) => {
+                    script.fire_event(HOA_COOP_READY_END, Vec::new());
+                }
                 HoaMessage::MasteryState(mastery) => {
                     script.fire_event(
                         HOA_MASTERY_STATE,
@@ -1008,6 +1068,13 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_SHARD);
         add_in_game_event(HOA_VALOR);
         add_in_game_event(HOA_EPIC_LUCK);
+        add_in_game_event(HOA_COOP_WAIT);
+        add_in_game_event(HOA_COOP_WATCH);
+        add_in_game_event(HOA_COOP_REMOVED);
+        add_in_game_event(HOA_COOP_DOWN);
+        add_in_game_event(HOA_LEASH);
+        add_in_game_event(HOA_COOP_READY);
+        add_in_game_event(HOA_COOP_READY_END);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

@@ -7,6 +7,7 @@
 #include "Chat.h"
 #include "Database/DatabaseEnv.h"
 #include "DynamicObject.h"
+#include "HoaProtocol.h"
 #include "Opcodes.h"
 #include "Utilities/Random.h"
 #include "Group.h"
@@ -280,7 +281,12 @@ void BonkCoop::OnUninvited(ObjectGuid guid)
         guest->GetSession()->KickDisconnectedFromWorld();
         return;
     }
-    guest->GetBonkPlayer()->SendAddon("coopremoved");
+    if (guest->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCoopRemoved(data);
+        guest->GetSession()->SendPacket(&data);
+    }
     guest->m_Events.AddLambdaEventAtOffset([guid]
     {
         if (Player* player = sObjectMgr.GetPlayer(guid))

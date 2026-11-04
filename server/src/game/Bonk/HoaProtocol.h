@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 16
+#define HOA_PROTOCOL_VERSION 17
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -92,6 +92,13 @@
 #define HOA_MSG_SHARD 0x005A
 #define HOA_MSG_VALOR 0x005B
 #define HOA_MSG_EPIC_LUCK 0x005C
+#define HOA_MSG_COOP_WAIT 0x005D
+#define HOA_MSG_COOP_WATCH 0x005E
+#define HOA_MSG_COOP_REMOVED 0x005F
+#define HOA_MSG_COOP_DOWN 0x0060
+#define HOA_MSG_LEASH 0x0061
+#define HOA_MSG_COOP_READY 0x0062
+#define HOA_MSG_COOP_READY_END 0x0063
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -774,4 +781,51 @@ inline void HoAWriteEpicLuck(WorldPacket& packet, uint32 const& bonus)
 {
     packet << uint16(HOA_MSG_EPIC_LUCK);
     packet << uint32(bonus);
+}
+
+inline void HoAWriteCoopWait(WorldPacket& packet, std::string const& names, uint32 const& seconds)
+{
+    packet << uint16(HOA_MSG_COOP_WAIT);
+    HoAWriteString(packet, names);
+    packet << uint32(seconds);
+}
+
+inline void HoAWriteCoopWatch(WorldPacket& packet, std::string const& name, uint32 const& choices)
+{
+    packet << uint16(HOA_MSG_COOP_WATCH);
+    HoAWriteString(packet, name);
+    packet << uint32(choices);
+}
+
+inline void HoAWriteCoopRemoved(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_COOP_REMOVED);
+}
+
+inline void HoAWriteCoopDown(WorldPacket& packet, uint32 const& pool, uint32 const& cap, std::string const& list)
+{
+    packet << uint16(HOA_MSG_COOP_DOWN);
+    packet << uint32(pool);
+    packet << uint32(cap);
+    HoAWriteString(packet, list);
+}
+
+inline void HoAWriteLeash(WorldPacket& packet, int32 const& distance, int32 const& radius, int32 const& slowPercent)
+{
+    packet << uint16(HOA_MSG_LEASH);
+    packet << int32(distance);
+    packet << int32(radius);
+    packet << int32(slowPercent);
+}
+
+inline void HoAWriteCoopReady(WorldPacket& packet, std::string const& text, uint32 const& seconds)
+{
+    packet << uint16(HOA_MSG_COOP_READY);
+    HoAWriteString(packet, text);
+    packet << uint32(seconds);
+}
+
+inline void HoAWriteCoopReadyEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_COOP_READY_END);
 }

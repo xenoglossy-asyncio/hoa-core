@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 16
+version: 17
 messages:
   - name: aura_value
     id: 0x0002
@@ -595,3 +595,43 @@ messages:
     direction: server_to_client
     fields:
       - { name: bonus, type: u32 }
+  - name: coop_wait
+    id: 0x005D
+    direction: server_to_client
+    fields:
+      - { name: names, type: string }
+      - { name: seconds, type: u32 }
+  - name: coop_watch
+    id: 0x005E
+    direction: server_to_client
+    fields:
+      - { name: name, type: string }
+      - { name: choices, type: u32 }
+  - name: coop_removed
+    id: 0x005F
+    direction: server_to_client
+    fields: []
+  - name: coop_down
+    id: 0x0060
+    direction: server_to_client
+    fields:
+      - { name: pool, type: u32 }
+      - { name: cap, type: u32 }
+      - { name: list, type: string }
+  - name: leash
+    id: 0x0061
+    direction: server_to_client
+    fields:
+      - { name: distance, type: i32 }
+      - { name: radius, type: i32 }
+      - { name: slow_percent, type: i32 }
+  - name: coop_ready
+    id: 0x0062
+    direction: server_to_client
+    fields:
+      - { name: text, type: string }
+      - { name: seconds, type: u32 }
+  - name: coop_ready_end
+    id: 0x0063
+    direction: server_to_client
+    fields: []
