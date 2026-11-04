@@ -511,6 +511,7 @@ fn load_spells(mut commands: Commands, assets: Option<Res<WorldAssets>>) {
     };
     match loaded {
         Ok(catalog) => {
+            let catalog = catalog.with_overlay(crate::hoa_spells::overlay());
             let forms = {
                 let mut chain = assets.chain.lock_recover();
                 benilla_formats::load_shapeshift_forms(&mut chain).unwrap_or_else(|e| {

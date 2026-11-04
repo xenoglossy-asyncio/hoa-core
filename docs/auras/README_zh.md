@@ -111,6 +111,7 @@ spell:
 - 内容定义：`hoa.aura.darkmoon.zandalarian_surge`，`duration 10s`，`hoa_power_percent 25`，`internal_cooldown 30s`。
 - 服务端：战斗/计时钩子触发 → `Apply` → 真实 aura 生效；伤害计算由 VMaNGOS 的 aura 系统完成。删除 `m_cardSurgeUntilMs`、`GetCardPower` 里的手工加成和每秒 `cardnow~`。
 - 客户端：buff 栏出现图标和剩余时间；提示文本来自内容包。
+- 首个实现：spell `60004`（迁移 `20261104120000_world.sql`）是真正的正面光环；服务端按卡牌设置持续时间，`client/crates/benilla-app/src/hoa_spells.rs` 通过 `SpellCatalog::with_overlay` 提供名称/图标/描述，所以即使安装的 `Spell.dbc` 没有这一行，原生 buff 栏和 tooltip 也能显示。这个静态覆盖层是未来内容包的第一块；`60001`-`60005` 留给 HoA。
 - 插件：不再自己计时/拼 tooltip；最多在自定义 UI 中读取该 aura 的剩余时间。
 
 ### 7.2 HoA 护盾/冲刺/决心

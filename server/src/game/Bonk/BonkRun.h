@@ -1237,7 +1237,6 @@ class BonkRun
         uint32 m_bigMovesUntilMs = 0;
         ObjectGuid m_bigMover;
         uint32 m_cardSwiftUntilMs = 0;
-        uint32 m_cardSurgeUntilMs = 0;
         uint32 m_cardKills = 0;
         float m_cardValorCarry = 0.0f;
         uint32 m_soulstones = 0;

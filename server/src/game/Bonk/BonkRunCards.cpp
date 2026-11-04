@@ -8,6 +8,7 @@
 #include "Creature.h"
 #include "Item.h"
 #include "Player.h"
+#include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Utilities/Random.h"
 #include "WorldSession.h"
@@ -166,7 +167,7 @@ float BonkRun::GetCardPower(Unit const* victim) const
         power += std::min(GetCardTotal(BONK_CARD_UNHIT_POWER, 1), GetCardTotal(BONK_CARD_UNHIT_POWER, 0) * std::floor(seconds));
     }
 
-    if (m_cardSurgeUntilMs > m_totalMs)
+    if (m_player->HasAura(BONK_SPELL_DARKMOON_SURGE))
         power += GetCardTotal(BONK_CARD_POWER_SURGE, 0);
     power += GetTrinketPower();
 
@@ -486,7 +487,13 @@ void BonkRun::UpdateCards(uint32 diff)
     if (BonkCard const* charm = m_cardByEffect[BONK_CARD_POWER_SURGE])
         if (m_cardCooldowns[BONK_CARD_POWER_SURGE] <= 0)
         {
-            m_cardSurgeUntilMs = m_totalMs + uint32(charm->values[1]);
+            if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DARKMOON_SURGE, ADD_AURA_POSITIVE))
+            {
+                int32 const duration = int32(charm->values[1]);
+                holder->SetAuraDuration(duration);
+                holder->SetAuraMaxDuration(duration);
+                holder->UpdateAuraDuration();
+            }
             StartCardCooldown(BONK_CARD_POWER_SURGE, charm->cooldownMs);
             m_player->GetBonkPlayer()->Notify(BONK_STRING_POWER_SURGE, { Localize(BONK_FIELD_CARD_NAME, charm->id, charm->name), FormatBonkNumber(GetCardTotal(BONK_CARD_POWER_SURGE, 0)),
                 FormatBonkNumber(charm->values[1] / 1000.0f) });
@@ -565,11 +572,15 @@ std::string BonkRun::DescribeCardNow(BonkCard const& card) const
                 return GetString(BONK_STRING_CARD_ACTIVE_HASTE, { percent(GetCardTotal(BONK_CARD_HASTE_BURST, 1)) });
             return "";
         case BONK_CARD_POWER_SURGE:
-            if (m_cardSurgeUntilMs > m_totalMs)
+            if (SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(BONK_SPELL_DARKMOON_SURGE))
             {
-                uint32 const left = (m_cardSurgeUntilMs - m_totalMs + 999) / IN_MILLISECONDS;
-                return GetString(left == 1 ? BONK_STRING_CARD_ACTIVE_POWER_ONE : BONK_STRING_CARD_ACTIVE_POWER,
-                    { percent(GetCardTotal(BONK_CARD_POWER_SURGE, 0)), std::to_string(left) });
+                int32 const leftMs = std::max(0, holder->GetAuraDuration());
+                if (leftMs > 0)
+                {
+                    uint32 const left = (uint32(leftMs) + 999) / IN_MILLISECONDS;
+                    return GetString(left == 1 ? BONK_STRING_CARD_ACTIVE_POWER_ONE : BONK_STRING_CARD_ACTIVE_POWER,
+                        { percent(GetCardTotal(BONK_CARD_POWER_SURGE, 0)), std::to_string(left) });
+                }
             }
             return "";
         case BONK_CARD_SOULSTONE:

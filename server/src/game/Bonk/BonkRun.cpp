@@ -1227,6 +1227,7 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_MOVE_SPEED);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_MAX_HEALTH);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DODGE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_DARKMOON_SURGE);
 
     return m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error);
 }
@@ -14525,6 +14526,7 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_MAX_HEALTH);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DODGE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_SHIELD_VISUAL);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_DARKMOON_SURGE);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     SetNecroticStacks(0);
     ClearBossPressure();

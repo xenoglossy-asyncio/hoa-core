@@ -294,6 +294,8 @@ pub const SPELL_EFFECT_PROSPECTING: u32 = 127;
 /// wrapper, and [`Self::learned_spell`] follows it to the ability it teaches.
 pub struct SpellCatalog {
     spells: HashMap<u32, SpellDisplay>,
+    /// Display rows the installed DBC does not hold, keyed like `spells`: HoA's custom spells.
+    overlay: HashMap<u32, SpellDisplay>,
     learned_spell: HashMap<u32, u32>,
     /// Learn effects in slot order, for spells that have any.
     learn_effects: HashMap<u32, Vec<LearnEffect>>,
@@ -353,6 +355,7 @@ impl SpellCatalog {
         Self {
             weapon_skills: weapon_skill_table(&spells),
             spells,
+            overlay: HashMap::new(),
             learned_spell,
             learn_effects,
             declared_language: HashMap::new(),
@@ -382,7 +385,15 @@ impl SpellCatalog {
     }
 
     pub fn get(&self, id: u32) -> Option<&SpellDisplay> {
-        self.spells.get(&id)
+        self.spells.get(&id).or_else(|| self.overlay.get(&id))
+    }
+
+    /// Adds display rows for spells the installed DBC does not hold. They are visible to
+    /// [`Self::get`] (aura names, icons, tooltips and cast bars) but not to [`Self::iter`], so a
+    /// custom aura never appears in the spellbook.
+    pub fn with_overlay(mut self, overlay: HashMap<u32, SpellDisplay>) -> Self {
+        self.overlay = overlay;
+        self
     }
 
     /// The dispel class's key, the `debuffType` `UnitDebuff` returns (`0x519a89`) and the debuff
@@ -724,6 +735,7 @@ pub fn load_spell_catalog(chain: &mut Chain) -> Result<SpellCatalog> {
     Ok(SpellCatalog {
         weapon_skills: weapon_skill_table(&spells),
         spells,
+        overlay: HashMap::new(),
         learned_spell,
         learn_effects,
         declared_language,

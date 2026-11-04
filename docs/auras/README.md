@@ -111,6 +111,7 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 - Content definition: `hoa.aura.darkmoon.zandalarian_surge`, `duration 10s`, `hoa_power_percent 25`, `internal_cooldown 30s`.
 - Server: a combat/timer hook triggers → `Apply` → the real aura applies; damage calculation uses VMaNGOS's aura system. Remove `m_cardSurgeUntilMs`, the manual bonus in `GetCardPower`, and the per-second `cardnow~`.
 - Client: the buff frame shows the icon and remaining time; tooltip text comes from the content pack.
+- First implementation: spell `60004` (migration `20261104120000_world.sql`) is a real positive aura; the server sets its duration from the card, and `client/crates/benilla-app/src/hoa_spells.rs` supplies the name/icon/description through `SpellCatalog::with_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. The static overlay is the first slice of the future content pack; ids `60001`-`60005` are reserved for HoA.
 - Addon: no timing or tooltip assembly; at most read the aura's remaining time for custom UI.
 
 ### 7.2 HoA shield/dash/determination
