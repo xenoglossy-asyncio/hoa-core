@@ -28,27 +28,12 @@ BONK_CLASS_COLORS = {
 	MAGE = { 0.41, 0.8, 0.94 }, WARLOCK = { 0.58, 0.51, 0.79 }, DRUID = { 1.0, 0.49, 0.04 },
 };
 
-BONK_CLIENT_CLASS_NAMES = {
-	WARRIOR = { "战士", "戰士" },
-	PALADIN = { "圣骑士", "聖騎士" },
-	HUNTER = { "猎人", "獵人" },
-	ROGUE = { "潜行者", "盜賊" },
-	PRIEST = { "牧师", "牧師" },
-	SHAMAN = { "萨满祭司", "薩滿" },
-	MAGE = { "法师", "法師" },
-	WARLOCK = { "术士", "術士" },
-	DRUID = { "德鲁伊", "德魯伊" },
-};
-
 BONK_CLASS_TOKENS = {};
 BONK_CLASS_BY_ID = {};
 for _, class in BONK_CLASSES do
 	BONK_CLASS_BY_ID[class.id] = class.token;
 	BONK_CLASS_TOKENS[class.name] = class.token;
 	BONK_CLASS_TOKENS[class.token] = class.token;
-	for _, clientName in BONK_CLIENT_CLASS_NAMES[class.token] do
-		BONK_CLASS_TOKENS[clientName] = class.token;
-	end
 end
 
 BONK_IRONMAN_TIP = L["This character does not share gold or unlocks with other characters."];
@@ -590,8 +575,6 @@ function BonkHero_ReadHeroes()
 	end
 end
 
-local CLASS_NAME_RACES = { "HUMAN", "TAUREN" };
-
 local function LearnClassesOfSelectedRace()
 	local classes = { GetClassesForRace() };
 	for i = 1, getn(classes) / 2 do
@@ -609,12 +592,21 @@ function BonkHero_LearnClassNames()
 	end
 	Bonk.classNamesLearned = true;
 	local races = { GetAvailableRaces() };
-	for _, raceToken in CLASS_NAME_RACES do
-		for i = 1, getn(races) / 2 do
-			if ( strupper(races[i * 2]) == raceToken ) then
-				SetSelectedRace(i);
-				SetCharacterRace(i);
-				LearnClassesOfSelectedRace();
+	local savedRace = GetSelectedRace();
+	local savedClass = GetSelectedClass();
+	for i = 1, getn(races) / 2 do
+		SetSelectedRace(i);
+		SetCharacterRace(i);
+		LearnClassesOfSelectedRace();
+	end
+	if ( savedRace and savedRace > 0 ) then
+		SetSelectedRace(savedRace);
+		SetCharacterRace(savedRace);
+		local classes = { GetClassesForRace() };
+		for i = 1, getn(classes) / 2 do
+			if ( classes[i * 2 - 1] == savedClass ) then
+				SetSelectedClass(i);
+				break;
 			end
 		end
 	end
