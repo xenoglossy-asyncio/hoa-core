@@ -1299,6 +1299,33 @@ end
 local handlers = {}
 
 UI.ListenHoa({
+    HOA_DEATH_RECAP = function(recap)
+        handlers["dr"]({
+            false, recap.max_health, recap.start_health, recap.killer, recap.kill_amount, recap.overkill, recap.taken,
+            recap.healed,
+        })
+    end,
+    HOA_DEATH_SOURCE = function(source)
+        handlers["drs"]({ false, source.index, source.icon, source.name, source.spell, source.kind, source.damage })
+    end,
+    HOA_DEATH_EVENTS = function(events)
+        handlers["dre"]({ false, events.text })
+    end,
+    HOA_RUN_SUMMARY = function(summary)
+        handlers["sum"]({ false, summary.damage_taken, summary.elites, summary.minis, summary.bosses })
+    end,
+    HOA_SUMMARY_WEAPON = function(weapon)
+        handlers["sumw"]({
+            false, weapon.icon, weapon.name, weapon.level, weapon.max_level, weapon.evolved and "1" or "0",
+            weapon.damage, weapon.kills, weapon.school,
+        })
+    end,
+    HOA_SUMMARY_SPELL = function(spell)
+        handlers["sums"]({ false, spell.icon, spell.name, spell.damage, spell.kills })
+    end,
+    HOA_SUMMARY_END = function()
+        handlers["sumend"]()
+    end,
     HOA_RUN_SUPPORT = function(state)
         handlers["support"]({ false, state.text })
     end,

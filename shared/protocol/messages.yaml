@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 19
+version: 20
 messages:
   - name: aura_value
     id: 0x0002
@@ -710,3 +710,61 @@ messages:
       - { name: label, type: string }
       - { name: seconds, type: u32 }
       - { name: total, type: u32 }
+  - name: death_recap
+    id: 0x0070
+    direction: server_to_client
+    fields:
+      - { name: max_health, type: u32 }
+      - { name: start_health, type: u32 }
+      - { name: killer, type: u32 }
+      - { name: kill_amount, type: u32 }
+      - { name: overkill, type: u32 }
+      - { name: taken, type: u32 }
+      - { name: healed, type: u32 }
+  - name: death_source
+    id: 0x0071
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: icon, type: string }
+      - { name: name, type: string }
+      - { name: spell, type: string }
+      - { name: kind, type: string }
+      - { name: damage, type: u64 }
+  - name: death_events
+    id: 0x0072
+    direction: server_to_client
+    fields:
+      - { name: text, type: string }
+  - name: run_summary
+    id: 0x0073
+    direction: server_to_client
+    fields:
+      - { name: damage_taken, type: u64 }
+      - { name: elites, type: u32 }
+      - { name: minis, type: u32 }
+      - { name: bosses, type: u32 }
+  - name: summary_weapon
+    id: 0x0074
+    direction: server_to_client
+    fields:
+      - { name: icon, type: string }
+      - { name: name, type: string }
+      - { name: level, type: u32 }
+      - { name: max_level, type: u32 }
+      - { name: evolved, type: bool }
+      - { name: damage, type: u64 }
+      - { name: kills, type: u32 }
+      - { name: school, type: string }
+  - name: summary_spell
+    id: 0x0075
+    direction: server_to_client
+    fields:
+      - { name: icon, type: string }
+      - { name: name, type: string }
+      - { name: damage, type: u64 }
+      - { name: kills, type: u32 }
+  - name: summary_end
+    id: 0x0076
+    direction: server_to_client
+    fields: []

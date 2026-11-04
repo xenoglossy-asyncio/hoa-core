@@ -118,6 +118,13 @@ const HOA_LEY_BLESSINGS: &str = "HOA_LEY_BLESSINGS";
 const HOA_LEY_BLESS: &str = "HOA_LEY_BLESS";
 const HOA_LEY_BLESS_END: &str = "HOA_LEY_BLESS_END";
 const HOA_EVENT_TIMER: &str = "HOA_EVENT_TIMER";
+const HOA_DEATH_RECAP: &str = "HOA_DEATH_RECAP";
+const HOA_DEATH_SOURCE: &str = "HOA_DEATH_SOURCE";
+const HOA_DEATH_EVENTS: &str = "HOA_DEATH_EVENTS";
+const HOA_RUN_SUMMARY: &str = "HOA_RUN_SUMMARY";
+const HOA_SUMMARY_WEAPON: &str = "HOA_SUMMARY_WEAPON";
+const HOA_SUMMARY_SPELL: &str = "HOA_SUMMARY_SPELL";
+const HOA_SUMMARY_END: &str = "HOA_SUMMARY_END";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -194,6 +201,79 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::DeathRecap(recap) => {
+                    script.fire_event(
+                        HOA_DEATH_RECAP,
+                        vec![lua_table(vec![
+                            ("max_health", ScriptValue::Int(i64::from(recap.max_health))),
+                            ("start_health", ScriptValue::Int(i64::from(recap.start_health))),
+                            ("killer", ScriptValue::Int(i64::from(recap.killer))),
+                            ("kill_amount", ScriptValue::Int(i64::from(recap.kill_amount))),
+                            ("overkill", ScriptValue::Int(i64::from(recap.overkill))),
+                            ("taken", ScriptValue::Int(i64::from(recap.taken))),
+                            ("healed", ScriptValue::Int(i64::from(recap.healed))),
+                        ])],
+                    );
+                }
+                HoaMessage::DeathSource(source) => {
+                    script.fire_event(
+                        HOA_DEATH_SOURCE,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(source.index))),
+                            ("icon", ScriptValue::Str(source.icon)),
+                            ("name", ScriptValue::Str(source.name)),
+                            ("spell", ScriptValue::Str(source.spell)),
+                            ("kind", ScriptValue::Str(source.kind)),
+                            ("damage", ScriptValue::Number(source.damage as f64)),
+                        ])],
+                    );
+                }
+                HoaMessage::DeathEvents(events) => {
+                    script.fire_event(
+                        HOA_DEATH_EVENTS,
+                        vec![lua_table(vec![("text", ScriptValue::Str(events.text))])],
+                    );
+                }
+                HoaMessage::RunSummary(summary) => {
+                    script.fire_event(
+                        HOA_RUN_SUMMARY,
+                        vec![lua_table(vec![
+                            ("damage_taken", ScriptValue::Number(summary.damage_taken as f64)),
+                            ("elites", ScriptValue::Int(i64::from(summary.elites))),
+                            ("minis", ScriptValue::Int(i64::from(summary.minis))),
+                            ("bosses", ScriptValue::Int(i64::from(summary.bosses))),
+                        ])],
+                    );
+                }
+                HoaMessage::SummaryWeapon(weapon) => {
+                    script.fire_event(
+                        HOA_SUMMARY_WEAPON,
+                        vec![lua_table(vec![
+                            ("icon", ScriptValue::Str(weapon.icon)),
+                            ("name", ScriptValue::Str(weapon.name)),
+                            ("level", ScriptValue::Int(i64::from(weapon.level))),
+                            ("max_level", ScriptValue::Int(i64::from(weapon.max_level))),
+                            ("evolved", ScriptValue::Bool(weapon.evolved)),
+                            ("damage", ScriptValue::Number(weapon.damage as f64)),
+                            ("kills", ScriptValue::Int(i64::from(weapon.kills))),
+                            ("school", ScriptValue::Str(weapon.school)),
+                        ])],
+                    );
+                }
+                HoaMessage::SummarySpell(spell) => {
+                    script.fire_event(
+                        HOA_SUMMARY_SPELL,
+                        vec![lua_table(vec![
+                            ("icon", ScriptValue::Str(spell.icon)),
+                            ("name", ScriptValue::Str(spell.name)),
+                            ("damage", ScriptValue::Number(spell.damage as f64)),
+                            ("kills", ScriptValue::Int(i64::from(spell.kills))),
+                        ])],
+                    );
+                }
+                HoaMessage::SummaryEnd(_) => {
+                    script.fire_event(HOA_SUMMARY_END, Vec::new());
+                }
                 HoaMessage::Capture(capture) => {
                     script.fire_event(
                         HOA_CAPTURE,
@@ -1196,6 +1276,13 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_LEY_BLESS);
         add_in_game_event(HOA_LEY_BLESS_END);
         add_in_game_event(HOA_EVENT_TIMER);
+        add_in_game_event(HOA_DEATH_RECAP);
+        add_in_game_event(HOA_DEATH_SOURCE);
+        add_in_game_event(HOA_DEATH_EVENTS);
+        add_in_game_event(HOA_RUN_SUMMARY);
+        add_in_game_event(HOA_SUMMARY_WEAPON);
+        add_in_game_event(HOA_SUMMARY_SPELL);
+        add_in_game_event(HOA_SUMMARY_END);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

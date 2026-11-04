@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 19
+#define HOA_PROTOCOL_VERSION 20
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -111,6 +111,13 @@
 #define HOA_MSG_LEY_BLESS 0x006D
 #define HOA_MSG_LEY_BLESS_END 0x006E
 #define HOA_MSG_EVENT_TIMER 0x006F
+#define HOA_MSG_DEATH_RECAP 0x0070
+#define HOA_MSG_DEATH_SOURCE 0x0071
+#define HOA_MSG_DEATH_EVENTS 0x0072
+#define HOA_MSG_RUN_SUMMARY 0x0073
+#define HOA_MSG_SUMMARY_WEAPON 0x0074
+#define HOA_MSG_SUMMARY_SPELL 0x0075
+#define HOA_MSG_SUMMARY_END 0x0076
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -927,4 +934,69 @@ inline void HoAWriteEventTimer(WorldPacket& packet, std::string const& label, ui
     HoAWriteString(packet, label);
     packet << uint32(seconds);
     packet << uint32(total);
+}
+
+inline void HoAWriteDeathRecap(WorldPacket& packet, uint32 const& maxHealth, uint32 const& startHealth, uint32 const& killer, uint32 const& killAmount, uint32 const& overkill, uint32 const& taken, uint32 const& healed)
+{
+    packet << uint16(HOA_MSG_DEATH_RECAP);
+    packet << uint32(maxHealth);
+    packet << uint32(startHealth);
+    packet << uint32(killer);
+    packet << uint32(killAmount);
+    packet << uint32(overkill);
+    packet << uint32(taken);
+    packet << uint32(healed);
+}
+
+inline void HoAWriteDeathSource(WorldPacket& packet, uint32 const& index, std::string const& icon, std::string const& name, std::string const& spell, std::string const& kind, uint64 const& damage)
+{
+    packet << uint16(HOA_MSG_DEATH_SOURCE);
+    packet << uint32(index);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, spell);
+    HoAWriteString(packet, kind);
+    packet << uint64(damage);
+}
+
+inline void HoAWriteDeathEvents(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_DEATH_EVENTS);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteRunSummary(WorldPacket& packet, uint64 const& damageTaken, uint32 const& elites, uint32 const& minis, uint32 const& bosses)
+{
+    packet << uint16(HOA_MSG_RUN_SUMMARY);
+    packet << uint64(damageTaken);
+    packet << uint32(elites);
+    packet << uint32(minis);
+    packet << uint32(bosses);
+}
+
+inline void HoAWriteSummaryWeapon(WorldPacket& packet, std::string const& icon, std::string const& name, uint32 const& level, uint32 const& maxLevel, bool const& evolved, uint64 const& damage, uint32 const& kills, std::string const& school)
+{
+    packet << uint16(HOA_MSG_SUMMARY_WEAPON);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, name);
+    packet << uint32(level);
+    packet << uint32(maxLevel);
+    packet << bool(evolved);
+    packet << uint64(damage);
+    packet << uint32(kills);
+    HoAWriteString(packet, school);
+}
+
+inline void HoAWriteSummarySpell(WorldPacket& packet, std::string const& icon, std::string const& name, uint64 const& damage, uint32 const& kills)
+{
+    packet << uint16(HOA_MSG_SUMMARY_SPELL);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, name);
+    packet << uint64(damage);
+    packet << uint32(kills);
+}
+
+inline void HoAWriteSummaryEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_SUMMARY_END);
 }
