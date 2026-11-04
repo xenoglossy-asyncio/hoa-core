@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 10
+version: 11
 messages:
   - name: aura_value
     id: 0x0002
@@ -322,3 +322,77 @@ messages:
     fields:
       - { name: id, type: u32 }
       - { name: count, type: u32 }
+  - name: quest_log_open
+    id: 0x0034
+    direction: server_to_client
+    fields:
+      - { name: npc, type: string }
+  - name: quest_entry
+    id: 0x0035
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: name, type: string }
+      - { name: description, type: string }
+      - { name: icon, type: string }
+      - { name: progress, type: u32 }
+      - { name: amount, type: u32 }
+      - { name: completed, type: bool }
+      - { name: reward, type: string }
+      - { name: reward_icon, type: string }
+      - { name: class_only, type: bool }
+      - { name: category, type: string }
+  - name: quest_log_end
+    id: 0x0036
+    direction: server_to_client
+    fields: []
+  - name: quest_done
+    id: 0x0037
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: name, type: string }
+      - { name: reward, type: string }
+      - { name: icon, type: string }
+  - name: vendor_open
+    id: 0x0038
+    direction: server_to_client
+    fields:
+      - { name: coins, type: u32 }
+      - { name: reroll_cost, type: u32 }
+      - { name: seconds, type: u32 }
+      - { name: name, type: string }
+      - { name: restocks, type: u32 }
+  - name: vendor_slot
+    id: 0x0039
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: kind, type: string }
+      - { name: rank, type: u32 }
+      - { name: max_rank, type: u32 }
+      - { name: name, type: string }
+      - { name: icon, type: string }
+      - { name: description, type: string }
+      - { name: rarity, type: string }
+      - { name: locked, type: bool }
+      - { name: price, type: u32 }
+      - { name: state, type: u32 }
+  - name: vendor_end
+    id: 0x003A
+    direction: server_to_client
+    fields: []
+  - name: vendor_close
+    id: 0x003B
+    direction: server_to_client
+    fields: []
+  - name: portal_home
+    id: 0x003C
+    direction: server_to_client
+    fields:
+      - { name: vault_empty, type: bool }
+      - { name: finale, type: bool }
+  - name: portal_endless
+    id: 0x003D
+    direction: server_to_client
+    fields: []

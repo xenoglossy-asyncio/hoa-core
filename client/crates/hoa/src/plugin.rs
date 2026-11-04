@@ -58,6 +58,16 @@ const HOA_GLYPH_CLOSE: &str = "HOA_GLYPH_CLOSE";
 const HOA_GLYPH_TAKEN: &str = "HOA_GLYPH_TAKEN";
 const HOA_GLYPH_INFO: &str = "HOA_GLYPH_INFO";
 const HOA_GLYPH_COUNT: &str = "HOA_GLYPH_COUNT";
+const HOA_QUEST_LOG_OPEN: &str = "HOA_QUEST_LOG_OPEN";
+const HOA_QUEST_ENTRY: &str = "HOA_QUEST_ENTRY";
+const HOA_QUEST_LOG_END: &str = "HOA_QUEST_LOG_END";
+const HOA_QUEST_DONE: &str = "HOA_QUEST_DONE";
+const HOA_VENDOR_OPEN: &str = "HOA_VENDOR_OPEN";
+const HOA_VENDOR_SLOT: &str = "HOA_VENDOR_SLOT";
+const HOA_VENDOR_END: &str = "HOA_VENDOR_END";
+const HOA_VENDOR_CLOSE: &str = "HOA_VENDOR_CLOSE";
+const HOA_PORTAL_HOME: &str = "HOA_PORTAL_HOME";
+const HOA_PORTAL_ENDLESS: &str = "HOA_PORTAL_ENDLESS";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -134,6 +144,92 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::QuestLogOpen(open) => {
+                    script.fire_event(
+                        HOA_QUEST_LOG_OPEN,
+                        vec![lua_table(vec![("npc", ScriptValue::Str(open.npc))])],
+                    );
+                }
+                HoaMessage::QuestEntry(quest) => {
+                    script.fire_event(
+                        HOA_QUEST_ENTRY,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(quest.id))),
+                            ("name", ScriptValue::Str(quest.name)),
+                            ("description", ScriptValue::Str(quest.description)),
+                            ("icon", ScriptValue::Str(quest.icon)),
+                            ("progress", ScriptValue::Int(i64::from(quest.progress))),
+                            ("amount", ScriptValue::Int(i64::from(quest.amount))),
+                            ("completed", ScriptValue::Bool(quest.completed)),
+                            ("reward", ScriptValue::Str(quest.reward)),
+                            ("reward_icon", ScriptValue::Str(quest.reward_icon)),
+                            ("class_only", ScriptValue::Bool(quest.class_only)),
+                            ("category", ScriptValue::Str(quest.category)),
+                        ])],
+                    );
+                }
+                HoaMessage::QuestLogEnd(_) => {
+                    script.fire_event(HOA_QUEST_LOG_END, Vec::new());
+                }
+                HoaMessage::QuestDone(done) => {
+                    script.fire_event(
+                        HOA_QUEST_DONE,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(done.id))),
+                            ("name", ScriptValue::Str(done.name)),
+                            ("reward", ScriptValue::Str(done.reward)),
+                            ("icon", ScriptValue::Str(done.icon)),
+                        ])],
+                    );
+                }
+                HoaMessage::VendorOpen(open) => {
+                    script.fire_event(
+                        HOA_VENDOR_OPEN,
+                        vec![lua_table(vec![
+                            ("coins", ScriptValue::Int(i64::from(open.coins))),
+                            ("reroll_cost", ScriptValue::Int(i64::from(open.reroll_cost))),
+                            ("seconds", ScriptValue::Int(i64::from(open.seconds))),
+                            ("name", ScriptValue::Str(open.name)),
+                            ("restocks", ScriptValue::Int(i64::from(open.restocks))),
+                        ])],
+                    );
+                }
+                HoaMessage::VendorSlot(slot) => {
+                    script.fire_event(
+                        HOA_VENDOR_SLOT,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(slot.index))),
+                            ("kind", ScriptValue::Str(slot.kind)),
+                            ("rank", ScriptValue::Int(i64::from(slot.rank))),
+                            ("max_rank", ScriptValue::Int(i64::from(slot.max_rank))),
+                            ("name", ScriptValue::Str(slot.name)),
+                            ("icon", ScriptValue::Str(slot.icon)),
+                            ("description", ScriptValue::Str(slot.description)),
+                            ("rarity", ScriptValue::Str(slot.rarity)),
+                            ("locked", ScriptValue::Bool(slot.locked)),
+                            ("price", ScriptValue::Int(i64::from(slot.price))),
+                            ("state", ScriptValue::Int(i64::from(slot.state))),
+                        ])],
+                    );
+                }
+                HoaMessage::VendorEnd(_) => {
+                    script.fire_event(HOA_VENDOR_END, Vec::new());
+                }
+                HoaMessage::VendorClose(_) => {
+                    script.fire_event(HOA_VENDOR_CLOSE, Vec::new());
+                }
+                HoaMessage::PortalHome(home) => {
+                    script.fire_event(
+                        HOA_PORTAL_HOME,
+                        vec![lua_table(vec![
+                            ("vault_empty", ScriptValue::Bool(home.vault_empty)),
+                            ("finale", ScriptValue::Bool(home.finale)),
+                        ])],
+                    );
+                }
+                HoaMessage::PortalEndless(_) => {
+                    script.fire_event(HOA_PORTAL_ENDLESS, Vec::new());
+                }
                 HoaMessage::GlyphOffer(offer) => {
                     script.fire_event(
                         HOA_GLYPH_OFFER,
@@ -604,6 +700,16 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_GLYPH_TAKEN);
         add_in_game_event(HOA_GLYPH_INFO);
         add_in_game_event(HOA_GLYPH_COUNT);
+        add_in_game_event(HOA_QUEST_LOG_OPEN);
+        add_in_game_event(HOA_QUEST_ENTRY);
+        add_in_game_event(HOA_QUEST_LOG_END);
+        add_in_game_event(HOA_QUEST_DONE);
+        add_in_game_event(HOA_VENDOR_OPEN);
+        add_in_game_event(HOA_VENDOR_SLOT);
+        add_in_game_event(HOA_VENDOR_END);
+        add_in_game_event(HOA_VENDOR_CLOSE);
+        add_in_game_event(HOA_PORTAL_HOME);
+        add_in_game_event(HOA_PORTAL_ENDLESS);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

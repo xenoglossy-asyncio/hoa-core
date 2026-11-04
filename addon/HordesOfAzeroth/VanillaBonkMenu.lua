@@ -606,4 +606,13 @@ handlers["portalendless"] = function()
     confirm:Show()
 end
 
+UI.ListenHoa({
+    HOA_PORTAL_HOME = function(home)
+        handlers["portalhome"]({ false, home.vault_empty and "1" or "0", home.finale and "1" or "0" })
+    end,
+    HOA_PORTAL_ENDLESS = function()
+        handlers["portalendless"]()
+    end,
+})
+
 UI.Listen(handlers)

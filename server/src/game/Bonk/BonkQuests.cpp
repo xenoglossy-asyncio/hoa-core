@@ -4,6 +4,7 @@
 #include "BonkPlayer.h"
 #include "Creature.h"
 #include "Database/DatabaseEnv.h"
+#include "HoaProtocol.h"
 #include "Log.h"
 #include "Player.h"
 #include "Policies/SingletonImp.h"
@@ -670,7 +671,11 @@ void BonkQuests::Complete(Player* player, BonkQuest const& quest)
     std::string const reward = DescribeReward(quest, &icon, bonk->GetLocale());
     std::string const name = bonk->Localize(BONK_FIELD_QUEST_NAME, quest.id, quest.name);
     if (bonk->IsAddonReady())
-        bonk->SendAddon("questdone~" + std::to_string(quest.id) + "~" + name + "~" + reward + "~" + icon);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteQuestDone(data, quest.id, name, reward, icon);
+        bonk->GetPlayer()->GetSession()->SendPacket(&data);
+    }
     else
         bonk->Notify(BONK_STRING_QUEST_COMPLETE, { name, reward });
 
@@ -805,7 +810,12 @@ void BonkQuests::SendLog(Player* player, std::string const& npc)
             progress = itr->second;
     }
 
-    bonk->SendAddon("qlog~" + npc);
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket open(SMSG_HOA_MESSAGE);
+        HoAWriteQuestLogOpen(open, npc);
+        bonk->GetPlayer()->GetSession()->SendPacket(&open);
+    }
     for (auto const& itr : m_quests)
     {
         BonkQuest const& quest = itr.second;
@@ -816,13 +826,21 @@ void BonkQuests::SendLog(Player* player, std::string const& npc)
             continue;
         std::string rewardIcon;
         std::string const reward = DescribeReward(quest, &rewardIcon, bonk->GetLocale());
-        bonk->SendAddon("q~" + std::to_string(quest.id) + "~" + bonk->Localize(BONK_FIELD_QUEST_NAME, quest.id, quest.name) + "~" +
-            bonk->Localize(BONK_FIELD_QUEST_DESCRIPTION, quest.id, quest.description) + "~" + quest.icon + "~" +
-            std::to_string(GetShownProgress(quest, entry)) + "~" + std::to_string(quest.amount) + "~" +
-            (entry.completed ? "1" : "0") + "~" + reward + "~" + rewardIcon + "~" + (quest.classId ? "1" : "0") + "~" +
+        if (!bonk->IsAddonReady())
+            continue;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteQuestEntry(data, quest.id, bonk->Localize(BONK_FIELD_QUEST_NAME, quest.id, quest.name),
+            bonk->Localize(BONK_FIELD_QUEST_DESCRIPTION, quest.id, quest.description), quest.icon,
+            GetShownProgress(quest, entry), quest.amount, entry.completed, reward, rewardIcon, quest.classId != 0,
             GetCategoryKey(quest.category));
+        bonk->GetPlayer()->GetSession()->SendPacket(&data);
     }
-    bonk->SendAddon("qlogend");
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket end(SMSG_HOA_MESSAGE);
+        HoAWriteQuestLogEnd(end);
+        bonk->GetPlayer()->GetSession()->SendPacket(&end);
+    }
 }
 
 std::vector<std::string> BonkQuests::DescribeAll(Player* player) const

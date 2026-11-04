@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 10
+#define HOA_PROTOCOL_VERSION 11
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -51,6 +51,16 @@
 #define HOA_MSG_GLYPH_TAKEN 0x0031
 #define HOA_MSG_GLYPH_INFO 0x0032
 #define HOA_MSG_GLYPH_COUNT 0x0033
+#define HOA_MSG_QUEST_LOG_OPEN 0x0034
+#define HOA_MSG_QUEST_ENTRY 0x0035
+#define HOA_MSG_QUEST_LOG_END 0x0036
+#define HOA_MSG_QUEST_DONE 0x0037
+#define HOA_MSG_VENDOR_OPEN 0x0038
+#define HOA_MSG_VENDOR_SLOT 0x0039
+#define HOA_MSG_VENDOR_END 0x003A
+#define HOA_MSG_VENDOR_CLOSE 0x003B
+#define HOA_MSG_PORTAL_HOME 0x003C
+#define HOA_MSG_PORTAL_ENDLESS 0x003D
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -419,4 +429,88 @@ inline void HoAWriteGlyphCount(WorldPacket& packet, uint32 const& id, uint32 con
     packet << uint16(HOA_MSG_GLYPH_COUNT);
     packet << uint32(id);
     packet << uint32(count);
+}
+
+inline void HoAWriteQuestLogOpen(WorldPacket& packet, std::string const& npc)
+{
+    packet << uint16(HOA_MSG_QUEST_LOG_OPEN);
+    HoAWriteString(packet, npc);
+}
+
+inline void HoAWriteQuestEntry(WorldPacket& packet, uint32 const& id, std::string const& name, std::string const& description, std::string const& icon, uint32 const& progress, uint32 const& amount, bool const& completed, std::string const& reward, std::string const& rewardIcon, bool const& classOnly, std::string const& category)
+{
+    packet << uint16(HOA_MSG_QUEST_ENTRY);
+    packet << uint32(id);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, icon);
+    packet << uint32(progress);
+    packet << uint32(amount);
+    packet << bool(completed);
+    HoAWriteString(packet, reward);
+    HoAWriteString(packet, rewardIcon);
+    packet << bool(classOnly);
+    HoAWriteString(packet, category);
+}
+
+inline void HoAWriteQuestLogEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_QUEST_LOG_END);
+}
+
+inline void HoAWriteQuestDone(WorldPacket& packet, uint32 const& id, std::string const& name, std::string const& reward, std::string const& icon)
+{
+    packet << uint16(HOA_MSG_QUEST_DONE);
+    packet << uint32(id);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, reward);
+    HoAWriteString(packet, icon);
+}
+
+inline void HoAWriteVendorOpen(WorldPacket& packet, uint32 const& coins, uint32 const& rerollCost, uint32 const& seconds, std::string const& name, uint32 const& restocks)
+{
+    packet << uint16(HOA_MSG_VENDOR_OPEN);
+    packet << uint32(coins);
+    packet << uint32(rerollCost);
+    packet << uint32(seconds);
+    HoAWriteString(packet, name);
+    packet << uint32(restocks);
+}
+
+inline void HoAWriteVendorSlot(WorldPacket& packet, uint32 const& index, std::string const& kind, uint32 const& rank, uint32 const& maxRank, std::string const& name, std::string const& icon, std::string const& description, std::string const& rarity, bool const& locked, uint32 const& price, uint32 const& state)
+{
+    packet << uint16(HOA_MSG_VENDOR_SLOT);
+    packet << uint32(index);
+    HoAWriteString(packet, kind);
+    packet << uint32(rank);
+    packet << uint32(maxRank);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, rarity);
+    packet << bool(locked);
+    packet << uint32(price);
+    packet << uint32(state);
+}
+
+inline void HoAWriteVendorEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VENDOR_END);
+}
+
+inline void HoAWriteVendorClose(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VENDOR_CLOSE);
+}
+
+inline void HoAWritePortalHome(WorldPacket& packet, bool const& vaultEmpty, bool const& finale)
+{
+    packet << uint16(HOA_MSG_PORTAL_HOME);
+    packet << bool(vaultEmpty);
+    packet << bool(finale);
+}
+
+inline void HoAWritePortalEndless(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_PORTAL_ENDLESS);
 }

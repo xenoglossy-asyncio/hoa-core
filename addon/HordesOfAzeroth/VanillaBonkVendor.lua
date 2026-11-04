@@ -619,4 +619,22 @@ UI.ListenHoa({
     HOA_RUN_END = HideNow,
 })
 
+UI.ListenHoa({
+    HOA_VENDOR_OPEN = function(open)
+        handlers["vendor"]({ false, open.coins, open.reroll_cost, open.seconds, open.name, open.restocks })
+    end,
+    HOA_VENDOR_SLOT = function(slot)
+        handlers["vslot"]({
+            false, slot.index, slot.kind, slot.rank, slot.max_rank, slot.name, slot.icon, slot.description,
+            slot.rarity, slot.locked and "1" or "0", slot.price, slot.state,
+        })
+    end,
+    HOA_VENDOR_END = function()
+        handlers["vendorend"]()
+    end,
+    HOA_VENDOR_CLOSE = function()
+        handlers["vendorclose"]()
+    end,
+})
+
 UI.Listen(handlers)

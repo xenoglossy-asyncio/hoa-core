@@ -448,6 +448,24 @@ handlers["questdone"] = function(f)
     end
 end
 
+VanillaBonkUI.ListenHoa({
+    HOA_QUEST_LOG_OPEN = function(open)
+        handlers["qlog"]({ false, open.npc })
+    end,
+    HOA_QUEST_ENTRY = function(quest)
+        handlers["q"]({
+            false, quest.id, quest.name, quest.description, quest.icon, quest.progress, quest.amount,
+            quest.completed and "1" or "0", quest.reward, quest.reward_icon, quest.class_only and "1" or "0", quest.category,
+        })
+    end,
+    HOA_QUEST_LOG_END = function()
+        handlers["qlogend"]()
+    end,
+    HOA_QUEST_DONE = function(done)
+        handlers["questdone"]({ false, done.id, done.name, done.reward, done.icon })
+    end,
+})
+
 local events = CreateFrame("Frame")
 events:RegisterEvent("CHAT_MSG_SYSTEM")
 events:SetScript("OnEvent", function()
