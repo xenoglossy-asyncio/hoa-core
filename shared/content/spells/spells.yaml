@@ -400,3 +400,19 @@
   icon: Interface\Icons\Ability_Stealth
   description: Your next attack from stealth is a critical strike.
   description_zhCN: 你潜行后的下一次攻击必定暴击。
+- id: 60053
+  key: heavy_runecloth_bandage
+  cpp: BONK_SPELL_BANDAGE_AURA
+  name: Heavy Runecloth Bandage
+  name_zhCN: 厚符文布绷带
+  icon: Interface\Icons\INV_Misc_Bandage_12
+  description: Regenerating health while you have not been hit recently.
+  description_zhCN: 近期未受到攻击时持续恢复生命值。
+- id: 60054
+  key: basic_campfire
+  cpp: BONK_SPELL_CAMPFIRE_AURA
+  name: Basic Campfire
+  name_zhCN: 基础营火
+  icon: Interface\Icons\Spell_Fire_Fire
+  description: Regenerating health while you stand still.
+  description_zhCN: 原地站立时持续恢复生命值。

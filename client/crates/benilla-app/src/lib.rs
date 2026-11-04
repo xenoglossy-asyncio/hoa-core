@@ -240,6 +240,13 @@ pub fn config_dir() -> Option<std::path::PathBuf> {
     local_state::home()
 }
 
+/// Rewrites a custom spell's tooltip description, for values the aura carries at runtime.
+pub fn set_hoa_spell_description(world: &mut bevy::prelude::World, spell_id: u32, description: String) {
+    if let Some(mut spells) = world.get_resource_mut::<crate::ui_action::Spells>() {
+        spells.catalog.set_overlay_description(spell_id, description);
+    }
+}
+
 pub fn set_character_alias(home_name: Option<String>) {
     local_state::set_character_alias(home_name);
 }

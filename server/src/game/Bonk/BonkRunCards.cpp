@@ -539,11 +539,23 @@ void BonkRun::UpdateCards(uint32 diff)
         RegenerateHero(ReduceHealing(std::max(1u, uint32(maxHealth * percent / 100.0f))));
     };
     if (BonkCard const* bandage = m_cardByEffect[BONK_CARD_BANDAGE])
-        if (!m_hurt || m_totalMs - m_lastHurtMs >= uint32(bandage->values[1] * IN_MILLISECONDS))
+    {
+        bool const ready = !m_hurt || m_totalMs - m_lastHurtMs >= uint32(bandage->values[1] * IN_MILLISECONDS);
+        if (ready)
             healFromCard(BONK_CARD_BANDAGE, GetCardTotal(BONK_CARD_BANDAGE, 0));
+        SyncStackAura(BONK_SPELL_BANDAGE_AURA, ready ? 1 : 0);
+    }
+    else
+        SyncStackAura(BONK_SPELL_BANDAGE_AURA, 0);
     if (BonkCard const* campfire = m_cardByEffect[BONK_CARD_CAMPFIRE])
-        if (m_totalMs - m_stillSinceMs >= uint32(campfire->values[1] * IN_MILLISECONDS))
+    {
+        bool const ready = m_totalMs - m_stillSinceMs >= uint32(campfire->values[1] * IN_MILLISECONDS);
+        if (ready)
             healFromCard(BONK_CARD_CAMPFIRE, GetCardTotal(BONK_CARD_CAMPFIRE, 0));
+        SyncStackAura(BONK_SPELL_CAMPFIRE_AURA, ready ? 1 : 0);
+    }
+    else
+        SyncStackAura(BONK_SPELL_CAMPFIRE_AURA, 0);
     if (BonkCard const* heroism = m_cardByEffect[BONK_CARD_CRIT_HEAL])
     {
         uint32 const crits = m_crits - m_cardCritsSeen;

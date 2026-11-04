@@ -106,6 +106,10 @@ UPDATE `hoa_spell_clone` SET `entry` = 60051, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60052, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60053, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60054, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 DROP TEMPORARY TABLE `hoa_spell_clone`;
 
 UPDATE `spell_template` SET
@@ -807,3 +811,31 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60052 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Heavy Runecloth Bandage',
+  `nameSubtext` = '',
+  `description` = 'Regenerating health while you have not been hit recently.',
+  `auraDescription` = 'Regenerating health while you have not been hit recently.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60053 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Basic Campfire',
+  `nameSubtext` = '',
+  `description` = 'Regenerating health while you stand still.',
+  `auraDescription` = 'Regenerating health while you stand still.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60054 AND `build` = 5875;

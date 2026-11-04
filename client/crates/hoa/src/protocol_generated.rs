@@ -2,7 +2,7 @@
 // Do not edit by hand.
 
 pub const PROTOCOL_VERSION: u16 = 1;
-pub const CONTENT_HASH: &str = "sha256:723defa9bd4e3c71bb63554b0bc67ba63f3f8201fc07b25870c7050ae140b1b0";
+pub const CONTENT_HASH: &str = "sha256:b15d060a25ed335b79fb5291c282d8f7c20ae90206a844fef4b277415f27ee6c";
 
 pub const MSG_AURA_VALUE: u16 = 0x0002;
 pub const MSG_DASH: u16 = 0x0003;

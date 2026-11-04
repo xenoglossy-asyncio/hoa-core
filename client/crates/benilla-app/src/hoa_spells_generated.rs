@@ -411,4 +411,20 @@ pub(crate) const SPELLS: &[GeneratedSpell] = &[
         description_en: "Your next attack from stealth is a critical strike.",
         description_zh_cn: "你潜行后的下一次攻击必定暴击。",
     },
+    GeneratedSpell {
+        id: 60053,
+        name_en: "Heavy Runecloth Bandage",
+        name_zh_cn: "厚符文布绷带",
+        icon: "Interface\\Icons\\INV_Misc_Bandage_12",
+        description_en: "Regenerating health while you have not been hit recently.",
+        description_zh_cn: "近期未受到攻击时持续恢复生命值。",
+    },
+    GeneratedSpell {
+        id: 60054,
+        name_en: "Basic Campfire",
+        name_zh_cn: "基础营火",
+        icon: "Interface\\Icons\\Spell_Fire_Fire",
+        description_en: "Regenerating health while you stand still.",
+        description_zh_cn: "原地站立时持续恢复生命值。",
+    },
 ];

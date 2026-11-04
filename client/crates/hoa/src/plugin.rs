@@ -22,10 +22,15 @@ const HOA_HELLO: &str = "HOA_HELLO";
 const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
 const HOA_DASH: &str = "HOA_DASH";
 const HOA_AURA_PERCENT: &str = "HOA_AURA_PERCENT";
+const SHIELD_SPELL: u32 = 60005;
 
 /// Typed HoA packets, drained on the main thread because firing a Lua event needs the VM.
 #[derive(Resource, Default)]
 struct HoaInbox(Vec<(u16, Vec<u8>)>);
+
+/// The account language from the last hello, for runtime tooltip text.
+#[derive(Resource, Default)]
+struct HoaLanguage(String);
 
 fn on_hoa_message(In(event): In<SessionEvent>, mut inbox: ResMut<HoaInbox>) {
     if let SessionEvent::HoaMessage { id, body } = event {
@@ -38,6 +43,8 @@ fn deliver_hoa_messages(world: &mut World) {
     if pending.is_empty() {
         return;
     }
+    let mut language = world.resource::<HoaLanguage>().0.clone();
+    let mut shield_text = None;
     benilla_app::run_hosted(world, |script| {
         let Some(script) = script else {
             return;
@@ -49,6 +56,13 @@ fn deliver_hoa_messages(world: &mut World) {
             };
             match message {
                 HoaMessage::AuraValue(aura) => {
+                    if aura.spell_id == SHIELD_SPELL {
+                        shield_text = Some(if language.eq_ignore_ascii_case("zhCN") {
+                            format!("吸收 {} 点伤害。", aura.value)
+                        } else {
+                            format!("Absorbs {} damage.", aura.value)
+                        });
+                    }
                     script.fire_event(
                         HOA_AURA_VALUE,
                         vec![
@@ -80,6 +94,7 @@ fn deliver_hoa_messages(world: &mut World) {
                     );
                 }
                 HoaMessage::Hello(hello) => {
+                    language = hello.language.clone();
                     if hello.protocol_version != PROTOCOL_VERSION {
                         warn!(
                             "hoa protocol: server speaks {}, this build speaks {PROTOCOL_VERSION}",
@@ -104,6 +119,10 @@ fn deliver_hoa_messages(world: &mut World) {
             }
         }
     });
+    world.resource_mut::<HoaLanguage>().0 = language;
+    if let Some(description) = shield_text {
+        benilla_app::set_hoa_spell_description(world, SHIELD_SPELL, description);
+    }
 }
 
 pub struct HordesOfAzerothPlugin;
@@ -132,6 +151,7 @@ impl Plugin for HordesOfAzerothPlugin {
             .insert_non_send_resource(hosts.controller.clone())
             .init_resource::<Telegraphs>()
             .init_resource::<HoaInbox>()
+            .init_resource::<HoaLanguage>()
             .net_handler(SessionEventKind::HoaMessage, on_hoa_message)
             .insert_resource(DisplayModels::from_install())
             .add_systems(Startup, (name_window, announce_addon_folder, tap_draw_lines))

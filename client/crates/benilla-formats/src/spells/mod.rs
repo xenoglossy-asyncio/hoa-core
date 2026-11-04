@@ -402,6 +402,14 @@ impl SpellCatalog {
         self.overlay = overlay;
     }
 
+    /// Rewrites one custom spell's description in place, for values the aura carries at runtime.
+    pub fn set_overlay_description(&mut self, id: u32, description: String) {
+        if let Some(row) = self.overlay.get_mut(&id) {
+            row.description = Some(description.clone());
+            row.aura_description = Some(description);
+        }
+    }
+
     /// The dispel class's key, the `debuffType` `UnitDebuff` returns (`0x519a89`) and the debuff
     /// border keys `DebuffTypeColor` on: `SpellDispelType.dbc` column 11, English on every locale.
     /// `None` when the `[+0x28]` gate withholds it.

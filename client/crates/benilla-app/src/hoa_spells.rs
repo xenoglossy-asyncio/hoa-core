@@ -22,6 +22,9 @@ fn display(row: &GeneratedSpell, language: &str) -> SpellDisplay {
     display.icon = Some(row.icon.to_string());
     display.description = Some(description.to_string());
     display.aura_description = Some(description.to_string());
+    // The custom spell has no Spell.dbc row; a finite stock duration row makes the buff frame
+    // show the server-sent countdown instead of treating every custom aura as permanent.
+    display.duration_index = 28;
     display
 }
 
