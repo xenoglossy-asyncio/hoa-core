@@ -19,6 +19,7 @@ pwsh scripts/build.ps1 -Component client     # cargo build --release -p hoa
 pwsh scripts/build.ps1 -Component launcher   # dotnet build
 pwsh scripts/build.ps1 -Component addon      # LuaJIT syntax check
 pwsh scripts/build.ps1 -Component i18n       # validate and check generated i18n catalogue
+pwsh scripts/build.ps1 -Component content    # compile card content and check the generated SQL
 pwsh scripts/build.ps1 -Component check      # client manifests + addon syntax + i18n
 pwsh scripts/build.ps1 -Component all
 ```
@@ -31,6 +32,7 @@ scripts/build.sh client
 scripts/build.sh launcher
 scripts/build.sh addon
 scripts/build.sh i18n
+scripts/build.sh content
 scripts/build.sh check
 scripts/build.sh all
 ```
@@ -44,7 +46,7 @@ scripts/build.sh all
 
 ## CI
 
-`.github/workflows/ci.yml` runs `docs-check`, `i18n-check`, `addon-lua`, `launcher-build`, `client-check` and `server-build` on every pull request and push to `main`. These six checks are the merge gate. Branch protection is not yet enforced: GitHub requires GitHub Pro for branch protection on a private repository, and this repository is on the free plan. Run `scripts/protect-main.sh` after upgrading or making the repository public.
+`.github/workflows/ci.yml` runs `docs-check`, `i18n-check`, `content-check`, `addon-lua`, `launcher-build`, `client-check` and `server-build` on every pull request and push to `main`. These seven checks are the merge gate. Branch protection is not yet enforced: GitHub requires GitHub Pro for branch protection on a private repository, and this repository is on the free plan. Run `scripts/protect-main.sh` after upgrading or making the repository public.
 
 ## Server build details
 

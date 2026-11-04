@@ -44,6 +44,16 @@ Text lives beside the entry or in separate `i18n` files and is referenced by `*_
 - `shared/i18n/generated/*.json`: text catalogue shared by C++, Rust and Lua
 - `content.hash`: content version hash
 
+## Current pilot: cards
+
+The first table set is wired end to end:
+
+- `cards/cards.yaml` is the source (46 cards, English + zhCN).
+- `tools/content/dump_cards.py` imports it from the current `bonk_card`/`bonk_card_locale` tables once.
+- `tools/content/compile.py` emits `server/sql/content/bonk_card.sql`; `--check` keeps the SQL in sync in CI.
+
+The generated SQL was applied to the test database and compared row for row with the old `bonk_card` and zhCN locale rows; both were identical. The next tables follow the same pattern.
+
 ## Migration
 
 First write a dump tool that exports the current `bonk_*` tables, custom `item_template` rows and `locales_*` text into these sources. Once the generated result matches the existing database, switch to the generated flow. See [the migration plan](../../docs/migration-plan/README.md).

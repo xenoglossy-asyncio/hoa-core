@@ -6,6 +6,7 @@ tools/
   protocol-gen/        shared/protocol → C++ / Rust / Lua 代码
   translate/           翻译工作台（基于现有 tools/translate，改造为读写 shared/i18n）
   i18n/                消息目录提取、校验与生成工具
+  content/             内容源导出与 SQL 编译工具
   checks/              内容 schema、i18n 完整性、生成物 diff、许可证头检查
 ```
 

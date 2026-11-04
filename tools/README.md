@@ -6,6 +6,7 @@ tools/
   protocol-gen/       shared/protocol → C++ / Rust / Lua code
   translate/          translation workbench (start from the existing tools/translate, retargeted at shared/i18n)
   i18n/               message catalogue extractor, validator and generator
+  content/            content source dump and SQL compiler
   checks/             content schema, i18n completeness, generated-artifact diff, license-header checks
 ```
 

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('all', 'server', 'client', 'launcher', 'addon', 'i18n', 'check')]
+    [ValidateSet('all', 'server', 'client', 'launcher', 'addon', 'i18n', 'content', 'check')]
     [string]$Component = 'all',
     [string]$Configuration = 'Release'
 )
@@ -70,6 +70,11 @@ function Test-I18n {
     if ($LASTEXITCODE -ne 0) { throw 'generated addon locale is out of date' }
 }
 
+function Test-Content {
+    python "$Root\tools\content\compile.py" --check
+    if ($LASTEXITCODE -ne 0) { throw 'generated card content is out of date' }
+}
+
 function Test-Manifests {
     Push-Location "$Root\client"
     try {
@@ -85,6 +90,7 @@ switch ($Component) {
     'launcher' { Build-Launcher }
     'addon'    { Test-Addon }
     'i18n'     { Test-I18n }
-    'check'    { Test-Manifests; Test-Addon; Test-I18n }
-    'all'      { Build-Server; Build-Client; Build-Launcher; Test-Addon; Test-I18n }
+    'content'  { Test-Content }
+    'check'    { Test-Manifests; Test-Addon; Test-I18n; Test-Content }
+    'all'      { Build-Server; Build-Client; Build-Launcher; Test-Addon; Test-I18n; Test-Content }
 }

@@ -2736,7 +2736,6 @@ class BonkRun
         uint32 m_ardentDefenderReadyMs = 0;
         uint32 m_crusaderStrikes = 0;
         uint32 m_lightsHammerVolleys = 0;
-        std::map<ObjectGuid, uint32> m_judgedUntilMs;
         std::map<ObjectGuid, uint32> m_vengeanceStacks;
         bool IsDruidHero() const;
         void ResetDruidState();

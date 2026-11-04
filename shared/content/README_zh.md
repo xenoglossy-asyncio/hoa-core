@@ -44,6 +44,16 @@ stats: { strength: 12, stamina: 8 }
 - `shared/i18n/generated/*.json`：文本目录（供 C++/Rust/Lua 共用）
 - `content.hash`：内容版本哈希
 
+## 当前试点：卡牌
+
+第一组表已经端到端接通：
+
+- `cards/cards.yaml` 是源文件（46 张卡，英文 + zhCN）。
+- `tools/content/dump_cards.py` 从现有 `bonk_card`/`bonk_card_locale` 表一次性导入。
+- `tools/content/compile.py` 生成 `server/sql/content/bonk_card.sql`；`--check` 在 CI 里保证 SQL 与源文件同步。
+
+生成的 SQL 已应用到测试库，并和旧的 `bonk_card` 与 zhCN 语言行逐行对比，完全一致。后面的表按同一模式迁移。
+
 ## 迁移
 
 先写一个 dump 工具，把现有 `bonk_*` 表、`item_template` 中的 HoA 自定义条目、`locales_*` 文本导出成上述源文件；确认生成结果与现有数据库一致后，再切换为生成流程。详见 [迁移计划](../../docs/migration-plan/README_zh.md)。

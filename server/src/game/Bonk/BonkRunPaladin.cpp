@@ -162,7 +162,6 @@ void BonkRun::ResetPaladinState()
     m_ardentDefenderReadyMs = 0;
     m_crusaderStrikes = 0;
     m_lightsHammerVolleys = 0;
-    m_judgedUntilMs.clear();
     m_vengeanceStacks.clear();
     if (m_player->HasAura(BONK_SPELL_DIVINE_SHIELD))
         m_player->RemoveAurasDueToSpell(BONK_SPELL_DIVINE_SHIELD);
@@ -384,7 +383,6 @@ void BonkRun::CallAvengingHammer(OwnedWeapon const& owned, Creature* target)
 
 void BonkRun::JudgeTarget(Creature* target)
 {
-    m_judgedUntilMs[target->GetObjectGuid()] = m_totalMs + BONK_JUDGED_MS;
     ShowJudgedDebuff(target);
 }
 
@@ -414,8 +412,7 @@ bool BonkRun::IsJudged(Unit const* victim) const
 {
     if (!victim)
         return false;
-    auto itr = m_judgedUntilMs.find(victim->GetObjectGuid());
-    return itr != m_judgedUntilMs.end() && itr->second > m_totalMs;
+    return victim->GetSpellAuraHolder(BONK_SPELL_JUDGED_LOOK, m_player->GetObjectGuid()) != nullptr;
 }
 
 void BonkRun::PassJudgement(OwnedWeapon& owned, SpellEntry const* spellInfo)

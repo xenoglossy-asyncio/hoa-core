@@ -47,6 +47,19 @@ jobs:
       - name: Check generated addon locale
         run: python tools/i18n/gen_addon_locale.py --check
 
+  content-check:
+    name: content-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install PyYAML
+        run: python -m pip install --quiet pyyaml
+      - name: Check generated card content
+        run: python tools/content/compile.py --check
+
   addon-lua:
     name: addon-lua
     runs-on: ubuntu-latest

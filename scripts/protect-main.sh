@@ -12,6 +12,7 @@ cat > "$json" <<'JSON'
     "contexts": [
       "docs-check",
       "i18n-check",
+      "content-check",
       "addon-lua",
       "launcher-build",
       "client-check",
