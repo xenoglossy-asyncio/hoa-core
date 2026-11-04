@@ -111,7 +111,7 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 - Content definition: `hoa.aura.darkmoon.zandalarian_surge`, `duration 10s`, `hoa_power_percent 25`, `internal_cooldown 30s`.
 - Server: a combat/timer hook triggers → `Apply` → the real aura applies; damage calculation uses VMaNGOS's aura system. Remove `m_cardSurgeUntilMs`, the manual bonus in `GetCardPower`, and the per-second `cardnow~`.
 - Client: the buff frame shows the icon and remaining time; tooltip text comes from the content pack.
-- First implementation: spell `60004` (migration `20261104120000_world.sql`) is a real positive aura; the server sets its duration from the card, and `client/crates/benilla-app/src/hoa_spells.rs` supplies the name/icon/description through `SpellCatalog::with_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. The static overlay is the first slice of the future content pack; ids `60001`-`60005` are reserved for HoA.
+- First implementation: spell `60004` (migration `20261104120000_world.sql`) is a real positive aura; the server sets its duration from the card, and the generated client table supplies the name/icon/description through `SpellCatalog::with_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. The source is `shared/content/spells/spells.yaml`; `tools/content/compile.py` emits the SQL, the server ids and the client table. Ids `60001`-`60099` are reserved for HoA.
 - Addon: no timing or tooltip assembly; at most read the aura's remaining time for custom UI.
 
 ### 7.2 Darkmoon card buffs
@@ -120,7 +120,7 @@ Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges 
 
 ### 7.3 Class buffs
 
-Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`) the Nomad drawback (`60020`), Kill Power (`60021`) and Unhit Power (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The same pattern covers the remaining class buffs (Shadow Dance, Envenom, Doom Winds, Dark Pact, Soul Harvest, Glyph Haste, and so on).
+Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`) the Nomad drawback (`60020`), Kill Power (`60021`) and Unhit Power (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The remaining timed class effects are covered in 7.6.
 
 ### 7.4 HoA shield/dash/determination
 
@@ -135,6 +135,14 @@ Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom 
 
 - Blade Flurry/Enrage: use the stock spell ID; the server only refreshes/removes. Delete the addon timer and read `UnitBuff`.
 - If a native spell needs HoA-specific numbers, change the server spell data; do not start a second system.
+
+### 7.6 Talent procs
+
+Rapid Fire (`60023`), Slice and Dice (`60024`), Borrowed Time (`60025`), Flurry (`60026`) and Lifebloom (`60027`) are single-timer auras read with `HasAura`. Bloodsurge (`60028`), Forceful Winds (`60029`), Danse Macabre (`60030`), Avenging Wrath (`60031`), Zealotry (`60032`), Arcane Tempo (`60033`), Starlord (`60034`), Soul of the Forest (`60035`), Harvester of Souls (`60036`), Unrelenting Storm (`60037`), Mongoose Fury (`60038`), Bulwark (`60039`), Ancient Madness (`60040`) and Bloodtalons (`60041`) keep their per-stack expiry vectors as bookkeeping; `UpdateTalentAuras` mirrors the active count and the longest remaining time onto the aura every 400 ms, and only rewrites it when the count changes or the remaining time differs by more than 600 ms. Conditional stacks that have no expiry use permanent auras.
+
+### 7.7 Pet and enemy effects
+
+Howl Frenzy (`60042`) is a player aura read by `IsHowlFrenzied`. Demoralizing Roar (`60043`), Strangling Vines (`60044`), Seduced (`60045`), Schism (`60046`) and Exposed (`60047`) are debuffs applied to the affected enemy with the player as caster; their damage hooks read the holder instead of a parallel timer map. Ground areas such as Smoke Bomb and Barrier stay area logic rather than buffs, because they affect a position, not a unit.
 
 ## 8. Migration steps
 
