@@ -352,8 +352,12 @@ void BonkRun::SendMiniEventTimer(bool force) const
     if (!force && seconds == m_miniEvent.shownSeconds)
         return;
     m_miniEvent.shownSeconds = seconds;
-    m_player->GetBonkPlayer()->SendAddon("eventtimer~" + m_miniEvent.label + "~" + std::to_string(seconds) + "~" +
-        std::to_string(m_miniEvent.totalSeconds));
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEventTimer(data, m_miniEvent.label, seconds, m_miniEvent.totalSeconds);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::DespawnMiniEvent()
@@ -387,8 +391,12 @@ void BonkRun::EndMiniEvent()
         m_spawnPoints.Release(m_miniEvent.spot.x, m_miniEvent.spot.y);
     m_miniEvent = MiniEvent();
     m_miniEventActive = false;
-    if (timed)
-        m_player->GetBonkPlayer()->SendAddon("eventtimer~~0~0");
+    if (timed && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteEventTimer(data, "", 0, 0);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::StartMiniEventNow(BonkMiniEventType type, std::string& error)

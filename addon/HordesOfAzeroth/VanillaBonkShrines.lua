@@ -295,6 +295,15 @@ function UI.SetWaitBar(label, seconds, total)
 end
 
 UI.ListenHoa({
+    HOA_CAPTURE = function(capture)
+        handlers["capture"]({ false, capture.label, capture.percent })
+    end,
+    HOA_MOONWELL = function(moonwell)
+        handlers["moonwell"]({ false, moonwell.seconds, moonwell.inside and "1" or "0", moonwell.total })
+    end,
+    HOA_EVENT_TIMER = function(timer)
+        handlers["eventtimer"]({ false, timer.label, timer.seconds, timer.total })
+    end,
     HOA_HEARTH = function(hearth)
         handlers["hearth"]({ false, hearth.percent, hearth.inside and "1" or "0", hearth.seconds })
     end,

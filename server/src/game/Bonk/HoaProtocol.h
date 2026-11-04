@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 18
+#define HOA_PROTOCOL_VERSION 19
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -105,6 +105,12 @@
 #define HOA_MSG_DRUID_FORM 0x0067
 #define HOA_MSG_GREED 0x0068
 #define HOA_MSG_HEARTH 0x0069
+#define HOA_MSG_CAPTURE 0x006A
+#define HOA_MSG_MOONWELL 0x006B
+#define HOA_MSG_LEY_BLESSINGS 0x006C
+#define HOA_MSG_LEY_BLESS 0x006D
+#define HOA_MSG_LEY_BLESS_END 0x006E
+#define HOA_MSG_EVENT_TIMER 0x006F
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -880,4 +886,45 @@ inline void HoAWriteHearth(WorldPacket& packet, int32 const& percent, bool const
     packet << int32(percent);
     packet << bool(inside);
     packet << uint32(seconds);
+}
+
+inline void HoAWriteCapture(WorldPacket& packet, std::string const& label, int32 const& percent)
+{
+    packet << uint16(HOA_MSG_CAPTURE);
+    HoAWriteString(packet, label);
+    packet << int32(percent);
+}
+
+inline void HoAWriteMoonwell(WorldPacket& packet, uint32 const& seconds, bool const& inside, uint32 const& total)
+{
+    packet << uint16(HOA_MSG_MOONWELL);
+    packet << uint32(seconds);
+    packet << bool(inside);
+    packet << uint32(total);
+}
+
+inline void HoAWriteLeyBlessings(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_LEY_BLESSINGS);
+}
+
+inline void HoAWriteLeyBless(WorldPacket& packet, std::string const& name, std::string const& icon, std::string const& text)
+{
+    packet << uint16(HOA_MSG_LEY_BLESS);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteLeyBlessEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_LEY_BLESS_END);
+}
+
+inline void HoAWriteEventTimer(WorldPacket& packet, std::string const& label, uint32 const& seconds, uint32 const& total)
+{
+    packet << uint16(HOA_MSG_EVENT_TIMER);
+    HoAWriteString(packet, label);
+    packet << uint32(seconds);
+    packet << uint32(total);
 }

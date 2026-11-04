@@ -112,6 +112,12 @@ const HOA_REACH_RING: &str = "HOA_REACH_RING";
 const HOA_DRUID_FORM: &str = "HOA_DRUID_FORM";
 const HOA_GREED: &str = "HOA_GREED";
 const HOA_HEARTH: &str = "HOA_HEARTH";
+const HOA_CAPTURE: &str = "HOA_CAPTURE";
+const HOA_MOONWELL: &str = "HOA_MOONWELL";
+const HOA_LEY_BLESSINGS: &str = "HOA_LEY_BLESSINGS";
+const HOA_LEY_BLESS: &str = "HOA_LEY_BLESS";
+const HOA_LEY_BLESS_END: &str = "HOA_LEY_BLESS_END";
+const HOA_EVENT_TIMER: &str = "HOA_EVENT_TIMER";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -188,6 +194,51 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Capture(capture) => {
+                    script.fire_event(
+                        HOA_CAPTURE,
+                        vec![lua_table(vec![
+                            ("label", ScriptValue::Str(capture.label)),
+                            ("percent", ScriptValue::Int(i64::from(capture.percent))),
+                        ])],
+                    );
+                }
+                HoaMessage::Moonwell(moonwell) => {
+                    script.fire_event(
+                        HOA_MOONWELL,
+                        vec![lua_table(vec![
+                            ("seconds", ScriptValue::Int(i64::from(moonwell.seconds))),
+                            ("inside", ScriptValue::Bool(moonwell.inside)),
+                            ("total", ScriptValue::Int(i64::from(moonwell.total))),
+                        ])],
+                    );
+                }
+                HoaMessage::LeyBlessings(_) => {
+                    script.fire_event(HOA_LEY_BLESSINGS, Vec::new());
+                }
+                HoaMessage::LeyBless(bless) => {
+                    script.fire_event(
+                        HOA_LEY_BLESS,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(bless.name)),
+                            ("icon", ScriptValue::Str(bless.icon)),
+                            ("text", ScriptValue::Str(bless.text)),
+                        ])],
+                    );
+                }
+                HoaMessage::LeyBlessEnd(_) => {
+                    script.fire_event(HOA_LEY_BLESS_END, Vec::new());
+                }
+                HoaMessage::EventTimer(timer) => {
+                    script.fire_event(
+                        HOA_EVENT_TIMER,
+                        vec![lua_table(vec![
+                            ("label", ScriptValue::Str(timer.label)),
+                            ("seconds", ScriptValue::Int(i64::from(timer.seconds))),
+                            ("total", ScriptValue::Int(i64::from(timer.total))),
+                        ])],
+                    );
+                }
                 HoaMessage::Starter(starter) => {
                     script.fire_event(
                         HOA_STARTER,
@@ -1139,6 +1190,12 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_DRUID_FORM);
         add_in_game_event(HOA_GREED);
         add_in_game_event(HOA_HEARTH);
+        add_in_game_event(HOA_CAPTURE);
+        add_in_game_event(HOA_MOONWELL);
+        add_in_game_event(HOA_LEY_BLESSINGS);
+        add_in_game_event(HOA_LEY_BLESS);
+        add_in_game_event(HOA_LEY_BLESS_END);
+        add_in_game_event(HOA_EVENT_TIMER);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

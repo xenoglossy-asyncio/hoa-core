@@ -353,6 +353,15 @@ local function Clear()
     Refresh()
 end
 UI.ListenHoa({
+    HOA_LEY_BLESSINGS = function()
+        handlers["leyblessings"]()
+    end,
+    HOA_LEY_BLESS = function(bless)
+        handlers["leybless"]({ false, bless.name, bless.icon, bless.text })
+    end,
+    HOA_LEY_BLESS_END = function()
+        handlers["leyblessend"]()
+    end,
     HOA_CARDS = function(cards)
         handlers["cards"]({ false, cards.entries })
     end,

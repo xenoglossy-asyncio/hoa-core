@@ -79,6 +79,33 @@ namespace
     BonkString const SHRINE_DESCRIPTIONS[MAX_BONK_SHRINE] = { BONK_STRING_SHRINE_LEY_LINE_TEXT, BONK_STRING_SHRINE_GREED_TOTEM_TEXT,
         BONK_STRING_SHRINE_CHALLENGE_ALTAR_TEXT, BONK_STRING_SHRINE_MOONWELL_TEXT, BONK_STRING_SHRINE_SUMMONING_STONE_TEXT };
 
+    void SendCapture(BonkPlayer* bonk, int32 percent)
+    {
+        if (!bonk->IsAddonReady())
+            return;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCapture(data, bonk->GetString(SHRINE_LABELS[BONK_SHRINE_LEY_LINE]), percent);
+        bonk->GetPlayer()->GetSession()->SendPacket(&data);
+    }
+
+    void SendMoonwell(BonkPlayer* bonk, uint32 seconds, bool inside, uint32 total)
+    {
+        if (!bonk->IsAddonReady())
+            return;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMoonwell(data, seconds, inside, total);
+        bonk->GetPlayer()->GetSession()->SendPacket(&data);
+    }
+
+    void SendLeyBless(BonkPlayer* bonk, std::string const& name, std::string const& icon, std::string const& text)
+    {
+        if (!bonk->IsAddonReady())
+            return;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteLeyBless(data, name, icon, text);
+        bonk->GetPlayer()->GetSession()->SendPacket(&data);
+    }
+
     struct LeyStat
     {
         BonkPassiveEffect effect;
@@ -278,7 +305,7 @@ void BonkRun::UpdateLeyLine(size_t index, uint32 diff)
     {
         if (m_captureShown && shrine.progressMs)
         {
-            bonk->SendAddon("capture~" + GetString(SHRINE_LABELS[BONK_SHRINE_LEY_LINE]) + "~-1");
+            SendCapture(bonk, -1);
             m_captureShown = false;
         }
         return;
@@ -289,8 +316,8 @@ void BonkRun::UpdateLeyLine(size_t index, uint32 diff)
     m_captureSendMs += diff;
     if (shrine.progressMs >= captureMs)
     {
-        bonk->SendAddon("capture~" + GetString(SHRINE_LABELS[BONK_SHRINE_LEY_LINE]) + "~100");
-        bonk->SendAddon("capture~" + GetString(SHRINE_LABELS[BONK_SHRINE_LEY_LINE]) + "~-1");
+        SendCapture(bonk, 100);
+        SendCapture(bonk, -1);
         m_captureShown = false;
         bonk->Notify(BONK_STRING_YOU_CAPTURED_LEY_LINE);
         RemoveShrine(index);
@@ -301,8 +328,7 @@ void BonkRun::UpdateLeyLine(size_t index, uint32 diff)
     {
         m_captureSendMs = 0;
         m_captureShown = true;
-        bonk->SendAddon("capture~" + GetString(SHRINE_LABELS[BONK_SHRINE_LEY_LINE]) + "~" +
-            std::to_string(shrine.progressMs * 100 / captureMs));
+        SendCapture(bonk, int32(shrine.progressMs * 100 / captureMs));
     }
 }
 
@@ -414,14 +440,20 @@ void BonkRun::SendLeyOffer() const
 void BonkRun::SendLeyBlessings() const
 {
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    bonk->SendAddon("leyblessings");
+    if (!bonk->IsAddonReady())
+        return;
+    WorldPacket start(SMSG_HOA_MESSAGE);
+    HoAWriteLeyBlessings(start);
+    m_player->GetSession()->SendPacket(&start);
     for (uint8 effect = 0; effect < MAX_BONK_PASSIVE_EFFECT; ++effect)
     {
         LeyStat const* stat = GetLeyStat(BonkPassiveEffect(effect));
         if (stat && m_shrineBonuses[effect] > 0.0f)
-            bonk->SendAddon("leybless~" + GetString(stat->name) + "~" + LeyStatIcon(*stat) + "~" + FormatLeyValue(*stat, m_shrineBonuses[effect], GetLocale()));
+            SendLeyBless(bonk, GetString(stat->name), LeyStatIcon(*stat), FormatLeyValue(*stat, m_shrineBonuses[effect], GetLocale()));
     }
-    bonk->SendAddon("leyblessend");
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteLeyBlessEnd(end);
+    m_player->GetSession()->SendPacket(&end);
 }
 
 bool BonkRun::PickLeyBuff(uint32 index, std::string& error)
@@ -706,7 +738,7 @@ void BonkRun::UpdateMoonwell(size_t index, uint32 diff)
 
     if (shrine.leftMs <= diff)
     {
-        bonk->SendAddon("moonwell~0~0~" + std::to_string(GetMoonwellSeconds()));
+        SendMoonwell(bonk, 0, false, GetMoonwellSeconds());
         bonk->Notify(BONK_STRING_MOONWELL_RUNS_DRY);
         RemoveShrine(index);
         return;
@@ -718,7 +750,7 @@ void BonkRun::UpdateMoonwell(size_t index, uint32 diff)
         if (shrine.progressMs)
         {
             shrine.progressMs = 0;
-            bonk->SendAddon("moonwell~0~0~" + std::to_string(GetMoonwellSeconds()));
+            SendMoonwell(bonk, 0, false, GetMoonwellSeconds());
         }
         return;
     }
@@ -737,8 +769,7 @@ void BonkRun::UpdateMoonwell(size_t index, uint32 diff)
             m_player->ModifyHealth(int32(ReduceHealing(std::max(1u, uint32(m_player->GetMaxHealth() * BONK_MOONWELL_HEAL)))));
         }
     }
-    bonk->SendAddon("moonwell~" + std::to_string((shrine.leftMs + IN_MILLISECONDS - 1) / IN_MILLISECONDS) + "~1~" +
-        std::to_string(GetMoonwellSeconds()));
+    SendMoonwell(bonk, (shrine.leftMs + IN_MILLISECONDS - 1) / IN_MILLISECONDS, true, GetMoonwellSeconds());
 }
 
 uint32 BonkRun::GetMoonwellSeconds() const
@@ -796,7 +827,7 @@ void BonkRun::DespawnShrines()
     m_placeStone = false;
     if (m_captureShown)
     {
-        m_player->GetBonkPlayer()->SendAddon("capture~" + GetString(SHRINE_LABELS[BONK_SHRINE_LEY_LINE]) + "~-1");
+        SendCapture(m_player->GetBonkPlayer(), -1);
         m_captureShown = false;
     }
 }
