@@ -116,7 +116,7 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 
 ### 7.2 Darkmoon card buffs
 
-Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges (`60009`) and Thorns (`60010`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers.
+Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges (`60009`) and Thorns (`60010`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers. Conditional regeneration cards keep an aura only while their condition holds: Heavy Runecloth Bandage (`60053`) is present until you are hit, and Basic Campfire (`60054`) while you stand still.
 
 ### 7.3 Class buffs
 
@@ -124,7 +124,7 @@ Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom 
 
 ### 7.4 HoA shield/dash/determination
 
-- Shield: custom aura `60005` (visual/presence); the remaining amount is still `m_spellShield` and reaches the addon as a value message until `AuraState` lands. The buff frame has the icon; the hero bar shows the value.
+- Shield: custom aura `60005`. The live absorb value goes out as `hoa.aura_value`; the client rewrites the tooltip text ("Absorbs N damage.") and the addon still draws the shield bar. The buff frame shows the icon, not a countdown, because the shield is a pool rather than a timed buff.
 - Dash: a skill, not a buff. Its charges and recharge stay in `BonkPlayer`; `hoa.dash`/`dash~` carry the available charges and remaining recharge to the UI, and the native buff frame never changes when a charge is spent or returns.
 - Determination: custom aura `60001`, permanent, stacks mirror the account value; the addon reads the stacks from the aura, and the server keeps the account row as the persistent source.
 - Wounds: custom aura `60003`; stacks and duration live on the aura; the addon reads stacks and only takes the server-computed healing cut percentage from the notice.
