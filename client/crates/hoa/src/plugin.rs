@@ -90,6 +90,15 @@ const HOA_CARDS: &str = "HOA_CARDS";
 const HOA_CARD_TIP: &str = "HOA_CARD_TIP";
 const HOA_CARD_COOLDOWN: &str = "HOA_CARD_COOLDOWN";
 const HOA_CARD_NOW: &str = "HOA_CARD_NOW";
+const HOA_MASTERY_STATE: &str = "HOA_MASTERY_STATE";
+const HOA_WALLET: &str = "HOA_WALLET";
+const HOA_NOTICE: &str = "HOA_NOTICE";
+const HOA_MESSAGE: &str = "HOA_MESSAGE";
+const HOA_FIND: &str = "HOA_FIND";
+const HOA_NPC_NAME: &str = "HOA_NPC_NAME";
+const HOA_SHARD: &str = "HOA_SHARD";
+const HOA_VALOR: &str = "HOA_VALOR";
+const HOA_EPIC_LUCK: &str = "HOA_EPIC_LUCK";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -166,6 +175,71 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::MasteryState(mastery) => {
+                    script.fire_event(
+                        HOA_MASTERY_STATE,
+                        vec![lua_table(vec![
+                            ("class_name", ScriptValue::Str(mastery.class_name)),
+                            ("level", ScriptValue::Int(i64::from(mastery.level))),
+                            ("xp", ScriptValue::Int(i64::from(mastery.xp))),
+                            ("next", ScriptValue::Int(i64::from(mastery.next))),
+                            ("max_level", ScriptValue::Int(i64::from(mastery.max_level))),
+                            ("unspent", ScriptValue::Int(i64::from(mastery.unspent))),
+                            ("trees", ScriptValue::Bool(mastery.trees)),
+                        ])],
+                    );
+                }
+                HoaMessage::Wallet(wallet) => {
+                    script.fire_event(
+                        HOA_WALLET,
+                        vec![lua_table(vec![("shards", ScriptValue::Int(i64::from(wallet.shards)))])],
+                    );
+                }
+                HoaMessage::Notice(notice) => {
+                    script.fire_event(
+                        HOA_NOTICE,
+                        vec![lua_table(vec![("kind", ScriptValue::Str(notice.kind))])],
+                    );
+                }
+                HoaMessage::Message(message) => {
+                    script.fire_event(
+                        HOA_MESSAGE,
+                        vec![lua_table(vec![("text", ScriptValue::Str(message.text))])],
+                    );
+                }
+                HoaMessage::Find(find) => {
+                    script.fire_event(
+                        HOA_FIND,
+                        vec![lua_table(vec![("text", ScriptValue::Str(find.text))])],
+                    );
+                }
+                HoaMessage::NpcName(name) => {
+                    script.fire_event(
+                        HOA_NPC_NAME,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(name.name)),
+                            ("npc_name", ScriptValue::Str(name.npc_name)),
+                        ])],
+                    );
+                }
+                HoaMessage::Shard(shard) => {
+                    script.fire_event(
+                        HOA_SHARD,
+                        vec![lua_table(vec![
+                            ("count", ScriptValue::Int(i64::from(shard.count))),
+                            ("total", ScriptValue::Int(i64::from(shard.total))),
+                        ])],
+                    );
+                }
+                HoaMessage::Valor(_) => {
+                    script.fire_event(HOA_VALOR, Vec::new());
+                }
+                HoaMessage::EpicLuck(luck) => {
+                    script.fire_event(
+                        HOA_EPIC_LUCK,
+                        vec![lua_table(vec![("bonus", ScriptValue::Int(i64::from(luck.bonus)))])],
+                    );
+                }
                 HoaMessage::Cards(cards) => {
                     script.fire_event(
                         HOA_CARDS,
@@ -925,6 +999,15 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_CARD_TIP);
         add_in_game_event(HOA_CARD_COOLDOWN);
         add_in_game_event(HOA_CARD_NOW);
+        add_in_game_event(HOA_MASTERY_STATE);
+        add_in_game_event(HOA_WALLET);
+        add_in_game_event(HOA_NOTICE);
+        add_in_game_event(HOA_MESSAGE);
+        add_in_game_event(HOA_FIND);
+        add_in_game_event(HOA_NPC_NAME);
+        add_in_game_event(HOA_SHARD);
+        add_in_game_event(HOA_VALOR);
+        add_in_game_event(HOA_EPIC_LUCK);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

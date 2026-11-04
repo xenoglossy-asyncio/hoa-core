@@ -102,4 +102,10 @@ handlers["notice"] = function(f)
     waiter:Show()
 end
 
+UI.ListenHoa({
+    HOA_NOTICE = function(notice)
+        handlers["notice"]({ false, notice.kind })
+    end,
+})
+
 UI.Listen(handlers)

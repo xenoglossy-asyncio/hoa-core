@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 15
+#define HOA_PROTOCOL_VERSION 16
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -83,6 +83,15 @@
 #define HOA_MSG_CARD_TIP 0x0051
 #define HOA_MSG_CARD_COOLDOWN 0x0052
 #define HOA_MSG_CARD_NOW 0x0053
+#define HOA_MSG_MASTERY_STATE 0x0054
+#define HOA_MSG_WALLET 0x0055
+#define HOA_MSG_NOTICE 0x0056
+#define HOA_MSG_MESSAGE 0x0057
+#define HOA_MSG_FIND 0x0058
+#define HOA_MSG_NPC_NAME 0x0059
+#define HOA_MSG_SHARD 0x005A
+#define HOA_MSG_VALOR 0x005B
+#define HOA_MSG_EPIC_LUCK 0x005C
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -704,4 +713,65 @@ inline void HoAWriteCardNow(WorldPacket& packet, uint32 const& id, std::string c
     packet << uint16(HOA_MSG_CARD_NOW);
     packet << uint32(id);
     HoAWriteString(packet, text);
+}
+
+inline void HoAWriteMasteryState(WorldPacket& packet, std::string const& className, uint32 const& level, uint32 const& xp, uint32 const& next, uint32 const& maxLevel, uint32 const& unspent, bool const& trees)
+{
+    packet << uint16(HOA_MSG_MASTERY_STATE);
+    HoAWriteString(packet, className);
+    packet << uint32(level);
+    packet << uint32(xp);
+    packet << uint32(next);
+    packet << uint32(maxLevel);
+    packet << uint32(unspent);
+    packet << bool(trees);
+}
+
+inline void HoAWriteWallet(WorldPacket& packet, uint32 const& shards)
+{
+    packet << uint16(HOA_MSG_WALLET);
+    packet << uint32(shards);
+}
+
+inline void HoAWriteNotice(WorldPacket& packet, std::string const& kind)
+{
+    packet << uint16(HOA_MSG_NOTICE);
+    HoAWriteString(packet, kind);
+}
+
+inline void HoAWriteMessage(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_MESSAGE);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteFind(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_FIND);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteNpcName(WorldPacket& packet, std::string const& name, std::string const& npcName)
+{
+    packet << uint16(HOA_MSG_NPC_NAME);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, npcName);
+}
+
+inline void HoAWriteShard(WorldPacket& packet, uint32 const& count, uint32 const& total)
+{
+    packet << uint16(HOA_MSG_SHARD);
+    packet << uint32(count);
+    packet << uint32(total);
+}
+
+inline void HoAWriteValor(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VALOR);
+}
+
+inline void HoAWriteEpicLuck(WorldPacket& packet, uint32 const& bonus)
+{
+    packet << uint16(HOA_MSG_EPIC_LUCK);
+    packet << uint32(bonus);
 }

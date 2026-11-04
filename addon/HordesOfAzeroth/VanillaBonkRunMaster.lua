@@ -1449,6 +1449,12 @@ RunMaster.RIGHT_X, RunMaster.RIGHT_WIDTH = RIGHT_X, RIGHT_WIDTH
 RunMaster.Hairline = Hairline
 RunMaster.SOFT, RunMaster.MUTED = SOFT, MUTED
 
+UI.ListenHoa({
+    HOA_EPIC_LUCK = function(luck)
+        epicLuck = luck.bonus or 0
+    end,
+})
+
 UI.Listen({
     mapinfo = function(f)
         if f[2] and f[2] ~= "" then

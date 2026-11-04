@@ -2821,6 +2821,21 @@ handlers["leyofferclose"] = function()
 end
 
 UI.ListenHoa({
+    HOA_NPC_NAME = function(name)
+        handlers["npcname"]({ false, name.name, name.npc_name })
+    end,
+    HOA_MESSAGE = function(message)
+        handlers["msg"]({ false, message.text })
+    end,
+    HOA_FIND = function(find)
+        handlers["find"]({ false, find.text })
+    end,
+    HOA_SHARD = function()
+        handlers["shard"]()
+    end,
+    HOA_VALOR = function()
+        handlers["valor"]()
+    end,
     HOA_OFFER_OPEN = function(offer)
         handlers["offer"]({ false, offer.level, offer.count, offer.source, offer.rerolls, offer.banishes, offer.skips })
     end,

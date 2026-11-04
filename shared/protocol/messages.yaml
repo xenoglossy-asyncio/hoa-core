@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 15
+version: 16
 messages:
   - name: aura_value
     id: 0x0002
@@ -543,3 +543,55 @@ messages:
     fields:
       - { name: id, type: u32 }
       - { name: text, type: string }
+  - name: mastery_state
+    id: 0x0054
+    direction: server_to_client
+    fields:
+      - { name: class_name, type: string }
+      - { name: level, type: u32 }
+      - { name: xp, type: u32 }
+      - { name: next, type: u32 }
+      - { name: max_level, type: u32 }
+      - { name: unspent, type: u32 }
+      - { name: trees, type: bool }
+  - name: wallet
+    id: 0x0055
+    direction: server_to_client
+    fields:
+      - { name: shards, type: u32 }
+  - name: notice
+    id: 0x0056
+    direction: server_to_client
+    fields:
+      - { name: kind, type: string }
+  - name: message
+    id: 0x0057
+    direction: server_to_client
+    fields:
+      - { name: text, type: string }
+  - name: find
+    id: 0x0058
+    direction: server_to_client
+    fields:
+      - { name: text, type: string }
+  - name: npc_name
+    id: 0x0059
+    direction: server_to_client
+    fields:
+      - { name: name, type: string }
+      - { name: npc_name, type: string }
+  - name: shard
+    id: 0x005A
+    direction: server_to_client
+    fields:
+      - { name: count, type: u32 }
+      - { name: total, type: u32 }
+  - name: valor
+    id: 0x005B
+    direction: server_to_client
+    fields: []
+  - name: epic_luck
+    id: 0x005C
+    direction: server_to_client
+    fields:
+      - { name: bonus, type: u32 }

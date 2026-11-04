@@ -5695,7 +5695,12 @@ void BonkRun::UsePowerup(BonkPowerup const& powerup)
             break;
         case BONK_POWERUP_VALOR:
             GainValor(std::max(1u, uint32(GetChestCost() * powerup.value + 0.5f)));
-            m_player->GetBonkPlayer()->SendAddon("valor");
+            if (m_player->GetBonkPlayer()->IsAddonReady())
+            {
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteValor(data);
+                m_player->GetSession()->SendPacket(&data);
+            }
             SendState();
             break;
         default:
@@ -12416,7 +12421,12 @@ void BonkRun::GiveShards(uint32 count)
     bonk->AddShards(count);
     sBonkQuests.OnShards(m_player, count);
     m_shardsEarned += count;
-    bonk->SendAddon("shard~" + std::to_string(count) + "~" + std::to_string(bonk->GetShards()));
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShard(data, count, bonk->GetShards());
+        m_player->GetSession()->SendPacket(&data);
+    }
     bonk->Notify(BONK_STRING_YOU_COLLECTED, { FormatBonkShards(count, GetLocale()) });
     SendState();
 }

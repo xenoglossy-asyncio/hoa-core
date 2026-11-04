@@ -551,13 +551,16 @@ uint32 BonkPlayer::GetMasterySpentAbove(uint32 treeId, uint8 row) const
 
 void BonkPlayer::SendMasteryState() const
 {
+    if (!m_addonReady)
+        return;
     uint32 const level = GetMasteryLevel();
     uint32 const earned = GetMasteryPoints();
     uint32 const spent = GetMasterySpent();
-    SendAddon("mastery~" + GetClassName() + "~" + std::to_string(level) + "~" + std::to_string(BonkMastery::GetXpIntoLevel(m_masteryXp)) + "~" +
-        std::to_string(level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0) + "~" +
-        std::to_string(BONK_MASTERY_MAX_LEVEL) + "~" + std::to_string(earned > spent ? earned - spent : 0) + "~" +
-        (sBonkMastery.HasTrees(m_player->GetClass()) ? "1" : "0"));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteMasteryState(data, GetClassName(), level, BonkMastery::GetXpIntoLevel(m_masteryXp),
+        level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0, BONK_MASTERY_MAX_LEVEL,
+        earned > spent ? earned - spent : 0, sBonkMastery.HasTrees(m_player->GetClass()));
+    m_player->GetSession()->SendPacket(&data);
 }
 
 bool BonkPlayer::CanSeeTownObject(uint32 entry, bool gameObject) const
@@ -1409,7 +1412,11 @@ void BonkPlayer::AddShards(uint32 count)
 
 void BonkPlayer::SendWallet() const
 {
-    SendAddon("wallet~" + std::to_string(m_shards));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteWallet(data, m_shards);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::SaveShards() const
@@ -2683,8 +2690,12 @@ void BonkPlayer::SendFoundItems() const
 
 void BonkPlayer::SendUpdateNotices()
 {
-    if (m_gearNoticePending)
-        SendAddon("notice~gear");
+    if (m_gearNoticePending && m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteNotice(data, "gear");
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkPlayer::SeeGearNotice()
@@ -3273,8 +3284,12 @@ std::string BonkPlayer::GetLocalName(WorldObject const* object) const
 void BonkPlayer::SendNpcName(WorldObject const* npc) const
 {
     std::string const name = GetLocalName(npc);
-    if (name != npc->GetName())
-        SendAddon("npcname~" + name + "~" + npc->GetName());
+    if (name != npc->GetName() && m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteNpcName(data, name, npc->GetName());
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 std::string BonkPlayer::GetItemName(ItemPrototype const* proto) const
@@ -3298,7 +3313,11 @@ std::string BonkPlayer::GetCreatureName(uint32 entry, std::string const& fallbac
 void BonkPlayer::Notify(std::string const& text) const
 {
     if (m_addonReady)
-        SendAddon("msg~" + text);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMessage(data, text);
+        m_player->GetSession()->SendPacket(&data);
+    }
     else
         ChatHandler(m_player).SendSysMessage(text.c_str());
 }
@@ -3306,7 +3325,11 @@ void BonkPlayer::Notify(std::string const& text) const
 void BonkPlayer::NotifyFind(std::string const& text) const
 {
     if (m_addonReady)
-        SendAddon("find~" + text);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFind(data, text);
+        m_player->GetSession()->SendPacket(&data);
+    }
     else
         ChatHandler(m_player).SendSysMessage(text.c_str());
 }
@@ -3485,7 +3508,11 @@ void BonkPlayer::CountEpicLuck(bool epicDropped)
 
 void BonkPlayer::SendEpicLuck() const
 {
-    SendAddon("epicluck~" + std::to_string(GetEpicLuckBonus()));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteEpicLuck(data, GetEpicLuckBonus());
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::SetBoardChoice(bool show)

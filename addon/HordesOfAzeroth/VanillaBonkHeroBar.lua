@@ -1033,6 +1033,18 @@ local function QueueXpPickupSounds(orbs)
 end
 
 UI.ListenHoa({
+    HOA_MASTERY_STATE = function(mastery)
+        handlers["mastery"]({
+            false, mastery.class_name, mastery.level, mastery.xp, mastery.next, mastery.max_level, mastery.unspent,
+            mastery.trees and "1" or "0",
+        })
+    end,
+    HOA_WALLET = function(wallet)
+        handlers["wallet"]({ false, wallet.shards })
+    end,
+    HOA_SHARD = function(shard)
+        handlers["shard"]({ false, shard.count, shard.total })
+    end,
     HOA_RUN_XP = function(xp)
         run.xp = { level = tonumber(xp.level) or 1, xp = tonumber(xp.xp) or 0, next = tonumber(xp.next) or 0 }
         if inRun then
