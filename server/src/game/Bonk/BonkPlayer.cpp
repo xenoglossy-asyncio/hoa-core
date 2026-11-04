@@ -3041,6 +3041,15 @@ void BonkPlayer::SendProtocolHello() const
     m_player->GetSession()->SendPacket(&data);
 }
 
+void BonkPlayer::SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteAuraValue(data, spellId, value, maxValue);
+    m_player->GetSession()->SendPacket(&data);
+}
+
 void BonkPlayer::SendAddon(std::string const& line) const
 {
     if (!m_addonReady)

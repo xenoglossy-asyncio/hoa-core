@@ -3625,6 +3625,15 @@ handlers["shield"] = function(f)
     RefreshShield()
 end
 
+UI.ListenHoa({
+    HOA_AURA_VALUE = function(spellId, value)
+        if tonumber(spellId) == 60005 then
+            VB.shield = tonumber(value) or 0
+            RefreshShield()
+        end
+    end,
+})
+
 local necroticText = PlayerFrame:CreateFontString(nil, "OVERLAY")
 SetFont(necroticText, 11)
 necroticText:SetPoint("TOPLEFT", PlayerFrameManaBar, "BOTTOMLEFT", 0, -4)

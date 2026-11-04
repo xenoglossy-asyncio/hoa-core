@@ -4,7 +4,14 @@
 pub const PROTOCOL_VERSION: u16 = 1;
 pub const CONTENT_HASH: &str = "sha256:f6fc37b622d3ad4fd7c6dd6c7914040b7f93c7d6784c29a82594d28a572a5531";
 
+pub const MSG_AURA_VALUE: u16 = 0x0002;
 pub const MSG_HELLO: u16 = 0x0001;
+
+pub struct AuraValue {
+    pub spell_id: u32,
+    pub value: u32,
+    pub max_value: u32,
+}
 
 pub struct Hello {
     pub protocol_version: u16,
@@ -13,14 +20,31 @@ pub struct Hello {
 }
 
 pub enum HoaMessage {
+    AuraValue(AuraValue),
     Hello(Hello),
 }
 
 pub fn decode(id: u16, body: &[u8]) -> Option<HoaMessage> {
     match id {
+        MSG_AURA_VALUE => decode_aura_value(body).map(HoaMessage::AuraValue),
         MSG_HELLO => decode_hello(body).map(HoaMessage::Hello),
         _ => None,
     }
+}
+
+fn decode_aura_value(body: &[u8]) -> Option<AuraValue> {
+    let mut body = body;
+    let spell_id = read_u32(&mut body)?;
+    let value = read_u32(&mut body)?;
+    let max_value = read_u32(&mut body)?;
+    if !body.is_empty() {
+        return None;
+    }
+    Some(AuraValue {
+        spell_id,
+        value,
+        max_value,
+    })
 }
 
 fn decode_hello(body: &[u8]) -> Option<Hello> {
@@ -42,6 +66,12 @@ fn read_u16(body: &mut &[u8]) -> Option<u16> {
     let bytes: [u8; 2] = body.get(..2)?.try_into().ok()?;
     *body = &body[2..];
     Some(u16::from_le_bytes(bytes))
+}
+
+fn read_u32(body: &mut &[u8]) -> Option<u32> {
+    let bytes: [u8; 4] = body.get(..4)?.try_into().ok()?;
+    *body = &body[4..];
+    Some(u32::from_le_bytes(bytes))
 }
 
 fn read_string(body: &mut &[u8]) -> Option<String> {

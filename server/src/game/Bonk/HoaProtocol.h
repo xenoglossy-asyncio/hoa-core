@@ -8,12 +8,21 @@
 #include <string>
 
 #define HOA_PROTOCOL_VERSION 1
+#define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_HELLO 0x0001
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
     packet << uint16(value.size());
     packet.append(reinterpret_cast<uint8 const*>(value.data()), value.size());
+}
+
+inline void HoAWriteAuraValue(WorldPacket& packet, uint32 const& spellId, uint32 const& value, uint32 const& maxValue)
+{
+    packet << uint16(HOA_MSG_AURA_VALUE);
+    packet << uint32(spellId);
+    packet << uint32(value);
+    packet << uint32(maxValue);
 }
 
 inline void HoAWriteHello(WorldPacket& packet, uint16 const& protocolVersion, std::string const& contentHash, std::string const& language)

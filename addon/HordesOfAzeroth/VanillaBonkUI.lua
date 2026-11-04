@@ -269,6 +269,21 @@ function UI.Listen(handlers)
     return frame
 end
 
+-- Typed HoA messages the Rust client decoded; the handler gets the fields as event arguments.
+function UI.ListenHoa(handlers)
+    local frame = CreateFrame("Frame")
+    for event in pairs(handlers) do
+        frame:RegisterEvent(event)
+    end
+    frame:SetScript("OnEvent", function(self, event, ...)
+        local handler = handlers[event]
+        if handler then
+            handler(...)
+        end
+    end)
+    return frame
+end
+
 local GENERAL = "Interface\\PaperDollInfoFrame\\UI-Character-General-"
 local EDGE_LEFT, EDGE_RIGHT, EDGE_TOP, EDGE_BOTTOM = 70, 30, 72, 16
 local TILE = 128

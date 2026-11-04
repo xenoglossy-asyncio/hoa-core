@@ -2,6 +2,13 @@
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
 version: 1
 messages:
+  - name: aura_value
+    id: 0x0002
+    direction: server_to_client
+    fields:
+      - { name: spell_id, type: u32 }
+      - { name: value, type: u32 }
+      - { name: max_value, type: u32 }
   - name: hello
     id: 0x0001
     direction: server_to_client

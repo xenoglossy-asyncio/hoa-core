@@ -19,6 +19,7 @@ use crate::telegraphs::{expire_telegraphs, follow_marks, project_telegraphs, pus
 use crate::world_fx::{apply_draw_lines, expire_kit_anchors, move_flights, tap_draw_lines, DisplayModels};
 
 const HOA_HELLO: &str = "HOA_HELLO";
+const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
 
 /// Typed HoA packets, drained on the main thread because firing a Lua event needs the VM.
 #[derive(Resource, Default)]
@@ -45,6 +46,16 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::AuraValue(aura) => {
+                    script.fire_event(
+                        HOA_AURA_VALUE,
+                        vec![
+                            ScriptValue::Int(i64::from(aura.spell_id)),
+                            ScriptValue::Int(i64::from(aura.value)),
+                            ScriptValue::Int(i64::from(aura.max_value)),
+                        ],
+                    );
+                }
                 HoaMessage::Hello(hello) => {
                     if hello.protocol_version != PROTOCOL_VERSION {
                         warn!(
@@ -78,6 +89,7 @@ impl Plugin for HordesOfAzerothPlugin {
     fn build(&self, app: &mut App) {
         add_plate_events();
         add_in_game_event(HOA_HELLO);
+        add_in_game_event(HOA_AURA_VALUE);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

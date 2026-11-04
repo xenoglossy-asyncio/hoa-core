@@ -196,4 +196,12 @@ UI.Listen({
     end,
 })
 
+UI.ListenHoa({
+    HOA_AURA_VALUE = function(spellId, value)
+        if tonumber(spellId) == 60005 then
+            shield = tonumber(value) or 0
+        end
+    end,
+})
+
 UI.SelfBar = plainBar

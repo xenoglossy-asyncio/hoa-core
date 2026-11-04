@@ -6,7 +6,7 @@
 - Rust 客户端只识别 `HOA~` 前缀（`client/crates/hoa/src/world_fx.rs:62-65`），`parse_line` 明确拒绝 `BONK~`（`hoa/src/server_draw.rs:342`）；未匹配的行落回系统聊天（`benilla-app/src/ui_chat/net.rs:14-20,46-61`）。
 - 客户端没有 spell 查询通道（`benilla-app/src/net.rs:1034-1058`），自定义 spell 的元数据无处可查。
 - 状态类数据（护盾量、冲刺、决心、卡牌 proc）全部依赖这套字符串通道，字段顺序靠约定，改一处就要两边同时改。
-- 第一块类型化协议（2026-11-04）：opcode `SMSG_HOA_MESSAGE`（826）在插件发送 `.bonk hello` 后下发 `hoa.hello`——协议版本、内容哈希和账号语言。源文件是 `shared/protocol/messages.yaml`；`tools/protocol/gen.py` 生成 `HoaProtocol.h` 和 `protocol_generated.rs`；客户端比较版本/哈希，不一致时警告，并向 Lua 触发 `HOA_HELLO`。其余数据仍走 `BONK~`。
+- 第一块类型化协议（2026-11-04）：opcode `SMSG_HOA_MESSAGE`（826）在插件发送 `.bonk hello` 后下发 `hoa.hello`——协议版本、内容哈希和账号语言。源文件是 `shared/protocol/messages.yaml`；`tools/protocol/gen.py` 生成 `HoaProtocol.h` 和 `protocol_generated.rs`；客户端比较版本/哈希，不一致时警告，并向 Lua 触发 `HOA_HELLO`。`hoa.aura_value`（`spell_id`、`value`、`max_value`）与护盾文本同时下发并触发 `HOA_AURA_VALUE`，插件不用再解析聊天行就能读到数值。其余数据仍走 `BONK~`。
 
 ## 1. 目标
 

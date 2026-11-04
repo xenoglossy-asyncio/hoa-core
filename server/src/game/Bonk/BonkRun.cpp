@@ -4802,6 +4802,7 @@ void BonkRun::UpdateShield(uint32 diff)
         m_shieldSent = total;
         m_shieldMaxSent = max;
         m_player->GetBonkPlayer()->SendAddon("shield~" + std::to_string(total) + "~" + std::to_string(max));
+        m_player->GetBonkPlayer()->SendAuraValue(BONK_SPELL_PLAYER_SHIELD, total, max);
     }
 }
 
@@ -14571,6 +14572,7 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_UNHIT_POWER_AURA);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
+    m_player->GetBonkPlayer()->SendAuraValue(BONK_SPELL_PLAYER_SHIELD, 0, 0);
     SetNecroticStacks(0);
     ClearBossPressure();
     DespawnPools();
