@@ -30,7 +30,7 @@ def content_hash() -> str:
     for source in sources:
         digest.update(source.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\x00")
-        digest.update(source.read_bytes())
+        digest.update(source.read_bytes().replace(b"\r\n", b"\n"))
     return "sha256:" + digest.hexdigest()
 
 
@@ -159,7 +159,7 @@ def main() -> int:
     if args.check:
         stale = []
         for name, target, sql in generated:
-            current = target.read_bytes() if target.exists() else b""
+            current = target.read_bytes().replace(b"\r\n", b"\n") if target.exists() else b""
             if current != sql:
                 stale.append(name)
         if stale:
