@@ -116,7 +116,7 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 
 ### 7.2 Darkmoon card buffs
 
-Haste Burst (`60006`), Swiftness (`60007`) and Immune (`60008`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers.
+Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`) and Soulstone charges (`60009`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers.
 
 ### 7.3 HoA shield/dash/determination
 

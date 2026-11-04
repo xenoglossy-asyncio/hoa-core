@@ -630,6 +630,7 @@ class BonkRun
         void UpdateBossWounds(uint32 diff);
         void SetBossWoundStacks(uint32 stacks);
         uint32 GetBossWoundStacks() const;
+        void RefreshSoulstoneAura() const;
         void ClearBossPressure();
         void ShowImpact(BonkEnemyHit const& hit, float x, float y, float z, float radius = 0.0f);
         void ShowAttackLook(BonkEnemyHit const& hit, BonkTelegraphShape shape, float x, float y, float z, float orientation, float size);

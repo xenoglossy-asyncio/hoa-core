@@ -373,6 +373,7 @@ void BonkRun::AddCard(BonkCard const& card)
     {
         case BONK_CARD_SOULSTONE:
             ++m_soulstones;
+            RefreshSoulstoneAura();
             break;
         case BONK_CARD_CRIT_HEAL:
             if (m_cardCopies[card.effect] == 1)
@@ -778,6 +779,17 @@ float BonkRun::GetChampionDamageTaken(BonkSpawnKind kind) const
     if (kind == BONK_SPAWN_NORMAL || !HasCard(BONK_CARD_BIG_GAME))
         return 1.0f;
     return 1.0f - std::min(BONK_CHAMPION_MAX_REDUCTION, GetCardTotal(BONK_CARD_BIG_GAME, 1)) / 100.0f;
+}
+
+void BonkRun::RefreshSoulstoneAura() const
+{
+    if (!m_soulstones)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_SOULSTONE);
+        return;
+    }
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_SOULSTONE, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(m_soulstones);
 }
 
 bool BonkRun::IsCardImmune() const

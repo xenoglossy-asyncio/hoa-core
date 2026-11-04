@@ -1230,6 +1230,7 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_HASTE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_SWIFT);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_IMMUNE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_SOULSTONE);
 
     return m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error);
 }
@@ -5002,7 +5003,10 @@ void BonkRun::Revive(bool soulstone, BonkGlyph const* glyph, bool stillAlive)
     if (glyph)
         m_divineShieldStage = m_stage;
     else if (soulstone)
+    {
         --m_soulstones;
+        RefreshSoulstoneAura();
+    }
     else
         --m_revives;
     BonkCard const* stone = m_cardByEffect[BONK_CARD_SOULSTONE];
@@ -14536,6 +14540,7 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_HASTE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_SWIFT);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_IMMUNE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_SOULSTONE);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     SetNecroticStacks(0);
     ClearBossPressure();
