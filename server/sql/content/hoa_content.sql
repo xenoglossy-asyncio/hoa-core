@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS `hoa_content` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-REPLACE INTO `hoa_content` (`id`, `hash`) VALUES (1, 'sha256:b15d060a25ed335b79fb5291c282d8f7c20ae90206a844fef4b277415f27ee6c');
+REPLACE INTO `hoa_content` (`id`, `hash`) VALUES (1, 'sha256:f5343c3953445d40429c33503eb75a5497b2bba1dca621136bca557fd16e062b');

@@ -61,6 +61,8 @@ jobs:
         run: |
           python tools/content/compile.py --check
           python tools/protocol/gen.py --check
+      - name: Test aura source bindings
+        run: python -m unittest discover -s tools/content -p "test_*.py"
 
   addon-lua:
     name: addon-lua

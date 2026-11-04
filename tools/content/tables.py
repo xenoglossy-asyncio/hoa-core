@@ -149,6 +149,19 @@ def literal(value) -> str:
     return quote(value)
 
 
+def load_table_rows(table: str) -> tuple[list[str], list[list]]:
+    path = TABLE_DIR / f"{table}.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or data.get("table") != table:
+        raise SystemExit(f"{path.name}: expected table {table!r}")
+    return data["columns"], data["rows"]
+
+
+def load_table_dicts(table: str) -> list[dict]:
+    columns, rows = load_table_rows(table)
+    return [dict(zip(columns, row)) for row in rows]
+
+
 def compile_table(path: Path) -> bytes:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     table = data["table"]

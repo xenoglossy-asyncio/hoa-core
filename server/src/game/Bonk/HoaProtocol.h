@@ -7,10 +7,13 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 1
+#define HOA_PROTOCOL_VERSION 2
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
+#define HOA_MSG_AURA_TEXT 0x0005
+#define HOA_MSG_AURA_CATALOG_ENTRY 0x0006
+#define HOA_MSG_AURA_CATALOG_END 0x0007
 #define HOA_MSG_HELLO 0x0001
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
@@ -42,6 +45,32 @@ inline void HoAWriteAuraPercent(WorldPacket& packet, uint32 const& spellId, floa
     packet << uint16(HOA_MSG_AURA_PERCENT);
     packet << uint32(spellId);
     packet << float(percent);
+}
+
+inline void HoAWriteAuraText(WorldPacket& packet, uint32 const& spellId, std::string const& text)
+{
+    packet << uint16(HOA_MSG_AURA_TEXT);
+    packet << uint32(spellId);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteAuraCatalogEntry(WorldPacket& packet, uint16 const& index, uint16 const& total, uint32 const& spellId, std::string const& name, std::string const& icon, std::string const& description, uint32 const& stack, uint32 const& duration)
+{
+    packet << uint16(HOA_MSG_AURA_CATALOG_ENTRY);
+    packet << uint16(index);
+    packet << uint16(total);
+    packet << uint32(spellId);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, description);
+    packet << uint32(stack);
+    packet << uint32(duration);
+}
+
+inline void HoAWriteAuraCatalogEnd(WorldPacket& packet, uint16 const& total)
+{
+    packet << uint16(HOA_MSG_AURA_CATALOG_END);
+    packet << uint16(total);
 }
 
 inline void HoAWriteHello(WorldPacket& packet, uint16 const& protocolVersion, std::string const& contentHash, std::string const& language)

@@ -49,10 +49,10 @@ Text lives beside the entry or in separate `i18n` files and is referenced by `*_
 The design-content tables are now sourced here:
 
 - `cards/cards.yaml` is the hand-shaped source for the 46 cards (English + zhCN).
-- `spells/spells.yaml` defines every custom HoA spell/aura; the compiler emits its `spell_template` SQL, the server's C++ ids and the client's display table.
+- `spells/spells.yaml` defines every custom HoA aura. Each entry names its owning card, mastery, weapon or glyph under `source`; the compiler inherits that row's name, icon and description (or applies an explained `display` override), then validates the result. It emits the `spell_template` SQL, `hoa_aura`/`hoa_aura_locale` SQL and the server's C++ ids. The client receives the localized display rows from the server at login, not from a generated copy.
 - `tables/<table>.yaml` holds the 49 design-content `bonk_*` tables (weapons, upgrades, glyphs, talents, mastery, maps, quests, titles, tiers, mobs, item stats and their locale rows).
 - `tools/content/dump_cards.py` / `dump_tables.py` imported them once from the database.
-- `tools/content/compile.py` emits `server/sql/content/*.sql`; `--check` keeps every generated file in sync in CI.
+- `tools/content/compile.py` emits `server/sql/content/*.sql`; `--check` keeps every generated file in sync in CI, and `tools/content/test_auras.py` checks the source bindings and the usage audit.
 - `tools/content/apply.py --maria <client> --database <world db>` applies those files in order; this is how the test database picks up source changes.
 - The compiler also emits `hoa_content.sql` and `BonkContentHash.h`; the server compares the database hash with the build's hash at startup and logs an error when they differ.
 

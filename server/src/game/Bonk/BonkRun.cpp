@@ -1,4 +1,5 @@
 #include "BonkRun.h"
+#include "BonkAura.h"
 #include "BonkCoop.h"
 #include "Group.h"
 #include "BonkCodex.h"
@@ -1230,7 +1231,6 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_HASTE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_SWIFT);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_IMMUNE);
-    m_player->RemoveAurasDueToSpell(BONK_SPELL_SOULSTONE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_THORNS);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DARK_PACT_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_HARVEST_AURA);
@@ -1764,6 +1764,9 @@ void BonkRun::StartStage()
 
     RefillShield(GetMaxShield());
     m_shieldIdleMs = 0;
+    m_shieldSent = 0;
+    m_shieldMaxSent = 0;
+    m_shieldSendTimer = 0;
     SetNecroticStacks(0);
     ClearBossPressure();
     DespawnPools();
@@ -1861,6 +1864,7 @@ void BonkRun::SendFullState() const
     if (m_miniEventActive)
         SendMiniEventTimer(true);
     m_player->GetBonkPlayer()->SendDash();
+    SendShieldState();
 }
 
 void BonkRun::UpdateOwnCombat(uint32 diff)
@@ -4444,6 +4448,9 @@ void BonkRun::SetNecroticStacks(uint32 stacks)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_NECROTIC);
     m_player->GetBonkPlayer()->SendAddon("necroticpct~" + Percent(stacks * BONK_NECROTIC_PER_STACK));
     m_player->GetBonkPlayer()->SendAuraPercent(BONK_SPELL_NECROTIC, stacks * BONK_NECROTIC_PER_STACK);
+    if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_NECROTIC))
+        m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_NECROTIC,
+            sBonkAura.Format(*entry, GetLocale(), { Percent(stacks * BONK_NECROTIC_PER_STACK) }));
 }
 
 void BonkRun::UpdateNecrotic(uint32 diff)
@@ -4674,6 +4681,45 @@ void BonkRun::SetBossWoundStacks(uint32 stacks)
         holder->SetStackAmount(stacks);
     m_player->GetBonkPlayer()->SendAddon("woundspct~" + Percent(stacks * m_bossWoundCut));
     m_player->GetBonkPlayer()->SendAuraPercent(BONK_SPELL_WOUNDS, stacks * m_bossWoundCut);
+    if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_WOUNDS))
+        m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_WOUNDS,
+            sBonkAura.Format(*entry, GetLocale(), { Percent(stacks * m_bossWoundCut) }));
+}
+
+void BonkRun::ResendAuraTexts() const
+{
+    BonkPlayer* bonk = m_player->GetBonkPlayer();
+
+    SendShieldState();
+
+    if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_WOUNDS))
+        if (uint32 const stacks = GetBossWoundStacks())
+            bonk->SendAuraText(BONK_SPELL_WOUNDS,
+                sBonkAura.Format(*entry, GetLocale(), { Percent(stacks * m_bossWoundCut) }));
+
+    bonk->SendDeterminationText();
+
+    struct CardAura
+    {
+        BonkCardEffect effect;
+        uint32 spell;
+    };
+    CardAura const cardAuras[] =
+    {
+        { BONK_CARD_POWER_SURGE, BONK_SPELL_DARKMOON_SURGE },
+        { BONK_CARD_HASTE_BURST, BONK_SPELL_CARD_HASTE },
+        { BONK_CARD_SWIFTNESS,  BONK_SPELL_CARD_SWIFT },
+        { BONK_CARD_HIT_IMMUNE, BONK_SPELL_CARD_IMMUNE },
+        { BONK_CARD_THORNS,     BONK_SPELL_CARD_THORNS },
+        { BONK_CARD_KILL_POWER, BONK_SPELL_KILL_POWER_AURA },
+        { BONK_CARD_UNHIT_POWER, BONK_SPELL_UNHIT_POWER_AURA },
+        { BONK_CARD_BANDAGE,    BONK_SPELL_BANDAGE_AURA },
+        { BONK_CARD_CAMPFIRE,   BONK_SPELL_CAMPFIRE_AURA },
+    };
+    for (CardAura const& aura : cardAuras)
+        if (BonkCard const* card = m_cardByEffect[aura.effect])
+            if (m_player->HasAura(aura.spell))
+                SendCardAuraText(aura.spell, *card);
 }
 
 void BonkRun::UpdateBossWounds(uint32)
@@ -4774,6 +4820,19 @@ void BonkRun::RefillShield(uint32 target)
     AddSpellShield(target - m_spellShield);
 }
 
+void BonkRun::SendShieldState() const
+{
+    uint32 const total = m_spellShield;
+    uint32 const max = GetMaxShield();
+    BonkPlayer* bonk = m_player->GetBonkPlayer();
+    bonk->SendAddon("shield~" + std::to_string(total) + "~" + std::to_string(max));
+    bonk->SendAuraValue(BONK_SPELL_PLAYER_SHIELD, total, max);
+    if (total)
+        if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_PLAYER_SHIELD))
+            bonk->SendAuraText(BONK_SPELL_PLAYER_SHIELD,
+                sBonkAura.Format(*entry, GetLocale(), { std::to_string(total) }));
+}
+
 void BonkRun::UpdateShield(uint32 diff)
 {
     uint32 const max = GetMaxShield();
@@ -4786,23 +4845,26 @@ void BonkRun::UpdateShield(uint32 diff)
     RechargeJuggernautShield(diff, max);
 
     uint32 const total = m_spellShield;
+    bool forceSend = false;
     if (m_player->IsAlive())
     {
         bool const shown = m_player->HasAura(BONK_SPELL_PLAYER_SHIELD);
         if (total && !shown)
+        {
             m_player->AddAura(BONK_SPELL_PLAYER_SHIELD, ADD_AURA_PERMANENT);
+            forceSend = true;
+        }
         else if (!total && shown)
             m_player->RemoveAurasDueToSpell(BONK_SPELL_PLAYER_SHIELD);
     }
 
     m_shieldSendTimer += diff;
-    if ((total != m_shieldSent || max != m_shieldMaxSent) && m_shieldSendTimer >= BONK_SHIELD_SEND_MS)
+    if ((forceSend || total != m_shieldSent || max != m_shieldMaxSent) && m_shieldSendTimer >= BONK_SHIELD_SEND_MS)
     {
         m_shieldSendTimer = 0;
         m_shieldSent = total;
         m_shieldMaxSent = max;
-        m_player->GetBonkPlayer()->SendAddon("shield~" + std::to_string(total) + "~" + std::to_string(max));
-        m_player->GetBonkPlayer()->SendAuraValue(BONK_SPELL_PLAYER_SHIELD, total, max);
+        SendShieldState();
     }
 }
 
@@ -5024,10 +5086,7 @@ void BonkRun::Revive(bool soulstone, BonkGlyph const* glyph, bool stillAlive)
     if (glyph)
         m_divineShieldStage = m_stage;
     else if (soulstone)
-    {
         --m_soulstones;
-        RefreshSoulstoneAura();
-    }
     else
         --m_revives;
     BonkCard const* stone = m_cardByEffect[BONK_CARD_SOULSTONE];
@@ -14560,7 +14619,6 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_HASTE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_SWIFT);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_IMMUNE);
-    m_player->RemoveAurasDueToSpell(BONK_SPELL_SOULSTONE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_THORNS);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DARK_PACT_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_HARVEST_AURA);

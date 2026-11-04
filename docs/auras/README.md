@@ -59,6 +59,8 @@ spell:
       amount: 30
 ```
 
+The implementation in `shared/content/spells/spells.yaml` uses a smaller schema. Each aura declares `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | behavior:<enum> | none`; a sourced aura inherits the source row's name, icon and description, while `display` overrides require a `reason`. `stacks`, `permanent` and `dynamic` describe the live count, timer and value text. The compiler validates every binding and emits `hoa_aura`/`hoa_aura_locale`; the server pushes the localized rows over the typed protocol at addon-ready and language changes, so the client stores strings without reading a locale.
+
 After compilation:
 
 - Server: generated `spell_template` rows (or a custom spell registry) + effect ID constants + proc bindings.
@@ -111,16 +113,16 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 - Content definition: `hoa.aura.darkmoon.zandalarian_surge`, `duration 10s`, `hoa_power_percent 25`, `internal_cooldown 30s`.
 - Server: a combat/timer hook triggers → `Apply` → the real aura applies; damage calculation uses VMaNGOS's aura system. Remove `m_cardSurgeUntilMs`, the manual bonus in `GetCardPower`, and the per-second `cardnow~`.
 - Client: the buff frame shows the icon and remaining time; tooltip text comes from the content pack.
-- First implementation: spell `60004` (migration `20261104120000_world.sql`) is a real positive aura; the server sets its duration from the card, and the generated client table supplies the name/icon/description through `SpellCatalog::with_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. The source is `shared/content/spells/spells.yaml`; `tools/content/compile.py` emits the SQL, the server ids and the client table. Ids `60001`-`60099` are reserved for HoA.
+- First implementation: spell `60004` is a real positive aura; the server sets its duration from the card. The source is `shared/content/spells/spells.yaml`; `tools/content/compile.py` emits the `spell_template` SQL, `hoa_aura`/`hoa_aura_locale` SQL and the server ids. At addon-ready the server sends the localized aura catalog (`aura_catalog_entry`/`aura_catalog_end`), and the client installs it through `SpellCatalog::set_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. Ids `60001`-`60099` are reserved for HoA.
 - Addon: no timing or tooltip assembly; at most read the aura's remaining time for custom UI.
 
 ### 7.2 Darkmoon card buffs
 
-Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges (`60009`) and Thorns (`60010`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers. Conditional regeneration cards keep an aura only while their condition holds: Heavy Runecloth Bandage (`60053`) is present until you are hit, and Basic Campfire (`60054`) while you stand still.
+Darkmoon Card: Blue Dragon (`60006`), Swiftness Potion (`60007`), Insignia of the Alliance (`60008`), Barbed Choker (`60010`), Bloodlust Brooch (`60021`) and Talisman of Ascendance (`60022`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the server-pushed catalog. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers. Conditional regeneration cards keep an aura only while their condition holds: Heavy Runecloth Bandage (`60053`) is present until you are hit, and Basic Campfire (`60054`) while you stand still.
 
 ### 7.3 Class buffs
 
-Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`) the Nomad drawback (`60020`), Kill Power (`60021`) and Unhit Power (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The remaining timed class effects are covered in 7.6.
+Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`), the Nomad drawback (`60020`), Bloodlust Brooch (`60021`) and Talisman of Ascendance (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. The server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the server-pushed catalog. The remaining timed class effects are covered in 7.6.
 
 ### 7.4 HoA shield/dash/determination
 

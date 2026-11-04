@@ -7614,6 +7614,9 @@ void SpellAuraHolder::SetAffectedByVisibleSlotLimit(bool isAffectedByDebuffLimit
 
 void SpellAuraHolder::CalculateForBuffLimit()
 {
+    // HoA custom auras coexist by design; the stock 32-buff limit must not evict them.
+    if (GetId() >= 60001 && GetId() <= 60099)
+        return;
     m_visibleSlotLimitAffected = true;
 
     if (IsPermanent())

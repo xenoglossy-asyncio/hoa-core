@@ -127,6 +127,7 @@ class BonkPlayer
         uint8 GetDetermination() const;
         void AddDetermination();
         void SendDetermination() const;
+        void SendDeterminationText() const;
         void RefreshDeterminationAura() const;
         bool IsShopVendor(Creature const* vendor) const;
         uint32 GetStockTier() const;
@@ -322,7 +323,9 @@ class BonkPlayer
 
         void SetAddonReady();
         void SendProtocolHello() const;
+        void SendAuraCatalog() const;
         void SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) const;
+        void SendAuraText(uint32 spellId, std::string const& text) const;
         void SendAuraPercent(uint32 spellId, float percent) const;
         bool IsAddonReady() const { return m_addonReady; }
         void SetLocale(LocaleConstant locale);

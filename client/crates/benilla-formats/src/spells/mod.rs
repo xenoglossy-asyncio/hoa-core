@@ -385,12 +385,19 @@ impl SpellCatalog {
     }
 
     pub fn get(&self, id: u32) -> Option<&SpellDisplay> {
-        self.spells.get(&id).or_else(|| self.overlay.get(&id))
+        self.overlay.get(&id).or_else(|| self.spells.get(&id))
     }
 
-    /// Adds display rows for spells the installed DBC does not hold. They are visible to
-    /// [`Self::get`] (aura names, icons, tooltips and cast bars) but not to [`Self::iter`], so a
-    /// custom aura never appears in the spellbook.
+    /// The installed DBC row alone, ignoring an overlay; used to keep a DBC icon/name when the
+    /// server only overrides a look spell's description.
+    pub fn dbc(&self, id: u32) -> Option<&SpellDisplay> {
+        self.spells.get(&id)
+    }
+
+    /// Adds display rows for spells the installed DBC does not hold, or rows that override a DBC
+    /// entry HoA reskins (the `bonk_look_*` spells). They are visible to [`Self::get`] (aura names,
+    /// icons, tooltips and cast bars) but not to [`Self::iter`], so a custom aura never appears in
+    /// the spellbook.
     pub fn with_overlay(mut self, overlay: HashMap<u32, SpellDisplay>) -> Self {
         self.overlay = overlay;
         self
@@ -760,6 +767,24 @@ pub fn load_spell_catalog(chain: &mut Chain) -> Result<SpellCatalog> {
 #[cfg(test)]
 #[path = "catalog_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+mod overlay_tests {
+    use super::*;
+
+    #[test]
+    fn an_overlay_row_overrides_the_dbc_row() {
+        let mut native = SpellDisplay::default();
+        native.id = 33466;
+        native.name = "native".into();
+        let mut overlay = SpellDisplay::default();
+        overlay.id = 33466;
+        overlay.name = "Blade Flurry".into();
+        let catalog = SpellCatalog::from_displays(HashMap::from([(33466, native)]))
+            .with_overlay(HashMap::from([(33466, overlay)]));
+        assert_eq!(catalog.get(33466).unwrap().name, "Blade Flurry");
+    }
+}
 
 #[cfg(test)]
 mod learn_effect_tests {

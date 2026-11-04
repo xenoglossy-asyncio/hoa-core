@@ -51,7 +51,7 @@
 - `tools/content-compiler` 生成等价 SQL；测试库逐行对比。
 - 切换为生成流程；插件/客户端重复表替换为生成物或协议数据。
 - 验收：同一份源生成三端产物；改内容只改源文件；CI 检查生成物 diff。
-- 进度（2026-11-04）：源文件是 `shared/content/cards/cards.yaml`、`shared/content/spells/spells.yaml` 和 `shared/content/tables/` 下的 49 张设计表。`tools/content/compile.py` 生成世界库 SQL、服务端 spell ID 头、客户端 spell 显示表、`content.hash`、`hoa_content.sql` 和 `BonkContentHash.h`，`--check` 在 CI 里守住这些产物。`tools/content/apply.py` 把 SQL 应用到数据库；生成表与旧数据逐行一致；服务端启动时对比数据库哈希和构建哈希。生成表 `bonk_hidden_creature`、`bonk_hidden_gameobject` 按决定继续留在数据库。
+- 进度（2026-11-04）：源文件是 `shared/content/cards/cards.yaml`、`shared/content/spells/spells.yaml` 和 `shared/content/tables/` 下的 49 张设计表。`tools/content/compile.py` 生成世界库 SQL、服务端 spell ID 头、`hoa_aura`/`hoa_aura_locale` 行、`content.hash`、`hoa_content.sql` 和 `BonkContentHash.h`，`--check` 在 CI 里守住这些产物。服务端在登录时把本地化光环目录下发给客户端，客户端不再保留生成副本。`tools/content/apply.py` 把 SQL 应用到数据库；生成表与旧数据逐行一致；服务端启动时对比数据库哈希和构建哈希。生成表 `bonk_hidden_creature`、`bonk_hidden_gameobject` 按决定继续留在数据库。
 - 风险：内容量大、迁移期间与旧 SQL 冲突；用“导出→生成→对比”保证等价。
 
 ## 阶段 5：协议整理

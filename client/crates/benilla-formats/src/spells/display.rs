@@ -12,6 +12,7 @@ pub struct OpenLock {
 }
 
 /// One spell's `Spell.dbc` row, as the display, tooltip and cast gates read it.
+#[derive(Clone)]
 pub struct SpellDisplay {
     /// `ID` (column 0): the row's own id, which `GetEffectPoints` hands the level lookup
     /// `0x6e3130` (`0x6e384b`).

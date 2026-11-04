@@ -601,6 +601,7 @@ class BonkRun
         void UpdateRecovery(uint32 diff);
         void ReportQuestCounts();
         void UpdateShield(uint32 diff);
+        void SendShieldState() const;
         uint32 GetMaxShield() const;
         BonkSupportSource ShieldStatSupport() const;
         void RefillShield(uint32 target);
@@ -630,7 +631,6 @@ class BonkRun
         void UpdateBossWounds(uint32 diff);
         void SetBossWoundStacks(uint32 stacks);
         uint32 GetBossWoundStacks() const;
-        void RefreshSoulstoneAura() const;
         void RefreshThornsAura() const;
         void RefreshKillPowerAura() const;
         void AddKillPowerStack() const;
@@ -639,7 +639,7 @@ class BonkRun
         void ApplyTimedAuraTo(Unit* target, uint32 spellId, uint32 durationMs, uint32 flags) const;
         uint32 RemainingAuraMs(uint32 spellId) const;
         void SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const;
-        void SyncStackAura(uint32 spellId, uint32 stacks) const;
+        bool SyncStackAura(uint32 spellId, uint32 stacks) const;
         void UpdateTalentAuras();
         uint32 GetCardAuraStacks(uint32 spellId) const;
         void ClearBossPressure();
@@ -1232,6 +1232,10 @@ class BonkRun
         void SendCardCooldowns() const;
         std::string DescribeCardNow(BonkCard const& card) const;
         static std::string DescribeHeldCard(BonkCard const& card, uint32 copies, LocaleConstant locale);
+        void SendCardAuraText(uint32 spellId, BonkCard const& card) const;
+    public:
+        void ResendAuraTexts() const;
+    private:
         void SendCardStatus(bool force) const;
         mutable std::map<uint32, std::string> m_cardNowSent;
         uint32 m_cardCooldownTotals[MAX_BONK_CARD_EFFECT] = {};

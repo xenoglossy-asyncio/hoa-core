@@ -1,7 +1,7 @@
-use bevy::log::warn;
+use bevy::log::{info, warn};
 use bevy::prelude::*;
 
-use benilla_app::NetHandlerApp;
+use benilla_app::{HoaAuraRow, NetHandlerApp};
 use benilla_protocol::{SessionEvent, SessionEventKind};
 use benilla_ui::script::{add_in_game_event, ScriptValue};
 
@@ -22,15 +22,35 @@ const HOA_HELLO: &str = "HOA_HELLO";
 const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
 const HOA_DASH: &str = "HOA_DASH";
 const HOA_AURA_PERCENT: &str = "HOA_AURA_PERCENT";
-const SHIELD_SPELL: u32 = 60005;
 
 /// Typed HoA packets, drained on the main thread because firing a Lua event needs the VM.
 #[derive(Resource, Default)]
 struct HoaInbox(Vec<(u16, Vec<u8>)>);
 
-/// The account language from the last hello, for runtime tooltip text.
+/// A catalog that arrived before the spell catalog existed, retried each frame.
 #[derive(Resource, Default)]
-struct HoaLanguage(String);
+struct AuraCatalogBuffer {
+    rows: Vec<HoaAuraRow>,
+    total: u16,
+    active: bool,
+    pending: bool,
+}
+
+fn apply_pending_catalog(world: &mut World) {
+    if !world.resource::<AuraCatalogBuffer>().pending {
+        return;
+    }
+    let rows = {
+        let mut buffer = world.resource_mut::<AuraCatalogBuffer>();
+        buffer.pending = false;
+        std::mem::take(&mut buffer.rows)
+    };
+    if !benilla_app::set_hoa_aura_catalog(world, &rows) {
+        let mut buffer = world.resource_mut::<AuraCatalogBuffer>();
+        buffer.rows = rows;
+        buffer.pending = true;
+    }
+}
 
 fn on_hoa_message(In(event): In<SessionEvent>, mut inbox: ResMut<HoaInbox>) {
     if let SessionEvent::HoaMessage { id, body } = event {
@@ -43,8 +63,16 @@ fn deliver_hoa_messages(world: &mut World) {
     if pending.is_empty() {
         return;
     }
-    let mut language = world.resource::<HoaLanguage>().0.clone();
-    let mut shield_text = None;
+    let mut value_texts: Vec<(u32, String)> = Vec::new();
+    let (mut catalog_rows, mut catalog_total, mut catalog_active) = {
+        let buffer = world.resource::<AuraCatalogBuffer>();
+        (
+            if buffer.active { buffer.rows.clone() } else { Vec::new() },
+            buffer.total,
+            buffer.active,
+        )
+    };
+    let mut catalog_done = false;
     benilla_app::run_hosted(world, |script| {
         let Some(script) = script else {
             return;
@@ -56,13 +84,6 @@ fn deliver_hoa_messages(world: &mut World) {
             };
             match message {
                 HoaMessage::AuraValue(aura) => {
-                    if aura.spell_id == SHIELD_SPELL {
-                        shield_text = Some(if language.eq_ignore_ascii_case("zhCN") {
-                            format!("吸收 {} 点伤害。", aura.value)
-                        } else {
-                            format!("Absorbs {} damage.", aura.value)
-                        });
-                    }
                     script.fire_event(
                         HOA_AURA_VALUE,
                         vec![
@@ -71,6 +92,9 @@ fn deliver_hoa_messages(world: &mut World) {
                             ScriptValue::Int(i64::from(aura.max_value)),
                         ],
                     );
+                }
+                HoaMessage::AuraText(text) => {
+                    value_texts.push((text.spell_id, text.text));
                 }
                 HoaMessage::AuraPercent(percent) => {
                     script.fire_event(
@@ -93,8 +117,26 @@ fn deliver_hoa_messages(world: &mut World) {
                         ],
                     );
                 }
+                HoaMessage::AuraCatalogEntry(entry) => {
+                    if entry.index == 0 || !catalog_active {
+                        catalog_rows.clear();
+                        catalog_active = true;
+                    }
+                    catalog_total = entry.total;
+                    catalog_rows.push(HoaAuraRow {
+                        id: entry.spell_id,
+                        name: entry.name,
+                        icon: entry.icon,
+                        description: entry.description,
+                        stack_amount: entry.stack,
+                        duration_index: entry.duration,
+                    });
+                }
+                HoaMessage::AuraCatalogEnd(end) => {
+                    catalog_total = end.total;
+                    catalog_done = true;
+                }
                 HoaMessage::Hello(hello) => {
-                    language = hello.language.clone();
                     if hello.protocol_version != PROTOCOL_VERSION {
                         warn!(
                             "hoa protocol: server speaks {}, this build speaks {PROTOCOL_VERSION}",
@@ -119,10 +161,35 @@ fn deliver_hoa_messages(world: &mut World) {
             }
         }
     });
-    world.resource_mut::<HoaLanguage>().0 = language;
-    if let Some(description) = shield_text {
-        benilla_app::set_hoa_spell_description(world, SHIELD_SPELL, description);
+    for (spell_id, description) in value_texts {
+        benilla_app::set_hoa_spell_description(world, spell_id, description);
     }
+    if catalog_done {
+        if catalog_rows.len() != usize::from(catalog_total) {
+            warn!(
+                "hoa protocol: aura catalog has {} rows, expected {catalog_total}",
+                catalog_rows.len()
+            );
+        }
+        if benilla_app::set_hoa_aura_catalog(world, &catalog_rows) {
+            let mut buffer = world.resource_mut::<AuraCatalogBuffer>();
+            buffer.active = false;
+            buffer.pending = false;
+            buffer.rows.clear();
+        } else {
+            let mut buffer = world.resource_mut::<AuraCatalogBuffer>();
+            buffer.rows = catalog_rows;
+            buffer.total = catalog_total;
+            buffer.active = false;
+            buffer.pending = true;
+        }
+    } else if catalog_active {
+        let mut buffer = world.resource_mut::<AuraCatalogBuffer>();
+        buffer.rows = catalog_rows;
+        buffer.total = catalog_total;
+        buffer.active = true;
+    }
+    apply_pending_catalog(world);
 }
 
 pub struct HordesOfAzerothPlugin;
@@ -151,7 +218,7 @@ impl Plugin for HordesOfAzerothPlugin {
             .insert_non_send_resource(hosts.controller.clone())
             .init_resource::<Telegraphs>()
             .init_resource::<HoaInbox>()
-            .init_resource::<HoaLanguage>()
+            .init_resource::<AuraCatalogBuffer>()
             .net_handler(SessionEventKind::HoaMessage, on_hoa_message)
             .insert_resource(DisplayModels::from_install())
             .add_systems(Startup, (name_window, announce_addon_folder, tap_draw_lines))
@@ -178,6 +245,7 @@ impl Plugin for HordesOfAzerothPlugin {
             )
             .add_systems(Last, crate::census::log_census.run_if(crate::census::census_wanted))
             .add_systems(Last, deliver_hoa_messages)
+            .add_systems(Last, apply_pending_catalog.after(deliver_hoa_messages))
             .add_systems(
                 PostUpdate,
                 push_telegraphs.after(benilla_world::particles::buffer::begin_effect_frame),
@@ -228,5 +296,27 @@ mod tests {
         assert_eq!(hello.protocol_version, PROTOCOL_VERSION);
         assert_eq!(hello.content_hash, CONTENT_HASH);
         assert_eq!(hello.language, "zhCN");
+    }
+
+    #[test]
+    fn the_catalog_entry_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        body.extend_from_slice(&0u16.to_le_bytes());
+        body.extend_from_slice(&1u16.to_le_bytes());
+        body.extend_from_slice(&60024u32.to_le_bytes());
+        for text in ["切割", "Interface\\Icons\\Spell_Shadow_CurseOfTounges", "每层提高急速"] {
+            body.extend_from_slice(&(text.len() as u16).to_le_bytes());
+            body.extend_from_slice(text.as_bytes());
+        }
+        body.extend_from_slice(&0u32.to_le_bytes());
+        body.extend_from_slice(&28u32.to_le_bytes());
+
+        let Some(HoaMessage::AuraCatalogEntry(entry)) = protocol_generated::decode(protocol_generated::MSG_AURA_CATALOG_ENTRY, &body) else {
+            panic!("catalog entry did not decode");
+        };
+        assert_eq!(entry.spell_id, 60024);
+        assert_eq!(entry.name, "切割");
+        assert_eq!(entry.stack, 0);
+        assert_eq!(entry.duration, 28);
     }
 }

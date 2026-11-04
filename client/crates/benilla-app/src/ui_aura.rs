@@ -103,6 +103,8 @@ impl Plugin for UiAuraPlugin {
         app.init_resource::<AuraDurations>()
             .init_resource::<PlayerAuraCache>()
             .init_resource::<AuraFeedMemory>()
+            .init_resource::<crate::hoa_aura::HoaCatalogChanged>()
+            .init_resource::<crate::hoa_aura::HoaValueTexts>()
             .init_resource::<benilla_world::frame_pace::FrameStep>()
             // Fed before the VM dispatch.
             // After this frame's world publish, so the gain names the unit in the same frame.
@@ -732,6 +734,7 @@ fn feed_auras(
     step: Res<benilla_world::frame_pace::FrameStep>,
     // `Option`: a UI-only harness has no action store, and so no known spell.
     actions: Option<Res<crate::ui_action::PlayerActions>>,
+    mut catalog_changed: ResMut<crate::hoa_aura::HoaCatalogChanged>,
 ) {
     // The `UnitBuff` gate's inputs are the relation model the selection ring and nameplates use.
     vm.feed(|script, (units, relations, mut mem), fires| {
@@ -767,6 +770,19 @@ fn feed_auras(
             memo.entered = Some(me_entity);
             let tracking = rebuild(&mut cache.auras, store, catalog, bevy_now);
             script.set_tracking(tracking);
+        }
+
+        // Applications-field changes do not rebuild the cache above, so refresh the counts of
+        // auras already in it; otherwise a stack ticking down keeps its entry count until the
+        // whole aura is removed.
+        let live_auras: Vec<UnitAuraSlot> = store.0.unit_auras().collect();
+        for cached in &mut cache.auras {
+            if let Some(live) = live_auras
+                .iter()
+                .find(|a| a.slot == cached.slot && a.spell_id == cached.spell_id)
+            {
+                cached.stacks = live.stacks;
+            }
         }
 
         // No stamp is pruned for an empty slot: the packet arrives before its slot fills.
@@ -885,6 +901,9 @@ fn feed_auras(
         }
 
         script.set_player_auras(list);
+        if std::mem::take(&mut catalog_changed.0) {
+            fires.post("PLAYER_AURAS_CHANGED", vec![]);
+        }
         if entering {
             // The cache rebuild's own event, no arguments (`0x4e437f`): the stock buff bar and
             // `MiniMapTrackingFrame` register it. The unit frames' `UNIT_AURA` is the aura fields'
@@ -931,8 +950,18 @@ fn player_list(
         .iter()
         .map(|c| {
             let display = catalog.and_then(|cat| cat.get(c.spell_id));
-            let (duration, expiration_time) =
+            let (mut duration, mut expiration_time) =
                 join_duration(durations.by_slot.get(&c.slot), stamp_now, script_now);
+            let until_cancelled = until_cancelled(
+                display,
+                display.and_then(|d| spell_durations.and_then(|c| c.get(d.duration_index))),
+                c.flags & AURA_FLAG_CANCELABLE != 0,
+                expiration_time,
+            );
+            if until_cancelled {
+                duration = 0.0;
+                expiration_time = 0.0;
+            }
             AuraState {
                 spell_id: c.spell_id,
                 name: display.map(|d| d.name.clone()),
@@ -947,12 +976,7 @@ fn player_list(
                 expiration_time,
                 helpful: c.slot < UNIT_AURA_POSITIVE_SLOTS,
                 cancelable: c.flags & AURA_FLAG_CANCELABLE != 0,
-                until_cancelled: until_cancelled(
-                    display,
-                    display.and_then(|d| spell_durations.and_then(|c| c.get(d.duration_index))),
-                    c.flags & AURA_FLAG_CANCELABLE != 0,
-                    expiration_time,
-                ),
+                until_cancelled,
                 channeled: display
                     .is_some_and(|d| d.attributes_ex & SPELL_ATTR_EX_IS_CHANNELED != 0),
                 // No reader of the buff cache takes a `raidFilter`, nor runs the vision test

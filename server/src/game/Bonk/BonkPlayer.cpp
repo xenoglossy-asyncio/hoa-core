@@ -1,5 +1,6 @@
 #include "BonkPlayer.h"
 #include "BonkContentHash.h"
+#include "BonkAura.h"
 #include "BonkCoop.h"
 #include "Bag.h"
 #include "BonkEnchant.h"
@@ -2338,6 +2339,14 @@ void BonkPlayer::SendDetermination() const
     uint8 const stacks = GetDetermination();
     SendAddon("determinationpct~" + FormatStat(stacks * BONK_DETERMINATION_PER_STACK));
     SendAuraPercent(BONK_SPELL_DETERMINATION, stacks * BONK_DETERMINATION_PER_STACK);
+    SendDeterminationText();
+}
+
+void BonkPlayer::SendDeterminationText() const
+{
+    if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_DETERMINATION))
+        SendAuraText(BONK_SPELL_DETERMINATION,
+            sBonkAura.Format(*entry, GetLocale(), { FormatStat(GetDetermination() * BONK_DETERMINATION_PER_STACK) }));
 }
 
 void BonkPlayer::RefreshDeterminationAura() const
@@ -3033,6 +3042,9 @@ void BonkPlayer::SetAddonReady()
     m_addonReady = true;
     m_zoneArtSent = false;
     SendProtocolHello();
+    SendAuraCatalog();
+    if (m_run)
+        m_run->ResendAuraTexts();
 }
 
 void BonkPlayer::SendProtocolHello() const
@@ -3042,12 +3054,49 @@ void BonkPlayer::SendProtocolHello() const
     m_player->GetSession()->SendPacket(&data);
 }
 
+void BonkPlayer::SendAuraCatalog() const
+{
+    if (!m_addonReady)
+        return;
+
+    uint32 total = 0;
+    for (BonkAuraEntry const& entry : sBonkAura.All())
+        if (entry.visible)
+            ++total;
+    total = std::min<uint32>(total, 0xFFFF);
+
+    uint16 index = 0;
+    for (BonkAuraEntry const& entry : sBonkAura.All())
+    {
+        if (!entry.visible)
+            continue;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteAuraCatalogEntry(data, index++, uint16(total), entry.id,
+            sBonkAura.Name(entry, GetLocale()), entry.icon, sBonkAura.Description(entry, GetLocale()),
+            entry.stackMax, entry.durationIndex);
+        m_player->GetSession()->SendPacket(&data);
+    }
+
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteAuraCatalogEnd(end, uint16(total));
+    m_player->GetSession()->SendPacket(&end);
+}
+
 void BonkPlayer::SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) const
 {
     if (!m_addonReady)
         return;
     WorldPacket data(SMSG_HOA_MESSAGE);
     HoAWriteAuraValue(data, spellId, value, maxValue);
+    m_player->GetSession()->SendPacket(&data);
+}
+
+void BonkPlayer::SendAuraText(uint32 spellId, std::string const& text) const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteAuraText(data, spellId, text);
     m_player->GetSession()->SendPacket(&data);
 }
 
@@ -3166,6 +3215,13 @@ void BonkPlayer::ApplyLocale(LocaleConstant locale)
     m_locale = locale;
     m_player->GetSession()->SetSessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale));
     RefreshCreatureNames();
+    if (m_addonReady)
+    {
+        SendProtocolHello();
+        SendAuraCatalog();
+        if (m_run)
+            m_run->ResendAuraTexts();
+    }
 }
 
 void BonkPlayer::RefreshCreatureNames() const

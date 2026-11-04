@@ -89,6 +89,7 @@ fn motion(flags: u32, orientation: f32) -> RemoteMotion {
         speed: 0.0,
         vertical_velocity: 0.0,
         jump_xy_vel: [0.0, 0.0],
+        air_dash_left: 0.0,
         fall_start: None,
         relay: Default::default(),
         last_apply_ms: 0.0,
