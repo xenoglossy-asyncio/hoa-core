@@ -7,7 +7,11 @@ import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import yaml
+
+from tables import compile_tables
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "shared" / "content" / "cards" / "cards.yaml"
@@ -98,17 +102,27 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the generated SQL differs")
     args = parser.parse_args()
-    generated = compile_cards()
+    generated = [("cards", TARGET, compile_cards())]
+    for path, table_sql in compile_tables():
+        generated.append((path.stem, ROOT / "server" / "sql" / "content" / f"{path.stem}.sql", table_sql))
+
     if args.check:
-        current = TARGET.read_bytes() if TARGET.exists() else b""
-        if current != generated:
-            print("generated card SQL is out of date; run tools/content/compile.py")
+        stale = []
+        for name, target, sql in generated:
+            current = target.read_bytes() if target.exists() else b""
+            if current != sql:
+                stale.append(name)
+        if stale:
+            print("generated content is out of date: " + ", ".join(stale))
+            print("run tools/content/compile.py")
             return 1
-        print(f"cards: generated content is up to date ({len(generated)} bytes)")
+        print(f"content: {len(generated)} generated files are up to date")
         return 0
-    TARGET.parent.mkdir(parents=True, exist_ok=True)
-    TARGET.write_bytes(generated)
-    print(f"wrote {TARGET.relative_to(ROOT)} ({len(generated)} bytes)")
+
+    for name, target, sql in generated:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(sql)
+        print(f"wrote {target.relative_to(ROOT)} ({len(sql)} bytes)")
     return 0
 
 

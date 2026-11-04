@@ -44,15 +44,16 @@ stats: { strength: 12, stamina: 8 }
 - `shared/i18n/generated/*.json`：文本目录（供 C++/Rust/Lua 共用）
 - `content.hash`：内容版本哈希
 
-## 当前试点：卡牌
+## 当前状态
 
-第一组表已经端到端接通：
+设计内容表已经迁到这里：
 
-- `cards/cards.yaml` 是源文件（46 张卡，英文 + zhCN）。
-- `tools/content/dump_cards.py` 从现有 `bonk_card`/`bonk_card_locale` 表一次性导入。
-- `tools/content/compile.py` 生成 `server/sql/content/bonk_card.sql`；`--check` 在 CI 里保证 SQL 与源文件同步。
+- `cards/cards.yaml` 是 46 张卡牌的手工源文件（英文 + zhCN）。
+- `tables/<table>.yaml` 保存 49 张设计内容 `bonk_*` 表（武器、升级、Glyph、天赋、精通、地图、任务、称号、难度、怪物、物品属性及其语言行）。
+- `tools/content/dump_cards.py` / `dump_tables.py` 从数据库一次性导入。
+- `tools/content/compile.py` 生成 `server/sql/content/*.sql`；`--check` 在 CI 里保证所有生成文件与源同步。
 
-生成的 SQL 已应用到测试库，并和旧的 `bonk_card` 与 zhCN 语言行逐行对比，完全一致。后面的表按同一模式迁移。
+每张生成表都应用到测试库并与旧数据逐行对比，49 张全部一致。大型生成表 `bonk_hidden_creature`、`bonk_hidden_gameobject` 按项目决定保留在数据库里，不进入源文件，避免仓库难以审阅。
 
 ## 迁移
 

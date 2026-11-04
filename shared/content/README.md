@@ -44,15 +44,16 @@ Text lives beside the entry or in separate `i18n` files and is referenced by `*_
 - `shared/i18n/generated/*.json`: text catalogue shared by C++, Rust and Lua
 - `content.hash`: content version hash
 
-## Current pilot: cards
+## Current state
 
-The first table set is wired end to end:
+The design-content tables are now sourced here:
 
-- `cards/cards.yaml` is the source (46 cards, English + zhCN).
-- `tools/content/dump_cards.py` imports it from the current `bonk_card`/`bonk_card_locale` tables once.
-- `tools/content/compile.py` emits `server/sql/content/bonk_card.sql`; `--check` keeps the SQL in sync in CI.
+- `cards/cards.yaml` is the hand-shaped source for the 46 cards (English + zhCN).
+- `tables/<table>.yaml` holds the 49 design-content `bonk_*` tables (weapons, upgrades, glyphs, talents, mastery, maps, quests, titles, tiers, mobs, item stats and their locale rows).
+- `tools/content/dump_cards.py` / `dump_tables.py` imported them once from the database.
+- `tools/content/compile.py` emits `server/sql/content/*.sql`; `--check` keeps every generated file in sync in CI.
 
-The generated SQL was applied to the test database and compared row for row with the old `bonk_card` and zhCN locale rows; both were identical. The next tables follow the same pattern.
+Every generated table was applied to the test database and compared row for row with the old data; all 49 matched. The large generated spawn tables (`bonk_hidden_creature`, `bonk_hidden_gameobject`) deliberately stay in the database, per the project decision, so the source tree stays reviewable.
 
 ## Migration
 
