@@ -853,12 +853,10 @@ class BonkRun
         uint32 m_glyphRerolls = 0;
         std::set<uint32> m_glyphCardIds;
         uint32 m_glyphKills = 0;
-        uint32 m_glyphHasteUntilMs = 0;
         uint32 m_glyphMovedMs = 0;
         bool m_glyphStill = false;
         bool m_glyphLastStand = false;
         bool m_nomadPenalty = false;
-        uint32 m_soulHarvestUntilMs = 0;
         uint32 m_glyphMiniBosses = 0;
         uint32 m_divineShieldStage = 0;
         int32 m_glyphStormTimer = 0;
@@ -2125,7 +2123,6 @@ class BonkRun
         std::map<uint32, uint32> m_struckCastReadyMs;
         uint32 m_talentStruckSeenMs = 0;
         uint32 m_lowHealthGuardStage = 0;
-        uint32 m_iceBlockUntilMs = 0;
         bool m_iceBlockBurstPending = false;
         float m_juggernautCarry = 0.0f;
 
@@ -2323,7 +2320,6 @@ class BonkRun
         std::map<ObjectGuid, uint32> m_seducedUntil;
         std::map<ObjectGuid, uint32> m_devourAffixReadyMs;
         std::deque<uint32> m_souls;
-        uint32 m_darkPactUntilMs = 0;
         uint32 m_darkHarvestReadyMs = 0;
         uint32 m_voidSlamReadyMs = 0;
         uint32 m_seductionReadyMs = 0;

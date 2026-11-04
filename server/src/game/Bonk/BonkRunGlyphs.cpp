@@ -721,7 +721,6 @@ void BonkRun::OnGlyphKill(Creature const* mob, BonkSpawnKind kind)
     if (BonkGlyph const* lust = GetGlyph(BONK_GLYPH_KILL_HASTE))
         if (lust->values[0] >= 1.0f && m_glyphKills % uint32(lust->values[0]) == 0)
         {
-            m_glyphHasteUntilMs = m_totalMs + uint32(lust->values[2]);
             if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_GLYPH_HASTE_AURA, ADD_AURA_POSITIVE))
             {
                 int32 const duration = int32(lust->values[2]);
@@ -735,7 +734,6 @@ void BonkRun::OnGlyphKill(Creature const* mob, BonkSpawnKind kind)
     if (BonkGlyph const* harvest = GetGlyph(BONK_GLYPH_SOUL_HARVEST))
         if (harvest->values[0] >= 1.0f && m_glyphKills % uint32(harvest->values[0]) == 0)
         {
-            m_soulHarvestUntilMs = m_totalMs + uint32(harvest->values[2]);
             if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_SOUL_HARVEST_AURA, ADD_AURA_POSITIVE))
             {
                 int32 const duration = int32(harvest->values[2]);

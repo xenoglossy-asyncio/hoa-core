@@ -188,7 +188,7 @@ void BonkRun::DespawnWarlockMinions()
         m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_LOOK);
     m_souls.clear();
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DARK_PACT_AURA);
-    m_darkPactUntilMs = m_darkHarvestReadyMs = m_voidSlamReadyMs = m_seductionReadyMs = 0;
+    m_darkHarvestReadyMs = m_voidSlamReadyMs = m_seductionReadyMs = 0;
 }
 
 std::vector<ObjectGuid> BonkRun::GetWarlockMinionGuids() const
@@ -644,7 +644,6 @@ void BonkRun::OnDrainOverheal(uint32 heal)
     uint32 const missing = m_player->GetMaxHealth() - m_player->GetHealth();
     if (heal > missing)
     {
-        m_darkPactUntilMs = m_totalMs + BONK_DARK_PACT_MS;
         if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DARK_PACT_AURA, ADD_AURA_POSITIVE))
         {
             holder->SetAuraDuration(BONK_DARK_PACT_MS);

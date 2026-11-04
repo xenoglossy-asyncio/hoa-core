@@ -381,7 +381,6 @@ uint32 BonkRun::GuardLowHealth(uint32 damage)
     m_lowHealthGuardStage = m_stage;
     if (m_mastery.iceBlock > 0.0f)
     {
-        m_iceBlockUntilMs = m_totalMs + uint32(m_mastery.iceBlock * IN_MILLISECONDS);
         if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_ICE_BLOCK_AURA, ADD_AURA_POSITIVE))
         {
             int32 const duration = int32(m_mastery.iceBlock * IN_MILLISECONDS);
