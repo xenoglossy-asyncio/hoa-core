@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 5
+#define HOA_PROTOCOL_VERSION 6
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -22,6 +22,10 @@
 #define HOA_MSG_COOP_NO_PAUSE 0x0014
 #define HOA_MSG_RUN_XP 0x0015
 #define HOA_MSG_WAVE_BEAT 0x0016
+#define HOA_MSG_RUN_SUPPORT 0x0017
+#define HOA_MSG_RUN_GLYPH_METER 0x0018
+#define HOA_MSG_RUN_OTHER_METER 0x0019
+#define HOA_MSG_RUN_PARTY_METER 0x001A
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -168,4 +172,28 @@ inline void HoAWriteWaveBeat(WorldPacket& packet, std::string const& name, uint3
     HoAWriteString(packet, name);
     packet << uint32(beat);
     packet << uint32(seconds);
+}
+
+inline void HoAWriteRunSupport(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_RUN_SUPPORT);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteRunGlyphMeter(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_RUN_GLYPH_METER);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteRunOtherMeter(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_RUN_OTHER_METER);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteRunPartyMeter(WorldPacket& packet, std::string const& text)
+{
+    packet << uint16(HOA_MSG_RUN_PARTY_METER);
+    HoAWriteString(packet, text);
 }

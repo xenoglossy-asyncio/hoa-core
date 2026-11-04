@@ -1299,6 +1299,9 @@ end
 local handlers = {}
 
 UI.ListenHoa({
+    HOA_RUN_SUPPORT = function(state)
+        handlers["support"]({ false, state.text })
+    end,
     HOA_RUN_START = function(start)
         run.map = start.map_name or ""
         run.difficulty = start.difficulty or ""

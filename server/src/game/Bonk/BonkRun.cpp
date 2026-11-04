@@ -13994,23 +13994,37 @@ void BonkRun::SendState() const
             m_shardsEarned, DescribeWeaponStats(), m_totalMs / IN_MILLISECONDS, damageTypes);
         m_player->GetSession()->SendPacket(&data);
     }
-    bonk->SendAddon("support~" + DescribeSupport());
-    bonk->SendAddon("gmeter~" + DescribeGlyphStats());
-    bonk->SendAddon("xmeter~" + DescribeOtherDamage());
-    if (BonkCoop::InGroupRun(m_player))
+    if (bonk->IsAddonReady())
     {
-        std::vector<Player*> members = BonkCoop::RunGroupOf(m_player);
-        if (std::find(members.begin(), members.end(), m_player) == members.end())
-            members.push_back(m_player);
-        std::string party;
-        for (Player* member : members)
+        WorldPacket support(SMSG_HOA_MESSAGE);
+        HoAWriteRunSupport(support, DescribeSupport());
+        m_player->GetSession()->SendPacket(&support);
+
+        WorldPacket glyphMeter(SMSG_HOA_MESSAGE);
+        HoAWriteRunGlyphMeter(glyphMeter, DescribeGlyphStats());
+        m_player->GetSession()->SendPacket(&glyphMeter);
+
+        WorldPacket otherMeter(SMSG_HOA_MESSAGE);
+        HoAWriteRunOtherMeter(otherMeter, DescribeOtherDamage());
+        m_player->GetSession()->SendPacket(&otherMeter);
+
+        if (BonkCoop::InGroupRun(m_player))
         {
-            if (!member)
-                continue;
-            party += std::string(member->GetName()) + "~" +
-                std::to_string(BonkStats::TotalDamage(member->GetObjectGuid())) + "~" + std::to_string(uint32(member->GetClass())) + "~";
+            std::vector<Player*> members = BonkCoop::RunGroupOf(m_player);
+            if (std::find(members.begin(), members.end(), m_player) == members.end())
+                members.push_back(m_player);
+            std::string party;
+            for (Player* member : members)
+            {
+                if (!member)
+                    continue;
+                party += std::string(member->GetName()) + "~" +
+                    std::to_string(BonkStats::TotalDamage(member->GetObjectGuid())) + "~" + std::to_string(uint32(member->GetClass())) + "~";
+            }
+            WorldPacket partyMeter(SMSG_HOA_MESSAGE);
+            HoAWriteRunPartyMeter(partyMeter, party);
+            m_player->GetSession()->SendPacket(&partyMeter);
         }
-        bonk->SendAddon("pmeter~" + party);
     }
 }
 
@@ -14372,7 +14386,9 @@ void BonkRun::Finish(bool wentHome)
             weapon.evolved = owned.weapon.evolvesFrom != 0;
             weapons.push_back(weapon);
         }
-        bonk->SendAddon("support~" + DescribeSupport());
+        WorldPacket support(SMSG_HOA_MESSAGE);
+        HoAWriteRunSupport(support, DescribeSupport());
+        m_player->GetSession()->SendPacket(&support);
         BonkStats::SendSummary(m_player, weapons);
     }
 

@@ -684,6 +684,14 @@ end)
 
 local handlers = {}
 
+local function TildeFields(text)
+    local fields = { false }
+    for _, part in ipairs(UI.Split(text or "", "~")) do
+        tinsert(fields, part)
+    end
+    return fields
+end
+
 local function Spell(index)
     if not spells[index] then
         spells[index] = { index = index, damage = 0, kills = 0 }
@@ -709,6 +717,18 @@ function UI.ApplyDamageMeter()
 end
 
 UI.ListenHoa({
+    HOA_RUN_SUPPORT = function(state)
+        handlers["support"]({ false, state.text })
+    end,
+    HOA_RUN_GLYPH_METER = function(state)
+        handlers["gmeter"]({ false, state.text })
+    end,
+    HOA_RUN_OTHER_METER = function(state)
+        handlers["xmeter"](TildeFields(state.text))
+    end,
+    HOA_RUN_PARTY_METER = function(state)
+        handlers["pmeter"](TildeFields(state.text))
+    end,
     HOA_RUN_START = function()
         spells = {}
         glyphs = {}

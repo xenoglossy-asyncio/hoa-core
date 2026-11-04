@@ -29,6 +29,10 @@ const HOA_RUN_PAUSED: &str = "HOA_RUN_PAUSED";
 const HOA_COOP_NO_PAUSE: &str = "HOA_COOP_NO_PAUSE";
 const HOA_RUN_XP: &str = "HOA_RUN_XP";
 const HOA_WAVE_BEAT: &str = "HOA_WAVE_BEAT";
+const HOA_RUN_SUPPORT: &str = "HOA_RUN_SUPPORT";
+const HOA_RUN_GLYPH_METER: &str = "HOA_RUN_GLYPH_METER";
+const HOA_RUN_OTHER_METER: &str = "HOA_RUN_OTHER_METER";
+const HOA_RUN_PARTY_METER: &str = "HOA_RUN_PARTY_METER";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -105,6 +109,18 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::RunSupport(support) => {
+                    script.fire_event(HOA_RUN_SUPPORT, vec![lua_table(vec![("text", ScriptValue::Str(support.text))])]);
+                }
+                HoaMessage::RunGlyphMeter(meter) => {
+                    script.fire_event(HOA_RUN_GLYPH_METER, vec![lua_table(vec![("text", ScriptValue::Str(meter.text))])]);
+                }
+                HoaMessage::RunOtherMeter(meter) => {
+                    script.fire_event(HOA_RUN_OTHER_METER, vec![lua_table(vec![("text", ScriptValue::Str(meter.text))])]);
+                }
+                HoaMessage::RunPartyMeter(meter) => {
+                    script.fire_event(HOA_RUN_PARTY_METER, vec![lua_table(vec![("text", ScriptValue::Str(meter.text))])]);
+                }
                 HoaMessage::RunPaused(paused) => {
                     script.fire_event(
                         HOA_RUN_PAUSED,
@@ -322,6 +338,10 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_COOP_NO_PAUSE);
         add_in_game_event(HOA_RUN_XP);
         add_in_game_event(HOA_WAVE_BEAT);
+        add_in_game_event(HOA_RUN_SUPPORT);
+        add_in_game_event(HOA_RUN_GLYPH_METER);
+        add_in_game_event(HOA_RUN_OTHER_METER);
+        add_in_game_event(HOA_RUN_PARTY_METER);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
