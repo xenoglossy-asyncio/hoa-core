@@ -31,6 +31,9 @@ UI.Listen({
             StopBossMusic()
         end
     end,
-    ["start"] = StopBossMusic,
-    ["end"] = StopBossMusic,
+})
+
+UI.ListenHoa({
+    HOA_RUN_START = StopBossMusic,
+    HOA_RUN_END = StopBossMusic,
 })

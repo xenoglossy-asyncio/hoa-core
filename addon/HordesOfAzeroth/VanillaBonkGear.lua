@@ -438,11 +438,13 @@ local function HideNow()
     frame.alpha = 0
     frame:Hide()
 end
-handlers["start"] = HideNow
-handlers["end"] = function()
-    frame.side = false
-    HideNow()
-end
+UI.ListenHoa({
+    HOA_RUN_START = HideNow,
+    HOA_RUN_END = function()
+        frame.side = false
+        HideNow()
+    end,
+})
 handlers["coopnopause"] = function(f)
     frame.side = f[2] == "1"
     if frame.open then

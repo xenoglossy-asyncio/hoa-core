@@ -333,9 +333,9 @@ handlers["objectiveclear"] = function(f)
     end
 end
 
-handlers["end"] = function()
-    RemoveAll()
-end
+UI.ListenHoa({
+    HOA_RUN_END = RemoveAll,
+})
 
 UI.Listen(handlers)
 

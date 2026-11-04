@@ -46,19 +46,17 @@ handlers["paused"] = function(f)
     stuckFor = 0
 end
 
-handlers["start"] = function()
-    inRun = true
-end
-
 UI.ListenHoa({
+    HOA_RUN_START = function()
+        inRun = true
+    end,
     HOA_RUN_STATE = function()
         inRun = true
     end,
+    HOA_RUN_END = function()
+        inRun = false
+        paused = false
+    end,
 })
-
-handlers["end"] = function()
-    inRun = false
-    paused = false
-end
 
 UI.Listen(handlers)

@@ -294,7 +294,9 @@ function UI.SetWaitBar(label, seconds, total)
     FadeIn(wait)
 end
 
-handlers["start"] = HideAll
-handlers["end"] = HideAll
+UI.ListenHoa({
+    HOA_RUN_START = HideAll,
+    HOA_RUN_END = HideAll,
+})
 
 UI.Listen(handlers)

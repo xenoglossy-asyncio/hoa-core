@@ -969,9 +969,11 @@ handlers["vaultclose"] = function()
     frame:Hide()
 end
 
-handlers["end"] = function()
-    frame:Hide()
-    vault.finds, vault.chosen, vault.order = {}, {}, {}
-end
+UI.ListenHoa({
+    HOA_RUN_END = function()
+        frame:Hide()
+        vault.finds, vault.chosen, vault.order = {}, {}, {}
+    end,
+})
 
 UI.Listen(handlers)

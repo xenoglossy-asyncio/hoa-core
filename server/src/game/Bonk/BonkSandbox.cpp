@@ -7,6 +7,7 @@
 #include "Chat.h"
 #include "Creature.h"
 #include "GossipDef.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "ObjectMgr.h"
 #include "Player.h"
@@ -553,8 +554,12 @@ void BonkRun::LeaveSandbox()
     if (m_state == STATE_RUNNING)
     {
         if (bonk->IsAddonReady())
-            bonk->SendAddon("end~1~" + std::to_string(m_totalMs / IN_MILLISECONDS) + "~" + std::to_string(m_kills) + "~0~" +
-                std::to_string(m_player->GetLevel()) + "~" + std::to_string(m_stage) + "~0~0");
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteRunEnd(data, true, m_totalMs / IN_MILLISECONDS, m_kills, 0, uint8(m_player->GetLevel()), m_stage, 0,
+                false, false, 0, 0, "", 0);
+            m_player->GetSession()->SendPacket(&data);
+        }
         else
             ChatHandler(m_player).SendSysMessage(GetString(BONK_STRING_SANDBOX_YOU_LEFT).c_str());
     }

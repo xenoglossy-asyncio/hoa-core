@@ -708,27 +708,21 @@ function UI.ApplyDamageMeter()
     end
 end
 
-handlers["start"] = function()
-    spells = {}
-    glyphs = {}
-    others = {}
-    support = {}
-    party = {}
-    partyFrame.Refresh()
-    seconds = 0
-    for _, row in ipairs(rows) do
-        row.key = nil
-    end
-    Refresh()
-    ShowMeter()
-end
-
-handlers["end"] = function()
-    inRun = false
-    meter:Hide()
-end
-
 UI.ListenHoa({
+    HOA_RUN_START = function()
+        spells = {}
+        glyphs = {}
+        others = {}
+        support = {}
+        party = {}
+        partyFrame.Refresh()
+        seconds = 0
+        for _, row in ipairs(rows) do
+            row.key = nil
+        end
+        Refresh()
+        ShowMeter()
+    end,
     HOA_RUN_STATE = function(state)
         seconds = tonumber(state.total_s) or seconds
         local stats = state.weapon_stats
@@ -748,6 +742,10 @@ UI.ListenHoa({
         end
         Refresh()
         ShowMeter()
+    end,
+    HOA_RUN_END = function()
+        inRun = false
+        meter:Hide()
     end,
 })
 

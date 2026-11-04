@@ -231,23 +231,22 @@ handlers["beat"] = function(f)
     PlaySound("RaidWarning")
 end
 
-handlers["start"] = function(f)
-    run.map = f[2] or ""
-    run.difficulty = f[3] or ""
-    run.levelName = (f[10] and f[10] ~= "") and f[10] or run.difficulty
-    run.duration = tonumber(f[4]) or 600
-    run.stage = tonumber(f[5]) or 1
-    run.stages = tonumber(f[9] or "") or 3
-    run.finale = f[11] == "1"
-    run.elapsed = 0
-    HideCallout()
-    run.boss, run.portal = false, false
-    Refresh()
-    tracker:Show()
-    list:Show()
-end
-
 UI.ListenHoa({
+    HOA_RUN_START = function(start)
+        run.map = start.map_name or ""
+        run.difficulty = start.difficulty or ""
+        run.levelName = (start.level_name and start.level_name ~= "") and start.level_name or run.difficulty
+        run.duration = tonumber(start.duration_s) or 600
+        run.stage = tonumber(start.stage) or 1
+        run.stages = tonumber(start.stages) or 3
+        run.finale = start.finale and true or false
+        run.elapsed = 0
+        HideCallout()
+        run.boss, run.portal = false, false
+        Refresh()
+        tracker:Show()
+        list:Show()
+    end,
     HOA_RUN_STATE = function(state)
         run.elapsed = tonumber(state.elapsed_s) or 0
         run.duration = tonumber(state.duration_s) or run.duration
@@ -268,6 +267,13 @@ UI.ListenHoa({
             list:Show()
         end
     end,
+    HOA_RUN_END = function()
+        run.greed, run.greedReward, run.greedMobs = 0, 0, 0
+        run.revives, run.revivesCap = 0, 0
+        HideCallout()
+        tracker:Hide()
+        list:Hide()
+    end,
 })
 
 handlers["greed"] = function(f)
@@ -281,14 +287,6 @@ handlers["coopdown"] = function(f)
     run.revives = tonumber(f[2] or "") or 0
     run.revivesCap = tonumber(f[3] or "") or 0
     Refresh()
-end
-
-handlers["end"] = function()
-    run.greed, run.greedReward, run.greedMobs = 0, 0, 0
-    run.revives, run.revivesCap = 0, 0
-    HideCallout()
-    tracker:Hide()
-    list:Hide()
 end
 
 UI.Listen(handlers)

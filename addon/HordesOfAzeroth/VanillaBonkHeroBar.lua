@@ -989,13 +989,6 @@ end
 
 local handlers = {}
 
-handlers["start"] = function()
-    run.info = {}
-    run.stats = {}
-    run.xp = nil
-    SetMode(true)
-end
-
 local XP_STREAK_SOUND = "Interface\\AddOns\\HordesOfAzeroth\\Sounds\\XpStreak%d_%d.wav"
 local XP_SOUND_GAP = 0.08
 local XP_SOUND_MAX_QUEUED = 5
@@ -1050,6 +1043,12 @@ handlers["runxp"] = function(f)
 end
 
 UI.ListenHoa({
+    HOA_RUN_START = function()
+        run.info = {}
+        run.stats = {}
+        run.xp = nil
+        SetMode(true)
+    end,
     HOA_RUN_STATE = function(state)
         if not inRun then
             SetMode(true)
@@ -1063,14 +1062,13 @@ UI.ListenHoa({
             end
         end
     end,
+    HOA_RUN_END = function()
+        run.xp = nil
+        dash.max = 0
+        RefreshDash()
+        SetMode(false)
+    end,
 })
-
-handlers["end"] = function()
-    run.xp = nil
-    dash.max = 0
-    RefreshDash()
-    SetMode(false)
-end
 
 UI.ListenHoa({
     HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink, available)

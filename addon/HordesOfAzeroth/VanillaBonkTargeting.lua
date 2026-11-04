@@ -31,13 +31,10 @@ local function EnterRun()
     DropEnemyTarget()
 end
 
-UI.Listen({
-    start = EnterRun,
-    ["end"] = function()
+UI.ListenHoa({
+    HOA_RUN_START = EnterRun,
+    HOA_RUN_STATE = EnterRun,
+    HOA_RUN_END = function()
         inRun = false
     end,
-})
-
-UI.ListenHoa({
-    HOA_RUN_STATE = EnterRun,
 })

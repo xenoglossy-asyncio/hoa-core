@@ -281,6 +281,9 @@ UI.Listen({
             HideBosses()
         end
     end,
-    ["start"] = HideBosses,
-    ["end"] = HideBosses,
+})
+
+UI.ListenHoa({
+    HOA_RUN_START = HideBosses,
+    HOA_RUN_END = HideBosses,
 })

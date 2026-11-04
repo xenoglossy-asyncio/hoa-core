@@ -537,18 +537,17 @@ end
 
 local handlers = {}
 
-handlers["start"] = function(f)
-    run.inRun = true
-    run.difficulty = f[3] or ""
-    run.levelName = (f[10] and f[10] ~= "") and f[10] or run.difficulty
-    run.stage = tonumber(f[5] or "") or 1
-    run.stages = tonumber(f[9] or "") or 3
-    run.finale = f[11] == "1"
-    run.elapsed = 0
-    run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
-end
-
 UI.ListenHoa({
+    HOA_RUN_START = function(start)
+        run.inRun = true
+        run.difficulty = start.difficulty or ""
+        run.levelName = (start.level_name and start.level_name ~= "") and start.level_name or run.difficulty
+        run.stage = tonumber(start.stage) or 1
+        run.stages = tonumber(start.stages) or 3
+        run.finale = start.finale and true or false
+        run.elapsed = 0
+        run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
+    end,
     HOA_RUN_STATE = function(state)
         run.inRun = true
         run.elapsed = tonumber(state.elapsed_s) or run.elapsed
@@ -558,6 +557,13 @@ UI.ListenHoa({
         run.valor = tonumber(state.coins) or 0
         run.stage = tonumber(state.stage) or run.stage
         run.shards = tonumber(state.shards_earned) or 0
+        if menu:IsShown() then
+            Refresh()
+        end
+    end,
+    HOA_RUN_END = function()
+        run.inRun = false
+        run.spells, run.passives = {}, {}
         if menu:IsShown() then
             Refresh()
         end
@@ -577,14 +583,6 @@ handlers["loadout"] = function(f)
             end
         end
     end
-    if menu:IsShown() then
-        Refresh()
-    end
-end
-
-handlers["end"] = function()
-    run.inRun = false
-    run.spells, run.passives = {}, {}
     if menu:IsShown() then
         Refresh()
     end

@@ -60,7 +60,7 @@
 - 客户端暴露 Lua API；插件迁移展示类数据。
 - 删除 `BONK~` 解析器和字符串拼接。
 - 验收：状态全部走原生 aura；展示数据走类型化协议；版本不匹配有明确提示。
-- 进度（2026-11-04）：`shared/protocol/messages.yaml` 和 `tools/protocol/gen.py` 生成 C++ 写入端和 Rust 解码端；`SMSG_HOA_MESSAGE`（826）承载 `hoa.hello`、`hoa.aura_value`、`hoa.aura_text`、`hoa.aura_catalog_entry`/`aura_catalog_end`、`hoa.dash` 和 `hoa.aura_percent`。客户端向 Lua 触发对应的 `HOA_*` 事件。护盾、决心、坏死、伤口和冲刺已只走类型化消息；`hoa.run_state` 取代旧的 `state~` 行，并用表格参数触发 `HOA_RUN_STATE`。其余展示数据仍保留 `BONK~` 回退，等待清单继续迁移。
+- 进度（2026-11-04）：`shared/protocol/messages.yaml` 和 `tools/protocol/gen.py` 生成 C++ 写入端和 Rust 解码端；`SMSG_HOA_MESSAGE`（826）承载 `hoa.hello`、`hoa.aura_value`、`hoa.aura_text`、`hoa.aura_catalog_entry`/`aura_catalog_end`、`hoa.dash` 和 `hoa.aura_percent`。客户端向 Lua 触发对应的 `HOA_*` 事件。护盾、决心、坏死、伤口和冲刺已只走类型化消息；`hoa.run_state`、`hoa.run_start` 和 `hoa.run_end` 取代旧的 `state~`/`start~`/`end~` 行，并用表格参数触发事件。其余展示数据仍保留 `BONK~` 回退，等待清单继续迁移。
 
 ## 阶段 6：性能与内核整理
 

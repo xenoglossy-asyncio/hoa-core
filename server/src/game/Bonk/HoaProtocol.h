@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 3
+#define HOA_PROTOCOL_VERSION 4
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -16,6 +16,8 @@
 #define HOA_MSG_AURA_CATALOG_END 0x0007
 #define HOA_MSG_HELLO 0x0001
 #define HOA_MSG_RUN_STATE 0x0010
+#define HOA_MSG_RUN_START 0x0011
+#define HOA_MSG_RUN_END 0x0012
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -99,4 +101,38 @@ inline void HoAWriteRunState(WorldPacket& packet, uint32 const& elapsedS, uint32
     HoAWriteString(packet, weaponStats);
     packet << uint32(totalS);
     HoAWriteString(packet, damageTypes);
+}
+
+inline void HoAWriteRunStart(WorldPacket& packet, std::string const& mapName, std::string const& difficulty, uint32 const& durationS, uint32 const& stage, uint32 const& firstMinibossS, std::string const& timelineMarks, bool const& mythic, uint32 const& stages, std::string const& levelName, bool const& finale, bool const& sandbox)
+{
+    packet << uint16(HOA_MSG_RUN_START);
+    HoAWriteString(packet, mapName);
+    HoAWriteString(packet, difficulty);
+    packet << uint32(durationS);
+    packet << uint32(stage);
+    packet << uint32(firstMinibossS);
+    HoAWriteString(packet, timelineMarks);
+    packet << bool(mythic);
+    packet << uint32(stages);
+    HoAWriteString(packet, levelName);
+    packet << bool(finale);
+    packet << bool(sandbox);
+}
+
+inline void HoAWriteRunEnd(WorldPacket& packet, bool const& wentHome, uint32 const& seconds, uint32 const& kills, uint32 const& gold, uint8 const& playerLevel, uint32 const& stage, uint32 const& shards, bool const& victory, bool const& mythic, uint32 const& bestLevel, uint32 const& bestBefore, std::string const& levelName, uint32 const& finaleSeconds)
+{
+    packet << uint16(HOA_MSG_RUN_END);
+    packet << bool(wentHome);
+    packet << uint32(seconds);
+    packet << uint32(kills);
+    packet << uint32(gold);
+    packet << uint8(playerLevel);
+    packet << uint32(stage);
+    packet << uint32(shards);
+    packet << bool(victory);
+    packet << bool(mythic);
+    packet << uint32(bestLevel);
+    packet << uint32(bestBefore);
+    HoAWriteString(packet, levelName);
+    packet << uint32(finaleSeconds);
 }

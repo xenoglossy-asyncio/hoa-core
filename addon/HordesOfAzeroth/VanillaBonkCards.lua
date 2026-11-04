@@ -352,7 +352,9 @@ local function Clear()
     leys = {}
     Refresh()
 end
-handlers["start"] = Clear
-handlers["end"] = Clear
+UI.ListenHoa({
+    HOA_RUN_START = Clear,
+    HOA_RUN_END = Clear,
+})
 
 UI.Listen(handlers)

@@ -1298,14 +1298,26 @@ end
 
 local handlers = {}
 
-handlers["start"] = function(f)
-    run.map = f[2] or ""
-    run.difficulty = f[3] or ""
-    passives = {}
-    support = {}
-    recap = {}
-    screen:Hide()
-end
+UI.ListenHoa({
+    HOA_RUN_START = function(start)
+        run.map = start.map_name or ""
+        run.difficulty = start.difficulty or ""
+        passives = {}
+        support = {}
+        recap = {}
+        screen:Hide()
+    end,
+    HOA_RUN_END = function(ending)
+        run = {
+            map = run.map or "", difficulty = run.difficulty or "",
+            wentHome = ending.went_home, seconds = ending.seconds, kills = ending.kills, gold = ending.gold,
+            level = ending.player_level, stage = ending.stage, shards = ending.shards,
+            victory = ending.victory, bestLevel = ending.best_level, bestBefore = ending.best_before,
+            levelName = ending.level_name, finaleSeconds = ending.finale_seconds,
+        }
+        weapons = {}
+    end,
+})
 
 handlers["dr"] = function(f)
     recap = {
@@ -1371,15 +1383,6 @@ handlers["loadout"] = function(f)
             tinsert(passives, parts[2])
         end
     end
-end
-
-handlers["end"] = function(f)
-    run = {
-        map = run.map or "", difficulty = run.difficulty or "",
-        wentHome = f[2] == "1", seconds = f[3], kills = f[4], gold = f[5], level = f[6], stage = f[7], shards = f[8],
-        victory = f[9] == "1", bestLevel = f[11], bestBefore = f[12], levelName = f[13], finaleSeconds = f[14],
-    }
-    weapons = {}
 end
 
 handlers["sum"] = function(f)

@@ -508,6 +508,9 @@ UI.Listen({
         end
     end,
     ["mobclear"] = ClearTimers,
-    ["start"] = ClearTimers,
-    ["end"] = ClearTimers,
+})
+
+UI.ListenHoa({
+    HOA_RUN_START = ClearTimers,
+    HOA_RUN_END = ClearTimers,
 })

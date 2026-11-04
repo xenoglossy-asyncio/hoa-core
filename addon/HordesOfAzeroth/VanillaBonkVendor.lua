@@ -614,7 +614,9 @@ handlers["vendorclose"] = function()
     shop.slots = {}
 end
 
-handlers["start"] = HideNow
-handlers["end"] = HideNow
+UI.ListenHoa({
+    HOA_RUN_START = HideNow,
+    HOA_RUN_END = HideNow,
+})
 
 UI.Listen(handlers)

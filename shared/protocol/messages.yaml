@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 3
+version: 4
 messages:
   - name: aura_value
     id: 0x0002
@@ -72,3 +72,35 @@ messages:
       - { name: weapon_stats, type: string }
       - { name: total_s, type: u32 }
       - { name: damage_types, type: string }
+  - name: run_start
+    id: 0x0011
+    direction: server_to_client
+    fields:
+      - { name: map_name, type: string }
+      - { name: difficulty, type: string }
+      - { name: duration_s, type: u32 }
+      - { name: stage, type: u32 }
+      - { name: first_miniboss_s, type: u32 }
+      - { name: timeline_marks, type: string }
+      - { name: mythic, type: bool }
+      - { name: stages, type: u32 }
+      - { name: level_name, type: string }
+      - { name: finale, type: bool }
+      - { name: sandbox, type: bool }
+  - name: run_end
+    id: 0x0012
+    direction: server_to_client
+    fields:
+      - { name: went_home, type: bool }
+      - { name: seconds, type: u32 }
+      - { name: kills, type: u32 }
+      - { name: gold, type: u32 }
+      - { name: player_level, type: u8 }
+      - { name: stage, type: u32 }
+      - { name: shards, type: u32 }
+      - { name: victory, type: bool }
+      - { name: mythic, type: bool }
+      - { name: best_level, type: u32 }
+      - { name: best_before, type: u32 }
+      - { name: level_name, type: string }
+      - { name: finale_seconds, type: u32 }

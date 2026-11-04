@@ -505,24 +505,25 @@ handlers["glyphcount"] = function(f)
     end
 end
 
-handlers["start"] = function()
-    taken = {}
-    counts = {}
-    RefreshSockets()
-end
+UI.ListenHoa({
+    HOA_RUN_START = function()
+        taken = {}
+        counts = {}
+        RefreshSockets()
+    end,
+    HOA_RUN_END = function()
+        frame.side = false
+        Close()
+        frame.alpha = 0
+        frame:Hide()
+    end,
+})
 
 handlers["coopnopause"] = function(f)
     frame.side = f[2] == "1"
     if frame.open then
         Fill()
     end
-end
-
-handlers["end"] = function()
-    frame.side = false
-    Close()
-    frame.alpha = 0
-    frame:Hide()
 end
 
 UI.Listen(handlers)

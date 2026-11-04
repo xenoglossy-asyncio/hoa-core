@@ -23,6 +23,12 @@ const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
 const HOA_DASH: &str = "HOA_DASH";
 const HOA_AURA_PERCENT: &str = "HOA_AURA_PERCENT";
 const HOA_RUN_STATE: &str = "HOA_RUN_STATE";
+const HOA_RUN_START: &str = "HOA_RUN_START";
+const HOA_RUN_END: &str = "HOA_RUN_END";
+
+fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
+    ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
+}
 
 /// Typed HoA packets, drained on the main thread because firing a Lua event needs the VM.
 #[derive(Resource, Default)]
@@ -95,6 +101,44 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::RunStart(start) => {
+                    script.fire_event(
+                        HOA_RUN_START,
+                        vec![lua_table(vec![
+                            ("map_name", ScriptValue::Str(start.map_name)),
+                            ("difficulty", ScriptValue::Str(start.difficulty)),
+                            ("duration_s", ScriptValue::Int(i64::from(start.duration_s))),
+                            ("stage", ScriptValue::Int(i64::from(start.stage))),
+                            ("first_miniboss_s", ScriptValue::Int(i64::from(start.first_miniboss_s))),
+                            ("timeline_marks", ScriptValue::Str(start.timeline_marks)),
+                            ("mythic", ScriptValue::Bool(start.mythic)),
+                            ("stages", ScriptValue::Int(i64::from(start.stages))),
+                            ("level_name", ScriptValue::Str(start.level_name)),
+                            ("finale", ScriptValue::Bool(start.finale)),
+                            ("sandbox", ScriptValue::Bool(start.sandbox)),
+                        ])],
+                    );
+                }
+                HoaMessage::RunEnd(end) => {
+                    script.fire_event(
+                        HOA_RUN_END,
+                        vec![lua_table(vec![
+                            ("went_home", ScriptValue::Bool(end.went_home)),
+                            ("seconds", ScriptValue::Int(i64::from(end.seconds))),
+                            ("kills", ScriptValue::Int(i64::from(end.kills))),
+                            ("gold", ScriptValue::Int(i64::from(end.gold))),
+                            ("player_level", ScriptValue::Int(i64::from(end.player_level))),
+                            ("stage", ScriptValue::Int(i64::from(end.stage))),
+                            ("shards", ScriptValue::Int(i64::from(end.shards))),
+                            ("victory", ScriptValue::Bool(end.victory)),
+                            ("mythic", ScriptValue::Bool(end.mythic)),
+                            ("best_level", ScriptValue::Int(i64::from(end.best_level))),
+                            ("best_before", ScriptValue::Int(i64::from(end.best_before))),
+                            ("level_name", ScriptValue::Str(end.level_name)),
+                            ("finale_seconds", ScriptValue::Int(i64::from(end.finale_seconds))),
+                        ])],
+                    );
+                }
                 HoaMessage::RunState(state) => {
                     script.fire_event(
                         HOA_RUN_STATE,
@@ -235,6 +279,8 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_DASH);
         add_in_game_event(HOA_AURA_PERCENT);
         add_in_game_event(HOA_RUN_STATE);
+        add_in_game_event(HOA_RUN_START);
+        add_in_game_event(HOA_RUN_END);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
@@ -386,5 +432,68 @@ mod tests {
         assert_eq!(state.weapon_stats, "1:2,3:4");
         assert_eq!(state.total_s, 90);
         assert_eq!(state.damage_types, "fire,ice");
+    }
+
+    #[test]
+    fn the_run_start_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        for text in ["Deadmines", "Normal"] {
+            body.extend_from_slice(&(text.len() as u16).to_le_bytes());
+            body.extend_from_slice(text.as_bytes());
+        }
+        body.extend_from_slice(&600u32.to_le_bytes());
+        body.extend_from_slice(&2u32.to_le_bytes());
+        body.extend_from_slice(&45u32.to_le_bytes());
+        let timeline_marks = "first pull";
+        body.extend_from_slice(&(timeline_marks.len() as u16).to_le_bytes());
+        body.extend_from_slice(timeline_marks.as_bytes());
+        body.push(0);
+        body.extend_from_slice(&5u32.to_le_bytes());
+        let level_name = "Hero";
+        body.extend_from_slice(&(level_name.len() as u16).to_le_bytes());
+        body.extend_from_slice(level_name.as_bytes());
+        body.push(1);
+        body.push(0);
+
+        let Some(HoaMessage::RunStart(start)) = protocol_generated::decode(protocol_generated::MSG_RUN_START, &body) else {
+            panic!("run start did not decode");
+        };
+        assert_eq!(start.map_name, "Deadmines");
+        assert_eq!(start.difficulty, "Normal");
+        assert_eq!(start.duration_s, 600);
+        assert_eq!(start.timeline_marks, "first pull");
+        assert_eq!(start.stages, 5);
+        assert!(start.finale);
+        assert!(!start.sandbox);
+    }
+
+    #[test]
+    fn the_run_end_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        body.push(1);
+        body.extend_from_slice(&120u32.to_le_bytes());
+        body.extend_from_slice(&9u32.to_le_bytes());
+        body.extend_from_slice(&300u32.to_le_bytes());
+        body.push(60);
+        body.extend_from_slice(&4u32.to_le_bytes());
+        body.extend_from_slice(&2u32.to_le_bytes());
+        body.push(1);
+        body.push(0);
+        body.extend_from_slice(&7u32.to_le_bytes());
+        body.extend_from_slice(&3u32.to_le_bytes());
+        body.extend_from_slice(&(4u16).to_le_bytes());
+        body.extend_from_slice(b"Hero");
+        body.extend_from_slice(&30u32.to_le_bytes());
+
+        let Some(HoaMessage::RunEnd(end)) = protocol_generated::decode(protocol_generated::MSG_RUN_END, &body) else {
+            panic!("run end did not decode");
+        };
+        assert!(end.went_home);
+        assert_eq!(end.seconds, 120);
+        assert_eq!(end.gold, 300);
+        assert_eq!(end.player_level, 60);
+        assert!(end.victory);
+        assert_eq!(end.level_name, "Hero");
+        assert_eq!(end.finale_seconds, 30);
     }
 }

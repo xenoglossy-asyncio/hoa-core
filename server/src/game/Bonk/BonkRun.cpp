@@ -1834,12 +1834,18 @@ void BonkRun::StartStage()
 void BonkRun::SendFullState() const
 {
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    if (m_sandbox)
-        bonk->SendAddon("start~" + Localize(BONK_FIELD_MAP_NAME, m_map.id, m_map.name) + "~" + GetString(BONK_STRING_SANDBOX) + "~0~" + std::to_string(m_stage) + "~0~");
-    else
-        bonk->SendAddon("start~" + Localize(BONK_FIELD_MAP_NAME, m_map.id, m_map.name) + "~" + Localize(BONK_FIELD_TIER_NAME, m_tier.id, m_tier.name) + "~" +
-            std::to_string(m_map.durationSeconds) + "~" + std::to_string(m_stage) + "~" + std::to_string(GetFirstMinibossSecond()) + "~" + DescribeTimelineMarks() + "~" + (IsMythic() ? "1" : "0") + "~" +
-            std::to_string(m_tier.stages) + "~" + bonk->GetLevelName(m_difficultyLevel) + "~" + (IsFinale() ? "1" : "0"));
+    if (bonk->IsAddonReady())
+    {
+        std::string const mapName = Localize(BONK_FIELD_MAP_NAME, m_map.id, m_map.name);
+        std::string const difficulty = m_sandbox ? GetString(BONK_STRING_SANDBOX) : Localize(BONK_FIELD_TIER_NAME, m_tier.id, m_tier.name);
+        std::string const timeline = m_sandbox ? "" : DescribeTimelineMarks();
+        std::string const levelName = m_sandbox ? "" : bonk->GetLevelName(m_difficultyLevel);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunStart(data, mapName, difficulty, m_sandbox ? 0 : m_map.durationSeconds, m_stage,
+            m_sandbox ? 0 : GetFirstMinibossSecond(), timeline, !m_sandbox && IsMythic(), m_sandbox ? 3 : m_tier.stages,
+            levelName, !m_sandbox && IsFinale(), m_sandbox);
+        m_player->GetSession()->SendPacket(&data);
+    }
     if (m_coopNoPause)
         bonk->SendAddon("coopnopause~1");
     SendLoadout();
@@ -14312,10 +14318,13 @@ void BonkRun::Finish(bool wentHome)
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     uint32 const seconds = m_totalMs / IN_MILLISECONDS;
     if (bonk->IsAddonReady())
-        bonk->SendAddon("end~" + std::string(wentHome ? "1" : "0") + "~" + std::to_string(seconds) + "~" + std::to_string(m_kills) + "~" +
-            std::to_string(m_goldEarned) + "~" + std::to_string(m_player->GetLevel()) + "~" + std::to_string(m_stage) + "~" + std::to_string(m_shardsEarned) +
-            "~" + (m_victory ? "1" : "0") + "~" + (IsMythic() ? "1" : "0") + "~" + std::to_string(bonk->GetBestLevel()) + "~" +
-            std::to_string(m_levelBestAtStart) + "~" + bonk->GetLevelName(m_difficultyLevel) + "~" + std::to_string(IsFinale() ? GetEndlessMs() / IN_MILLISECONDS : 0));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunEnd(data, wentHome, seconds, m_kills, m_goldEarned, uint8(m_player->GetLevel()), m_stage, m_shardsEarned,
+            m_victory, IsMythic(), bonk->GetBestLevel(), m_levelBestAtStart, bonk->GetLevelName(m_difficultyLevel),
+            IsFinale() ? GetEndlessMs() / IN_MILLISECONDS : 0);
+        m_player->GetSession()->SendPacket(&data);
+    }
     else
         ChatHandler(m_player).SendSysMessage(GetString(m_victory ? BONK_STRING_RUN_END_CHAT_VICTORY : wentHome ? BONK_STRING_RUN_END_CHAT_HOME : BONK_STRING_RUN_END_CHAT_DEFEAT,
             { std::to_string(m_stage), FormatTime(seconds), std::to_string(m_kills), std::to_string(m_player->GetLevel()),

@@ -2725,16 +2725,15 @@ local function SetCombatLogQuiet(quiet)
     end
 end
 
-handlers["start"] = function(f)
-    VB.inRun = true
-    SetCombatLogQuiet(true)
-    VB.duration = tonumber(f[4]) or 0
-    results:Hide()
-    arena:Hide()
-    shop:Hide()
-end
-
 UI.ListenHoa({
+    HOA_RUN_START = function(start)
+        VB.inRun = true
+        SetCombatLogQuiet(true)
+        VB.duration = tonumber(start.duration_s) or 0
+        results:Hide()
+        arena:Hide()
+        shop:Hide()
+    end,
     HOA_RUN_STATE = function()
         VB.inRun = true
         SetCombatLogQuiet(true)
@@ -2825,31 +2824,33 @@ handlers["coopnopause"] = function(f)
     VB.sideOffers = f[2] == "1"
 end
 
-handlers["end"] = function(f)
-    VB.inRun = false
-    VB.sideOffers = false
-    if VanillaBonkUI.InspectShown() then
-        shop:Hide()
-    end
-    SetCombatLogQuiet(false)
-    VB.offer = {}
-    offerFrame:Hide()
-    if f[9] == "1" then
-        results.title:SetText(L["hoa.addon.cffffd100victory_r"])
-        PlaySound("QUESTCOMPLETED")
-    elseif f[2] == "1" then
-        results.title:SetText(L["hoa.addon.cff20ff20run_complete_r"])
-        PlaySound("QUESTCOMPLETED")
-    else
-        results.title:SetText(L["hoa.addon.cffff3030defeated_r"])
-    end
-    results.body:SetText(L("hoa.addon.reached_stage_1_in_2", f[7] or "1", FormatTime(f[3])) .. "\n" ..
-        L("hoa.addon.kills_1_level_2", f[4], f[6]) .. "\n" ..
-        L("hoa.addon.gold_earned_1", FormatGold(f[5])) .. "\n" ..
-        L("hoa.addon.darkmoon_tickets_cffc080ff_1_r", f[8] or "0") .. "\n\n" ..
-        L["hoa.addon.cffaaaaaareturning_to_the_inn_r"])
-    results:Show()
-end
+UI.ListenHoa({
+    HOA_RUN_END = function(ending)
+        VB.inRun = false
+        VB.sideOffers = false
+        if VanillaBonkUI.InspectShown() then
+            shop:Hide()
+        end
+        SetCombatLogQuiet(false)
+        VB.offer = {}
+        offerFrame:Hide()
+        if ending.victory then
+            results.title:SetText(L["hoa.addon.cffffd100victory_r"])
+            PlaySound("QUESTCOMPLETED")
+        elseif ending.went_home then
+            results.title:SetText(L["hoa.addon.cff20ff20run_complete_r"])
+            PlaySound("QUESTCOMPLETED")
+        else
+            results.title:SetText(L["hoa.addon.cffff3030defeated_r"])
+        end
+        results.body:SetText(L("hoa.addon.reached_stage_1_in_2", ending.stage or "1", FormatTime(ending.seconds)) .. "\n" ..
+            L("hoa.addon.kills_1_level_2", ending.kills, ending.player_level) .. "\n" ..
+            L("hoa.addon.gold_earned_1", FormatGold(ending.gold)) .. "\n" ..
+            L("hoa.addon.darkmoon_tickets_cffc080ff_1_r", ending.shards or "0") .. "\n\n" ..
+            L["hoa.addon.cffaaaaaareturning_to_the_inn_r"])
+        results:Show()
+    end,
+})
 
 handlers["msg"] = function(f)
     Notice(f[2])
