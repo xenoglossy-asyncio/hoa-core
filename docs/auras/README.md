@@ -121,7 +121,7 @@ Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges 
 ### 7.3 HoA shield/dash/determination
 
 - Shield: custom aura `60005` (visual/presence); the remaining amount is still `m_spellShield` and reaches the addon as a value message until `AuraState` lands. The buff frame has the icon; the hero bar shows the value.
-- Dash: custom aura `60002`; charges are aura stacks and the addon reads them through `UI.AuraStacks`. The recharge countdown is still a server-computed message.
+- Dash: custom aura `60002`; charges are aura stacks and the addon reads them through `UI.AuraStacks`. The recharge countdown is aura `60011`; the server reads its remaining duration, and the addon message carries that value until the client UI reads the aura directly.
 - Determination: custom aura `60001`, permanent, stacks mirror the account value; the addon reads the stacks from the aura, and the server keeps the account row as the persistent source.
 - Wounds: custom aura `60003`; stacks and duration live on the aura; the addon reads stacks and only takes the server-computed healing cut percentage from the notice.
 - Necrotic: spell `18951` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.

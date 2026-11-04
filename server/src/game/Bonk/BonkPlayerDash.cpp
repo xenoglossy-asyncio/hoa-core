@@ -200,12 +200,12 @@ void BonkPlayer::UpdateDash(uint32 diff)
 
     if (m_dashSpent)
     {
-        if (m_dashRechargeMs > diff)
-            m_dashRechargeMs -= diff;
-        else
+        SpellAuraHolder const* recharge = m_player->GetSpellAuraHolder(BONK_SPELL_DASH_RECHARGE);
+        if (!recharge || recharge->GetAuraDuration() <= 0)
         {
             --m_dashSpent;
             m_dashRechargeMs = m_dashSpent ? GetDashCooldownMs() : 0;
+            m_player->RemoveAurasDueToSpell(BONK_SPELL_DASH_RECHARGE);
             SendDash();
         }
     }
@@ -218,9 +218,12 @@ void BonkPlayer::SendDash() const
 {
     RefreshDashAura();
     uint32 const maxCharges = GetDashMaxCharges();
-    SendAddon("dash~" + std::to_string(maxCharges) + "~" +
-        std::to_string(m_dashSpent ? m_dashRechargeMs : 0) + "~" + std::to_string(GetDashCooldownMs()) + "~" +
-        (m_run && m_run->IsBlinkDash() ? "1" : "0"));
+    uint32 rechargeMs = 0;
+    if (m_dashSpent)
+        if (SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(BONK_SPELL_DASH_RECHARGE))
+            rechargeMs = uint32(std::max(0, holder->GetAuraDuration()));
+    SendAddon("dash~" + std::to_string(maxCharges) + "~" + std::to_string(rechargeMs) + "~" +
+        std::to_string(GetDashCooldownMs()) + "~" + (m_run && m_run->IsBlinkDash() ? "1" : "0"));
 }
 
 void BonkPlayer::RefreshDashAura() const
@@ -228,10 +231,21 @@ void BonkPlayer::RefreshDashAura() const
     uint32 const maxCharges = GetDashMaxCharges();
     uint32 const available = maxCharges - std::min(m_dashSpent, maxCharges);
     if (!available)
-    {
         m_player->RemoveAurasDueToSpell(BONK_SPELL_DASH);
+    else if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DASH, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(available);
+
+    if (!m_dashSpent)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_DASH_RECHARGE);
         return;
     }
-    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DASH, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
-        holder->SetStackAmount(available);
+    if (!m_player->HasAura(BONK_SPELL_DASH_RECHARGE))
+        if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DASH_RECHARGE, ADD_AURA_POSITIVE))
+        {
+            int32 const duration = int32(m_dashRechargeMs ? m_dashRechargeMs : GetDashCooldownMs());
+            holder->SetAuraDuration(duration);
+            holder->SetAuraMaxDuration(duration);
+            holder->UpdateAuraDuration();
+        }
 }

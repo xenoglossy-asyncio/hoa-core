@@ -18,6 +18,7 @@ pub(crate) const CARD_SWIFT: u32 = 60007;
 pub(crate) const CARD_IMMUNE: u32 = 60008;
 pub(crate) const SOULSTONE: u32 = 60009;
 pub(crate) const CARD_THORNS: u32 = 60010;
+pub(crate) const DASH_RECHARGE: u32 = 60011;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -120,6 +121,15 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Thorns",
                 r"Interface\Icons\Spell_Nature_Thorns",
                 "A Darkmoon card reflects damage back at attackers.",
+            ),
+        ),
+        (
+            DASH_RECHARGE,
+            display(
+                DASH_RECHARGE,
+                "Dash Recharge",
+                r"Interface\Icons\Spell_Nature_Slow",
+                "Your next dash charge is recharging.",
             ),
         ),
     ]
