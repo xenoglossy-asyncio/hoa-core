@@ -5,12 +5,20 @@ pub const PROTOCOL_VERSION: u16 = 1;
 pub const CONTENT_HASH: &str = "sha256:f6fc37b622d3ad4fd7c6dd6c7914040b7f93c7d6784c29a82594d28a572a5531";
 
 pub const MSG_AURA_VALUE: u16 = 0x0002;
+pub const MSG_DASH: u16 = 0x0003;
 pub const MSG_HELLO: u16 = 0x0001;
 
 pub struct AuraValue {
     pub spell_id: u32,
     pub value: u32,
     pub max_value: u32,
+}
+
+pub struct Dash {
+    pub max_charges: u8,
+    pub recharge_ms: u32,
+    pub cooldown_ms: u32,
+    pub blink: bool,
 }
 
 pub struct Hello {
@@ -21,12 +29,14 @@ pub struct Hello {
 
 pub enum HoaMessage {
     AuraValue(AuraValue),
+    Dash(Dash),
     Hello(Hello),
 }
 
 pub fn decode(id: u16, body: &[u8]) -> Option<HoaMessage> {
     match id {
         MSG_AURA_VALUE => decode_aura_value(body).map(HoaMessage::AuraValue),
+        MSG_DASH => decode_dash(body).map(HoaMessage::Dash),
         MSG_HELLO => decode_hello(body).map(HoaMessage::Hello),
         _ => None,
     }
@@ -47,6 +57,23 @@ fn decode_aura_value(body: &[u8]) -> Option<AuraValue> {
     })
 }
 
+fn decode_dash(body: &[u8]) -> Option<Dash> {
+    let mut body = body;
+    let max_charges = read_u8(&mut body)?;
+    let recharge_ms = read_u32(&mut body)?;
+    let cooldown_ms = read_u32(&mut body)?;
+    let blink = read_bool(&mut body)?;
+    if !body.is_empty() {
+        return None;
+    }
+    Some(Dash {
+        max_charges,
+        recharge_ms,
+        cooldown_ms,
+        blink,
+    })
+}
+
 fn decode_hello(body: &[u8]) -> Option<Hello> {
     let mut body = body;
     let protocol_version = read_u16(&mut body)?;
@@ -62,6 +89,12 @@ fn decode_hello(body: &[u8]) -> Option<Hello> {
     })
 }
 
+fn read_u8(body: &mut &[u8]) -> Option<u8> {
+    let value = *body.first()?;
+    *body = &body[1..];
+    Some(value)
+}
+
 fn read_u16(body: &mut &[u8]) -> Option<u16> {
     let bytes: [u8; 2] = body.get(..2)?.try_into().ok()?;
     *body = &body[2..];
@@ -72,6 +105,10 @@ fn read_u32(body: &mut &[u8]) -> Option<u32> {
     let bytes: [u8; 4] = body.get(..4)?.try_into().ok()?;
     *body = &body[4..];
     Some(u32::from_le_bytes(bytes))
+}
+
+fn read_bool(body: &mut &[u8]) -> Option<bool> {
+    read_u8(body).map(|value| value != 0)
 }
 
 fn read_string(body: &mut &[u8]) -> Option<String> {

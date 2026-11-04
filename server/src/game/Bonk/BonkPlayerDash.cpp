@@ -1,4 +1,5 @@
 #include "BonkPlayer.h"
+#include "HoaProtocol.h"
 #include "BonkRun.h"
 #include "BonkQuests.h"
 #include "Anticheat.h"
@@ -224,6 +225,12 @@ void BonkPlayer::SendDash() const
             rechargeMs = uint32(std::max(0, holder->GetAuraDuration()));
     SendAddon("dash~" + std::to_string(maxCharges) + "~" + std::to_string(rechargeMs) + "~" +
         std::to_string(GetDashCooldownMs()) + "~" + (m_run && m_run->IsBlinkDash() ? "1" : "0"));
+    if (m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteDash(data, uint8(maxCharges), rechargeMs, GetDashCooldownMs(), m_run && m_run->IsBlinkDash());
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkPlayer::RefreshDashAura() const

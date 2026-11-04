@@ -20,6 +20,7 @@ use crate::world_fx::{apply_draw_lines, expire_kit_anchors, move_flights, tap_dr
 
 const HOA_HELLO: &str = "HOA_HELLO";
 const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
+const HOA_DASH: &str = "HOA_DASH";
 
 /// Typed HoA packets, drained on the main thread because firing a Lua event needs the VM.
 #[derive(Resource, Default)]
@@ -53,6 +54,17 @@ fn deliver_hoa_messages(world: &mut World) {
                             ScriptValue::Int(i64::from(aura.spell_id)),
                             ScriptValue::Int(i64::from(aura.value)),
                             ScriptValue::Int(i64::from(aura.max_value)),
+                        ],
+                    );
+                }
+                HoaMessage::Dash(dash) => {
+                    script.fire_event(
+                        HOA_DASH,
+                        vec![
+                            ScriptValue::Int(i64::from(dash.max_charges)),
+                            ScriptValue::Int(i64::from(dash.recharge_ms)),
+                            ScriptValue::Int(i64::from(dash.cooldown_ms)),
+                            ScriptValue::Bool(dash.blink),
                         ],
                     );
                 }
@@ -90,6 +102,7 @@ impl Plugin for HordesOfAzerothPlugin {
         add_plate_events();
         add_in_game_event(HOA_HELLO);
         add_in_game_event(HOA_AURA_VALUE);
+        add_in_game_event(HOA_DASH);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

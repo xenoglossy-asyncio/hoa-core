@@ -1080,6 +1080,18 @@ handlers["dash"] = function(f)
     RefreshDash()
 end
 
+UI.ListenHoa({
+    HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink)
+        dash.max = tonumber(maxCharges) or 0
+        dash.untilNext = tonumber(rechargeMs) or 0
+        dash.cooldown = tonumber(cooldownMs) or 0
+        dash.blink = blink and true or false
+        dash.charges = UI.AuraStacks(DASH_SPELL, "HELPFUL")
+        dash.left = (dash.charges < dash.max and dash.untilNext > 0) and dash.untilNext / 1000 or nil
+        RefreshDash()
+    end,
+})
+
 local dashAura = CreateFrame("Frame")
 dashAura:RegisterEvent("UNIT_AURA")
 dashAura:SetScript("OnEvent", function()
