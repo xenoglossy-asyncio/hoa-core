@@ -13,6 +13,9 @@ pub(crate) const DASH: u32 = 60002;
 pub(crate) const WOUNDS: u32 = 60003;
 pub(crate) const DARKMOON_SURGE: u32 = 60004;
 pub(crate) const SHIELD: u32 = 60005;
+pub(crate) const CARD_HASTE: u32 = 60006;
+pub(crate) const CARD_SWIFT: u32 = 60007;
+pub(crate) const CARD_IMMUNE: u32 = 60008;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -70,6 +73,33 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Shield",
                 r"Interface\Icons\Spell_Holy_PowerWordShield",
                 "Absorbs incoming damage.",
+            ),
+        ),
+        (
+            CARD_HASTE,
+            display(
+                CARD_HASTE,
+                "Haste Burst",
+                r"Interface\Icons\Spell_Nature_Slow",
+                "A Darkmoon card grants a burst of haste.",
+            ),
+        ),
+        (
+            CARD_SWIFT,
+            display(
+                CARD_SWIFT,
+                "Swiftness",
+                r"Interface\Icons\Ability_Rogue_Sprint",
+                "A Darkmoon card grants movement speed at low health.",
+            ),
+        ),
+        (
+            CARD_IMMUNE,
+            display(
+                CARD_IMMUNE,
+                "Immune",
+                r"Interface\Icons\Spell_Holy_DivineIntervention",
+                "A Darkmoon card briefly makes you immune to damage.",
             ),
         ),
     ]

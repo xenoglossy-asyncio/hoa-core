@@ -471,15 +471,21 @@ void BonkRun::UpdateCards(uint32 diff)
 
     if (BonkCard const* potion = m_cardByEffect[BONK_CARD_SWIFTNESS])
     {
-        if (!m_cardSwiftUntilMs && m_cardCooldowns[BONK_CARD_SWIFTNESS] <= 0 && health < potion->values[0])
+        if (!m_player->HasAura(BONK_SPELL_CARD_SWIFT) && m_cardCooldowns[BONK_CARD_SWIFTNESS] <= 0 && health < potion->values[0])
         {
-            m_cardSwiftUntilMs = m_totalMs + uint32(potion->values[2]);
+            if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_CARD_SWIFT, ADD_AURA_POSITIVE))
+            {
+                int32 const duration = int32(potion->values[2]);
+                holder->SetAuraDuration(duration);
+                holder->SetAuraMaxDuration(duration);
+                holder->UpdateAuraDuration();
+            }
             StartCardCooldown(BONK_CARD_SWIFTNESS, GetCardCooldown(BONK_CARD_SWIFTNESS));
-            ApplyPassives();
         }
-        else if (m_cardSwiftUntilMs && m_totalMs >= m_cardSwiftUntilMs)
+        bool const swift = m_player->HasAura(BONK_SPELL_CARD_SWIFT);
+        if (swift != m_cardSwiftActive)
         {
-            m_cardSwiftUntilMs = 0;
+            m_cardSwiftActive = swift;
             ApplyPassives();
         }
     }
@@ -498,9 +504,6 @@ void BonkRun::UpdateCards(uint32 diff)
             m_player->GetBonkPlayer()->Notify(BONK_STRING_POWER_SURGE, { Localize(BONK_FIELD_CARD_NAME, charm->id, charm->name), FormatBonkNumber(GetCardTotal(BONK_CARD_POWER_SURGE, 0)),
                 FormatBonkNumber(charm->values[1] / 1000.0f) });
         }
-
-    if (m_cardHasteUntilMs && m_totalMs >= m_cardHasteUntilMs)
-        m_cardHasteUntilMs = 0;
 
     if (HasCard(BONK_CARD_MAGNET) && m_cardCooldowns[BONK_CARD_MAGNET] <= 0)
     {
@@ -568,7 +571,7 @@ std::string BonkRun::DescribeCardNow(BonkCard const& card) const
             return GetString(BONK_STRING_CARD_NOW_POWER, { percent(power) });
         }
         case BONK_CARD_HASTE_BURST:
-            if (m_cardHasteUntilMs > m_totalMs)
+            if (m_player->HasAura(BONK_SPELL_CARD_HASTE))
                 return GetString(BONK_STRING_CARD_ACTIVE_HASTE, { percent(GetCardTotal(BONK_CARD_HASTE_BURST, 1)) });
             return "";
         case BONK_CARD_POWER_SURGE:
@@ -647,7 +650,13 @@ void BonkRun::OnCardHitTaken()
     if (BonkCard const* insignia = m_cardByEffect[BONK_CARD_HIT_IMMUNE])
         if (m_cardCooldowns[BONK_CARD_HIT_IMMUNE] <= 0)
         {
-            m_cardImmuneUntilMs = m_totalMs + uint32(insignia->values[0]);
+            if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_CARD_IMMUNE, ADD_AURA_POSITIVE))
+            {
+                int32 const duration = int32(insignia->values[0]);
+                holder->SetAuraDuration(duration);
+                holder->SetAuraMaxDuration(duration);
+                holder->UpdateAuraDuration();
+            }
             StartCardCooldown(BONK_CARD_HIT_IMMUNE, GetCardCooldown(BONK_CARD_HIT_IMMUNE));
         }
 }
@@ -722,7 +731,13 @@ void BonkRun::RollCastCharges(OwnedWeapon& owned)
     if (BonkCard const* dragon = m_cardByEffect[BONK_CARD_HASTE_BURST])
         if (m_cardCooldowns[BONK_CARD_HASTE_BURST] <= 0 && roll_chance_f(GetCardChance(BONK_CARD_HASTE_BURST)))
         {
-            m_cardHasteUntilMs = m_totalMs + uint32(dragon->values[2]);
+            if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_CARD_HASTE, ADD_AURA_POSITIVE))
+            {
+                int32 const duration = int32(dragon->values[2]);
+                holder->SetAuraDuration(duration);
+                holder->SetAuraMaxDuration(duration);
+                holder->UpdateAuraDuration();
+            }
             StartCardCooldown(BONK_CARD_HASTE_BURST, dragon->cooldownMs);
         }
 }
@@ -765,10 +780,15 @@ float BonkRun::GetChampionDamageTaken(BonkSpawnKind kind) const
     return 1.0f - std::min(BONK_CHAMPION_MAX_REDUCTION, GetCardTotal(BONK_CARD_BIG_GAME, 1)) / 100.0f;
 }
 
+bool BonkRun::IsCardImmune() const
+{
+    return m_player->HasAura(BONK_SPELL_CARD_IMMUNE);
+}
+
 float BonkRun::GetBurstHaste() const
 {
     float haste = 0.0f;
-    if (m_cardHasteUntilMs > m_totalMs)
+    if (m_player->HasAura(BONK_SPELL_CARD_HASTE))
         haste += GetCardTotal(BONK_CARD_HASTE_BURST, 1);
     if (m_glyphHasteUntilMs > m_totalMs)
         haste += GetGlyphValue(BONK_GLYPH_KILL_HASTE, 1);

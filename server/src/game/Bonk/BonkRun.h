@@ -1213,7 +1213,7 @@ class BonkRun
         float GetTrinketPower() const;
         float GetTrinketMoveSpeed() const;
         float GetTrinketStat(BonkPassiveEffect effect) const;
-        bool IsCardImmune() const { return m_cardImmuneUntilMs > m_totalMs; }
+        bool IsCardImmune() const;
         void OnCardHitTaken();
         void OnShieldBroken();
         bool RollFreeChest() const;
@@ -1233,12 +1233,10 @@ class BonkRun
         int32 m_cardCooldowns[MAX_BONK_CARD_EFFECT] = {};
         uint32 m_cardTickMs = 0;
         bool m_regenerating = false;
-        uint32 m_cardHasteUntilMs = 0;
-        uint32 m_cardImmuneUntilMs = 0;
         uint32 m_bigMovesUntilMs = 0;
         ObjectGuid m_bigMover;
-        uint32 m_cardSwiftUntilMs = 0;
         uint32 m_cardKills = 0;
+        bool m_cardSwiftActive = false;
         float m_cardValorCarry = 0.0f;
         uint32 m_soulstones = 0;
         uint32 m_cardCritsSeen = 0;

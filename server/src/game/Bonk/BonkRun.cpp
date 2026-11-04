@@ -1227,6 +1227,9 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_MAX_HEALTH);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DODGE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DARKMOON_SURGE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_HASTE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_SWIFT);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_IMMUNE);
 
     return m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error);
 }
@@ -6273,7 +6276,7 @@ float BonkRun::GetBoostMoveSpeed() const
     if (IsLastStand())
         boost += GetGlyphValue(BONK_GLYPH_LAST_STAND, 2);
     if (BonkCard const* potion = m_cardByEffect[BONK_CARD_SWIFTNESS])
-        if (m_cardSwiftUntilMs)
+        if (m_player->HasAura(BONK_SPELL_CARD_SWIFT))
             boost += potion->values[1];
     boost += GetTrinketMoveSpeed();
     return boost;
@@ -14530,6 +14533,9 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DODGE);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_PLAYER_SHIELD);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DARKMOON_SURGE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_HASTE);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_SWIFT);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_CARD_IMMUNE);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     SetNecroticStacks(0);
     ClearBossPressure();

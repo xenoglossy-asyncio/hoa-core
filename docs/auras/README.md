@@ -114,7 +114,11 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 - First implementation: spell `60004` (migration `20261104120000_world.sql`) is a real positive aura; the server sets its duration from the card, and `client/crates/benilla-app/src/hoa_spells.rs` supplies the name/icon/description through `SpellCatalog::with_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. The static overlay is the first slice of the future content pack; ids `60001`-`60005` are reserved for HoA.
 - Addon: no timing or tooltip assembly; at most read the aura's remaining time for custom UI.
 
-### 7.2 HoA shield/dash/determination
+### 7.2 Darkmoon card buffs
+
+Haste Burst (`60006`), Swiftness (`60007`) and Immune (`60008`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers.
+
+### 7.3 HoA shield/dash/determination
 
 - Shield: custom aura `60005` (visual/presence); the remaining amount is still `m_spellShield` and reaches the addon as a value message until `AuraState` lands. The buff frame has the icon; the hero bar shows the value.
 - Dash: custom aura `60002`; charges are aura stacks and the addon reads them through `UI.AuraStacks`. The recharge countdown is still a server-computed message.
@@ -123,7 +127,7 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 - Necrotic: spell `18951` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
 - Weapon buffs: the server reads the live aura instead of the removed `m_buffs` expiry map.
 
-### 7.3 Native spells
+### 7.4 Native spells
 
 - Blade Flurry/Enrage: use the stock spell ID; the server only refreshes/removes. Delete the addon timer and read `UnitBuff`.
 - If a native spell needs HoA-specific numbers, change the server spell data; do not start a second system.
