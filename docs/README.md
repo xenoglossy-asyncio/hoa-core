@@ -1,40 +1,43 @@
-# 文档索引
+# Documentation index
 
-## 当前决策
+## Decisions
 
-| 决策 | 结论 |
+| Decision | Choice |
 | --- | --- |
-| 仓库形态 | 单仓库，包含服务端、客户端、插件、启动器、GlueXML 和共享内容 |
-| 托管 | GitHub 私有仓库 `hoa-core`，硬分叉 |
-| 版本线 | 从 **0.1.0** 开始，不沿用上游 0.6.x |
-| 与上游关系 | 独立演进，不再自动跟随；上游只作为起点和参考 |
-| 内核 | 保留 VMaNGOS 和 benilla；只重构 HoA 层和确认的性能热点 |
-| 语言 | 账号/会话属性；首发 **enUS + zhCN + zhTW** |
-| 效果 | 一个效果 = 一个真实服务端光环，插件只读 |
-| 内容 | `shared/content` 单一来源，工具生成各端产物 |
-| 联机 | 只支持局域网和 `ip/domain:port` 直连；不做公网大厅/注册服务器 |
-| 第一步 | 阶段 0 文档 + 骨架完成；阶段 1 代码导入完成，构建基线进行中 |
+| Repository shape | One monorepo with server, client, addon, launcher, GlueXML and shared content |
+| Hosting | Private GitHub repository `hoa-core`, hard fork |
+| Version line | Starts at **0.1.0**; does not continue upstream 0.6.x |
+| Upstream relationship | Independent evolution; upstream is only a starting point and reference |
+| Kernels | Keep VMaNGOS and benilla; refactor only the HoA layer and proven hot spots |
+| Language | Account/session property; first release **enUS + zhCN + zhTW** |
+| Effects | One effect = one real server aura; the addon only reads it |
+| Content | Single source in `shared/content`; tools generate each artifact |
+| Co-op | LAN and `ip/domain:port` direct connections only; no public lobby or registration server |
+| First step | Phase 0 docs/skeleton and phase 1 code import are complete; phase 2 i18n is in progress |
 
-## 阅读顺序
+## Documentation convention
 
-1. [导入的代码与来源](imported-code.md)
-2. [总体架构](architecture.md)
-3. [i18n](i18n.md)
-4. [光环与效果](auras.md)
-5. [客户端原生能力](native-capabilities.md)
-6. [内容与数据](content-data.md)
-7. [协议](protocol.md)
-8. [迁移计划](migration-plan.md)
+Every document directory provides both an English `README.md` and a Chinese `README_zh.md`. Keep the two in sync; a change to one must change the other.
 
-## 组件说明
+## Reading order
 
-- [server](components/server.md)
-- [client](components/client.md)
-- [addon](components/addon.md)
-- [launcher](components/launcher.md)
+1. [Imported code and provenance](imported-code/README.md)
+2. [Architecture](architecture/README.md)
+3. [i18n](i18n/README.md)
+4. [Auras and effects](auras/README.md)
+5. [Client-native capabilities](native-capabilities/README.md)
+6. [Content and data](content-data/README.md)
+7. [Protocol](protocol/README.md)
+8. [Migration plan](migration-plan/README.md)
 
-## 待确认
+## Components
 
-- zhTW 的术语来源：优先用官方 1.12.1 繁中名称，没有的再用 zhCN 转换并人工校对。
-- 是否保留上游的更新/打包脚本，还是完全另起。
+- [server](components/server/README.md)
+- [client](components/client/README.md)
+- [addon](components/addon/README.md)
+- [launcher](components/launcher/README.md)
 
+## Open questions
+
+- zhTW terminology source: prefer official 1.12.1 Traditional Chinese names; fall back to zhCN converted and manually reviewed.
+- Whether to keep the upstream update/packaging scripts or start a new release pipeline.

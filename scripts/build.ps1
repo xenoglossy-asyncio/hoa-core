@@ -48,12 +48,15 @@ function Build-Launcher {
 
 function Test-Addon {
     if (-not $Luajit) { throw 'luajit not found; install LuaJIT or add it to PATH' }
-    $files = Get-ChildItem "$Root\addon" -Recurse -Filter *.lua
+    $files = @(
+        Get-ChildItem "$Root\addon" -Recurse -Filter *.lua
+        Get-ChildItem "$Root\glue" -Recurse -Filter *.lua
+    )
     foreach ($file in $files) {
         & $Luajit -bl $file.FullName *> $null
-        if ($LASTEXITCODE -ne 0) { throw "addon syntax error: $($file.FullName)" }
+        if ($LASTEXITCODE -ne 0) { throw "addon/glue syntax error: $($file.FullName)" }
     }
-    "addon: $($files.Count) Lua files parsed"
+    "addon+glue: $($files.Count) Lua files parsed"
 }
 
 function Test-Manifests {

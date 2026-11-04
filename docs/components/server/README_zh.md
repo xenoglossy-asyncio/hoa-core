@@ -4,7 +4,7 @@
 
 VMaNGOS 1.12.1 服务端（C++，GPL-2.0），HoA 游戏逻辑在 `src/game/Bonk/`。
 
-**状态：待导入。** 导入时以 `hordes-of-azeroth-server` 的 `vanilla-bonk` 分支最新提交为基线，保留完整许可证和版权声明；导入后再按 [架构文档](../docs/architecture.md) 调整目录。
+**状态：已导入**，按 [架构文档](../../architecture/README_zh.md) 逐步调整目录。
 
 ## 计划中的分层
 
@@ -27,11 +27,11 @@ server/
 
 ## 原则
 
-- 所有 HoA 效果通过真实光环实现，服务端只保留一份效果状态（见 [auras.md](../docs/auras.md)）。
-- 服务端不硬编码英文句子；文本走消息 ID 和语言表（见 [i18n.md](../docs/i18n.md)）。
+- 所有 HoA 效果通过真实光环实现，服务端只保留一份效果状态（见 [光环与效果](../../auras/README_zh.md)）。
+- 服务端不硬编码英文句子；文本走消息 ID 和语言表（见 [i18n](../../i18n/README_zh.md)）。
 - 内容数据由 `tools/content-compiler` 生成；`sql/content/` 是构建产物。
-- 保留内核，只对性能热点做必要重构（见 [architecture.md](../docs/architecture.md)）。
+- 保留内核，只对性能热点做必要重构（见 [总体架构](../../architecture/README_zh.md)）。
 
 ## 构建
 
-导入后补充：CMake 配置、依赖、Windows/Linux 构建命令、数据库初始化步骤。
+见 [构建说明](../../../BUILDING_zh.md)。CMake 配置 + `mangosd` Release 构建已在本机通过；数据库初始化步骤待补。

@@ -22,7 +22,7 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 - **真光环，但只做了一半**：移速/最大生命用 spell 17498/19255（`BonkRun.cpp:11365-11376`）；坏死有 aura 18951（`BonkRun.cpp:4411`），但治疗削减实际读的是 `m_necroticStacks`（`BonkRun.cpp:4439`）；护盾视觉 16051（`BonkRun.cpp:4754-4758`）；武器 buff 施放后又在 `m_buffs` 存了一份到期时间（`BonkRun.cpp:8071-8072,7913-7922`）。
 - **纯服务端变量 + 插件绘制**：护盾量 `m_spellShield`（`BonkRun.h:2263`）通过 `shield~` 发插件（`BonkRun.cpp:4767`）；冲刺 `m_dashSpent/m_dashRechargeMs`（`BonkPlayer.h:544-545`、`BonkPlayerDash.cpp:194-221`）；决心 `m_determination`（`BonkPlayer.h:514`，写库 `BonkPlayer.cpp:2322-2335`）；Boss 伤口 `m_bossWoundStacks`（`BonkRun.h:1796`、`BonkRun.cpp:4629`）。这些在原生 buff 栏都看不到。
 - **原生法术 + 插件副本**：剑刃乱舞/狂怒等复用原生 spell，但插件另有一套计时。
-- **卡牌 proc 横跨三套**：以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 能量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）。服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura。界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
+- **卡牌 proc 横跨三套**：以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 力量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）。服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura。界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
 
 插件端只解析 `BONK~` 聊天行（`VanillaBonkUI.lua:231-243`），完全没有用 `UNIT_AURA`/`GetPlayerBuff`；客户端自带的 `C_UnitAuras` 只用于敌方姓名板 debuff（`VanillaBonkDebuffs.lua:62-78`），Boss debuff 仍走 BONK（`VanillaBonkBoss.lua:194`）。
 
@@ -157,4 +157,4 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 
 ## 9. 阶段
 
-见 [迁移计划](migration-plan.md)。
+见 [迁移计划](../migration-plan/README_zh.md)。

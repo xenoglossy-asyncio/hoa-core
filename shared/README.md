@@ -1,18 +1,18 @@
-# shared / 共享层
+# shared / shared layer
 
-服务端、客户端、插件、启动器共用的数据与协议。这里是**唯一来源**：任何一边都不再手写另一份。
+Data and protocol shared by the server, client, addon and launcher. This is the **single source**: no component keeps another copy.
 
 ```
 shared/
-  content/    游戏内容定义（物品、法术、光环、地图、天赋、卡牌、任务……）
-  i18n/       消息目录、语言包、占位符规范
-  protocol/   服务端↔客户端消息定义与代码生成输入
+  content/    game content definitions (items, spells, auras, maps, talents, cards, quests, ...)
+  i18n/       message catalogue, language packs, placeholder rules
+  protocol/   server↔client message definitions and codegen inputs
 ```
 
-## 规则
+## Rules
 
-1. 内容只写在 `shared/content`，由 `tools/content-compiler` 生成服务端 SQL、客户端二进制包、插件 Lua 表。
-2. 用户可见文本只写在 `shared/i18n`（内容内的文本随内容条目一起定义，通过消息 ID 引用），不在 C++/Rust/Lua 里硬编码英文或中文。
-3. 协议消息只定义在 `shared/protocol`，生成 C++ 和 Rust 两端代码；禁止手写两边各一份解析器。
-4. 所有生成物带内容版本哈希；客户端、插件、大厅和服务端在握手时校验版本。
-5. 生成物不手改；CI 重新生成并检查 diff。
+1. Content is written only in `shared/content`; `tools/content-compiler` generates server SQL, the client binary pack and addon Lua tables.
+2. User-visible text is written only in `shared/i18n` (text inside content entries is defined with the entry and referenced by message ID); never hardcode English or Chinese in C++/Rust/Lua.
+3. Protocol messages are defined only in `shared/protocol`; generate C++ and Rust code from them. Never hand-write a parser on each side.
+4. Every generated artifact carries a content version hash; the client, addon, co-op host and server verify it during the handshake.
+5. Never hand-edit generated artifacts; CI regenerates and checks the diff.

@@ -4,7 +4,7 @@
 
 benilla：用 Rust + Bevy 从零实现的 1.12.1 客户端（MIT / Apache-2.0）。
 
-**状态：待导入。** 导入时以 `hordes-of-azeroth-client` 当前 `main`（含我们的中文相关修复）为基线，保留 `LICENSE-MIT`、`LICENSE-APACHE` 和 `third_party/` 的版权声明。
+**状态：已导入**，保留 `LICENSE-MIT`、`LICENSE-APACHE` 和 `third_party/` 的版权声明。
 
 ## 计划中的改动
 
@@ -16,8 +16,8 @@ benilla：用 Rust + Bevy 从零实现的 1.12.1 客户端（MIT / Apache-2.0）
 
 ## 数据来源
 
-客户端仍然需要用户自己的 1.12.1 安装提供模型、贴图、音频和 DBC 基础数据；但**显示文本和游戏内容定义不再依赖安装语言**。缺少的资源或自定义条目由内容包补齐（见 [content-data.md](../docs/content-data.md)）。
+客户端仍然需要用户自己的 1.12.1 安装提供模型、贴图、音频和 DBC 基础数据；但**显示文本和游戏内容定义不再依赖安装语言**。缺少的资源或自定义条目由内容包补齐（见 [内容与数据](../../content-data/README_zh.md)）。
 
 ## 构建
 
-导入后补充：`cargo build`、开发profile、测试数据路径、与本地服务端的联调步骤。
+见 [构建说明](../../../BUILDING_zh.md)。workspace 清单已校验；完整 `cargo build` 待跑。

@@ -51,7 +51,7 @@ handshake:
 
 ```yaml
 - name: hoa.run.stage_started
-  id: 0xH001
+  id: 0xA001
   direction: server_to_client
   fields:
     - { name: stage, type: u8 }
@@ -61,7 +61,7 @@ handshake:
 
 ```yaml
 - name: hoa.aura.value
-  id: 0xH010
+  id: 0xA010
   direction: server_to_client
   fields:
     - { name: unit_guid, type: u64 }
@@ -114,7 +114,7 @@ Hoa.RegisterEvent("RUN_STAGE", fn)
 ## 8. 迁移
 
 1. 盘点现有 `BONK~` 消息，按“状态/展示/命令”分类。
-2. 状态类迁到 aura（见 [auras.md](auras.md)）。
+2. 状态类迁到 aura（见 [光环与效果](../auras/README_zh.md)）。
 3. 展示类定义 HoA 消息 + 客户端 Lua API。
 4. 命令类（`.bonk ...`）保留聊天命令入口，但处理器改为调用服务端 API，不依赖字符串拼装。
 5. 最后删除插件里的 `BONK~` 解析器和手工字段索引。

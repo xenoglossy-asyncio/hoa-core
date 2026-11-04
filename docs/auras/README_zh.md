@@ -8,7 +8,7 @@ HoA 的效果目前有三种表示，互相之间没有唯一权威：
 2. **插件自维护状态**：护盾量 `m_spellShield`（`BonkRun.h:2263`）通过 `shield~` 发插件（`BonkRun.cpp:4767`）；冲刺 `m_dashSpent/m_dashRechargeMs`（`BonkPlayer.h:544-545`、`BonkPlayerDash.cpp:194-221`）；决心 `m_determination`（`BonkPlayer.h:514`，写库 `BonkPlayer.cpp:2322-2335`）；Boss 伤口 `m_bossWoundStacks`（`BonkRun.h:1796`、`BonkRun.cpp:4629`）。这些由 BONK 聊天行同步，插件自己计时/绘制；原生 buff 栏看不到，重载界面或重连可能丢失。
 3. **直接复用原生法术**：剑刃乱舞、狂怒等，但插件又维护一份计时副本。
 
-暗月卡牌的触发型属性加成横跨三类。以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 能量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）：服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura；界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
+暗月卡牌的触发型属性加成横跨三类。以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 力量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）：服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura；界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
 
 插件端只解析 `BONK~` 聊天行（`VanillaBonkUI.lua:231-243`），没有用 `UNIT_AURA`/`GetPlayerBuff`；客户端自带的 `C_UnitAuras` 只用于敌方姓名板 debuff（`VanillaBonkDebuffs.lua:62-78`），Boss debuff 仍走 BONK（`VanillaBonkBoss.lua:194`）。插件还有多处每帧 `OnUpdate`（`VanillaBonkDebuffs.lua:385`、`VanillaBonkCards.lua:255`、`VanillaBonkPlates.lua:652`、`VanillaBonkDash.lua:89` 等）。
 
@@ -28,7 +28,7 @@ HoA 的效果目前有三种表示，互相之间没有唯一权威：
 | --- | --- | --- |
 | 原生 WoW 法术/光环 | 使用原 spell ID，服务端刷新/移除 | 剑刃乱舞、狂怒、盾墙、嗜血 |
 | HoA 自定义 Buff | 自定义 spell，原版 aura 效果 | 暗月卡牌的力量 proc、护盾、增伤、移速 |
-| HoA 自定义 Debuff | 自定义 spell，原版 debuff 效果 | 坏死、 wounds、Boss 施加的减益 |
+| HoA 自定义 Debuff | 自定义 spell，原版 debuff 效果 | 坏死、wounds、Boss 施加的减益 |
 | 资源/层数型状态 | 自定义 spell + aura stack | 决心层数、冲刺次数、连击/充能 |
 | 只有数值、无法放进 aura 字段的状态 | 自定义 spell + 服务端 `AuraState`，随光环生命周期维护 | 护盾剩余量、吸收池 |
 | 非战斗/长期状态 | 服务端状态 + 必要时用永久 aura 可视化 | 图鉴解锁、赛季标记 |

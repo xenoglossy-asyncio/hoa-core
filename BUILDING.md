@@ -1,28 +1,28 @@
-# 构建
+# Building
 
-## 依赖
+## Dependencies
 
-| 组件 | 需要 |
+| Component | Requirements |
 | --- | --- |
-| `server/` | CMake 3.20+、Visual Studio 2022 Build Tools（MSVC x64）或 GCC/Clang、Boost/OpenSSL/MySQL 客户端依赖 |
-| `client/` | Rust stable（`client/rust-toolchain.toml`）、Cargo |
+| `server/` | CMake 3.20+, Visual Studio 2022 Build Tools (MSVC x64) or GCC/Clang, Boost/OpenSSL/MySQL client libraries |
+| `client/` | Rust stable (see `client/rust-toolchain.toml`), Cargo |
 | `launcher/` | .NET SDK 10 |
-| `addon/`、`glue/` | LuaJIT（语法检查） |
+| `addon/`, `glue/` | LuaJIT (syntax check) |
 
-## 命令
+## Commands
 
-Windows（PowerShell）：
+Windows (PowerShell):
 
 ```powershell
-pwsh scripts/build.ps1 -Component server     # CMake 配置 + 构建 mangosd
+pwsh scripts/build.ps1 -Component server     # configure CMake and build mangosd
 pwsh scripts/build.ps1 -Component client     # cargo build --release -p hoa
 pwsh scripts/build.ps1 -Component launcher   # dotnet build
-pwsh scripts/build.ps1 -Component addon      # LuaJIT 语法检查
-pwsh scripts/build.ps1 -Component check      # 客户端清单 + 插件语法
+pwsh scripts/build.ps1 -Component addon      # LuaJIT syntax check
+pwsh scripts/build.ps1 -Component check      # client manifests + addon syntax
 pwsh scripts/build.ps1 -Component all
 ```
 
-Linux/macOS：
+Linux/macOS:
 
 ```bash
 scripts/build.sh server
@@ -33,14 +33,18 @@ scripts/build.sh check
 scripts/build.sh all
 ```
 
-## 当前状态（0.1.0 / 阶段 1）
+## Status (0.1.0 / phase 1)
 
-- `server/`：CMake 配置 + `mangosd` Release 构建通过。
-- `launcher/`：`dotnet build` 通过（导入时把 `..\telegraphs` 引用修正为 `..\tools\telegraphs`）。
-- `addon/`：64 个 Lua 文件语法检查通过。
-- `client/`：workspace 清单校验通过；完整 `cargo build` 尚未在 monorepo 内跑过（源码与已构建的 0.6.3 客户端一致），放到 CI/下一阶段验证。
+- `server/`: CMake configure and Release `mangosd` build pass.
+- `launcher/`: `dotnet build` passes (the imported `..\telegraphs` reference was fixed to `..\tools\telegraphs`).
+- `addon/` + `glue/`: 70 Lua files pass the syntax check.
+- `client/`: workspace manifests pass; a full `cargo build` has not run inside the monorepo yet (the source matches the already-built 0.6.3 client). CI and the next phase validate it.
 
-## 服务端构建细节
+## CI
+
+`.github/workflows/ci.yml` runs `docs-check`, `addon-lua`, `launcher-build`, `client-check` and `server-build` on every pull request and push to `main`. Branch protection requires all five before merging.
+
+## Server build details
 
 ```powershell
 cmake -S server -B server/build -G "Visual Studio 17 2022" -A x64 `
@@ -49,4 +53,4 @@ cmake -S server -B server/build -G "Visual Studio 17 2022" -A x64 `
 cmake --build server/build --config Release --target mangosd -- /m
 ```
 
-产物在 `server/bin/Release/`。构建目录和产物已被 `.gitignore` 忽略。
+Artifacts land in `server/bin/Release/`. Build directories and artifacts are ignored by `.gitignore`.

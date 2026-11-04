@@ -1,68 +1,68 @@
-# Hordes of Azeroth Core / 艾泽拉斯之潮
+# Hordes of Azeroth Core
 
-一个把服务端、客户端、插件、启动器和共享内容放进同一个仓库的重构项目。
+A monorepo refactor of Hordes of Azeroth: server, client, addon, launcher and shared content in one repository.
 
-- 上游：[jonhaldors/hordes-of-azeroth](https://github.com/jonhaldors/hordes-of-azeroth)（GPL-3.0）、
-  [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server)（VMaNGOS，GPL-2.0）、
-  [hordes-of-azeroth-client](https://github.com/jonhaldors/hordes-of-azeroth-client)（benilla，MIT / Apache-2.0）
-- 本仓库是**硬分叉**，按自己的架构独立演进，不再跟随上游；上游代码只作为起点和内容来源。
-- 版本线从 **0.1.0** 开始。
-- 首发语言：**enUS + zhCN + zhTW**。
-- 联机只支持**局域网**和 `ip/domain:port` 直连，不做公网大厅或注册服务器。
-- 当前状态：**阶段 1（导入与基线）**。0.1.0 以上游 0.6.3 的代码快照起步，后续按 `docs/` 的设计逐步重构。
+- Upstream projects: [jonhaldors/hordes-of-azeroth](https://github.com/jonhaldors/hordes-of-azeroth) (GPL-3.0),
+  [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server) (VMaNGOS, GPL-2.0),
+  [hordes-of-azeroth-client](https://github.com/jonhaldors/hordes-of-azeroth-client) (benilla, MIT / Apache-2.0).
+- This repository is a **hard fork**. It evolves on its own architecture and no longer tracks upstream; upstream code is only a starting point and content source.
+- Version line starts at **0.1.0**.
+- Languages: **enUS + zhCN + zhTW**.
+- Co-op supports only **LAN** and direct `ip/domain:port` connections. There is no public lobby or registration server.
+- Status: **phase 1 complete, phase 2 in progress**. 0.1.0 starts from the 0.6.3 code snapshots and will be refactored according to `docs/`.
 
-## 目标
+## Goals
 
-1. **语言是账号设置，不是客户端安装的属性。** 任何语言版本的 1.12.1 客户端数据都能运行，游戏文本由服务端和语言包决定。
-2. **所有 HoA 效果都是真正的服务端光环。** 原生 buff 栏、`UnitBuff`、插件和战斗日志看到的是同一份状态；插件不再自己维护 buff 计时器。
-3. **内容只有一个来源。** 物品、法术、光环、天赋、卡牌、地图、文本都定义在 `shared/content`，由编译器生成服务端 SQL、客户端数据和插件 Lua。
-4. **保留能用的内核，重构有问题的层。** 服务端沿用 VMaNGOS、客户端沿用 benilla 的底层（网络、移动、战斗、渲染），重写 HoA 游戏层、i18n、光环和数据模型；性能热点单独处理。
+1. **Language is an account setting, not a property of the client install.** Any 1.12.1 client data language can run; the server and language packs decide the displayed text.
+2. **Every HoA effect is a real server aura.** The native buff frame, `UnitBuff`, the addon and combat logs see the same state; the addon no longer keeps its own buff timers.
+3. **Content has a single source.** Items, spells, auras, talents, cards, maps and text are defined in `shared/content`; tools generate server SQL, client data and addon Lua.
+4. **Keep the kernels that work; refactor the layers that do not.** Keep the VMaNGOS server and benilla client cores (network, movement, combat, rendering) and rewrite the HoA game layer, i18n, auras and data model. Handle proven performance hot spots separately.
 
-## 目录结构
+## Layout
 
 ```
 hoa-core/
   VERSION             0.1.0
-  docs/               架构与设计文档（先读这里）
-  server/             VMaNGOS C++ 服务端（GPL-2.0）
-  client/             benilla Rust 客户端（MIT / Apache-2.0）
-  addon/              Lua 插件（GPL-3.0）
-  glue/               登录/选人/建号 GlueXML（GPL-3.0）
-  launcher/           Avalonia C# 启动器；局域网/直连联机（GPL-3.0）
-  config/             服务端与启动器默认配置（GPL-3.0）
-  localization/       现有翻译数据与工具（过渡期参考，GPL-3.0）
+  docs/               Architecture and design (every document exists as README.md / README_zh.md)
+  server/             VMaNGOS C++ server (GPL-2.0)
+  client/             benilla Rust client (MIT / Apache-2.0)
+  addon/              Lua addon (GPL-3.0)
+  glue/               Login/character-select GlueXML (GPL-3.0)
+  launcher/           Avalonia C# launcher; LAN/direct co-op (GPL-3.0)
+  config/             Server and launcher default configuration (GPL-3.0)
+  localization/       Existing translation data and tooling (transitional reference, GPL-3.0)
   shared/
-    content/          内容源：物品、法术、光环、地图、文本……
-    i18n/             消息目录与语言包
-    protocol/         服务端/客户端消息协议与代码生成
-  tools/              内容编译器、协议生成器、翻译与测试工具
-  scripts/            开发与构建脚本
+    content/          Content source: items, spells, auras, maps, text, ...
+    i18n/             Message catalogue and language packs
+    protocol/         Server/client message schema and code generation
+  tools/              Content compiler, protocol generator, translation and test tools
+  scripts/            Development and build scripts
   .github/workflows/  CI
 ```
 
-## 设计文档
+## Documentation
 
-- [构建说明](BUILDING.md)
-- [文档索引与当前决策](docs/README.md)
-- [导入的代码与来源](docs/imported-code.md)
-- [总体架构](docs/architecture.md)
-- [i18n](docs/i18n.md)
-- [光环与效果](docs/auras.md)
-- [客户端原生能力](docs/native-capabilities.md)
-- [内容与数据](docs/content-data.md)
-- [协议](docs/protocol.md)
-- [迁移计划](docs/migration-plan.md)
+- [Build instructions](BUILDING.md)
+- [Documentation index and decisions](docs/README.md)
+- [Imported code and provenance](docs/imported-code/README.md)
+- [Architecture](docs/architecture/README.md)
+- [i18n](docs/i18n/README.md)
+- [Auras and effects](docs/auras/README.md)
+- [Client-native capabilities](docs/native-capabilities/README.md)
+- [Content and data](docs/content-data/README.md)
+- [Protocol](docs/protocol/README.md)
+- [Migration plan](docs/migration-plan/README.md)
 
-## 许可
+## License
 
-本仓库包含多个来源的代码，各部分保持自己的许可证：
+The repository aggregates code from several projects; each part keeps its own license:
 
-| 目录 | 许可证 | 来源 |
+| Path | License | Source |
 | --- | --- | --- |
 | `server/` | GPL-2.0 | VMaNGOS / hordes-of-azeroth-server |
-| `client/` | MIT 或 Apache-2.0（二选一） | benilla / hordes-of-azeroth-client |
-| `addon/`、`glue/`、`launcher/`、`config/`、`localization/` | GPL-3.0 | hordes-of-azeroth |
-| `tools/` 中从上游导入的部分 | GPL-3.0 | hordes-of-azeroth |
-| `shared/`、`scripts/`、`docs/`、`tools/` 中新写的部分 | GPL-2.0-or-later | 本仓库新代码 |
+| `client/` | MIT or Apache-2.0 | benilla / hordes-of-azeroth-client |
+| `addon/`, `glue/`, `launcher/`, `config/`, `localization/` | GPL-3.0 | hordes-of-azeroth |
+| Imported parts of `tools/` | GPL-3.0 | hordes-of-azeroth |
+| New `shared/`, `scripts/`, `docs/` and new `tools/` code | GPL-2.0-or-later | this repository |
 
-详见 [LICENSE-NOTICE.md](LICENSE-NOTICE.md)。World of Warcraft 是 Blizzard Entertainment 的商标；本项目不附带任何游戏资源。
+See [LICENSE-NOTICE.md](LICENSE-NOTICE.md). World of Warcraft is a trademark of Blizzard Entertainment, Inc.; this project does not ship any game assets.

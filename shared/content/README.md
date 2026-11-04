@@ -1,25 +1,25 @@
-# shared/content / 内容源
+# shared/content / content sources
 
-游戏内容的唯一来源。建议按领域分目录：
+The single source of game content. Suggested layout by domain:
 
 ```
 content/
-  items/          装备、消耗品、材料
-  spells/         法术（含 HoA 自定义法术）
-  auras/          HoA 效果/光环定义（见 docs/auras.md）
-  creatures/      生物、NPC、Boss
-  zones/          地图、区域、场景
-  talents/        天赋、精通树
-  cards/          暗月卡牌、卡牌效果
-  gear/           装备池、品质、等级曲线、掉落表
-  quests/         任务
-  loot/           掉落表
-  strings/        被内容引用的长文本（或直接写在条目里）
+  items/          gear, consumables, materials
+  spells/         spells (including custom HoA spells)
+  auras/          HoA effect/aura definitions (see docs/auras)
+  creatures/      creatures, NPCs, bosses
+  zones/          maps, areas, scenarios
+  talents/        talents, mastery trees
+  cards/          Darkmoon cards, card effects
+  gear/           gear pools, qualities, level curves, loot tables
+  quests/         quests
+  loot/           loot tables
+  strings/        long text referenced by content (or inline in entries)
 ```
 
-## 条目格式（草案）
+## Entry format (draft)
 
-每条内容有稳定 ID、英文原文、本地化字段、数值和关系。示例：
+Every entry has a stable ID, English source, localized fields, values and relations. Example:
 
 ```yaml
 id: hoa.item.darkmoon.ogre_slayer
@@ -31,19 +31,19 @@ quality: 3
 stats: { strength: 12, stamina: 8 }
 ```
 
-文本按语言放在条目旁或独立的 `i18n` 文件里，通过 `*_id` 关联；不要用英文句子当键。
+Text lives beside the entry or in separate `i18n` files and is referenced by `*_id`; never use English sentences as keys.
 
-## 编译器输出
+## Compiler output
 
-`tools/content-compiler` 读取本目录并生成：
+`tools/content-compiler` reads this directory and generates:
 
-- `server/sql/content/*.sql`：可重复执行的建表/插入数据
-- `server/src/game/Hoa/content/generated/`：ID 常量与静态表
-- `client/assets/content/<version>/content.bin`：客户端内容包
-- `addon/HordesOfAzeroth/generated/content.lua`：插件数据表
-- `shared/i18n/generated/*.json`：文本目录（供 C++/Rust/Lua 共用）
-- `content.hash`：内容版本哈希
+- `server/sql/content/*.sql`: repeatable schema/data SQL
+- `server/src/game/Hoa/content/generated/`: ID constants and static tables
+- `client/assets/content/<version>/content.bin`: client content pack
+- `addon/HordesOfAzeroth/generated/content.lua`: addon data tables
+- `shared/i18n/generated/*.json`: text catalogue shared by C++, Rust and Lua
+- `content.hash`: content version hash
 
-## 迁移
+## Migration
 
-先写一个 dump 工具，把现有 `bonk_*` 表、`item_template` 中的 HoA 自定义条目、`locales_*` 文本导出成上述源文件；确认生成结果与现有数据库一致后，再切换为生成流程。详见 [docs/migration-plan.md](../docs/migration-plan.md)。
+First write a dump tool that exports the current `bonk_*` tables, custom `item_template` rows and `locales_*` text into these sources. Once the generated result matches the existing database, switch to the generated flow. See [the migration plan](../../docs/migration-plan/README.md).

@@ -1,30 +1,30 @@
-# shared/protocol / 协议
+# shared/protocol / protocol
 
-服务端、客户端、插件、启动器之间的消息定义与代码生成输入。
+Message definitions and codegen inputs shared by the server, client and addon.
 
-## 目标
+## Goals
 
-- 用一份 schema 生成 C++ 和 Rust 两端代码，消除手写解析器的重复和偏差。
-- HoA 状态（护盾、冲刺、决心、层数、计时）走真正的游戏状态/光环，不再用 `BONK~state~...` 聊天行同步。
-- 保留原版 opcode 处理原生能力（移动、战斗、buff、施法、物品查询）；HoA 只定义缺失的消息。
-- 每条消息带协议版本/内容哈希；不一致时握手阶段就拒绝或降级。
+- Generate C++ and Rust from one schema, eliminating duplicate hand-written parsers.
+- HoA state (shield, dash, determination, stacks, timers) travels as real game state/auras, not `BONK~state~...` chat lines.
+- Keep vanilla opcodes for native capabilities (movement, combat, buffs, casting, item queries); define only the messages vanilla lacks.
+- Every message carries a protocol/content version; mismatches are rejected or downgraded at the handshake.
 
-## 建议分类
+## Suggested layout
 
 ```
 protocol/
-  handshake.yaml    版本、内容哈希、语言协商
-  content.yaml      内容清单/增量下发
-  run.yaml          远征流程（开始、波次、奖励、结算）
-  ui.yaml           仅 HoA 界面需要的展示数据（卡牌、图鉴、排行榜）
+  handshake.yaml    version, content hash, language negotiation
+  content.yaml      content manifest/incremental delivery
+  run.yaml          run flow (start, waves, rewards, results)
+  ui.yaml           presentation data needed only by HoA UI (cards, codex, leaderboard)
 ```
 
-## 生成
+## Generation
 
-`tools/protocol-gen` 读取 schema，生成：
+`tools/protocol-gen` reads the schema and generates:
 
 - `server/src/game/Hoa/protocol/generated/`
 - `client/crates/hoa-protocol/src/generated/`
-- `addon/` 需要的 Lua 常量（如仍有插件通道）
+- Lua constants for the addon (while an addon channel remains)
 
-生成物不手改；CI 校验 schema 与生成结果一致。
+Never hand-edit generated artifacts; CI verifies schema and output agree.

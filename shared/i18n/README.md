@@ -1,49 +1,50 @@
-# shared/i18n / 国际化
+# shared/i18n / internationalization
 
-语言是**会话/账号属性**，由服务端在登录时确定；客户端安装数据的语言只用于解析资源，不决定显示语言。
+Language is a **session/account property** decided by the server at login. The installed client data language only parses resources; it never decides display text.
 
-## 文本分类
+## Text categories
 
-| 类别 | 存放位置 | 运行时来源 |
+| Category | Location | Runtime source |
 | --- | --- | --- |
-| 游戏内容文本（物品/法术/光环/地图/生物/天赋/卡牌） | `shared/content` 条目内 | 服务端本地化查询响应 + 客户端内容包 |
-| 服务端运行时文本（通知、奖励、战斗提示） | `shared/i18n/messages` | 服务端按消息 ID + 参数发送 |
-| 客户端界面文本（选项、菜单、Glue、错误） | `shared/i18n/ui` | 客户端语言包 |
-| 插件文本 | `shared/i18n/addon` | 插件 Lua 语言表 |
+| Game content text (items/spells/auras/maps/creatures/talents/cards) | `shared/content` entries | server-localized query responses + client content pack |
+| Server runtime text (notices, rewards, combat messages) | `shared/i18n/messages` | server sends message ID + arguments |
+| Client UI text (options, menus, Glue, errors) | `shared/i18n/ui` | client language packs |
+| Addon text | `shared/i18n/addon` | addon Lua language tables |
 
-## 消息目录（草案）
+## Message catalogue (draft)
 
 ```yaml
 - id: hoa.notice.stage_unlocked
   enUS: "Stage {stage} unlocked."
   zhCN: "第{stage}阶段已解锁。"
+  zhTW: "第{stage}階段已解鎖。"
   placeholders:
     stage: number
 ```
 
-- 用**稳定 ID**，不用英文句子当键；改英文不会让旧翻译失效。
-- 占位符统一 `{name}`，编译期检查类型和缺失；复数用 `_one` / `_other` 变体。
-- 缺翻译时回退 enUS；CI 在缺条目、占位符不一致、未使用条目时报错。
-- 首发语言：enUS、zhCN、zhTW，格式为以后加语言留好。
-- zhTW 优先使用官方 1.12.1 繁中名称；没有的条目由 zhCN 转换后人工校对，字体使用 Noto Sans TC。
+- Use **stable IDs**, not English sentences as keys; changing English never invalidates a translation.
+- Placeholders use `{name}` uniformly; the build checks types and missing entries; plurals use `_one` / `_other`.
+- First languages: enUS, zhCN and zhTW, with room for more.
+- zhTW prefers official 1.12.1 Traditional Chinese names; missing entries are converted from zhCN and manually reviewed. Use Noto Sans TC.
+- Missing translations fall back to enUS; CI fails on missing entries, placeholder mismatches and unused entries.
 
-## 生成物
+## Generated artifacts
 
-- `server/src/game/Hoa/i18n/generated/`：消息 ID 常量 + 英文源
-- `shared/i18n/generated/`：JSON 目录（翻译工具/导出）
-- `client/assets/i18n/<locale>.json`：客户端界面语言包
-- `addon/HordesOfAzeroth/generated/locale_<locale>.lua`：插件语言表
+- `server/src/game/Hoa/i18n/generated/`: message ID constants + English source
+- `shared/i18n/generated/`: JSON catalogue (translation tool/export)
+- `client/assets/i18n/<locale>.json`: client UI language packs
+- `addon/HordesOfAzeroth/generated/locale_<locale>.lua`: addon language tables
 
-## 客户端与缓存
+## Client and caches
 
-- 登录握手携带账号语言和内容版本；客户端据此加载语言包。
-- WDB/模板缓存键加入 `(locale, content version)`；语言切换或内容更新时自动丢弃旧缓存，避免“切换中文后装备还是英文”的问题。
-- 字体：各语言自带回退字体（zhCN 使用 Noto Sans SC），客户端统一按语言选择。
-- 客户端 UI 语言变更后重载界面，不要求重启整个游戏。
+- The login handshake carries the account language and content version; the client loads language packs accordingly.
+- Add `(locale, content version)` to WDB/template cache keys; language or content changes discard old caches automatically, avoiding the "gear is still English after switching to Chinese" problem.
+- Fonts: each language ships its own fallback (Noto Sans SC for zhCN, Noto Sans TC for zhTW); the client selects by language.
+- A client UI language change reloads the interface; it does not require a full game restart.
 
-## 翻译流程
+## Translation workflow
 
-1. 开发只改英文源和 ID。
-2. `tools/translate` 增量列出缺失/变更条目。
-3. 翻译写入 `shared/i18n/messages/<locale>.yaml`（或按领域拆分）。
-4. CI 校验后由内容编译器生成各端产物。
+1. Developers change only the English source and IDs.
+2. `tools/translate` lists missing/changed entries incrementally.
+3. Translations go into `shared/i18n/messages/<locale>.yaml` (or split by domain).
+4. CI validates, then the content compiler generates every artifact.

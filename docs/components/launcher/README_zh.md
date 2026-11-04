@@ -15,7 +15,7 @@ Avalonia C# 启动器。
 
 ## 构建
 
-导入后补充：.NET SDK 版本、发布命令、Windows/Linux 打包。
+见 [构建说明](../../../BUILDING_zh.md)。`dotnet build` 已通过；发布与打包待补。
 
 ## 待改
 

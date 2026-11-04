@@ -9,7 +9,7 @@
 | HoA 概念 | 原生能力 | 备注 |
 | --- | --- | --- |
 | 角色/远征等级 | `PLAYER_LEVEL`、`UnitLevel`、`PLAYER_LEVEL_UP`、`UNIT_LEVEL` | 服务端已经用 `m_player->GetLevel()` 表示远征等级；插件不要另存一份 |
-| Buff / Debuff | 服务端 aura → `SMSG_AURA_UPDATE`；插件 `UnitBuff`/`UnitDebuff`/`UNIT_AURA` | 见 [auras.md](auras.md) |
+| Buff / Debuff | 服务端 aura → `SMSG_AURA_UPDATE`；插件 `UnitBuff`/`UnitDebuff`/`UNIT_AURA` | 见 [光环与效果](../auras/README_zh.md) |
 | 层数 | aura stack | `GetPlayerBuffApplications` 或 aura 的 stack 字段 |
 | 生命/法力 | 原生 unit 字段；`UNIT_HEALTH`、`UNIT_MANA`、`UNIT_MAXHEALTH` | 现有插件已在用一部分 |
 | 战斗状态 | `UnitAffectingCombat`、`PLAYER_REGEN_ENABLED/DISABLED`、`UNIT_COMBAT` | 不要用服务端布尔值同步 |
@@ -30,7 +30,7 @@
 - 商店/军需官的自定义库存；
 - 需要服务端计算且原版单位字段放不下的数值（例如护盾剩余量、特殊的层数上限）。
 
-这些走类型化协议 + 客户端 Lua API（见 [protocol.md](protocol.md)），不再走 `BONK~` 字符串。
+这些走类型化协议 + 客户端 Lua API（见 [协议](../protocol/README_zh.md)），不再走 `BONK~` 字符串。
 
 ## 客户端 Lua API 审计
 

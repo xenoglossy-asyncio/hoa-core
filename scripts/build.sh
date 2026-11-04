@@ -20,10 +20,10 @@ build_launcher() {
 
 check_addon() {
     command -v luajit >/dev/null || { echo "luajit not found" >&2; exit 1; }
-    find "$root/addon" -name '*.lua' -print0 | while IFS= read -r -d '' file; do
+    find "$root/addon" "$root/glue" -name '*.lua' -print0 | while IFS= read -r -d '' file; do
         luajit -bl "$file" >/dev/null
     done
-    echo "addon: Lua syntax ok"
+    echo "addon+glue: Lua syntax ok"
 }
 
 case "$component" in
