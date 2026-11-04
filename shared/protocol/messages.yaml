@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 20
+version: 21
 messages:
   - name: aura_value
     id: 0x0002
@@ -766,5 +766,40 @@ messages:
       - { name: kills, type: u32 }
   - name: summary_end
     id: 0x0076
+    direction: server_to_client
+    fields: []
+  - name: board_open
+    id: 0x0077
+    direction: server_to_client
+    fields: []
+  - name: board_header
+    id: 0x0078
+    direction: server_to_client
+    fields:
+      - { name: line, type: string }
+  - name: board_row
+    id: 0x0079
+    direction: server_to_client
+    fields:
+      - { name: view, type: u32 }
+      - { name: class_id, type: u32 }
+      - { name: position, type: u32 }
+      - { name: line, type: string }
+  - name: board_page
+    id: 0x007A
+    direction: server_to_client
+    fields:
+      - { name: view, type: u32 }
+      - { name: class_id, type: u32 }
+      - { name: offset, type: u32 }
+      - { name: total, type: u32 }
+  - name: board_choice
+    id: 0x007B
+    direction: server_to_client
+    fields:
+      - { name: choice, type: i32 }
+      - { name: climb, type: u32 }
+  - name: board_end
+    id: 0x007C
     direction: server_to_client
     fields: []

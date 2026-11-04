@@ -125,6 +125,12 @@ const HOA_RUN_SUMMARY: &str = "HOA_RUN_SUMMARY";
 const HOA_SUMMARY_WEAPON: &str = "HOA_SUMMARY_WEAPON";
 const HOA_SUMMARY_SPELL: &str = "HOA_SUMMARY_SPELL";
 const HOA_SUMMARY_END: &str = "HOA_SUMMARY_END";
+const HOA_BOARD_OPEN: &str = "HOA_BOARD_OPEN";
+const HOA_BOARD_HEADER: &str = "HOA_BOARD_HEADER";
+const HOA_BOARD_ROW: &str = "HOA_BOARD_ROW";
+const HOA_BOARD_PAGE: &str = "HOA_BOARD_PAGE";
+const HOA_BOARD_CHOICE: &str = "HOA_BOARD_CHOICE";
+const HOA_BOARD_END: &str = "HOA_BOARD_END";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -201,6 +207,49 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::BoardOpen(_) => {
+                    script.fire_event(HOA_BOARD_OPEN, Vec::new());
+                }
+                HoaMessage::BoardHeader(header) => {
+                    script.fire_event(
+                        HOA_BOARD_HEADER,
+                        vec![lua_table(vec![("line", ScriptValue::Str(header.line))])],
+                    );
+                }
+                HoaMessage::BoardRow(row) => {
+                    script.fire_event(
+                        HOA_BOARD_ROW,
+                        vec![lua_table(vec![
+                            ("view", ScriptValue::Int(i64::from(row.view))),
+                            ("class_id", ScriptValue::Int(i64::from(row.class_id))),
+                            ("position", ScriptValue::Int(i64::from(row.position))),
+                            ("line", ScriptValue::Str(row.line)),
+                        ])],
+                    );
+                }
+                HoaMessage::BoardPage(page) => {
+                    script.fire_event(
+                        HOA_BOARD_PAGE,
+                        vec![lua_table(vec![
+                            ("view", ScriptValue::Int(i64::from(page.view))),
+                            ("class_id", ScriptValue::Int(i64::from(page.class_id))),
+                            ("offset", ScriptValue::Int(i64::from(page.offset))),
+                            ("total", ScriptValue::Int(i64::from(page.total))),
+                        ])],
+                    );
+                }
+                HoaMessage::BoardChoice(choice) => {
+                    script.fire_event(
+                        HOA_BOARD_CHOICE,
+                        vec![lua_table(vec![
+                            ("choice", ScriptValue::Int(i64::from(choice.choice))),
+                            ("climb", ScriptValue::Int(i64::from(choice.climb))),
+                        ])],
+                    );
+                }
+                HoaMessage::BoardEnd(_) => {
+                    script.fire_event(HOA_BOARD_END, Vec::new());
+                }
                 HoaMessage::DeathRecap(recap) => {
                     script.fire_event(
                         HOA_DEATH_RECAP,
@@ -1283,6 +1332,12 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_SUMMARY_WEAPON);
         add_in_game_event(HOA_SUMMARY_SPELL);
         add_in_game_event(HOA_SUMMARY_END);
+        add_in_game_event(HOA_BOARD_OPEN);
+        add_in_game_event(HOA_BOARD_HEADER);
+        add_in_game_event(HOA_BOARD_ROW);
+        add_in_game_event(HOA_BOARD_PAGE);
+        add_in_game_event(HOA_BOARD_CHOICE);
+        add_in_game_event(HOA_BOARD_END);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

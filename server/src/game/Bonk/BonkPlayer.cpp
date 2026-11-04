@@ -3528,7 +3528,11 @@ void BonkPlayer::SetBoardChoice(bool show)
 
 void BonkPlayer::SendBoardChoice() const
 {
-    SendAddon("boardchoice~" + std::to_string(m_boardChoice) + "~" + std::to_string(GetBoardClimb()));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteBoardChoice(data, m_boardChoice, GetBoardClimb());
+    m_player->GetSession()->SendPacket(&data);
 }
 
 uint32 BonkPlayer::GetBoardClimb() const

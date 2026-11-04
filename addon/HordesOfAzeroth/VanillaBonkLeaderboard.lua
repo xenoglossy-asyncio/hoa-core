@@ -567,4 +567,36 @@ handlers["boardend"] = function()
     end
 end
 
+local function Fields(prefix, text)
+    local f = { false }
+    for _, value in ipairs(prefix) do
+        tinsert(f, value)
+    end
+    for _, value in ipairs(UI.Split(text or "", "~")) do
+        tinsert(f, value)
+    end
+    return f
+end
+
+UI.ListenHoa({
+    HOA_BOARD_OPEN = function()
+        handlers["boardopen"]()
+    end,
+    HOA_BOARD_HEADER = function(header)
+        handlers["board"](Fields({}, header.line))
+    end,
+    HOA_BOARD_ROW = function(row)
+        handlers["boardrow"](Fields({ row.view, row.class_id, row.position }, row.line))
+    end,
+    HOA_BOARD_PAGE = function(page)
+        handlers["boardpage"]({ false, page.view, page.class_id, page.offset, page.total })
+    end,
+    HOA_BOARD_CHOICE = function(choice)
+        handlers["boardchoice"]({ false, choice.choice, choice.climb })
+    end,
+    HOA_BOARD_END = function()
+        handlers["boardend"]()
+    end,
+})
+
 UI.Listen(handlers)

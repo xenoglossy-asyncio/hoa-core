@@ -1,8 +1,10 @@
 #include "BonkLeaderboard.h"
 #include "BonkPlayer.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "Player.h"
 #include "ScriptMgr.h"
+#include "WorldSession.h"
 
 #include <sys/stat.h>
 
@@ -182,15 +184,27 @@ namespace BonkLeaderboard
     void Send(Player* player)
     {
         BonkPlayer* bonk = player->GetBonkPlayer();
-        bonk->SendAddon("boardopen");
+        if (!bonk->IsAddonReady())
+            return;
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteBoardOpen(data);
+            player->GetSession()->SendPacket(&data);
+        }
         {
             std::lock_guard<std::mutex> guard(s_boardLock);
             Refresh();
             for (std::string const& line : s_board.header)
-                bonk->SendAddon("board~" + line);
+            {
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteBoardHeader(data, line);
+                player->GetSession()->SendPacket(&data);
+            }
         }
         bonk->SendBoardChoice();
-        bonk->SendAddon("boardend");
+        WorldPacket end(SMSG_HOA_MESSAGE);
+        HoAWriteBoardEnd(end);
+        player->GetSession()->SendPacket(&end);
     }
 
     void SendPage(Player* player, uint32 view, uint32 classId, uint32 offset)
@@ -198,13 +212,21 @@ namespace BonkLeaderboard
         if (view < SOLO_VIEW || view > LAST_GROUP_VIEW)
             return;
         BonkPlayer* bonk = player->GetBonkPlayer();
+        if (!bonk->IsAddonReady())
+            return;
         std::lock_guard<std::mutex> guard(s_boardLock);
         Refresh();
         std::vector<Row const*> const rows = ViewRows(view, classId);
         uint32 const total = uint32(rows.size());
         for (uint32 position = offset; position < total && position < offset + PAGE_ROWS; ++position)
-            bonk->SendAddon("boardrow~" + std::to_string(view) + "~" + std::to_string(classId) + "~" + std::to_string(position + 1) + "~" + rows[position]->line);
-        bonk->SendAddon("boardpage~" + std::to_string(view) + "~" + std::to_string(classId) + "~" + std::to_string(offset) + "~" + std::to_string(total));
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteBoardRow(data, view, classId, position + 1, rows[position]->line);
+            player->GetSession()->SendPacket(&data);
+        }
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteBoardPage(data, view, classId, offset, total);
+        player->GetSession()->SendPacket(&data);
     }
 }
 
