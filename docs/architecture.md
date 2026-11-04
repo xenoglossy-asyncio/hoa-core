@@ -39,10 +39,19 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 
 ### 2.3 同一份数据存在多处
 
-- 职业/难度/关键词/精通/装备提示等名称在服务端 DB、插件 Lua、客户端资源里各有一份。例如难度颜色在 `VanillaBonkMenu.lua`，关键词颜色/别名在 `VanillaBonk.lua` 和 `VanillaBonkUI.lua`，装备提示在 `VanillaBonkGear.lua`/`VanillaBonkFound.lua`，服务端又有对应的 `bonk_*` 文本表。
-- 装备等级、品质、属性、卡牌效果在服务端和插件里各算一次：服务端负责实际数值，插件用自己的一套公式显示物品等级、属性加成和 tooltip。
+盘点结果（服务端 = `server/core/src/game/Bonk/`，插件 = `Interface/AddOns/HordesOfAzeroth/`）：
+
+- **职业名称/职业 ID**：服务端 `BonkStrings.cpp:666-674`、`SharedDefines.h:87-99`；插件 `VanillaBonkUI.lua:71-72`、`VanillaBonkCodex.lua:25-33`、`VanillaBonkCoop.lua:71`、`VanillaBonkMeter.lua:22`。
+- **属性名称、说明、上限**：服务端 `BonkStrings.cpp:412-429`、`BonkMgr.h:888-899`，拾取上限在 `BonkRun.cpp:228-229`；插件 `VanillaBonk.lua:3030-3052` 又写了一遍（5/50/60/75/20，拾取 400）。
+- **物品等级公式**：服务端 `BonkFoundGear.cpp:19-21,39-41`、`BonkFoundGear.h:19`；插件 `VanillaBonkFound.lua:84-98`。
+- **数值常量**：地下城 +30% 生命/+20% 伤害（`BonkRun.cpp:252-253` vs `VanillaBonkRunMaster.lua:34`）、携带窗口 10（`BonkMgr.h:1091` vs `VanillaBonkRunMaster.lua:677`）、免费爬塔 49（`BonkLeaderboard.cpp:26` vs `VanillaBonkRunMaster.lua:1352`）、商人补货 +50%（`BonkRunVendor.cpp:30` vs `VanillaBonkVendor.lua:97`）、商人名字 Zixil（`BonkRunVendor.cpp:33` vs `VanillaBonkVendor.lua:17`）。
+- **词汇表**：品质（`BonkStrings.cpp:950-954` vs `VanillaBonkUI.lua:42-47`、`VanillaBonk.lua:101-105`）、伤害类型（`BonkRunStats.cpp:90,104-110` vs `VanillaBonkUI.lua:50-68`）、目标类型（`BonkObjectives.cpp:31` vs `VanillaBonkObjectives.lua:4-11`）、任务分类（`BonkQuests.cpp:26` vs `VanillaBonkQuests.lua:46-53`）。
+- **ID**：游戏对象 900001-900062（`BonkMgr.h:40-46` vs `VanillaBonkSettings.lua:9-11`、`VanillaBonkController.lua:1699`、`VanillaBonkTutorial.lua:4-8`）、炉石 900230（`BonkMgr.h:1054` vs `VanillaBonkHearth.lua:5`）。
+- **关键数量**：法术/被动槽位（`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`）、glyph 选项（`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`）、升级选项（`BonkMgr.h:1028` vs `VanillaBonk.lua:353`）、进化等级（`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`）。
+- **重复计算**：排行榜资格（`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`）。
+- **文本**：同一句中文同时出现在服务端迁移（`server/core/sql/migrations/20261104010444_world.sql:959-963,2143-2145`）和插件表（`VanillaBonkLocaleZhCN.lua:264,385,606,840,1137,490,694,728`）。
+- **自定义 spell id**：各 `.cpp` 匿名命名空间里的 `uint32 const`（`BonkRun.cpp:43` 等），没有共享注册表；插件和客户端各存一份显示用的 id 列表。
 - 法术/物品名称一半来自客户端 DBC，一半来自服务端查询响应；服务端 `locales_spell` 有中文名，客户端却只查安装的 `Spell.dbc`，自定义 spell 在客户端直接空白。
-- 自定义 spell id 是各 `.cpp` 匿名命名空间里的 `uint32 const`（`BonkRun.cpp:43` 等），没有共享注册表；插件和客户端各存一份显示用的 id 列表。
 - 文本以英文句子为键 + 源哈希（`BonkLocale`），英文一改翻译就“过期”，服务端回退英文。
 
 **目标**：内容只写在 `shared/content`，文本只写在 `shared/i18n`，各端产物由工具生成；服务端是运行时权威，客户端/插件不再保留业务副本。
