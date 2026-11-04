@@ -82,7 +82,7 @@ shared/i18n/
 
 - `server/src/game/Hoa/i18n/generated/Messages.h/.cpp`：ID 枚举 + 英文源 + 查表
 - `client/assets/i18n/<locale>.json`：客户端语言包
-- `addon/HordesOfAzeroth/generated/locale_<locale>.lua`：插件语言表
+- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`：生成的插件语言表（TOC 固定文件名）
 - `tools/translate` 直接读写 `shared/i18n` 源，不再维护独立 JSON
 
 ## 6. 服务端

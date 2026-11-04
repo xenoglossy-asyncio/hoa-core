@@ -11,6 +11,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 MESSAGES = ROOT / "shared" / "i18n" / "messages"
+ADDON = ROOT / "shared" / "i18n" / "addon"
 CONFIG = ROOT / "shared" / "i18n" / "config.yaml"
 
 ID_RE = re.compile(r"^hoa\.[a-z0-9_]+(\.[a-z0-9_]+)*$")
@@ -46,7 +47,7 @@ def load() -> Result:
     seen_ids: set[str] = set()
     seen_legacy: set[int] = set()
 
-    for path in sorted(MESSAGES.glob("*.yaml")):
+    for path in sorted([*MESSAGES.glob("*.yaml"), *ADDON.glob("*.yaml")]):
         relative = path.relative_to(ROOT)
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         if not isinstance(data, list):

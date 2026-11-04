@@ -44,6 +44,8 @@ jobs:
         run: python tools/i18n/build.py --check
       - name: Check generated server strings
         run: python tools/i18n/gen_server_strings.py --check
+      - name: Check generated addon locale
+        run: python tools/i18n/gen_addon_locale.py --check
 
   addon-lua:
     name: addon-lua

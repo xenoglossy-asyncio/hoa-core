@@ -30,7 +30,7 @@ Language is a **session/account property** decided by the server at login. The i
 
 ## Current seed
 
-`messages/server.yaml` is the source: it was imported from the server's former `BonkStrings` table and the existing zhCN export (995 messages with enUS and zhCN), and `BonkStrings.h/.cpp` are now generated from it. The server build passes with the generated files. zhTW is not translated yet and is reported as a warning, not an error. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
+The catalogue now holds 995 server messages (`messages/server.yaml`) plus 1451 addon entries (`addon/addon.yaml`), all with enUS and zhCN. `BonkStrings.h/.cpp` and `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua` are generated from it; the server builds and the addon table round-trips byte-for-byte in content. zhTW is not translated yet and is reported as a warning, not an error. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
 
 ```bash
 python tools/i18n/gen_server_strings.py       # write BonkStrings.h/.cpp from the catalogue
@@ -45,7 +45,7 @@ python tools/i18n/gen_server_strings.py --check  # fail if BonkStrings.h/.cpp dr
 - `server/src/game/Bonk/BonkStrings.h/.cpp`: enum + English source, generated from the catalogue
 - `shared/i18n/generated/`: JSON catalogue (translation tool/export)
 - `client/assets/i18n/<locale>.json`: client UI language packs
-- `addon/HordesOfAzeroth/generated/locale_<locale>.lua`: addon language tables
+- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`: generated addon language table (the file name is fixed by the TOC)
 
 ## Client and caches
 

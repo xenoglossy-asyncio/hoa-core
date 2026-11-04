@@ -9,7 +9,7 @@ The addon is a **presentation layer only**:
 - Reads native client APIs (`UnitBuff`, `UnitLevel`, `GetTime`, combat events) to render the HoA UI.
 - No longer maintains buff/effect timers, stacks or state machines; those live in server auras (see [Auras and effects](../../auras/README.md)).
 - No longer computes item level, gear stats or other values the server already knows; those come from the content pack or protocol.
-- All text comes from Lua tables generated from `shared/i18n`; the language is the server/client setting, never the installed client language.
+- All text comes from Lua tables generated from `shared/i18n`; the language is the server/client setting, never the installed client language. `VanillaBonkLocaleZhCN.lua` is now generated from `shared/i18n/addon/addon.yaml`.
 
 ## Planned layout
 

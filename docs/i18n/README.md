@@ -82,7 +82,7 @@ The compiler then generates:
 
 - `server/src/game/Hoa/i18n/generated/Messages.h/.cpp`: ID enums + English source + lookup
 - `client/assets/i18n/<locale>.json`: client language packs
-- `addon/HordesOfAzeroth/generated/locale_<locale>.lua`: addon language tables
+- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`: generated addon language table (fixed TOC name)
 - `tools/translate` reads and writes `shared/i18n` directly instead of maintaining its own JSON
 
 ## 6. Server

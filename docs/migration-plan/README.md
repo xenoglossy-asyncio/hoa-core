@@ -32,7 +32,7 @@ Deliver phase by phase. At the end of every phase the repository must build, run
 - Generate the addon language tables; delete English-key indices and reverse lookups.
 - Add `(locale, contentVersion)` to cache keys; language changes refresh item/creature/spell names.
 - Acceptance: any-language 1.12.1 install + Chinese account → all Chinese; switching enUS/zhCN without a game restart leaves no stale names; missing translations have a list.
-- Progress (2026-11-04): 995 server strings have stable IDs (`shared/i18n/messages/server.yaml`, enUS + zhCN complete, zhTW pending); `tools/i18n` extractor/validator/generator and the `i18n-check` CI job are in place; `BonkStrings.h/.cpp` are now generated from the catalogue and the server builds; the client WDB header folds the HOA account language into its cache tag (FORMAT 2). Next: client/addon language packs and the remaining client UI text.
+- Progress (2026-11-04): 995 server strings and 1451 addon entries have stable IDs (`shared/i18n/messages/server.yaml`, `shared/i18n/addon/addon.yaml`, enUS + zhCN complete, zhTW pending); `tools/i18n` extractor/validator/generator and the `i18n-check` CI job are in place; `BonkStrings.h/.cpp` and `VanillaBonkLocaleZhCN.lua` are generated from the catalogue, and the server builds; the client WDB header folds the HOA account language into its cache tag (FORMAT 2). Next: client UI language packs and zhTW translation.
 - Note: this touches a lot of client text but no game values.
 
 ## Phase 3: unify auras

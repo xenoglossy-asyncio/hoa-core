@@ -32,7 +32,7 @@
 - 插件语言表改为生成物；删除英文键索引和反向查找。
 - 缓存键加入 `(locale, contentVersion)`；语言切换刷新物品/生物/法术名字。
 - 验收：任意语言 1.12.1 安装 + 中文账号 → 全中文；切换 enUS/zhCN 不重启游戏、不残留旧名字；缺翻译有清单。
-- 进度（2026-11-04）：995 条服务端字符串已抽成稳定 ID（`shared/i18n/messages/server.yaml`，enUS + zhCN 完整，zhTW 待翻译）；`tools/i18n` 的提取/校验/生成工具和 CI `i18n-check` 已加；`BonkStrings.h/.cpp` 已改为由目录生成，服务端构建通过；客户端 WDB 头部已把 HOA 账号语言折进缓存 tag（FORMAT 2）。下一步生成客户端/插件语言包并迁移剩余客户端文本。
+- 进度（2026-11-04）：995 条服务端字符串和 1451 条插件文本已抽成稳定 ID（`shared/i18n/messages/server.yaml`、`shared/i18n/addon/addon.yaml`，enUS + zhCN 完整，zhTW 待翻译）；`tools/i18n` 的提取/校验/生成工具和 CI `i18n-check` 已加；`BonkStrings.h/.cpp` 和 `VanillaBonkLocaleZhCN.lua` 已改为由目录生成，服务端构建通过；客户端 WDB 头部已把 HOA 账号语言折进缓存 tag（FORMAT 2）。下一步做客户端界面语言包和 zhTW 翻译。
 - 说明：这一步会触碰客户端大量文本，但不动游戏数值。
 
 ## 阶段 3：光环统一

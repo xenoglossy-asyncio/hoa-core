@@ -66,6 +66,8 @@ function Test-I18n {
     if ($LASTEXITCODE -ne 0) { throw 'generated i18n catalogue is out of date' }
     python "$Root\tools\i18n\gen_server_strings.py" --check
     if ($LASTEXITCODE -ne 0) { throw 'generated server strings are out of date' }
+    python "$Root\tools\i18n\gen_addon_locale.py" --check
+    if ($LASTEXITCODE -ne 0) { throw 'generated addon locale is out of date' }
 }
 
 function Test-Manifests {

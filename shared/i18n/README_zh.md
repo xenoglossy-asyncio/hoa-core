@@ -29,7 +29,7 @@
 
 ## 当前种子
 
-`messages/server.yaml` 现在是源：它从服务端原来的 `BonkStrings` 表和现有 zhCN 导出导入（995 条消息，含 enUS 和 zhCN），`BonkStrings.h/.cpp` 已改为由它生成。用生成文件构建服务端已通过。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
+目录现在有 995 条服务端消息（`messages/server.yaml`）和 1451 条插件文本（`addon/addon.yaml`），都包含 enUS 和 zhCN。`BonkStrings.h/.cpp` 与 `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua` 都由它生成；服务端构建通过，插件表内容逐条往返一致。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
 
 ```bash
 python tools/i18n/gen_server_strings.py       # 从目录生成 BonkStrings.h/.cpp
@@ -44,7 +44,7 @@ python tools/i18n/gen_server_strings.py --check  # BonkStrings.h/.cpp 过期时�
 - `server/src/game/Bonk/BonkStrings.h/.cpp`：枚举 + 英文源，由目录生成
 - `shared/i18n/generated/`：JSON 目录（翻译工具/导出）
 - `client/assets/i18n/<locale>.json`：客户端界面语言包
-- `addon/HordesOfAzeroth/generated/locale_<locale>.lua`：插件语言表
+- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`：生成的插件语言表（文件名由 TOC 固定）
 
 ## 客户端与缓存
 
