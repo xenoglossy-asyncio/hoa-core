@@ -33,8 +33,11 @@ end
 
 UI.Listen({
     start = EnterRun,
-    state = EnterRun,
     ["end"] = function()
         inRun = false
     end,
+})
+
+UI.ListenHoa({
+    HOA_RUN_STATE = EnterRun,
 })

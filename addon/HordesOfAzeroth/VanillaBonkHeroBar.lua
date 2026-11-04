@@ -1049,18 +1049,21 @@ handlers["runxp"] = function(f)
     end
 end
 
-handlers["state"] = function(f)
-    if not inRun then
-        SetMode(true)
-    end
-    if f[13] and f[13] ~= "" then
-        run.stats = {}
-        for index, item in ipairs(UI.Split(f[13], ",")) do
-            local parts = UI.Split(item, ":")
-            run.stats[index] = { damage = tonumber(parts[1]) or 0, kills = tonumber(parts[2]) or 0 }
+UI.ListenHoa({
+    HOA_RUN_STATE = function(state)
+        if not inRun then
+            SetMode(true)
         end
-    end
-end
+        local stats = state.weapon_stats
+        if stats and stats ~= "" then
+            run.stats = {}
+            for index, item in ipairs(UI.Split(stats, ",")) do
+                local parts = UI.Split(item, ":")
+                run.stats[index] = { damage = tonumber(parts[1]) or 0, kills = tonumber(parts[2]) or 0 }
+            end
+        end
+    end,
+})
 
 handlers["end"] = function()
     run.xp = nil

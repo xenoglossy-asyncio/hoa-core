@@ -2734,10 +2734,12 @@ handlers["start"] = function(f)
     shop:Hide()
 end
 
-handlers["state"] = function()
-    VB.inRun = true
-    SetCombatLogQuiet(true)
-end
+UI.ListenHoa({
+    HOA_RUN_STATE = function()
+        VB.inRun = true
+        SetCombatLogQuiet(true)
+    end,
+})
 
 handlers["offer"] = function(f)
     VB.offer = {}

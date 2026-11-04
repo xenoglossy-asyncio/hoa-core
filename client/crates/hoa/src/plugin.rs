@@ -22,6 +22,7 @@ const HOA_HELLO: &str = "HOA_HELLO";
 const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
 const HOA_DASH: &str = "HOA_DASH";
 const HOA_AURA_PERCENT: &str = "HOA_AURA_PERCENT";
+const HOA_RUN_STATE: &str = "HOA_RUN_STATE";
 
 /// Typed HoA packets, drained on the main thread because firing a Lua event needs the VM.
 #[derive(Resource, Default)]
@@ -94,6 +95,27 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::RunState(state) => {
+                    script.fire_event(
+                        HOA_RUN_STATE,
+                        vec![ScriptValue::Table(vec![
+                            ("elapsed_s".into(), ScriptValue::Int(i64::from(state.elapsed_s))),
+                            ("duration_s".into(), ScriptValue::Int(i64::from(state.duration_s))),
+                            ("kills".into(), ScriptValue::Int(i64::from(state.kills))),
+                            ("gold_earned".into(), ScriptValue::Int(i64::from(state.gold_earned))),
+                            ("player_level".into(), ScriptValue::Int(i64::from(state.player_level))),
+                            ("boss_spawned".into(), ScriptValue::Bool(state.boss_spawned)),
+                            ("coins".into(), ScriptValue::Int(i64::from(state.coins))),
+                            ("chest_price".into(), ScriptValue::Int(i64::from(state.chest_price))),
+                            ("stage".into(), ScriptValue::Int(i64::from(state.stage))),
+                            ("portal".into(), ScriptValue::Bool(state.portal)),
+                            ("shards_earned".into(), ScriptValue::Int(i64::from(state.shards_earned))),
+                            ("weapon_stats".into(), ScriptValue::Str(state.weapon_stats)),
+                            ("total_s".into(), ScriptValue::Int(i64::from(state.total_s))),
+                            ("damage_types".into(), ScriptValue::Str(state.damage_types)),
+                        ])],
+                    );
+                }
                 HoaMessage::AuraValue(aura) => {
                     script.fire_event(
                         HOA_AURA_VALUE,
@@ -212,6 +234,7 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_AURA_VALUE);
         add_in_game_event(HOA_DASH);
         add_in_game_event(HOA_AURA_PERCENT);
+        add_in_game_event(HOA_RUN_STATE);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
@@ -329,5 +352,39 @@ mod tests {
         assert_eq!(entry.name, "切割");
         assert_eq!(entry.stack, 0);
         assert_eq!(entry.duration, 28);
+    }
+
+    #[test]
+    fn the_run_state_decoder_reads_the_wire_layout() {
+        let mut body = Vec::new();
+        body.extend_from_slice(&7u32.to_le_bytes());
+        body.extend_from_slice(&60u32.to_le_bytes());
+        body.extend_from_slice(&12u32.to_le_bytes());
+        body.extend_from_slice(&340u32.to_le_bytes());
+        body.push(60);
+        body.push(1);
+        body.extend_from_slice(&5u32.to_le_bytes());
+        body.extend_from_slice(&25u32.to_le_bytes());
+        body.extend_from_slice(&3u32.to_le_bytes());
+        body.push(0);
+        body.extend_from_slice(&2u32.to_le_bytes());
+        let weapon_stats = "1:2,3:4";
+        body.extend_from_slice(&(weapon_stats.len() as u16).to_le_bytes());
+        body.extend_from_slice(weapon_stats.as_bytes());
+        body.extend_from_slice(&90u32.to_le_bytes());
+        let damage_types = "fire,ice";
+        body.extend_from_slice(&(damage_types.len() as u16).to_le_bytes());
+        body.extend_from_slice(damage_types.as_bytes());
+
+        let Some(HoaMessage::RunState(state)) = protocol_generated::decode(protocol_generated::MSG_RUN_STATE, &body) else {
+            panic!("run state did not decode");
+        };
+        assert_eq!(state.elapsed_s, 7);
+        assert_eq!(state.duration_s, 60);
+        assert_eq!(state.player_level, 60);
+        assert!(state.boss_spawned);
+        assert_eq!(state.weapon_stats, "1:2,3:4");
+        assert_eq!(state.total_s, 90);
+        assert_eq!(state.damage_types, "fire,ice");
     }
 }

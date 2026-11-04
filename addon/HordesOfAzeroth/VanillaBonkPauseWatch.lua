@@ -50,9 +50,11 @@ handlers["start"] = function()
     inRun = true
 end
 
-handlers["state"] = function()
-    inRun = true
-end
+UI.ListenHoa({
+    HOA_RUN_STATE = function()
+        inRun = true
+    end,
+})
 
 handlers["end"] = function()
     inRun = false

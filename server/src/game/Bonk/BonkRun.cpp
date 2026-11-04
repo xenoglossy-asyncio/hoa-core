@@ -18,6 +18,7 @@
 #include "GameObject.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "MoveMap.h"
 #include "MoveMapSharedDefines.h"
@@ -32,6 +33,7 @@
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
 #include "World.h"
+#include "WorldSession.h"
 #include "Utilities/Random.h"
 
 #include <algorithm>
@@ -13950,13 +13952,18 @@ void BonkRun::SendState() const
     for (auto const& owned : m_weapons)
         damageTypes += (IsShapeshift(owned) ? DescribeShapeshiftDamage() : BonkStats::DescribeDamageTypes(m_player->GetObjectGuid(), owned.weapon.spellId)) + ",";
     uint32 const shownSeconds = (m_sandbox ? m_totalMs : m_elapsedMs) / IN_MILLISECONDS;
-    m_player->GetBonkPlayer()->SendAddon("state~" + std::to_string(shownSeconds) + "~" + std::to_string(m_sandbox ? 0 : m_map.durationSeconds) + "~" +
-        std::to_string(m_kills) + "~" + std::to_string(m_goldEarned) + "~" + std::to_string(m_player->GetLevel()) + "~" + (m_bossSpawned ? "1" : "0") + "~" +
-        std::to_string(m_coins) + "~" + std::to_string(GetChestPrice()) + "~" + std::to_string(m_stage) + "~" + (m_state == STATE_PORTAL ? "1" : "0") + "~" +
-        std::to_string(m_shardsEarned) + "~" + DescribeWeaponStats() + "~" + std::to_string(m_totalMs / IN_MILLISECONDS) + "~" + damageTypes);
-    m_player->GetBonkPlayer()->SendAddon("support~" + DescribeSupport());
-    m_player->GetBonkPlayer()->SendAddon("gmeter~" + DescribeGlyphStats());
-    m_player->GetBonkPlayer()->SendAddon("xmeter~" + DescribeOtherDamage());
+    BonkPlayer* bonk = m_player->GetBonkPlayer();
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunState(data, shownSeconds, m_sandbox ? 0 : m_map.durationSeconds, m_kills, m_goldEarned,
+            uint8(m_player->GetLevel()), m_bossSpawned, m_coins, GetChestPrice(), m_stage, m_state == STATE_PORTAL,
+            m_shardsEarned, DescribeWeaponStats(), m_totalMs / IN_MILLISECONDS, damageTypes);
+        m_player->GetSession()->SendPacket(&data);
+    }
+    bonk->SendAddon("support~" + DescribeSupport());
+    bonk->SendAddon("gmeter~" + DescribeGlyphStats());
+    bonk->SendAddon("xmeter~" + DescribeOtherDamage());
     if (BonkCoop::InGroupRun(m_player))
     {
         std::vector<Player*> members = BonkCoop::RunGroupOf(m_player);
@@ -13970,7 +13977,7 @@ void BonkRun::SendState() const
             party += std::string(member->GetName()) + "~" +
                 std::to_string(BonkStats::TotalDamage(member->GetObjectGuid())) + "~" + std::to_string(uint32(member->GetClass())) + "~";
         }
-        m_player->GetBonkPlayer()->SendAddon("pmeter~" + party);
+        bonk->SendAddon("pmeter~" + party);
     }
 }
 

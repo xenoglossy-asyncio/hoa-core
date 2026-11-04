@@ -548,19 +548,21 @@ handlers["start"] = function(f)
     run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
 end
 
-handlers["state"] = function(f)
-    run.inRun = true
-    run.elapsed = tonumber(f[2] or "") or run.elapsed
-    run.kills = tonumber(f[4] or "") or 0
-    run.gold = tonumber(f[5] or "") or 0
-    run.level = tonumber(f[6] or "") or run.level
-    run.valor = tonumber(f[8] or "") or 0
-    run.stage = tonumber(f[10] or "") or run.stage
-    run.shards = tonumber(f[12] or "") or 0
-    if menu:IsShown() then
-        Refresh()
-    end
-end
+UI.ListenHoa({
+    HOA_RUN_STATE = function(state)
+        run.inRun = true
+        run.elapsed = tonumber(state.elapsed_s) or run.elapsed
+        run.kills = tonumber(state.kills) or 0
+        run.gold = tonumber(state.gold_earned) or 0
+        run.level = tonumber(state.player_level) or run.level
+        run.valor = tonumber(state.coins) or 0
+        run.stage = tonumber(state.stage) or run.stage
+        run.shards = tonumber(state.shards_earned) or 0
+        if menu:IsShown() then
+            Refresh()
+        end
+    end,
+})
 
 handlers["loadout"] = function(f)
     run.spells, run.passives = {}, {}

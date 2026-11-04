@@ -247,26 +247,28 @@ handlers["start"] = function(f)
     list:Show()
 end
 
-handlers["state"] = function(f)
-    run.elapsed = tonumber(f[2]) or 0
-    run.duration = tonumber(f[3]) or run.duration
-    run.kills = tonumber(f[4]) or 0
-    run.gold = tonumber(f[5]) or 0
-    run.boss = f[7] == "1"
-    run.valor = tonumber(f[8]) or 0
-    run.chest = f[9] or "?"
-    run.stage = tonumber(f[10]) or run.stage
-    run.portal = f[11] == "1"
-    run.shards = tonumber(f[12]) or 0
-    if callout.at then
-        CalloutText()
-    end
-    Refresh()
-    if not tracker:IsShown() then
-        tracker:Show()
-        list:Show()
-    end
-end
+UI.ListenHoa({
+    HOA_RUN_STATE = function(state)
+        run.elapsed = tonumber(state.elapsed_s) or 0
+        run.duration = tonumber(state.duration_s) or run.duration
+        run.kills = tonumber(state.kills) or 0
+        run.gold = tonumber(state.gold_earned) or 0
+        run.boss = state.boss_spawned and true or false
+        run.valor = tonumber(state.coins) or 0
+        run.chest = tostring(state.chest_price or "?")
+        run.stage = tonumber(state.stage) or run.stage
+        run.portal = state.portal and true or false
+        run.shards = tonumber(state.shards_earned) or 0
+        if callout.at then
+            CalloutText()
+        end
+        Refresh()
+        if not tracker:IsShown() then
+            tracker:Show()
+            list:Show()
+        end
+    end,
+})
 
 handlers["greed"] = function(f)
     run.greed = tonumber(f[2] or "") or 0

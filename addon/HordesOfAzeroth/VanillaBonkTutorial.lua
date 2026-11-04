@@ -958,7 +958,6 @@ UI.Listen({
         end
     end,
     start = EnterRun,
-    state = EnterRun,
     ["end"] = function()
         if inRun and VanillaBonkVendorTip == "waiting" then
             VanillaBonkVendorTip = "ready"
@@ -974,6 +973,7 @@ UI.Listen({
 })
 
 UI.ListenHoa({
+    HOA_RUN_STATE = EnterRun,
     HOA_DASH = function(_, _, _, _, available)
         local charges = tonumber(available) or 0
         if step == "dash" and lastCharges and charges < lastCharges and not dashedAt then

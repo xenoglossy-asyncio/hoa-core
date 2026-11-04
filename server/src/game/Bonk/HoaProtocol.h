@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 2
+#define HOA_PROTOCOL_VERSION 3
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -15,6 +15,7 @@
 #define HOA_MSG_AURA_CATALOG_ENTRY 0x0006
 #define HOA_MSG_AURA_CATALOG_END 0x0007
 #define HOA_MSG_HELLO 0x0001
+#define HOA_MSG_RUN_STATE 0x0010
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -79,4 +80,23 @@ inline void HoAWriteHello(WorldPacket& packet, uint16 const& protocolVersion, st
     packet << uint16(protocolVersion);
     HoAWriteString(packet, contentHash);
     HoAWriteString(packet, language);
+}
+
+inline void HoAWriteRunState(WorldPacket& packet, uint32 const& elapsedS, uint32 const& durationS, uint32 const& kills, uint32 const& goldEarned, uint8 const& playerLevel, bool const& bossSpawned, uint32 const& coins, uint32 const& chestPrice, uint32 const& stage, bool const& portal, uint32 const& shardsEarned, std::string const& weaponStats, uint32 const& totalS, std::string const& damageTypes)
+{
+    packet << uint16(HOA_MSG_RUN_STATE);
+    packet << uint32(elapsedS);
+    packet << uint32(durationS);
+    packet << uint32(kills);
+    packet << uint32(goldEarned);
+    packet << uint8(playerLevel);
+    packet << bool(bossSpawned);
+    packet << uint32(coins);
+    packet << uint32(chestPrice);
+    packet << uint32(stage);
+    packet << bool(portal);
+    packet << uint32(shardsEarned);
+    HoAWriteString(packet, weaponStats);
+    packet << uint32(totalS);
+    HoAWriteString(packet, damageTypes);
 }

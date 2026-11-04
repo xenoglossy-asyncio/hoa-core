@@ -728,24 +728,28 @@ handlers["end"] = function()
     meter:Hide()
 end
 
-handlers["state"] = function(f)
-    seconds = tonumber(f[14] or "") or seconds
-    if f[13] then
-        for index, item in ipairs(UI.Split(f[13], ",")) do
-            local parts = UI.Split(item, ":")
-            local spell = Spell(index)
-            spell.damage = tonumber(parts[1]) or 0
-            spell.kills = tonumber(parts[2]) or 0
+UI.ListenHoa({
+    HOA_RUN_STATE = function(state)
+        seconds = tonumber(state.total_s) or seconds
+        local stats = state.weapon_stats
+        if stats then
+            for index, item in ipairs(UI.Split(stats, ",")) do
+                local parts = UI.Split(item, ":")
+                local spell = Spell(index)
+                spell.damage = tonumber(parts[1]) or 0
+                spell.kills = tonumber(parts[2]) or 0
+            end
         end
-    end
-    if f[15] then
-        for index, item in ipairs(UI.Split(f[15], ",")) do
-            Spell(index).types = item
+        local types = state.damage_types
+        if types then
+            for index, item in ipairs(UI.Split(types, ",")) do
+                Spell(index).types = item
+            end
         end
-    end
-    Refresh()
-    ShowMeter()
-end
+        Refresh()
+        ShowMeter()
+    end,
+})
 
 handlers["gmeter"] = function(f)
     glyphs = {}
