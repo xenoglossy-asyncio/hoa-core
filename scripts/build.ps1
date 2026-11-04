@@ -64,6 +64,8 @@ function Test-I18n {
     if ($LASTEXITCODE -ne 0) { throw 'i18n check failed' }
     python "$Root\tools\i18n\build.py" --check
     if ($LASTEXITCODE -ne 0) { throw 'generated i18n catalogue is out of date' }
+    python "$Root\tools\i18n\gen_server_strings.py" --check
+    if ($LASTEXITCODE -ne 0) { throw 'generated server strings are out of date' }
 }
 
 function Test-Manifests {

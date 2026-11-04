@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Extract the server's BonkString table into the shared i18n catalogue.
 
-The server still keys runtime messages by numeric `BonkString` ids. This tool
-gives each one a stable semantic id and seeds enUS/zhCN from the current sources.
-Re-run it after the C++ string table or the zhCN export changes.
+One-time importer and refresh tool: it reads the current C++ `BonkString` table
+and the zhCN export. Once `shared/i18n` is the source, edit `messages/server.yaml`
+and run `gen_server_strings.py`; re-running this extractor overwrites manual
+catalogue changes.
 """
 
 from __future__ import annotations

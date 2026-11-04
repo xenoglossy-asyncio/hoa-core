@@ -29,6 +29,7 @@ check_addon() {
 check_i18n() {
     python "$root/tools/i18n/check.py"
     python "$root/tools/i18n/build.py" --check
+    python "$root/tools/i18n/gen_server_strings.py" --check
 }
 
 case "$component" in

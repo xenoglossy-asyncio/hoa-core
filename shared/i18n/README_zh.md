@@ -29,18 +29,19 @@
 
 ## 当前种子
 
-`messages/server.yaml` 由服务端的 `BonkStrings` 表和现有 zhCN 导出生成：995 条消息，包含 enUS 和 zhCN。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
+`messages/server.yaml` 现在是源：它从服务端原来的 `BonkStrings` 表和现有 zhCN 导出导入（995 条消息，含 enUS 和 zhCN），`BonkStrings.h/.cpp` 已改为由它生成。用生成文件构建服务端已通过。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
 
 ```bash
-python tools/i18n/extract_server_strings.py   # 从 BonkStrings + localization/zhCN 重新生成
+python tools/i18n/gen_server_strings.py       # 从目录生成 BonkStrings.h/.cpp
 python tools/i18n/check.py                    # 校验 ID、占位符和必需语言
 python tools/i18n/build.py                    # 生成 shared/i18n/generated
 python tools/i18n/build.py --check            # 生成物过期时失败
+python tools/i18n/gen_server_strings.py --check  # BonkStrings.h/.cpp 过期时失败
 ```
 
 ## 生成物
 
-- `server/src/game/Hoa/i18n/generated/`：消息 ID 常量 + 英文源
+- `server/src/game/Bonk/BonkStrings.h/.cpp`：枚举 + 英文源，由目录生成
 - `shared/i18n/generated/`：JSON 目录（翻译工具/导出）
 - `client/assets/i18n/<locale>.json`：客户端界面语言包
 - `addon/HordesOfAzeroth/generated/locale_<locale>.lua`：插件语言表
