@@ -18,7 +18,8 @@ pwsh scripts/build.ps1 -Component server     # CMake 配置 + 构建 mangosd
 pwsh scripts/build.ps1 -Component client     # cargo build --release -p hoa
 pwsh scripts/build.ps1 -Component launcher   # dotnet build
 pwsh scripts/build.ps1 -Component addon      # LuaJIT 语法检查
-pwsh scripts/build.ps1 -Component check      # 客户端清单 + 插件语法
+pwsh scripts/build.ps1 -Component i18n       # 校验 i18n 目录并检查生成物
+pwsh scripts/build.ps1 -Component check      # 客户端清单 + 插件语法 + i18n
 pwsh scripts/build.ps1 -Component all
 ```
 
@@ -29,6 +30,7 @@ scripts/build.sh server
 scripts/build.sh client
 scripts/build.sh launcher
 scripts/build.sh addon
+scripts/build.sh i18n
 scripts/build.sh check
 scripts/build.sh all
 ```
@@ -42,7 +44,7 @@ scripts/build.sh all
 
 ## CI
 
-`.github/workflows/ci.yml` 在每次 pull request 和 push 到 `main` 时运行 `docs-check`、`addon-lua`、`launcher-build`、`client-check`、`server-build`。`main` 分支保护要求这五项全部通过才能合并。
+`.github/workflows/ci.yml` 在每次 pull request 和 push 到 `main` 时运行 `docs-check`、`i18n-check`、`addon-lua`、`launcher-build`、`client-check`、`server-build`。这六项是合并门槛。分支保护还没启用：GitHub 的私有仓库需要 GitHub Pro 才能使用分支保护，本仓库目前在免费计划下。升级 Pro 或把仓库改为公开后运行 `scripts/protect-main.sh`。
 
 ## 服务端构建细节
 

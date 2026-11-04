@@ -5,6 +5,7 @@ tools/
   content-compiler/   shared/content → SQL / client pack / addon Lua / text catalogue
   protocol-gen/       shared/protocol → C++ / Rust / Lua code
   translate/          translation workbench (start from the existing tools/translate, retargeted at shared/i18n)
+  i18n/               message catalogue extractor, validator and generator
   checks/             content schema, i18n completeness, generated-artifact diff, license-header checks
 ```
 

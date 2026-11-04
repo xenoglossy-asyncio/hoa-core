@@ -27,6 +27,17 @@
 - 首发语言：enUS、zhCN、zhTW，格式为以后加语言留好。
 - zhTW 优先使用官方 1.12.1 繁中名称；没有的条目由 zhCN 转换后人工校对，字体使用 Noto Sans TC。
 
+## 当前种子
+
+`messages/server.yaml` 由服务端的 `BonkStrings` 表和现有 zhCN 导出生成：995 条消息，包含 enUS 和 zhCN。zhTW 还没有翻译，目前只报警告、不阻断。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
+
+```bash
+python tools/i18n/extract_server_strings.py   # 从 BonkStrings + localization/zhCN 重新生成
+python tools/i18n/check.py                    # 校验 ID、占位符和必需语言
+python tools/i18n/build.py                    # 生成 shared/i18n/generated
+python tools/i18n/build.py --check            # 生成物过期时失败
+```
+
 ## 生成物
 
 - `server/src/game/Hoa/i18n/generated/`：消息 ID 常量 + 英文源

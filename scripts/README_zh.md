@@ -2,7 +2,8 @@
 
 已提供：
 
-- `build.ps1` / `build.sh`：按组件构建（server/client/launcher/addon/check/all），见 [BUILDING.md](../BUILDING.md)。
+- `build.ps1` / `build.sh`：按组件构建（server/client/launcher/addon/i18n/check/all），见 [BUILDING_zh.md](../BUILDING_zh.md)。
+- `protect-main.sh`：把六项检查配置为 `main` 的必需项；GitHub 私有仓库需要 Pro 或改为公开后才能用。
 
 计划提供：
 

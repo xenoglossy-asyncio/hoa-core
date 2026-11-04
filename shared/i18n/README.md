@@ -28,6 +28,17 @@ Language is a **session/account property** decided by the server at login. The i
 - zhTW prefers official 1.12.1 Traditional Chinese names; missing entries are converted from zhCN and manually reviewed. Use Noto Sans TC.
 - Missing translations fall back to enUS; CI fails on missing entries, placeholder mismatches and unused entries.
 
+## Current seed
+
+`messages/server.yaml` is generated from the server's `BonkStrings` table and the existing zhCN export: 995 messages with enUS and zhCN. zhTW is not translated yet and is reported as a warning, not an error. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
+
+```bash
+python tools/i18n/extract_server_strings.py   # regenerate from BonkStrings + localization/zhCN
+python tools/i18n/check.py                    # validate ids, placeholders and required languages
+python tools/i18n/build.py                    # write shared/i18n/generated
+python tools/i18n/build.py --check            # fail if generated files are out of date
+```
+
 ## Generated artifacts
 
 - `server/src/game/Hoa/i18n/generated/`: message ID constants + English source

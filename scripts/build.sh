@@ -26,15 +26,22 @@ check_addon() {
     echo "addon+glue: Lua syntax ok"
 }
 
+check_i18n() {
+    python "$root/tools/i18n/check.py"
+    python "$root/tools/i18n/build.py" --check
+}
+
 case "$component" in
     server) build_server ;;
     client) build_client ;;
     launcher) build_launcher ;;
     addon) check_addon ;;
+    i18n) check_i18n ;;
     check)
         cargo metadata --no-deps --format-version 1 --manifest-path "$root/client/Cargo.toml" >/dev/null
         check_addon
+        check_i18n
         ;;
-    all) build_server; build_client; build_launcher; check_addon ;;
-    *) echo "usage: $0 [all|server|client|launcher|addon|check]" >&2; exit 2 ;;
+    all) build_server; build_client; build_launcher; check_addon; check_i18n ;;
+    *) echo "usage: $0 [all|server|client|launcher|addon|i18n|check]" >&2; exit 2 ;;
 esac

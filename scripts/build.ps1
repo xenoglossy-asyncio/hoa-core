@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('all', 'server', 'client', 'launcher', 'addon', 'check')]
+    [ValidateSet('all', 'server', 'client', 'launcher', 'addon', 'i18n', 'check')]
     [string]$Component = 'all',
     [string]$Configuration = 'Release'
 )
@@ -59,6 +59,13 @@ function Test-Addon {
     "addon+glue: $($files.Count) Lua files parsed"
 }
 
+function Test-I18n {
+    python "$Root\tools\i18n\check.py"
+    if ($LASTEXITCODE -ne 0) { throw 'i18n check failed' }
+    python "$Root\tools\i18n\build.py" --check
+    if ($LASTEXITCODE -ne 0) { throw 'generated i18n catalogue is out of date' }
+}
+
 function Test-Manifests {
     Push-Location "$Root\client"
     try {
@@ -73,6 +80,7 @@ switch ($Component) {
     'client'   { Build-Client }
     'launcher' { Build-Launcher }
     'addon'    { Test-Addon }
-    'check'    { Test-Manifests; Test-Addon }
-    'all'      { Build-Server; Build-Client; Build-Launcher; Test-Addon }
+    'i18n'     { Test-I18n }
+    'check'    { Test-Manifests; Test-Addon; Test-I18n }
+    'all'      { Build-Server; Build-Client; Build-Launcher; Test-Addon; Test-I18n }
 }

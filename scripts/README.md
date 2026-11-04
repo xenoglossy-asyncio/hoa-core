@@ -2,7 +2,8 @@
 
 Provided:
 
-- `build.ps1` / `build.sh`: build by component (server/client/launcher/addon/check/all). See [BUILDING.md](../BUILDING.md).
+- `build.ps1` / `build.sh`: build by component (server/client/launcher/addon/i18n/check/all). See [BUILDING.md](../BUILDING.md).
+- `protect-main.sh`: configure the six required checks on `main`; GitHub requires Pro or a public repository for this.
 
 Planned:
 

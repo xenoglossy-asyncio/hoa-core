@@ -5,9 +5,12 @@
 | Job | What it does |
 | --- | --- |
 | `docs-check` | Checks English/Chinese README pairs, relative links and `provenance.yaml`/`UPSTREAM.md` records |
+| `i18n-check` | Validates the shared message catalogue and its generated output |
 | `addon-lua` | Parses every addon and GlueXML Lua file with LuaJIT |
 | `launcher-build` | `dotnet build` for the Avalonia launcher |
 | `client-check` | `cargo check -p hoa` for the client workspace |
 | `server-build` | CMake configure + `mangosd` build on Ubuntu 24.04 |
 
-Branch protection on `main` requires these five checks; a change that fails any of them cannot be merged. Locally, run the same checks with `scripts/build.ps1`/`build.sh` (addon, launcher, client, server) and `python scripts/check-docs.py`.
+These six checks are the merge gate. Branch protection is **not yet enforced**: GitHub requires GitHub Pro for branch protection/rulesets on a private repository, and this repository is on the free plan. After upgrading or making the repository public, run `scripts/protect-main.sh` to require the six contexts on `main`.
+
+Locally, run the same checks with `scripts/build.ps1`/`build.sh` (addon, launcher, client, server, i18n), `python scripts/check-docs.py` and `python tools/i18n/check.py`.

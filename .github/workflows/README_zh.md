@@ -5,9 +5,12 @@
 | Job | 内容 |
 | --- | --- |
 | `docs-check` | 检查中英文 README 配对、相对链接，以及 `provenance.yaml` / `UPSTREAM.md` 记录 |
+| `i18n-check` | 校验共享消息目录和生成产物 |
 | `addon-lua` | 用 LuaJIT 解析插件和 GlueXML 的所有 Lua 文件 |
 | `launcher-build` | Avalonia 启动器 `dotnet build` |
 | `client-check` | 客户端 workspace `cargo check -p hoa` |
 | `server-build` | Ubuntu 24.04 上 CMake 配置 + `mangosd` 构建 |
 
-`main` 已配置分支保护，合并前必须通过这五项检查；任何一项失败都不能合并。本地可以用 `scripts/build.ps1`/`build.sh`（addon、launcher、client、server）和 `python scripts/check-docs.py` 跑同一组检查。
+这六项是合并门槛。**分支保护还没启用**：GitHub 的私有仓库需要 GitHub Pro 才能使用 branch protection/ruleset，本仓库目前在免费计划下。升级 Pro 或把仓库改为公开后，运行 `scripts/protect-main.sh` 即可把六项检查设为 `main` 的必需项。
+
+本地可以用 `scripts/build.ps1`/`build.sh`（addon、launcher、client、server、i18n）、`python scripts/check-docs.py` 和 `python tools/i18n/check.py` 跑同一组检查。
