@@ -21,8 +21,18 @@ GLUE_LUA = [
 ]
 HOA_KEY = re.compile(r"\bHOA_UI_[A-Z0-9_]+\b")
 TEXT_ATTR = re.compile(r'\btext="([^"]*)"')
+LUA_TEXT_ASSIGN = re.compile(r'\btext\s*=\s*"([^"]*)"')
+SET_TEXT_LITERAL = re.compile(r'\bSetText\("([^"]*)"\)')
 L_INDEX = re.compile(r'L\["((?:[^"\\]|\\.)*)"\]')
 L_CALL = re.compile(r'L\("((?:[^"\\]|\\.)*)"')
+
+
+def is_literal_ui_text(value: str) -> bool:
+    if not value or HOA_KEY.fullmatch(value):
+        return False
+    if value.isdigit() or value.startswith("|c"):
+        return False
+    return any(char.isalpha() for char in value)
 
 
 def unescape(value: str) -> str:
@@ -56,9 +66,13 @@ def main() -> int:
         for key in sorted(set(HOA_KEY.findall(text))):
             if key not in globals_en or key not in globals_zh:
                 errors.append(f"{path.name}: {key} is not in both packs")
-        for value in TEXT_ATTR.findall(text):
-            if value and not HOA_KEY.fullmatch(value):
-                errors.append(f"{path.name}: non-key text={value!r}")
+        for value in (
+            TEXT_ATTR.findall(text)
+            + LUA_TEXT_ASSIGN.findall(text)
+            + SET_TEXT_LITERAL.findall(text)
+        ):
+            if is_literal_ui_text(value):
+                errors.append(f"{path.name}: non-key UI text {value!r}")
         for key in ("OPTION_TOOLTIP_", "BENILLA_TOOLTIP_"):
             for match in re.finditer(key, text):
                 # BENILLA_TOOLTIP_* are now global-key string constants, not untranslated keys.
@@ -71,9 +85,13 @@ def main() -> int:
         for key in sorted(set(HOA_KEY.findall(text))):
             if key not in globals_en or key not in globals_zh:
                 errors.append(f"{path.name}: {key} is not in both packs")
-        for value in TEXT_ATTR.findall(text):
-            if value and not HOA_KEY.fullmatch(value):
-                errors.append(f"{path.name}: non-key text={value!r}")
+        for value in (
+            TEXT_ATTR.findall(text)
+            + LUA_TEXT_ASSIGN.findall(text)
+            + SET_TEXT_LITERAL.findall(text)
+        ):
+            if is_literal_ui_text(value):
+                errors.append(f"{path.name}: non-key UI text {value!r}")
 
     for path in GLUE_LUA:
         text = path.read_text(encoding="utf-8")

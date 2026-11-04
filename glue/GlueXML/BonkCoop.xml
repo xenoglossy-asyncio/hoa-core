@@ -592,7 +592,7 @@
 					</HitRectInsets>
 					<Scripts>
 						<OnLoad>
-							BonkCoopHideFullText:SetText("Hide full games");
+							BonkCoopHideFullText:SetText(HOA_UI_GLUE_HIDE_FULL_GAMES);
 							this:SetChecked(1);
 						</OnLoad>
 						<OnClick>
@@ -613,7 +613,7 @@
 					</HitRectInsets>
 					<Scripts>
 						<OnLoad>
-							BonkCoopHideLockedText:SetText("Hide passworded games");
+							BonkCoopHideLockedText:SetText(HOA_UI_GLUE_HIDE_PASSWORDED_GAMES);
 						</OnLoad>
 						<OnClick>
 							BonkCoop_UpdateList();
@@ -633,7 +633,7 @@
 					</HitRectInsets>
 					<Scripts>
 						<OnLoad>
-							BonkCoopHideUnfitText:SetText("Hide games I can't join");
+							BonkCoopHideUnfitText:SetText(HOA_UI_GLUE_HIDE_GAMES_I_CAN_T_JOIN);
 						</OnLoad>
 						<OnClick>
 							BonkCoop_UpdateList();
@@ -986,7 +986,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopWhoOpenText:SetText("Public");
+						BonkCoopWhoOpenText:SetText(HOA_UI_GLUE_PUBLIC);
 					</OnLoad>
 					<OnClick>
 						BonkCoop_SetWho(1);
@@ -1003,7 +1003,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						BonkCoopWhoPasswordText:SetText("Password protected");
+						BonkCoopWhoPasswordText:SetText(HOA_UI_GLUE_PASSWORD_PROTECTED);
 					</OnLoad>
 					<OnClick>
 						BonkCoop_SetWho(2);
@@ -1043,7 +1043,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopWhoCodeText:SetText("Hidden, join with code");
+						BonkCoopWhoCodeText:SetText(HOA_UI_GLUE_HIDDEN_JOIN_WITH_CODE);
 					</OnLoad>
 					<OnClick>
 						BonkCoop_SetWho(3);
@@ -1175,7 +1175,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						BonkCoopAutoCheckText:SetText("Auto-accept join requests");
+						BonkCoopAutoCheckText:SetText(HOA_UI_GLUE_AUTO_ACCEPT_JOIN_REQUESTS);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1189,7 +1189,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						BonkCoopSameClassCheckText:SetText("Allow duplicate classes");
+						BonkCoopSameClassCheckText:SetText(HOA_UI_GLUE_ALLOW_DUPLICATE_CLASSES);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1206,7 +1206,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopNewCheckText:SetText("Only allow Mastery");
+						BonkCoopNewCheckText:SetText(HOA_UI_GLUE_ONLY_ALLOW_MASTERY);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1253,7 +1253,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopMinCheckText:SetText("Requests need Mythic");
+						BonkCoopMinCheckText:SetText(HOA_UI_GLUE_REQUESTS_NEED_MYTHIC);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>

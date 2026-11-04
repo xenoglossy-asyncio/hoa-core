@@ -7,9 +7,9 @@
     <Script>
         GlueDialogTypes["BENILLA_REALMLIST"] = {
             -- The realmList CVar's registered help text.
-            text = "Address of realm list server",
-            button1 = TEXT(OKAY),
-            button2 = TEXT(CANCEL),
+            text = HOA_UI_REALMLIST_PROMPT,
+            button1 = HOA_UI_COMMON_OKAY,
+            button2 = HOA_UI_COMMON_CANCEL,
             hasEditBox = 1,
             maxLetters = 64,
             OnShow = function()
@@ -32,7 +32,7 @@
 
         GlueDialogTypes["BENILLA_REALMLIST_PINNED"] = {
             text = "",
-            button1 = TEXT(OKAY),
+            button1 = HOA_UI_COMMON_OKAY,
             button2 = nil,
         };
 

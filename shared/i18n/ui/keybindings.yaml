@@ -1212,3 +1212,9 @@
   enUS: Up Arrow
   zhCN: 方向键上
   global: KEY_UP
+- id: hoa.ui.keybindings.reset_prompt
+  enUS: Are you sure you want to reset all keybindings to their defaults?
+  zhCN: 确定要将所有按键设置恢复为默认值吗？
+- id: hoa.ui.keybindings.unbind
+  enUS: Unbind Key
+  zhCN: 解除按键绑定

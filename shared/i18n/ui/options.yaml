@@ -455,6 +455,9 @@
 - id: hoa.ui.options.tooltip.targetoftarget4
   enUS: Sets Target of Target to display when you are in a raid or a party.
   zhCN: 设置“目标的目标”在团队或小队中显示。
+- id: hoa.ui.options.unit.yards
+  enUS: yd
+  zhCN: 码
 - id: hoa.ui.options.value.always
   ref: hoa.addon.always
 - id: hoa.ui.options.value.arc
@@ -494,6 +497,9 @@
 - id: hoa.ui.realmlist
   enUS: Realmlist
   zhCN: 服务器列表
+- id: hoa.ui.realmlist.prompt
+  enUS: Address of realm list server
+  zhCN: 服务器列表地址
 - id: hoa.ui.script_log.clear
   enUS: Clear
   zhCN: 清除

@@ -749,7 +749,7 @@
             end
             -- "yards": cameraDistanceMaxFactor over the 15 yd base.
             if row.fmt == "yards" then
-                return string.format("%d yd", math.floor(value * 15 + 0.5))
+                return string.format("%d %s", math.floor(value * 15 + 0.5), HOA_UI_OPTIONS_UNIT_YARDS)
             end
             return string.format("%d%%", math.floor(value * 100 + 0.5))
         end
@@ -1535,7 +1535,7 @@
                         <Anchors><Anchor point="RIGHT" relativeTo="$parentDefaults" relativePoint="LEFT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
                         <Scripts>
                             <OnLoad>
-                                this:SetText(BenillaKeyBindings_String("UNBIND", "Unbind Key"))
+                                this:SetText(HOA_UI_KEYBINDINGS_UNBIND)
                                 this:Disable()
                             </OnLoad>
                             <OnClick>

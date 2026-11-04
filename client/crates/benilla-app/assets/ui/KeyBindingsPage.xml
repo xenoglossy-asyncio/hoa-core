@@ -473,7 +473,7 @@
         }
         -- Reset To Default confirms, as the era's does; our string, since 1.12 has none.
         StaticPopupDialogs["BENILLA_CONFIRM_RESET_KEYBINDINGS"] = {
-            text = "Are you sure you want to reset all keybindings to their defaults?",
+            text = HOA_UI_KEYBINDINGS_RESET_PROMPT,
             button1 = HOA_UI_COMMON_OKAY,
             button2 = HOA_UI_COMMON_CANCEL,
             OnAccept = function()
