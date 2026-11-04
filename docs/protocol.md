@@ -1,0 +1,120 @@
+# 协议
+
+## 0. 现状
+
+- HoA 的状态和 UI 数据走 `BONK~type~field...` 聊天行：服务端拼字符串，客户端当普通系统消息显示，插件在 `CHAT_MSG_SYSTEM` 里解析（`Interface/AddOns/HordesOfAzeroth/VanillaBonkUI.lua:231-243`），并把这些行从聊天框隐藏。
+- Rust 客户端只识别 `HOA~` 前缀（`client/crates/hoa/src/world_fx.rs:62-65`），`parse_line` 明确拒绝 `BONK~`（`hoa/src/server_draw.rs:342`）；未匹配的行落回系统聊天（`benilla-app/src/ui_chat/net.rs:14-20,46-61`）。
+- 客户端没有 spell 查询通道（`benilla-app/src/net.rs:1034-1058`），自定义 spell 的元数据无处可查。
+- 状态类数据（护盾量、冲刺、决心、卡牌 proc）全部依赖这套字符串通道，字段顺序靠约定，改一处就要两边同时改。
+
+## 1. 目标
+
+- 服务端与客户端之间的 HoA 数据有明确的 schema 和版本，不再靠拼字符串。
+- 状态类数据（buff、层数、数值）尽量走原版游戏状态；只有原版协议表达不了的 HoA 展示数据才走自定义消息。
+- 一份 schema 生成 C++ 和 Rust 代码，避免两端解析偏差。
+- 内容版本、协议版本、语言在握手阶段协商。
+
+## 2. 分层
+
+```
+原版 1.12.1 协议（保留）
+  ├─ 登录/角色/移动/战斗/物品/光环/聊天……
+  └─ 原生 buff、等级、施法、冷却直接使用
+
+HoA 协议（新增，版本化）
+  ├─ 握手：账号语言、内容哈希、协议版本、能力位
+  ├─ 内容：清单/增量（客户端内容包校验）
+  ├─ 远征：开始、波次、Boss、奖励、结算
+  └─ 展示：卡牌、图鉴、排行榜、提示（仅 UI 需要）
+```
+
+## 3. 握手
+
+登录世界时服务端下发：
+
+```yaml
+handshake:
+  protocol_version: 1
+  content_hash: "sha256:..."
+  locale: "zhCN"          # 账号语言
+  capabilities: [auras, content_pack, i18n]
+```
+
+- 客户端据此加载语言包/内容包；哈希不匹配时：
+  - 单人：提示更新，允许继续但标记不兼容；
+  - 合作：大厅/服务端拒绝不同内容版本。
+- 语言变更：客户端发送 `set_locale`（或沿用原版命令），服务端更新账号语言并刷新缓存名字；客户端重载语言包和 UI。
+
+## 4. 消息定义
+
+`shared/protocol/*.yaml`：
+
+```yaml
+- name: hoa.run.stage_started
+  id: 0xH001
+  direction: server_to_client
+  fields:
+    - { name: stage, type: u8 }
+    - { name: difficulty, type: u8 }
+    - { name: boss_entry, type: u32 }
+```
+
+```yaml
+- name: hoa.aura.value
+  id: 0xH010
+  direction: server_to_client
+  fields:
+    - { name: unit_guid, type: u64 }
+    - { name: spell_id, type: u32 }
+    - { name: value, type: u32 }     # 护盾剩余量等 aura 字段放不下的数值
+    - { name: max_value, type: u32 }
+```
+
+- ID 使用独立的 HoA 区段；不占用原版 opcode。
+- 字段类型固定（u8/u16/u32/u64/i32/f32/string/array），字符串 UTF-8，长度前缀。
+- 每条消息有版本；不兼容变更升 `protocol_version`。
+
+## 5. 生成
+
+`tools/protocol-gen` 读取 schema，生成：
+
+- C++：`server/src/game/Hoa/protocol/generated/`（序列化/反序列化、消息 ID 常量）
+- Rust：`client/crates/hoa-protocol/src/generated/`
+- Lua：仅当插件需要消息常量时生成（数据由客户端转交，不让插件解析二进制）
+
+生成物提交到仓库，CI 检查 diff。
+
+## 6. 插件如何拿到数据
+
+现状：服务端用 `BONK~type~...` 聊天行传状态和 UI 数据，插件解析字符串。
+
+新设计：
+
+1. 客户端 Rust 处理 HoA 消息。
+2. 客户端通过一个稳定的 Lua API 暴露给插件，例如：
+
+```lua
+Hoa.GetRunState()          -- 远征状态
+Hoa.GetAuraValue(spellID)  -- 护盾量等
+Hoa.GetCards()             -- 卡牌数据
+Hoa.RegisterEvent("RUN_STAGE", fn)
+```
+
+3. 插件不再订阅聊天行、不解析 `~` 分隔的字符串。
+
+过渡期可以保留 `BONK~` 通道用于尚未迁移的 UI 数据，但**状态类数据必须优先走原生 aura**，不再新增聊天行状态。
+
+## 7. 兼容性
+
+- 协议版本、内容哈希、客户端版本三者独立；任何一项不匹配都明确提示。
+- 大厅在房间列表显示版本；不同版本不允许联机。
+- 旧客户端连接新服务端：握手拒绝，消息明确要求更新。
+- 新客户端连接旧服务端：按能力位降级或拒绝。
+
+## 8. 迁移
+
+1. 盘点现有 `BONK~` 消息，按“状态/展示/命令”分类。
+2. 状态类迁到 aura（见 [auras.md](auras.md)）。
+3. 展示类定义 HoA 消息 + 客户端 Lua API。
+4. 命令类（`.bonk ...`）保留聊天命令入口，但处理器改为调用服务端 API，不依赖字符串拼装。
+5. 最后删除插件里的 `BONK~` 解析器和手工字段索引。

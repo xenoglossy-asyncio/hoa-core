@@ -1,0 +1,30 @@
+* text=auto
+
+*.c      text
+*.cc     text
+*.cpp    text
+*.h      text
+*.hpp    text
+*.cs     text
+*.rs     text
+*.lua    text
+*.xml    text
+*.toc    text
+*.md     text
+*.json   text
+*.yaml   text
+*.yml    text
+*.toml   text
+*.sql    text
+*.ps1    text
+*.sh     text
+
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.dds    binary
+*.blp    binary
+*.mpq    binary
+*.ttf    binary
+*.otf    binary
+*.zip    binary

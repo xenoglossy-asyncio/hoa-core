@@ -1,0 +1,63 @@
+# 构建产物
+build/
+out/
+target/
+bin/
+obj/
+dist/
+*.o
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Rust / C#
+**/target/
+**/bin/
+**/obj/
+
+# 服务端运行数据（绝不提交）
+*.sqlite
+*.db
+*.err
+*.pid
+logs/
+log/
+server/mariadb-data/
+server/mariadb/
+server/run*/
+server/core/bin/
+server/core/build/
+
+# 客户端/启动器运行数据
+benilla-config/
+WTF/
+Cache/
+Screenshots/
+*.wdb
+*.bin.tmp
+
+# 本地配置
+.env
+*.local
+launcher.ini
+accounts.ini
+
+# 编辑器/系统
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# 临时文件
+tmp/
+*.log
+!docs/**/*.log
