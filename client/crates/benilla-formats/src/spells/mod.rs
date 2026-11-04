@@ -396,6 +396,12 @@ impl SpellCatalog {
         self
     }
 
+    /// Replaces the display rows for spells the installed DBC does not hold, for a language change
+    /// after the catalog was built.
+    pub fn set_overlay(&mut self, overlay: HashMap<u32, SpellDisplay>) {
+        self.overlay = overlay;
+    }
+
     /// The dispel class's key, the `debuffType` `UnitDebuff` returns (`0x519a89`) and the debuff
     /// border keys `DebuffTypeColor` on: `SpellDispelType.dbc` column 11, English on every locale.
     /// `None` when the `[+0x28]` gate withholds it.

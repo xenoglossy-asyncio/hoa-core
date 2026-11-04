@@ -834,6 +834,23 @@ impl Cvars {
     }
 }
 
+/// The account language, from the registered CVar or the config file before the addon registers
+/// it. Defaults to enUS, the same default as the launcher.
+pub(crate) fn hoa_language(cvars: &Cvars) -> String {
+    cvars
+        .get("hoaLanguage")
+        .map(str::to_string)
+        .or_else(|| {
+            cvars
+                .orphans()
+                .into_iter()
+                .find(|(name, _)| name.eq_ignore_ascii_case("hoaLanguage"))
+                .map(|(_, value)| value)
+        })
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| "enUS".to_string())
+}
+
 /// The saved account name's row (`0x402bd2`), which the login screen fills its name from.
 const CVAR_ACCOUNT_NAME: &str = "accountName";
 

@@ -49,6 +49,7 @@ stats: { strength: 12, stamina: 8 }
 设计内容表已经迁到这里：
 
 - `cards/cards.yaml` 是 46 张卡牌的手工源文件（英文 + zhCN）。
+- `spells/spells.yaml` 定义所有 HoA 自定义法术/光环；编译器生成对应的 `spell_template` SQL、服务端 C++ ID 和客户端显示表。
 - `tables/<table>.yaml` 保存 49 张设计内容 `bonk_*` 表（武器、升级、Glyph、天赋、精通、地图、任务、称号、难度、怪物、物品属性及其语言行）。
 - `tools/content/dump_cards.py` / `dump_tables.py` 从数据库一次性导入。
 - `tools/content/compile.py` 生成 `server/sql/content/*.sql`；`--check` 在 CI 里保证所有生成文件与源同步。

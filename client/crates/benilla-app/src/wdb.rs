@@ -418,7 +418,7 @@ fn load<T: SavedCache>(
     if file.realm.as_deref() == Some(realm.as_str()) {
         return;
     }
-    let language = hoa_language(&cvars);
+    let language = crate::cvars::hoa_language(&cvars);
     if file.realm.is_some() {
         write_now(&mut file, &cache, &language);
         cache.forget();
@@ -477,7 +477,7 @@ fn save<T: SavedCache>(
         return;
     }
     file.since_save = 0.0;
-    write_now(&mut file, &cache, &hoa_language(&cvars));
+    write_now(&mut file, &cache, &crate::cvars::hoa_language(&cvars));
 }
 
 /// The exit write, regardless of the debounce.
@@ -486,7 +486,7 @@ fn save_on_exit<T: SavedCache>(
     cache: Res<T>,
     cvars: Res<crate::cvars::Cvars>,
 ) {
-    write_now(&mut file, &cache, &hoa_language(&cvars));
+    write_now(&mut file, &cache, &crate::cvars::hoa_language(&cvars));
 }
 
 fn write_now<T: SavedCache>(file: &mut WdbFile<T>, cache: &T, language: &str) {
@@ -529,23 +529,6 @@ fn language_hash(language: &str) -> u32 {
         hash = hash.wrapping_mul(0x0100_0193);
     }
     hash
-}
-
-/// The account language, from the registered CVar or the config file before the addon registers
-/// it. Defaults to enUS, the same default as the launcher.
-fn hoa_language(cvars: &crate::cvars::Cvars) -> String {
-    cvars
-        .get("hoaLanguage")
-        .map(str::to_string)
-        .or_else(|| {
-            cvars
-                .orphans()
-                .into_iter()
-                .find(|(name, _)| name.eq_ignore_ascii_case("hoaLanguage"))
-                .map(|(_, value)| value)
-        })
-        .filter(|value| !value.trim().is_empty())
-        .unwrap_or_else(|| "enUS".to_string())
 }
 
 /// A store's file: the header, each `{key, size, body}` entry, then two zero dwords.

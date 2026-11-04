@@ -1,0 +1,178 @@
+# Custom spells HoA adds to the 1.12.1 client. Ids 60001-60099 are reserved for HoA.
+# The compiler emits spell_template SQL, the server's C++ ids and the client's display table.
+- id: 60001
+  key: determination
+  cpp: BONK_SPELL_DETERMINATION
+  name: Determination
+  name_zhCN: 决心
+  icon: Interface\Icons\Spell_Holy_DevotionAura
+  description: Each stack increases your damage and reduces the damage you take.
+  description_zhCN: 每层提高你的伤害并降低你受到的伤害。
+- id: 60002
+  key: dash
+  cpp: BONK_SPELL_DASH
+  name: Dash
+  name_zhCN: 冲刺
+  icon: Interface\Icons\Ability_Rogue_Sprint
+  description: Charges of your movement ability.
+  description_zhCN: 你移动技能的可用次数。
+- id: 60003
+  key: wounds
+  cpp: BONK_SPELL_WOUNDS
+  name: Wounded
+  name_zhCN: 受伤
+  icon: Interface\Icons\Ability_Creature_Poison_02
+  description: Reduces the healing you receive.
+  description_zhCN: 降低你受到的治疗效果。
+- id: 60004
+  key: darkmoon_surge
+  cpp: BONK_SPELL_DARKMOON_SURGE
+  name: Darkmoon Surge
+  name_zhCN: 暗月涌动
+  icon: Interface\Icons\INV_Misc_Ticket_Darkmoon_01
+  description: A Darkmoon card grants a burst of power.
+  description_zhCN: 暗月卡牌赋予你一股爆发力量。
+- id: 60005
+  key: shield
+  cpp: BONK_SPELL_PLAYER_SHIELD
+  name: Shield
+  name_zhCN: 护盾
+  icon: Interface\Icons\Spell_Holy_PowerWordShield
+  description: Absorbs incoming damage.
+  description_zhCN: 吸收受到的伤害。
+- id: 60006
+  key: card_haste
+  cpp: BONK_SPELL_CARD_HASTE
+  name: Haste Burst
+  name_zhCN: 急速爆发
+  icon: Interface\Icons\Spell_Nature_Slow
+  description: A Darkmoon card grants a burst of haste.
+  description_zhCN: 暗月卡牌赋予你一股急速。
+- id: 60007
+  key: card_swift
+  cpp: BONK_SPELL_CARD_SWIFT
+  name: Swiftness
+  name_zhCN: 迅捷
+  icon: Interface\Icons\Ability_Rogue_Sprint
+  description: A Darkmoon card grants movement speed at low health.
+  description_zhCN: 暗月卡牌在你生命值较低时提高移动速度。
+- id: 60008
+  key: card_immune
+  cpp: BONK_SPELL_CARD_IMMUNE
+  name: Immune
+  name_zhCN: 免疫
+  icon: Interface\Icons\Spell_Holy_DivineIntervention
+  description: A Darkmoon card briefly makes you immune to damage.
+  description_zhCN: 暗月卡牌使你短暂免疫伤害。
+- id: 60009
+  key: soulstone
+  cpp: BONK_SPELL_SOULSTONE
+  name: Soulstone
+  name_zhCN: 灵魂石
+  icon: Interface\Icons\INV_Misc_Orb_03
+  description: A Darkmoon card saves you from death.
+  description_zhCN: 暗月卡牌在致死时救你一命。
+- id: 60010
+  key: card_thorns
+  cpp: BONK_SPELL_CARD_THORNS
+  name: Thorns
+  name_zhCN: 荆棘
+  icon: Interface\Icons\Spell_Nature_Thorns
+  description: A Darkmoon card reflects damage back at attackers.
+  description_zhCN: 暗月卡牌将伤害反弹给攻击者。
+- id: 60011
+  key: dash_recharge
+  cpp: BONK_SPELL_DASH_RECHARGE
+  name: Dash Recharge
+  name_zhCN: 冲刺充能
+  icon: Interface\Icons\Spell_Nature_Slow
+  description: Your next dash charge is recharging.
+  description_zhCN: 你下一层冲刺正在恢复。
+- id: 60012
+  key: tigers_fury
+  cpp: BONK_SPELL_TIGERS_FURY_AURA
+  name: "Tiger's Fury"
+  name_zhCN: 猛虎之怒
+  icon: Interface\Icons\Ability_Druid_TigersRoar
+  description: Your attacks are faster for a short time.
+  description_zhCN: 短时间内你的攻击速度提高。
+- id: 60013
+  key: arcane_power
+  cpp: BONK_SPELL_ARCANE_POWER_AURA
+  name: Arcane Power
+  name_zhCN: 奥术强化
+  icon: Interface\Icons\Spell_Nature_StarFall
+  description: Your spells deal more damage for a short time.
+  description_zhCN: 短时间内你的法术伤害提高。
+- id: 60014
+  key: shadow_dance
+  cpp: BONK_SPELL_SHADOW_DANCE_AURA
+  name: Shadow Dance
+  name_zhCN: 暗影之舞
+  icon: Interface\Icons\Spell_Shadow_Shadowform
+  description: Your stealth abilities are usable for a short time.
+  description_zhCN: 短时间内你可以使用潜行技能。
+- id: 60015
+  key: envenom
+  cpp: BONK_SPELL_ENVENOM_AURA
+  name: Envenom
+  name_zhCN: 毒伤
+  icon: Interface\Icons\Ability_Rogue_Eviscerate
+  description: Your poisons strike harder for a short time.
+  description_zhCN: 短时间内你的毒药效果更强。
+- id: 60016
+  key: dark_pact
+  cpp: BONK_SPELL_DARK_PACT_AURA
+  name: Dark Pact
+  name_zhCN: 黑暗契约
+  icon: Interface\Icons\Spell_Shadow_ShadowBolt
+  description: Your demons deal more damage for a short time.
+  description_zhCN: 短时间内你的恶魔伤害提高。
+- id: 60017
+  key: soul_harvest
+  cpp: BONK_SPELL_SOUL_HARVEST_AURA
+  name: Soul Harvest
+  name_zhCN: 灵魂收割
+  icon: Interface\Icons\Spell_Shadow_SoulGem
+  description: Your hits deal more damage for a short time.
+  description_zhCN: 短时间内你的攻击伤害提高。
+- id: 60018
+  key: glyph_haste
+  cpp: BONK_SPELL_GLYPH_HASTE_AURA
+  name: Bloodlust
+  name_zhCN: 嗜血
+  icon: Interface\Icons\Spell_Nature_BloodLust
+  description: A glyph grants a burst of haste.
+  description_zhCN: 符文赋予你一股急速。
+- id: 60019
+  key: ice_block
+  cpp: BONK_SPELL_ICE_BLOCK_AURA
+  name: Ice Block
+  name_zhCN: 寒冰屏障
+  icon: Interface\Icons\Spell_Frost_FrostNova
+  description: You are protected from damage for a short time.
+  description_zhCN: 短时间内你免受伤害。
+- id: 60020
+  key: nomad
+  cpp: BONK_SPELL_NOMAD_AURA
+  name: Nomad
+  name_zhCN: 游牧
+  icon: Interface\Icons\Spell_Nature_Slow
+  description: "The Nomad glyph's drawback: less power for a short time."
+  description_zhCN: 游牧符文的代价：短时间内力量降低。
+- id: 60021
+  key: kill_power
+  cpp: BONK_SPELL_KILL_POWER_AURA
+  name: Kill Power
+  name_zhCN: 击杀之力
+  icon: Interface\Icons\Ability_Warrior_BattleShout
+  description: Each kill grants power.
+  description_zhCN: 每次击杀都会赋予力量。
+- id: 60022
+  key: unhit_power
+  cpp: BONK_SPELL_UNHIT_POWER_AURA
+  name: Unhit Power
+  name_zhCN: 无伤之力
+  icon: Interface\Icons\Spell_Holy_HolyProtection
+  description: Staying unhurt builds power.
+  description_zhCN: 保持不受伤会积累力量。

@@ -62,6 +62,7 @@ mod glue_session;
 mod go_anim;
 mod go_templates;
 mod hoa_spells;
+mod hoa_spells_generated;
 #[cfg(feature = "dev")]
 mod hover_log;
 mod item_lane;

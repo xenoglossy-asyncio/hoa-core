@@ -431,6 +431,7 @@ impl Plugin for UiActionPlugin {
             .init_resource::<ClickCasts>()
             .add_systems(Startup, load_spells.after(AssetSet::Open))
             .add_systems(Startup, load_spell_mechanics.after(AssetSet::Open))
+            .add_observer(refresh_hoa_spell_text)
             .add_systems(
                 Update,
                 (
@@ -503,15 +504,34 @@ fn drop_held_lines(mut texts: ResMut<UiErrorTexts>) {
     texts.0.clear();
 }
 
-fn load_spells(mut commands: Commands, assets: Option<Res<WorldAssets>>) {
-    let Some(assets) = assets else { return };
+/// Rebuild the custom spell names when the account language changes in game.
+fn refresh_hoa_spell_text(ev: On<crate::cvars::CvarChanged>, spells: Option<ResMut<Spells>>) {
+    if !ev.is("hoaLanguage") {
+        return;
+    }
+    if let Some(mut spells) = spells {
+        spells
+            .catalog
+            .set_overlay(crate::hoa_spells::overlay(&ev.new));
+    }
+}
+
+fn load_spells(
+    mut commands: Commands,
+    assets: Option<Res<WorldAssets>>,
+    cvars: Option<Res<crate::cvars::Cvars>>,
+) {    let Some(assets) = assets else { return };
+    let language = cvars
+        .as_deref()
+        .map(crate::cvars::hoa_language)
+        .unwrap_or_else(|| "enUS".to_string());
     let loaded = {
         let mut chain = assets.chain.lock_recover();
         benilla_formats::load_spell_catalog(&mut chain)
     };
     match loaded {
         Ok(catalog) => {
-            let catalog = catalog.with_overlay(crate::hoa_spells::overlay());
+            let catalog = catalog.with_overlay(crate::hoa_spells::overlay(&language));
             let forms = {
                 let mut chain = assets.chain.lock_recover();
                 benilla_formats::load_shapeshift_forms(&mut chain).unwrap_or_else(|e| {

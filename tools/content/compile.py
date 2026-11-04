@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import yaml
 
 from tables import compile_tables
+from spells import spell_outputs
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "shared" / "content" / "cards" / "cards.yaml"
@@ -104,7 +105,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if the generated SQL differs")
     args = parser.parse_args()
-    generated = [("cards", TARGET, compile_cards())]
+    generated = [("cards", TARGET, compile_cards()), *spell_outputs()]
     for path, table_sql in compile_tables():
         generated.append((path.stem, ROOT / "server" / "sql" / "content" / f"{path.stem}.sql", table_sql))
 
@@ -119,7 +120,8 @@ def main() -> int:
             print("run tools/content/compile.py")
             return 1
         digest = hashlib.sha256()
-        sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml"))]
+        sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml")),
+                   ROOT / "shared" / "content" / "spells" / "spells.yaml"]
         for source in sources:
             digest.update(source.relative_to(ROOT).as_posix().encode("utf-8"))
             digest.update(b"\x00")
@@ -138,7 +140,8 @@ def main() -> int:
         print(f"wrote {target.relative_to(ROOT)} ({len(sql)} bytes)")
 
     digest = hashlib.sha256()
-    sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml"))]
+    sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml")),
+               ROOT / "shared" / "content" / "spells" / "spells.yaml"]
     for source in sources:
         digest.update(source.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\x00")
