@@ -6,8 +6,9 @@
 | --- | --- | --- |
 | `server/` | GNU GPL v2.0 | VMaNGOS 及其贡献者；hordes-of-azeroth-server 的改动 |
 | `client/` | MIT 或 Apache License 2.0，任选其一 | benilla 及其贡献者；hordes-of-azeroth-client 的改动 |
-| `addon/`、`launcher/`、`lobby/` | GNU GPL v3.0 | Hordes of Azeroth 及其贡献者 |
-| `shared/`、`tools/`、`scripts/`、`docs/` | GNU GPL v2.0 或更高版本 | 本仓库的新代码 |
+| `addon/`、`glue/`、`launcher/`、`config/`、`localization/` | GNU GPL v3.0 | Hordes of Azeroth 及其贡献者 |
+| `tools/` 中从上游导入的部分 | GNU GPL v3.0 | Hordes of Azeroth 及其贡献者 |
+| `shared/`、`scripts/`、`docs/`、`tools/` 中新写的部分 | GNU GPL v2.0 或更高版本 | 本仓库的新代码 |
 
 ## 为什么这样分
 
@@ -19,6 +20,6 @@
 
 ## 导入代码时的要求
 
-导入 `server/`、`client/`、`addon/`、`launcher/`、`lobby/` 时必须保留各目录原有的 `LICENSE`、`LICENSE-MIT`、`LICENSE-APACHE`、`THIRD-PARTY-NOTICES.md` 和文件头版权声明。新增文件在文件头或目录 README 中注明许可证。
+导入 `server/`、`client/`、`addon/`、`glue/`、`launcher/`、`config/`、`localization/` 时必须保留各目录原有的 `LICENSE`、`LICENSE-MIT`、`LICENSE-APACHE`、`THIRD-PARTY-NOTICES.md` 和文件头版权声明。新增文件在文件头或目录 README 中注明许可证。
 
 World of Warcraft 是 Blizzard Entertainment, Inc. 的商标。本仓库不包含、也不分发任何暴雪游戏资源；客户端仍然读取用户自己的 1.12.1 安装。

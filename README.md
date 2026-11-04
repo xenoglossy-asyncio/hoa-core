@@ -6,7 +6,10 @@
   [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server)（VMaNGOS，GPL-2.0）、
   [hordes-of-azeroth-client](https://github.com/jonhaldors/hordes-of-azeroth-client)（benilla，MIT / Apache-2.0）
 - 本仓库是**硬分叉**，按自己的架构独立演进，不再跟随上游；上游代码只作为起点和内容来源。
-- 当前状态：**架构设计阶段**。先确定设计和仓库结构，再导入代码、开始重构。
+- 版本线从 **0.1.0** 开始。
+- 首发语言：**enUS + zhCN + zhTW**。
+- 联机只支持**局域网**和 `ip/domain:port` 直连，不做公网大厅或注册服务器。
+- 当前状态：**阶段 1（导入与基线）**。0.1.0 以上游 0.6.3 的代码快照起步，后续按 `docs/` 的设计逐步重构。
 
 ## 目标
 
@@ -19,24 +22,29 @@
 
 ```
 hoa-core/
+  VERSION             0.1.0
   docs/               架构与设计文档（先读这里）
   server/             VMaNGOS C++ 服务端（GPL-2.0）
   client/             benilla Rust 客户端（MIT / Apache-2.0）
   addon/              Lua 插件（GPL-3.0）
-  launcher/           Avalonia C# 启动器（GPL-3.0）
-  lobby/              合作模式大厅服务（GPL-3.0）
+  glue/               登录/选人/建号 GlueXML（GPL-3.0）
+  launcher/           Avalonia C# 启动器；局域网/直连联机（GPL-3.0）
+  config/             服务端与启动器默认配置（GPL-3.0）
+  localization/       现有翻译数据与工具（过渡期参考，GPL-3.0）
   shared/
     content/          内容源：物品、法术、光环、地图、文本……
     i18n/             消息目录与语言包
     protocol/         服务端/客户端消息协议与代码生成
-  tools/              内容编译器、翻译工具、测试工具
+  tools/              内容编译器、协议生成器、翻译与测试工具
   scripts/            开发与构建脚本
   .github/workflows/  CI
 ```
 
 ## 设计文档
 
+- [构建说明](BUILDING.md)
 - [文档索引与当前决策](docs/README.md)
+- [导入的代码与来源](docs/imported-code.md)
 - [总体架构](docs/architecture.md)
 - [i18n](docs/i18n.md)
 - [光环与效果](docs/auras.md)
@@ -53,7 +61,8 @@ hoa-core/
 | --- | --- | --- |
 | `server/` | GPL-2.0 | VMaNGOS / hordes-of-azeroth-server |
 | `client/` | MIT 或 Apache-2.0（二选一） | benilla / hordes-of-azeroth-client |
-| `addon/`、`launcher/`、`lobby/` | GPL-3.0 | hordes-of-azeroth |
-| `shared/`、`tools/`、`scripts/`、`docs/` | GPL-2.0-or-later | 本仓库新代码 |
+| `addon/`、`glue/`、`launcher/`、`config/`、`localization/` | GPL-3.0 | hordes-of-azeroth |
+| `tools/` 中从上游导入的部分 | GPL-3.0 | hordes-of-azeroth |
+| `shared/`、`scripts/`、`docs/`、`tools/` 中新写的部分 | GPL-2.0-or-later | 本仓库新代码 |
 
 详见 [LICENSE-NOTICE.md](LICENSE-NOTICE.md)。World of Warcraft 是 Blizzard Entertainment 的商标；本项目不附带任何游戏资源。

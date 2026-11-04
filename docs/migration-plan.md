@@ -11,11 +11,14 @@
 ## 阶段 1：导入与基线
 
 - 把以下快照导入 monorepo，保留各自许可证和版权：
-  - `server/` ← `hordes-of-azeroth-server`（VMaNGOS，`vanilla-bonk` 最新）
-  - `client/` ← `hordes-of-azeroth-client`（benilla，当前 main/中文修复）
+  - `server/` ← `hordes-of-azeroth-server`（VMaNGOS，0.6.3 的 `vanilla-bonk`/中文分支）
+  - `client/` ← `hordes-of-azeroth-client`（benilla，0.6.3 快照）
   - `addon/` ← `Interface/AddOns/HordesOfAzeroth`
+  - `glue/` ← `Interface/GlueXML`
   - `launcher/` ← `tools/launcher`
-  - `lobby/` ← `tools/lobby-server`
+  - `config/`、`localization/`、`tools/` ← 主仓库对应目录
+- 不导入 `tools/lobby-server`：联机只做局域网和 `ip/domain:port` 直连，不维护公网目录/注册服务。
+- 版本从 **0.1.0** 开始（`VERSION`）。
 - 建立统一构建脚本和 CI：服务端 CMake、客户端 Cargo、启动器 dotnet、插件 Lua 语法检查。
 - 验收：一条命令构建全部组件；现有功能可运行；CI 绿。
 - 风险：仓库体积（只导入 tracked 文件，不含 `target/`、`bin/`、`obj/`、数据库）；许可证混用（按目录保留）。

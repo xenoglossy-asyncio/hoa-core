@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+component="${1:-all}"
+
+build_server() {
+    cmake -S "$root/server" -B "$root/server/build" \
+        -DSUPPORTED_CLIENT_BUILD=CLIENT_BUILD_1_12_1 \
+        -DBUILD_EXTRACTORS=OFF -DENABLE_MAILSENDER=OFF
+    cmake --build "$root/server/build" --config Release --target mangosd -j
+}
+
+build_client() {
+    cargo build --release -p hoa --manifest-path "$root/client/Cargo.toml"
+}
+
+build_launcher() {
+    dotnet build "$root/launcher/HordesOfAzerothLauncher.csproj" -c Release
+}
+
+check_addon() {
+    command -v luajit >/dev/null || { echo "luajit not found" >&2; exit 1; }
+    find "$root/addon" -name '*.lua' -print0 | while IFS= read -r -d '' file; do
+        luajit -bl "$file" >/dev/null
+    done
+    echo "addon: Lua syntax ok"
+}
+
+case "$component" in
+    server) build_server ;;
+    client) build_client ;;
+    launcher) build_launcher ;;
+    addon) check_addon ;;
+    check)
+        cargo metadata --no-deps --format-version 1 --manifest-path "$root/client/Cargo.toml" >/dev/null
+        check_addon
+        ;;
+    all) build_server; build_client; build_launcher; check_addon ;;
+    *) echo "usage: $0 [all|server|client|launcher|addon|check]" >&2; exit 2 ;;
+esac

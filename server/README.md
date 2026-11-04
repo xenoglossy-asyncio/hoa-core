@@ -1,35 +1,34 @@
-# server / 服务端
+[![CI Build](https://github.com/vmangos/core/actions/workflows/ci-build.yaml/badge.svg)](https://github.com/vmangos/core/actions/workflows/ci-build.yaml)
 
-VMaNGOS 1.12.1 服务端（C++，GPL-2.0），HoA 游戏逻辑在 `src/game/Bonk/`。
 
-**状态：待导入。** 导入时以 `hordes-of-azeroth-server` 的 `vanilla-bonk` 分支最新提交为基线，保留完整许可证和版权声明；导入后再按 [架构文档](../docs/architecture.md) 调整目录。
+# Progressive Vanilla
+This project is an independent continuation of the Elysium / LightsHope codebases, focused on delivering the most complete and accurate content progression system possible, including support for the patch appropriate game clients.
 
-## 计划中的分层
+### Currently supported builds
+- 1.12.1.5875+
+- 1.11.2.5464
+- 1.10.2.5302
+- 1.9.4.5086
+- 1.8.4.4878
+- 1.7.1.4695
+- 1.6.1.4544
+- 1.5.1.4449
+<!--- 1.4.2.4375
+- 1.3.1.4297
+- 1.2.4.4222-->
 
-```
-server/
-  src/
-    game/
-      Bonk/          现有 HoA 游戏层（跑团、掉落、卡牌、天赋、光环）
-      Hoa/           重构后的 HoA 层（建议）
-        content/     从 shared/content 生成的数据访问
-        auras/       效果注册表与光环生命周期
-        i18n/        消息目录运行时
-        run/         远征流程
-        combat/      战斗钩子、触发器、proc
-  sql/
-    base/            VMaNGOS 基础库结构
-    content/         由共享内容编译器生成（不手改）
-    migrations/      仅结构/数据修复
-```
+### Project guidelines
+- Accuracy: The point of an emulator is to recreate the functionality of that which it is emulating as closely as possible. Therefore any custom behaviour should be behind a config option and off by default.
+- DB Scripting: Content should be separate from the core itself, so hardcoding scripts should be avoided where possible. When database scripting functionality is insufficient, we simply expand it.
+- Full progression: The ultimate goal of this project is to have complete progression starting from patch 1.2 through 1.12. This means every piece of data must be marked with the patch in which it was added or changed to it's current state.
+- Tools are great: Content creation should not require programming knowledge. We hope to eventually provide tools that allow for user-friendly editing of database scripts and content, with all data presented in human-readable form.
 
-## 原则
+### Downloads
+- [![Development Release](https://github.com/vmangos/core/actions/workflows/development-release.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/latest) Latest development build (Linux, macOS, and Windows)
+- [![Development Database Dump](https://github.com/vmangos/core/actions/workflows/development-db-dump.yaml/badge.svg)](https://github.com/vmangos/core/releases/tag/db_latest) Latest MySQL 5.6 development database snapshot; no updates required
 
-- 所有 HoA 效果通过真实光环实现，服务端只保留一份效果状态（见 [auras.md](../docs/auras.md)）。
-- 服务端不硬编码英文句子；文本走消息 ID 和语言表（见 [i18n.md](../docs/i18n.md)）。
-- 内容数据由 `tools/content-compiler` 生成；`sql/content/` 是构建产物。
-- 保留内核，只对性能热点做必要重构（见 [architecture.md](../docs/architecture.md)）。
-
-## 构建
-
-导入后补充：CMake 配置、依赖、Windows/Linux 构建命令、数据库初始化步骤。
+### Useful Links
+- [Wiki](https://github.com/vmangos/wiki)
+- [Discord](https://discord.gg/x9a2jt7)
+- [Script Editor](https://github.com/brotalnia/scripteditor)
+- [Script Converter](https://github.com/vmangos/ScriptConverter)
