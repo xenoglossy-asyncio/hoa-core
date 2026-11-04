@@ -119,6 +119,8 @@ local function SyncKeys()
         return
     end
     if not SetOverrideBinding or not ClearOverrideBindings then
+        -- The Rust client has no override bindings yet; the shift watcher below still works.
+        WatchShift(onShift)
         if onShift and not warned then
             warned = true
             DEFAULT_CHAT_FRAME:AddMessage(L["Hordes of Azeroth: Shift can't be bound to Dash. Choose another key in Key Bindings."])
