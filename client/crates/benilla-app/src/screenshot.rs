@@ -207,9 +207,12 @@ impl Plugin for ScreenshotPlugin {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use crate::local_state::test_env::{EnvGuard, ENV_LOCK};
     use benilla_ui::script::UiScript;
 
+    /// Windows ignores the `TZ` variable these naming tests set; the Linux CI job exercises them.
+    #[cfg(unix)]
     #[test]
     fn names_follow_the_reference_and_never_collide() {
         let _lock = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
