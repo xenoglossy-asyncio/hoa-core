@@ -363,7 +363,6 @@ class BonkPlayer
         float GetDashBurstSpeed() const { return m_dashBursting ? GetDashSpeed() : 0.0f; }
         bool GetDashRunTravel(uint32 fromMs, uint32 toMs, float& travel) const;
         void SendDash() const;
-        void RefreshDashAura() const;
         uint32 GetDashCooldownMs() const;
         void SendTierList() const;
         void SendGearInfo() const;
@@ -548,6 +547,7 @@ class BonkPlayer
         uint32 m_dashClockMs = 0;
         uint32 m_dashSpent = 0;
         uint32 m_dashRechargeMs = 0;
+        uint32 m_dashRechargeUntilMs = 0;
         uint32 m_dashInvulnerableUntilMs = 0;
         uint32 m_dashBurstUntilMs = 0;
         uint32 m_dashRunStartedAtMs = 0;

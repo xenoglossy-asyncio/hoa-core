@@ -20,14 +20,6 @@ pub(crate) const SPELLS: &[GeneratedSpell] = &[
         description_zh_cn: "每层提高你的伤害并降低你受到的伤害。",
     },
     GeneratedSpell {
-        id: 60002,
-        name_en: "Dash",
-        name_zh_cn: "冲刺",
-        icon: "Interface\\Icons\\Ability_Rogue_Sprint",
-        description_en: "Charges of your movement ability.",
-        description_zh_cn: "你移动技能的可用次数。",
-    },
-    GeneratedSpell {
         id: 60003,
         name_en: "Wounded",
         name_zh_cn: "受伤",
@@ -90,14 +82,6 @@ pub(crate) const SPELLS: &[GeneratedSpell] = &[
         icon: "Interface\\Icons\\Spell_Nature_Thorns",
         description_en: "A Darkmoon card reflects damage back at attackers.",
         description_zh_cn: "暗月卡牌将伤害反弹给攻击者。",
-    },
-    GeneratedSpell {
-        id: 60011,
-        name_en: "Dash Recharge",
-        name_zh_cn: "冲刺充能",
-        icon: "Interface\\Icons\\Spell_Nature_Slow",
-        description_en: "Your next dash charge is recharging.",
-        description_zh_cn: "你下一层冲刺正在恢复。",
     },
     GeneratedSpell {
         id: 60012,

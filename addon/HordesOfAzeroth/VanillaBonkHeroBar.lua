@@ -806,7 +806,6 @@ local DASH_ARC_FRAMES = 32
 local DASH_ARC_COLUMNS = 8
 local DASH_ARC_ROWS = 4
 local DASH_ARC_SCALE = 1.3
-local DASH_SPELL = 60002
 local dash = { charges = 0, max = 0, cooldown = 0, key = L["Shift"] }
 
 local dashButton = UI.Slot(root, DASH_SIZE)
@@ -1075,32 +1074,22 @@ handlers["dash"] = function(f)
     dash.untilNext = tonumber(f[3] or "") or 0
     dash.cooldown = tonumber(f[4] or "") or 0
     dash.blink = f[5] == "1"
-    dash.charges = UI.AuraStacks(DASH_SPELL, "HELPFUL")
+    dash.charges = tonumber(f[6] or "") or 0
     dash.left = (dash.charges < dash.max and dash.untilNext > 0) and dash.untilNext / 1000 or nil
     RefreshDash()
 end
 
 UI.ListenHoa({
-    HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink)
+    HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink, available)
         dash.max = tonumber(maxCharges) or 0
         dash.untilNext = tonumber(rechargeMs) or 0
         dash.cooldown = tonumber(cooldownMs) or 0
         dash.blink = blink and true or false
-        dash.charges = UI.AuraStacks(DASH_SPELL, "HELPFUL")
+        dash.charges = tonumber(available) or 0
         dash.left = (dash.charges < dash.max and dash.untilNext > 0) and dash.untilNext / 1000 or nil
         RefreshDash()
     end,
 })
-
-local dashAura = CreateFrame("Frame")
-dashAura:RegisterEvent("UNIT_AURA")
-dashAura:SetScript("OnEvent", function()
-    if arg1 == "player" then
-        dash.charges = UI.AuraStacks(DASH_SPELL, "HELPFUL")
-        dash.left = (dash.charges < dash.max and (dash.untilNext or 0) > 0) and dash.untilNext / 1000 or nil
-        RefreshDash()
-    end
-end)
 
 handlers["loadout"] = function(f)
     run.spells, run.passives = {}, {}

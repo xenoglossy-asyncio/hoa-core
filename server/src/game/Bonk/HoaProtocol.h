@@ -27,13 +27,14 @@ inline void HoAWriteAuraValue(WorldPacket& packet, uint32 const& spellId, uint32
     packet << uint32(maxValue);
 }
 
-inline void HoAWriteDash(WorldPacket& packet, uint8 const& maxCharges, uint32 const& rechargeMs, uint32 const& cooldownMs, bool const& blink)
+inline void HoAWriteDash(WorldPacket& packet, uint8 const& maxCharges, uint32 const& rechargeMs, uint32 const& cooldownMs, bool const& blink, uint8 const& charges)
 {
     packet << uint16(HOA_MSG_DASH);
     packet << uint8(maxCharges);
     packet << uint32(rechargeMs);
     packet << uint32(cooldownMs);
     packet << bool(blink);
+    packet << uint8(charges);
 }
 
 inline void HoAWriteAuraPercent(WorldPacket& packet, uint32 const& spellId, float const& percent)

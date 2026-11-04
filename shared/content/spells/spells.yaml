@@ -8,14 +8,6 @@
   icon: Interface\Icons\Spell_Holy_DevotionAura
   description: Each stack increases your damage and reduces the damage you take.
   description_zhCN: 每层提高你的伤害并降低你受到的伤害。
-- id: 60002
-  key: dash
-  cpp: BONK_SPELL_DASH
-  name: Dash
-  name_zhCN: 冲刺
-  icon: Interface\Icons\Ability_Rogue_Sprint
-  description: Charges of your movement ability.
-  description_zhCN: 你移动技能的可用次数。
 - id: 60003
   key: wounds
   cpp: BONK_SPELL_WOUNDS
@@ -80,14 +72,6 @@
   icon: Interface\Icons\Spell_Nature_Thorns
   description: A Darkmoon card reflects damage back at attackers.
   description_zhCN: 暗月卡牌将伤害反弹给攻击者。
-- id: 60011
-  key: dash_recharge
-  cpp: BONK_SPELL_DASH_RECHARGE
-  name: Dash Recharge
-  name_zhCN: 冲刺充能
-  icon: Interface\Icons\Spell_Nature_Slow
-  description: Your next dash charge is recharging.
-  description_zhCN: 你下一层冲刺正在恢复。
 - id: 60012
   key: tigers_fury
   cpp: BONK_SPELL_TIGERS_FURY_AURA

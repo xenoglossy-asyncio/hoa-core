@@ -272,13 +272,13 @@ end
 -- Typed HoA messages the Rust client decoded; the handler gets the fields as event arguments.
 function UI.ListenHoa(handlers)
     local frame = CreateFrame("Frame")
-    for event in pairs(handlers) do
-        frame:RegisterEvent(event)
+    for name in pairs(handlers) do
+        frame:RegisterEvent(name)
     end
     frame:SetScript("OnEvent", function()
         local handler = handlers[event]
         if handler then
-            handler(arg1, arg2, arg3, arg4)
+            handler(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
         end
     end)
     return frame

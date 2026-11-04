@@ -75,6 +75,7 @@ fn deliver_hoa_messages(world: &mut World) {
                             ScriptValue::Int(i64::from(dash.recharge_ms)),
                             ScriptValue::Int(i64::from(dash.cooldown_ms)),
                             ScriptValue::Bool(dash.blink),
+                            ScriptValue::Int(i64::from(dash.charges)),
                         ],
                     );
                 }

@@ -8,8 +8,6 @@ CREATE TEMPORARY TABLE `hoa_spell_clone` LIKE `spell_template`;
 INSERT INTO `hoa_spell_clone` SELECT * FROM `spell_template` WHERE `entry` = 5302 AND `build` = 5086;
 UPDATE `hoa_spell_clone` SET `entry` = 60001, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
-UPDATE `hoa_spell_clone` SET `entry` = 60002, `build` = 5875;
-INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60003, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60004, `build` = 5875;
@@ -25,8 +23,6 @@ INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60009, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60010, `build` = 5875;
-INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
-UPDATE `hoa_spell_clone` SET `entry` = 60011, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60012, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
@@ -125,20 +121,6 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60001 AND `build` = 5875;
-
-UPDATE `spell_template` SET
-  `name` = 'Dash',
-  `nameSubtext` = '',
-  `description` = 'Charges of your movement ability.',
-  `auraDescription` = 'Charges of your movement ability.',
-  `spellIconId` = 28,
-  `durationIndex` = 28,
-  `attributes` = 0,
-  `attributesEx` = 0,
-  `attributesEx2` = 0,
-  `attributesEx3` = 0,
-  `attributesEx4` = 0
-WHERE `entry` = 60002 AND `build` = 5875;
 
 UPDATE `spell_template` SET
   `name` = 'Wounded',
@@ -251,20 +233,6 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60010 AND `build` = 5875;
-
-UPDATE `spell_template` SET
-  `name` = 'Dash Recharge',
-  `nameSubtext` = '',
-  `description` = 'Your next dash charge is recharging.',
-  `auraDescription` = 'Your next dash charge is recharging.',
-  `spellIconId` = 28,
-  `durationIndex` = 28,
-  `attributes` = 0,
-  `attributesEx` = 0,
-  `attributesEx2` = 0,
-  `attributesEx3` = 0,
-  `attributesEx4` = 0
-WHERE `entry` = 60011 AND `build` = 5875;
 
 UPDATE `spell_template` SET
   `name` = 'Tiger''s Fury',

@@ -2,7 +2,7 @@
 // Do not edit by hand.
 
 pub const PROTOCOL_VERSION: u16 = 1;
-pub const CONTENT_HASH: &str = "sha256:f6fc37b622d3ad4fd7c6dd6c7914040b7f93c7d6784c29a82594d28a572a5531";
+pub const CONTENT_HASH: &str = "sha256:723defa9bd4e3c71bb63554b0bc67ba63f3f8201fc07b25870c7050ae140b1b0";
 
 pub const MSG_AURA_VALUE: u16 = 0x0002;
 pub const MSG_DASH: u16 = 0x0003;
@@ -20,6 +20,7 @@ pub struct Dash {
     pub recharge_ms: u32,
     pub cooldown_ms: u32,
     pub blink: bool,
+    pub charges: u8,
 }
 
 pub struct AuraPercent {
@@ -71,6 +72,7 @@ fn decode_dash(body: &[u8]) -> Option<Dash> {
     let recharge_ms = read_u32(&mut body)?;
     let cooldown_ms = read_u32(&mut body)?;
     let blink = read_bool(&mut body)?;
+    let charges = read_u8(&mut body)?;
     if !body.is_empty() {
         return None;
     }
@@ -79,6 +81,7 @@ fn decode_dash(body: &[u8]) -> Option<Dash> {
         recharge_ms,
         cooldown_ms,
         blink,
+        charges,
     })
 }
 
