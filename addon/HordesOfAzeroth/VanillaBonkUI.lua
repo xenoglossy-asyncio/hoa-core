@@ -39,6 +39,21 @@ UI.TITLE_FONT = UsableFont("Fonts\\MORPHEUS.TTF")
 UI.FLAT = "Interface\\Buttons\\WHITE8X8"
 UI.ICON_PATH = "Interface\\Icons\\"
 
+function UI.AuraStacks(spellId, filter)
+    if not spellId or not C_UnitAuras or not C_UnitAuras.GetAuraSlots then
+        return 0
+    end
+    local slots = {}
+    local _, slotCount = C_UnitAuras.GetAuraSlots("player", filter or "HELPFUL", nil, nil, slots)
+    for index = 1, slotCount or 0 do
+        local _, _, stacks, _, _, _, _, _, _, id = C_UnitAuras.UnitAuraBySlot("player", slots[index])
+        if id == spellId then
+            return max(1, stacks or 1)
+        end
+    end
+    return 0
+end
+
 UI.RARITY = {
     [0] = { name = L["Common"], r = 1, g = 1, b = 1 },
     [1] = { name = L["Uncommon"], r = 0.12, g = 1, b = 0 },

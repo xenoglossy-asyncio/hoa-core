@@ -127,6 +127,7 @@ class BonkPlayer
         uint8 GetDetermination() const;
         void AddDetermination();
         void SendDetermination() const;
+        void RefreshDeterminationAura() const;
         bool IsShopVendor(Creature const* vendor) const;
         uint32 GetStockTier() const;
         std::vector<uint32> GetShopStock() const;
@@ -359,6 +360,7 @@ class BonkPlayer
         float GetDashBurstSpeed() const { return m_dashBursting ? GetDashSpeed() : 0.0f; }
         bool GetDashRunTravel(uint32 fromMs, uint32 toMs, float& travel) const;
         void SendDash() const;
+        void RefreshDashAura() const;
         uint32 GetDashCooldownMs() const;
         void SendTierList() const;
         void SendGearInfo() const;

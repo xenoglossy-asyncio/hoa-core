@@ -633,7 +633,6 @@ float const BONK_START_POLY_REACH   = 10.0f;
     float const BONK_DEMORALIZING_SHOUT_REDUCTION = 20.0f;
     int32 const BONK_PASSIVE_TRIGGER_POLL_MS = 100;
 
-    uint32 const BONK_SPELL_SHIELD_VISUAL = 16051;
     uint32 const BONK_SHIELD_SEND_MS      = 250;
     uint32 const BONK_KIT_SHIELD_BLOCK    = 3053;
     int32 const BONK_PASSIVE_TRIGGER_IDLE_MS = 1000;
@@ -4383,7 +4382,7 @@ uint32 BonkRun::MitigateDamage(uint32 damage)
     if (damage && GetGlyph(BONK_GLYPH_NOMAD))
         m_nomadPenaltyUntilMs = m_totalMs + uint32(GetGlyphValue(BONK_GLYPH_NOMAD, 2));
     if (!m_spellShield)
-        m_player->RemoveAurasDueToSpell(BONK_SPELL_SHIELD_VISUAL);
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_PLAYER_SHIELD);
     NoteHeroHit(unshielded, damage);
 
     m_minuteDamage += damage;
@@ -4415,7 +4414,7 @@ void BonkRun::SetNecroticStacks(uint32 stacks)
     if (stacks && m_player->IsAlive())
     {
         if (!m_player->HasAura(BONK_SPELL_NECROTIC))
-            m_player->AddAura(BONK_SPELL_NECROTIC);
+            m_player->AddAura(BONK_SPELL_NECROTIC, ADD_AURA_NEGATIVE | ADD_AURA_PERMANENT);
         if (SpellAuraHolder* holder = m_player->GetSpellAuraHolder(BONK_SPELL_NECROTIC))
             holder->SetStackAmount(stacks);
     }
@@ -4446,7 +4445,7 @@ void BonkRun::UpdateNecrotic(uint32 diff)
 
 uint32 BonkRun::ReduceHealing(uint32 heal) const
 {
-    float const cut = GetNecroticStacks() * BONK_NECROTIC_PER_STACK + m_bossWoundStacks * m_bossWoundCut + m_bonuses.healingCut;
+    float const cut = GetNecroticStacks() * BONK_NECROTIC_PER_STACK + GetBossWoundStacks() * m_bossWoundCut + m_bonuses.healingCut;
     if (cut <= 0.0f)
         return heal;
     float const kept = 1.0f - std::min(100.0f, cut) / 100.0f;
@@ -4622,41 +4621,45 @@ void BonkRun::HideHeroMarkRings()
     HideHeroRing(BonkHeroRing::MarkFill);
 }
 
+uint32 BonkRun::GetBossWoundStacks() const
+{
+    SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(BONK_SPELL_WOUNDS);
+    return holder ? holder->GetStackAmount() : 0;
+}
+
 void BonkRun::AddBossWound(uint32 maxStacks, float cutPercent, uint32 durationMs)
 {
     if (!maxStacks || cutPercent <= 0.0f || !m_player->IsAlive())
         return;
     m_bossWoundCut = cutPercent;
-    m_bossWoundLeftMs = durationMs;
-    SetBossWoundStacks(std::min(maxStacks, m_bossWoundStacks + 1));
+    SetBossWoundStacks(std::min(maxStacks, GetBossWoundStacks() + 1));
+    if (SpellAuraHolder* holder = m_player->GetSpellAuraHolder(BONK_SPELL_WOUNDS))
+    {
+        holder->SetAuraDuration(int32(durationMs));
+        holder->SetAuraMaxDuration(int32(durationMs));
+        holder->UpdateAuraDuration();
+    }
 }
 
 void BonkRun::SetBossWoundStacks(uint32 stacks)
 {
-    if (stacks == m_bossWoundStacks)
+    if (stacks == GetBossWoundStacks())
         return;
-    m_bossWoundStacks = stacks;
-    m_player->GetBonkPlayer()->SendAddon("wounds~" + std::to_string(stacks) + "~" + Percent(stacks * m_bossWoundCut));
+    if (!stacks)
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_WOUNDS);
+    else if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_WOUNDS, ADD_AURA_NEGATIVE))
+        holder->SetStackAmount(stacks);
+    m_player->GetBonkPlayer()->SendAddon("woundspct~" + Percent(stacks * m_bossWoundCut));
 }
 
-void BonkRun::UpdateBossWounds(uint32 diff)
+void BonkRun::UpdateBossWounds(uint32)
 {
-    if (!m_bossWoundStacks)
-        return;
-    if (m_bossWoundLeftMs > diff)
-    {
-        m_bossWoundLeftMs -= diff;
-        return;
-    }
-    m_bossWoundLeftMs = 0;
-    SetBossWoundStacks(0);
 }
 
 void BonkRun::ClearBossPressure()
 {
     m_heroMark.leftMs = 0;
     HideHeroMarkRings();
-    m_bossWoundLeftMs = 0;
     SetBossWoundStacks(0);
 }
 
@@ -4761,11 +4764,11 @@ void BonkRun::UpdateShield(uint32 diff)
     uint32 const total = m_spellShield;
     if (m_player->IsAlive())
     {
-        bool const shown = m_player->HasAura(BONK_SPELL_SHIELD_VISUAL);
+        bool const shown = m_player->HasAura(BONK_SPELL_PLAYER_SHIELD);
         if (total && !shown)
-            m_player->AddAura(BONK_SPELL_SHIELD_VISUAL, ADD_AURA_PERMANENT);
+            m_player->AddAura(BONK_SPELL_PLAYER_SHIELD, ADD_AURA_PERMANENT);
         else if (!total && shown)
-            m_player->RemoveAurasDueToSpell(BONK_SPELL_SHIELD_VISUAL);
+            m_player->RemoveAurasDueToSpell(BONK_SPELL_PLAYER_SHIELD);
     }
 
     m_shieldSendTimer += diff;
@@ -14525,7 +14528,7 @@ void BonkRun::CleanUp()
     m_player->RemoveAurasDueToSpell(BONK_SPELL_MOVE_SPEED);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_MAX_HEALTH);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DODGE);
-    m_player->RemoveAurasDueToSpell(BONK_SPELL_SHIELD_VISUAL);
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_PLAYER_SHIELD);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_DARKMOON_SURGE);
     m_player->GetBonkPlayer()->SendAddon("shield~0~0");
     SetNecroticStacks(0);

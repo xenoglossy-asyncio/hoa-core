@@ -34,6 +34,7 @@ local owner = CreateFrame("Frame")
 local active = false
 local warned = false
 local onShift = true
+local DASH_SPELL = 60002
 local charges = 0
 local lastSent = 0
 
@@ -320,10 +321,18 @@ end)
 
 UI.Listen({
     dash = function(f)
-        charges = tonumber(f[2]) or 0
+        charges = UI.AuraStacks(DASH_SPELL, "HELPFUL")
         if not active then
             active = true
             SyncKeys()
         end
     end,
 })
+
+local dashAura = CreateFrame("Frame")
+dashAura:RegisterEvent("UNIT_AURA")
+dashAura:SetScript("OnEvent", function()
+    if arg1 == "player" then
+        charges = UI.AuraStacks(DASH_SPELL, "HELPFUL")
+    end
+end)

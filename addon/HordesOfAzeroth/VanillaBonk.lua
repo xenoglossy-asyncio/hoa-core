@@ -3634,18 +3634,7 @@ local NECROTIC_SPELL = 18951
 local necroticPercent = ""
 
 local function RefreshNecrotic()
-    local stacks = 0
-    if C_UnitAuras and C_UnitAuras.GetAuraSlots then
-        local slots = {}
-        local _, slotCount = C_UnitAuras.GetAuraSlots("player", "HARMFUL", nil, nil, slots)
-        for index = 1, slotCount or 0 do
-            local _, _, count, _, _, _, _, _, _, spellId = C_UnitAuras.UnitAuraBySlot("player", slots[index])
-            if spellId == NECROTIC_SPELL then
-                stacks = max(1, count or 1)
-                break
-            end
-        end
-    end
+    local stacks = UI.AuraStacks(NECROTIC_SPELL, "HARMFUL")
     if stacks > 0 then
         necroticText:SetText(L("Necrotic x{1}: {2} less healing", stacks, necroticPercent))
     else
@@ -3667,18 +3656,33 @@ handlers["necroticpct"] = function(f)
 end
 
 do
+    local WOUNDS_SPELL = 60003
+    local woundsPercent = ""
     local woundsText = PlayerFrame:CreateFontString(nil, "OVERLAY")
     SetFont(woundsText, 11)
     woundsText:SetPoint("TOPLEFT", necroticText, "BOTTOMLEFT", 0, -2)
     woundsText:SetTextColor(1, 0.3, 0.3)
 
-    handlers["wounds"] = function(f)
-        local stacks = tonumber(f[2]) or 0
+    local function RefreshWounds()
+        local stacks = UI.AuraStacks(WOUNDS_SPELL, "HARMFUL")
         if stacks > 0 then
-            woundsText:SetText(L("Wounded x{1}: {2} less healing", stacks, f[3] or ""))
+            woundsText:SetText(L("Wounded x{1}: {2} less healing", stacks, woundsPercent))
         else
             woundsText:SetText("")
         end
+    end
+
+    local woundsAura = CreateFrame("Frame")
+    woundsAura:RegisterEvent("UNIT_AURA")
+    woundsAura:SetScript("OnEvent", function()
+        if arg1 == "player" then
+            RefreshWounds()
+        end
+    end)
+
+    handlers["woundspct"] = function(f)
+        woundsPercent = f[2] or ""
+        RefreshWounds()
     end
 end
 

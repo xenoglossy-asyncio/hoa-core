@@ -116,9 +116,12 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 
 ### 7.2 HoA shield/dash/determination
 
-- Shield: custom aura (absorb/damage reduction + visual), remaining amount in `AuraState`; the buff frame has the icon and the hero bar shows the value.
-- Dash: custom aura; charges use aura stacks; the addon reads `GetAuraCount`.
-- Determination: custom aura + stacks; server logic reads the stack count and keeps no parallel counter.
+- Shield: custom aura `60005` (visual/presence); the remaining amount is still `m_spellShield` and reaches the addon as a value message until `AuraState` lands. The buff frame has the icon; the hero bar shows the value.
+- Dash: custom aura `60002`; charges are aura stacks and the addon reads them through `UI.AuraStacks`. The recharge countdown is still a server-computed message.
+- Determination: custom aura `60001`, permanent, stacks mirror the account value; the addon reads the stacks from the aura, and the server keeps the account row as the persistent source.
+- Wounds: custom aura `60003`; stacks and duration live on the aura; the addon reads stacks and only takes the server-computed healing cut percentage from the notice.
+- Necrotic: spell `18951` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
+- Weapon buffs: the server reads the live aura instead of the removed `m_buffs` expiry map.
 
 ### 7.3 Native spells
 

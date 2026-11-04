@@ -42,7 +42,7 @@ Deliver phase by phase. At the end of every phase the repository must build, run
 - Migrate category by category: native spell copies → custom buffs → resource/stack states → special values such as shield amounts.
 - Switch the addon to `UnitBuff`/`UNIT_AURA`; delete state timers and `BONK~state`.
 - Acceptance: every HoA effect appears in the buff frame; addon/server/combat-log state agrees; UI reload, reconnect and language switch preserve it.
-- Progress (2026-11-04): the first three effects are migrated; the third is the first custom spell (Darkmoon Surge, spell 60004), rendered by the client spell overlay. Weapon buffs read the live aura instead of the removed `m_buffs` expiry map; Necrotic stacks live on spell 18951 and the server reads `GetStackAmount`, while the addon reads the stack count through `C_UnitAuras` and only takes the server-computed healing cut from the notice.
+- Progress (2026-11-04): weapon buffs, Necrotic, Determination (60001), Dash (60002), Wounds (60003), Darkmoon Surge (60004) and Shield (60005) are on real auras. Custom ids live in the migration `20261104120000_world.sql`; the client overlay renders them; the addon reads stacks through `C_UnitAuras` (`UI.AuraStacks`). Shield amount and dash recharge still travel as server-computed value messages until `AuraState` lands. Weapon buffs read the live aura instead of the removed `m_buffs` expiry map; Necrotic stacks live on spell 18951 and the server reads `GetStackAmount`, while the addon reads the stack count through `C_UnitAuras` and only takes the server-computed healing cut from the notice.
 - Risks: custom spell display on the client, aura packet rate, effects that no stock aura type can express.
 
 ## Phase 4: single content source

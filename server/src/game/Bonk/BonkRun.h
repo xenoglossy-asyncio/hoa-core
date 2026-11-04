@@ -629,6 +629,7 @@ class BonkRun
         void HideHeroMarkRings();
         void UpdateBossWounds(uint32 diff);
         void SetBossWoundStacks(uint32 stacks);
+        uint32 GetBossWoundStacks() const;
         void ClearBossPressure();
         void ShowImpact(BonkEnemyHit const& hit, float x, float y, float z, float radius = 0.0f);
         void ShowAttackLook(BonkEnemyHit const& hit, BonkTelegraphShape shape, float x, float y, float z, float orientation, float size);
@@ -1792,9 +1793,7 @@ class BonkRun
             uint32 poolMs = 0;
         };
         HeroMark m_heroMark;
-        uint32 m_bossWoundStacks = 0;
         float m_bossWoundCut = 0.0f;
-        uint32 m_bossWoundLeftMs = 0;
         struct Pool
         {
             uint32 marker = 0;

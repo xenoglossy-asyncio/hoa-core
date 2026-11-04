@@ -342,6 +342,7 @@ void BonkPlayer::LoadPurchases()
         m_scrap = result->Fetch()[2].GetUInt32();
         m_gearNoticePending = result->Fetch()[3].GetUInt8() != 0;
     }
+    RefreshDeterminationAura();
 
     m_talentRanks.clear();
     m_enabledTalents.clear();
@@ -2331,8 +2332,21 @@ void BonkPlayer::AddDetermination()
 
 void BonkPlayer::SendDetermination() const
 {
+    RefreshDeterminationAura();
     uint8 const stacks = GetDetermination();
-    SendAddon("determination~" + std::to_string(stacks) + "~" + FormatStat(stacks * BONK_DETERMINATION_PER_STACK));
+    SendAddon("determinationpct~" + FormatStat(stacks * BONK_DETERMINATION_PER_STACK));
+}
+
+void BonkPlayer::RefreshDeterminationAura() const
+{
+    uint8 const stacks = GetDetermination();
+    if (!stacks)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_DETERMINATION);
+        return;
+    }
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DETERMINATION, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(stacks);
 }
 
 bool BonkPlayer::CanSwapGearInCombat() const

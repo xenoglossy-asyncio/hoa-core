@@ -30,17 +30,31 @@ frame:SetScript("OnLeave", function()
     GameTooltip:Hide()
 end)
 
-local handlers = {}
+local DETERMINATION_SPELL = 60001
 
-handlers["determination"] = function(f)
-    state.stacks = tonumber(f[2]) or 0
-    state.percent = f[3] or "0"
-    if state.stacks > 0 then
-        count:SetText(state.stacks > 1 and tostring(state.stacks) or "")
+local function Refresh()
+    local stacks = UI.AuraStacks(DETERMINATION_SPELL, "HELPFUL")
+    state.stacks = stacks
+    if stacks > 0 then
+        count:SetText(stacks > 1 and tostring(stacks) or "")
         frame:Show()
     else
         frame:Hide()
     end
+end
+
+local aura = CreateFrame("Frame")
+aura:RegisterEvent("UNIT_AURA")
+aura:SetScript("OnEvent", function()
+    if arg1 == "player" then
+        Refresh()
+    end
+end)
+
+local handlers = {}
+handlers["determinationpct"] = function(f)
+    state.percent = f[2] or "0"
+    Refresh()
 end
 
 UI.Listen(handlers)

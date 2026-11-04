@@ -6,6 +6,7 @@
 #include "MoveSpline.h"
 #include "MovementPacketSender.h"
 #include "Player.h"
+#include "SpellAuras.h"
 #include "WorldSession.h"
 #include "Utilities/Random.h"
 
@@ -215,8 +216,22 @@ void BonkPlayer::UpdateDash(uint32 diff)
 
 void BonkPlayer::SendDash() const
 {
+    RefreshDashAura();
     uint32 const maxCharges = GetDashMaxCharges();
-    SendAddon("dash~" + std::to_string(maxCharges - std::min(m_dashSpent, maxCharges)) + "~" + std::to_string(maxCharges) + "~" +
+    SendAddon("dash~" + std::to_string(maxCharges) + "~" +
         std::to_string(m_dashSpent ? m_dashRechargeMs : 0) + "~" + std::to_string(GetDashCooldownMs()) + "~" +
         (m_run && m_run->IsBlinkDash() ? "1" : "0"));
+}
+
+void BonkPlayer::RefreshDashAura() const
+{
+    uint32 const maxCharges = GetDashMaxCharges();
+    uint32 const available = maxCharges - std::min(m_dashSpent, maxCharges);
+    if (!available)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_DASH);
+        return;
+    }
+    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DASH, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
+        holder->SetStackAmount(available);
 }
