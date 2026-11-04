@@ -23,6 +23,10 @@ pub(crate) const TIGERS_FURY: u32 = 60012;
 pub(crate) const ARCANE_POWER: u32 = 60013;
 pub(crate) const SHADOW_DANCE: u32 = 60014;
 pub(crate) const ENVENOM: u32 = 60015;
+pub(crate) const DARK_PACT: u32 = 60016;
+pub(crate) const SOUL_HARVEST: u32 = 60017;
+pub(crate) const GLYPH_HASTE: u32 = 60018;
+pub(crate) const ICE_BLOCK: u32 = 60019;
 
 fn display(id: u32, name: &str, icon: &str, description: &str) -> SpellDisplay {
     let mut row = SpellDisplay::default();
@@ -170,6 +174,42 @@ pub(crate) fn overlay() -> HashMap<u32, SpellDisplay> {
                 "Envenom",
                 r"Interface\Icons\Ability_Rogue_Eviscerate",
                 "Your poisons strike harder for a short time.",
+            ),
+        ),
+        (
+            DARK_PACT,
+            display(
+                DARK_PACT,
+                "Dark Pact",
+                r"Interface\Icons\Spell_Shadow_ShadowBolt",
+                "Your demons deal more damage for a short time.",
+            ),
+        ),
+        (
+            SOUL_HARVEST,
+            display(
+                SOUL_HARVEST,
+                "Soul Harvest",
+                r"Interface\Icons\Spell_Shadow_SoulGem",
+                "Your hits deal more damage for a short time.",
+            ),
+        ),
+        (
+            GLYPH_HASTE,
+            display(
+                GLYPH_HASTE,
+                "Bloodlust",
+                r"Interface\Icons\Spell_Nature_BloodLust",
+                "A glyph grants a burst of haste.",
+            ),
+        ),
+        (
+            ICE_BLOCK,
+            display(
+                ICE_BLOCK,
+                "Ice Block",
+                r"Interface\Icons\Spell_Frost_FrostNova",
+                "You are protected from damage for a short time.",
             ),
         ),
     ]

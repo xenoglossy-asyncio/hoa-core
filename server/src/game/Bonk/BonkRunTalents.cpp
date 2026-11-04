@@ -4,6 +4,7 @@
 #include "Creature.h"
 #include "Map.h"
 #include "Player.h"
+#include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Util.h"
 #include "Utilities/Random.h"
@@ -364,7 +365,7 @@ uint32 BonkRun::ApplyTalentDamageTaken(uint32 damage) const
 
 bool BonkRun::IsIceBlocked() const
 {
-    return m_iceBlockUntilMs > m_totalMs;
+    return m_player->HasAura(BONK_SPELL_ICE_BLOCK_AURA);
 }
 
 uint32 BonkRun::GuardLowHealth(uint32 damage)
@@ -381,6 +382,13 @@ uint32 BonkRun::GuardLowHealth(uint32 damage)
     if (m_mastery.iceBlock > 0.0f)
     {
         m_iceBlockUntilMs = m_totalMs + uint32(m_mastery.iceBlock * IN_MILLISECONDS);
+        if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_ICE_BLOCK_AURA, ADD_AURA_POSITIVE))
+        {
+            int32 const duration = int32(m_mastery.iceBlock * IN_MILLISECONDS);
+            holder->SetAuraDuration(duration);
+            holder->SetAuraMaxDuration(duration);
+            holder->UpdateAuraDuration();
+        }
         m_iceBlockBurstPending = true;
         return 0;
     }

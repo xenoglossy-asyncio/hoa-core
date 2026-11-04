@@ -187,6 +187,7 @@ void BonkRun::DespawnWarlockMinions()
     if (!m_souls.empty() && m_player->IsInWorld())
         m_player->RemoveAurasDueToSpell(BONK_SPELL_SOUL_LOOK);
     m_souls.clear();
+    m_player->RemoveAurasDueToSpell(BONK_SPELL_DARK_PACT_AURA);
     m_darkPactUntilMs = m_darkHarvestReadyMs = m_voidSlamReadyMs = m_seductionReadyMs = 0;
 }
 
@@ -213,7 +214,7 @@ bool BonkRun::HasWarlockSpell(uint32 weaponId) const
 
 float BonkRun::GetDemonDamageScale() const
 {
-    float const pact = int32(m_darkPactUntilMs - m_totalMs) > 0 ? BONK_DARK_PACT_DAMAGE : 1.0f;
+    float const pact = m_player->HasAura(BONK_SPELL_DARK_PACT_AURA) ? BONK_DARK_PACT_DAMAGE : 1.0f;
     float empowered = 1.0f;
     float const empowerment = m_mastery.Special(BONK_SPECIAL_DEMONIC_EMPOWERMENT);
     uint32 const empoweredMs = BONK_EMPOWERMENT_MS + uint32(m_mastery.Special(BONK_SPECIAL_IMPROVED_EMPOWERMENT) * IN_MILLISECONDS);
@@ -642,7 +643,15 @@ void BonkRun::OnDrainOverheal(uint32 heal)
         return;
     uint32 const missing = m_player->GetMaxHealth() - m_player->GetHealth();
     if (heal > missing)
+    {
         m_darkPactUntilMs = m_totalMs + BONK_DARK_PACT_MS;
+        if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_DARK_PACT_AURA, ADD_AURA_POSITIVE))
+        {
+            holder->SetAuraDuration(BONK_DARK_PACT_MS);
+            holder->SetAuraMaxDuration(BONK_DARK_PACT_MS);
+            holder->UpdateAuraDuration();
+        }
+    }
 }
 
 void BonkRun::ImmolateDemons(OwnedWeapon const& owned, SpellEntry const* spellInfo)

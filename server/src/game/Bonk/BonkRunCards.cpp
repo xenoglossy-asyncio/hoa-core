@@ -817,7 +817,7 @@ float BonkRun::GetBurstHaste() const
     float haste = 0.0f;
     if (m_player->HasAura(BONK_SPELL_CARD_HASTE))
         haste += GetCardTotal(BONK_CARD_HASTE_BURST, 1);
-    if (m_glyphHasteUntilMs > m_totalMs)
+    if (m_player->HasAura(BONK_SPELL_GLYPH_HASTE_AURA))
         haste += GetGlyphValue(BONK_GLYPH_KILL_HASTE, 1);
     if (IsLastStand())
         haste += GetGlyphValue(BONK_GLYPH_LAST_STAND, 1);

@@ -120,7 +120,7 @@ Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges 
 
 ### 7.3 Class buffs
 
-Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`) and Envenom (`60015`) are class buffs moved off internal timers onto real auras: the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The same pattern covers the remaining class buffs (Shadow Dance, Envenom, Doom Winds, Dark Pact, Soul Harvest, Glyph Haste, and so on).
+Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`) and Ice Block (`60019`) are class buffs moved off internal timers onto real auras: the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The same pattern covers the remaining class buffs (Shadow Dance, Envenom, Doom Winds, Dark Pact, Soul Harvest, Glyph Haste, and so on).
 
 ### 7.4 HoA shield/dash/determination
 
