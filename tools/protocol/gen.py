@@ -68,8 +68,8 @@ def load() -> dict:
         if message.get("direction") not in ("server_to_client", "client_to_server"):
             raise SystemExit(f"messages.yaml: {name} needs a direction")
         fields = message.get("fields")
-        if not isinstance(fields, list) or not fields:
-            raise SystemExit(f"messages.yaml: {name} needs fields")
+        if not isinstance(fields, list):
+            raise SystemExit(f"messages.yaml: {name} needs a field list")
         for field in fields:
             if not isinstance(field.get("name"), str) or field.get("type") not in CPP_TYPES:
                 raise SystemExit(f"messages.yaml: {name} has a bad field")
@@ -120,9 +120,10 @@ def compile_cpp(schema: dict) -> bytes:
             else f"std::string const& {camel(field['name'])}"
             for field in message["fields"]
         )
+        args = f", {params}" if params else ""
         lines += [
             f"inline void HoAWrite{camel(message['name'])[:1].upper()}{camel(message['name'])[1:]}"
-            f"(WorldPacket& packet, {params})",
+            f"(WorldPacket& packet{args})",
             "{",
             f"    packet << uint16(HOA_MSG_{upper(message['name'])});",
         ]
@@ -174,10 +175,9 @@ def compile_rust(schema: dict, content_hash: str) -> bytes:
 
     for message in schema["messages"]:
         struct = camel(message["name"])[:1].upper() + camel(message["name"])[1:]
-        lines += [
-            f"fn decode_{message['name']}(body: &[u8]) -> Option<{struct}> {{",
-            "    let mut body = body;",
-        ]
+        lines.append(f"fn decode_{message['name']}(body: &[u8]) -> Option<{struct}> {{")
+        if message["fields"]:
+            lines.append("    let mut body = body;")
         for field in message["fields"]:
             lines.append(
                 f"    let {field['name']} = {RUST_READERS[field['type']][0]}(&mut body)?;"

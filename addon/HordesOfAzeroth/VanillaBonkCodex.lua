@@ -1510,6 +1510,12 @@ VanillaBonkCodex.TogglePool = function(entry)
     return TogglePool(entry)
 end
 
+VanillaBonkUI.ListenHoa({
+    HOA_AFFIX_INFO = function(info)
+        handlers["affixinfo"]({ false, info.name, info.icon, info.description })
+    end,
+})
+
 local events = CreateFrame("Frame")
 events:RegisterEvent("CHAT_MSG_SYSTEM")
 events:RegisterEvent("PLAYER_MONEY")

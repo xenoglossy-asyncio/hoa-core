@@ -1808,7 +1808,12 @@ void BonkRun::StartStage()
     ResetPaladinState();
     ResetDruidState();
     m_bleedHeal = 0.0f;
-    m_player->GetBonkPlayer()->SendAddon("mobclear");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMobClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 
     if (m_sandbox)
     {
@@ -12012,8 +12017,12 @@ Creature* BonkRun::SummonCaravan(uint32 entry, float x, float y, float z, float 
     caravan->SetPlateId(m_lastPlateId);
     caravan->ForceValuesUpdateAtIndex(UNIT_FIELD_HEALTH);
     caravan->ForceValuesUpdateAtIndex(UNIT_FIELD_MAXHEALTH);
-    m_player->GetBonkPlayer()->SendAddon("ally~" + m_player->GetBonkPlayer()->GetLocalName(caravan) + "~" + std::to_string(caravan->GetPlateId()) + "~" +
-        BonkMobAI::GetUnitGuidText(caravan));
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteAlly(data, m_player->GetBonkPlayer()->GetLocalName(caravan), caravan->GetPlateId(), BonkMobAI::GetUnitGuidText(caravan));
+        m_player->GetSession()->SendPacket(&data);
+    }
     return caravan;
 }
 
@@ -12571,11 +12580,12 @@ BonkRun* BonkRun::GetKillRewardRun(Unit* killer)
 
 void BonkRun::SendMobDead(Creature const* mob, bool named) const
 {
-    if (named)
-        m_player->GetBonkPlayer()->SendAddon("mobdead~" + m_player->GetBonkPlayer()->GetLocalName(mob) + "~" + std::to_string(mob->GetPlateId()) + "~" +
-            BonkMobAI::GetUnitGuidText(mob));
-    else
-        m_player->GetBonkPlayer()->SendAddon("mobdead~~" + std::to_string(mob->GetPlateId()) + "~" + BonkMobAI::GetUnitGuidText(mob));
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteMobDead(data, named ? m_player->GetBonkPlayer()->GetLocalName(mob) : "", mob->GetPlateId(),
+        BonkMobAI::GetUnitGuidText(mob));
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkRun::RewardKill(Creature* mob, BonkSpawnKind kind, Unit* killer, bool eventGroup)
@@ -14729,7 +14739,12 @@ void BonkRun::CleanUp()
     m_spellShield = 0;
     m_spellShieldParts.clear();
     m_chestChoices.clear();
-    m_player->GetBonkPlayer()->SendAddon("mobclear");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMobClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     SetMovementImmunity(m_player, false);
     if (m_sandbox)
         EndSandbox();

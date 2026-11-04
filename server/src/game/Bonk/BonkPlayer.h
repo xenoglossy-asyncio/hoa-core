@@ -328,6 +328,7 @@ class BonkPlayer
         void SendAuraText(uint32 spellId, std::string const& text) const;
         void SendAuraPercent(uint32 spellId, float percent) const;
         bool IsAddonReady() const { return m_addonReady; }
+        Player* GetPlayer() const { return m_player; }
         void SetLocale(LocaleConstant locale);
         void ApplyLocale(LocaleConstant locale);
         LocaleConstant GetLocale() const { return m_locale; }

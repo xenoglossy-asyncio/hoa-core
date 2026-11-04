@@ -4,7 +4,6 @@ local SKULL = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull"
 local NAME_FONT = VanillaBonkUI.FONT
 local NUMBER_FONT = VanillaBonkUI.NUMBER_FONT
 local PLATE_BORDER = "Interface\\Tooltips\\Nameplate-Border"
-local PREFIX = "BONK~"
 local UI = VanillaBonkUI
 local ICON_PATH = "Interface\\Icons\\"
 
@@ -968,16 +967,20 @@ handlers["mobclear"] = function()
     ReleaseAllyPlates()
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("CHAT_MSG_SYSTEM")
-events:SetScript("OnEvent", function()
-    if not arg1 or strsub(arg1, 1, strlen(PREFIX)) ~= PREFIX then
-        return
-    end
-    local start = strlen(PREFIX) + 1
-    local stop = strfind(arg1, "~", start, true)
-    local handler = handlers[strsub(arg1, start, stop and stop - 1 or -1)]
-    if handler then
-        handler(Split(strsub(arg1, start), "~"))
-    end
-end)
+UI.ListenHoa({
+    HOA_MOB = function(mob)
+        handlers["mob"]({ false, mob.kind, mob.name, mob.icons, mob.plate_id, mob.guid })
+    end,
+    HOA_MOB_DEAD = function(dead)
+        handlers["mobdead"]({ false, dead.name, dead.plate_id, dead.guid })
+    end,
+    HOA_MOB_CLEAR = function()
+        handlers["mobclear"]()
+    end,
+    HOA_ALLY = function(ally)
+        handlers["ally"]({ false, ally.name, ally.plate_id, ally.guid })
+    end,
+    HOA_ALLY_DONE = function(done)
+        handlers["allydone"]({ false, done.plate_id ~= 0 and done.plate_id or nil })
+    end,
+})

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 7
+#define HOA_PROTOCOL_VERSION 8
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -29,6 +29,12 @@
 #define HOA_MSG_OBJECTIVE 0x001B
 #define HOA_MSG_OBJECTIVE_CLEAR 0x001C
 #define HOA_MSG_OBJECTIVE_PING 0x001D
+#define HOA_MSG_MOB 0x001E
+#define HOA_MSG_MOB_DEAD 0x001F
+#define HOA_MSG_MOB_CLEAR 0x0020
+#define HOA_MSG_ALLY 0x0021
+#define HOA_MSG_ALLY_DONE 0x0022
+#define HOA_MSG_AFFIX_INFO 0x0023
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -225,4 +231,50 @@ inline void HoAWriteObjectivePing(WorldPacket& packet, uint32 const& id)
 {
     packet << uint16(HOA_MSG_OBJECTIVE_PING);
     packet << uint32(id);
+}
+
+inline void HoAWriteMob(WorldPacket& packet, uint32 const& kind, std::string const& name, std::string const& icons, uint32 const& plateId, std::string const& guid)
+{
+    packet << uint16(HOA_MSG_MOB);
+    packet << uint32(kind);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icons);
+    packet << uint32(plateId);
+    HoAWriteString(packet, guid);
+}
+
+inline void HoAWriteMobDead(WorldPacket& packet, std::string const& name, uint32 const& plateId, std::string const& guid)
+{
+    packet << uint16(HOA_MSG_MOB_DEAD);
+    HoAWriteString(packet, name);
+    packet << uint32(plateId);
+    HoAWriteString(packet, guid);
+}
+
+inline void HoAWriteMobClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_MOB_CLEAR);
+}
+
+inline void HoAWriteAlly(WorldPacket& packet, std::string const& name, uint32 const& plateId, std::string const& guid)
+{
+    packet << uint16(HOA_MSG_ALLY);
+    HoAWriteString(packet, name);
+    packet << uint32(plateId);
+    HoAWriteString(packet, guid);
+}
+
+inline void HoAWriteAllyDone(WorldPacket& packet, uint32 const& plateId, std::string const& guid)
+{
+    packet << uint16(HOA_MSG_ALLY_DONE);
+    packet << uint32(plateId);
+    HoAWriteString(packet, guid);
+}
+
+inline void HoAWriteAffixInfo(WorldPacket& packet, std::string const& name, std::string const& icon, std::string const& description)
+{
+    packet << uint16(HOA_MSG_AFFIX_INFO);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, icon);
+    HoAWriteString(packet, description);
 }

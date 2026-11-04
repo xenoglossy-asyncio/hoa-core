@@ -4,8 +4,10 @@
 #include "BonkPlayer.h"
 #include "BonkQuests.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "Player.h"
+#include "WorldSession.h"
 #include "Utilities/Random.h"
 
 #include <algorithm>
@@ -303,8 +305,12 @@ void BonkRun::UpdateMiniEventTarget(uint32 diff)
 
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     bonk->Notify(m_miniEvent.type == BONK_MINI_EVENT_GOBLIN ? BONK_STRING_TREASURE_GOBLIN_GOT_AWAY : BONK_STRING_SLIPPED_AWAY, { bonk->GetLocalName(target) });
-    bonk->SendAddon("mobdead~" + bonk->GetLocalName(target) + "~" + std::to_string(target->GetPlateId()) + "~" +
-        BonkMobAI::GetUnitGuidText(target));
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMobDead(data, bonk->GetLocalName(target), target->GetPlateId(), BonkMobAI::GetUnitGuidText(target));
+        m_player->GetSession()->SendPacket(&data);
+    }
     target->CastSpell(target, BONK_SPELL_SPAWN_SMOKE, true);
     target->DespawnOrUnsummon(500);
     EndMiniEvent();
@@ -745,8 +751,12 @@ void BonkRun::UpdateMiniEventGroup(uint32 diff)
     for (ObjectGuid const& guid : m_miniEvent.targets)
         if (Creature* target = map->GetCreature(guid))
         {
-            bonk->SendAddon("mobdead~" + bonk->GetLocalName(target) + "~" + std::to_string(target->GetPlateId()) + "~" +
-                BonkMobAI::GetUnitGuidText(target));
+            if (bonk->IsAddonReady())
+            {
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteMobDead(data, bonk->GetLocalName(target), target->GetPlateId(), BonkMobAI::GetUnitGuidText(target));
+                m_player->GetSession()->SendPacket(&data);
+            }
             target->CastSpell(target, BONK_SPELL_SPAWN_SMOKE, true);
             target->DespawnOrUnsummon(500);
         }
@@ -1005,7 +1015,12 @@ void BonkRun::EndCaravan(bool arrived)
                 ai->ClearRaidTarget();
     if (caravan)
     {
-        bonk->SendAddon("allydone~" + std::to_string(caravan->GetPlateId()) + "~" + BonkMobAI::GetUnitGuidText(caravan));
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteAllyDone(data, caravan->GetPlateId(), BonkMobAI::GetUnitGuidText(caravan));
+            m_player->GetSession()->SendPacket(&data);
+        }
         if (arrived)
         {
             float const x = caravan->GetPositionX(), y = caravan->GetPositionY();
@@ -1025,7 +1040,12 @@ void BonkRun::EndCaravan(bool arrived)
     }
     else
     {
-        bonk->SendAddon("allydone");
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteAllyDone(data, 0, "");
+            m_player->GetSession()->SendPacket(&data);
+        }
         bonk->Notify(BONK_STRING_CARAVAN_IS_LOST);
     }
     EndMiniEvent();

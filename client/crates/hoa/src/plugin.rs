@@ -36,6 +36,12 @@ const HOA_RUN_PARTY_METER: &str = "HOA_RUN_PARTY_METER";
 const HOA_OBJECTIVE: &str = "HOA_OBJECTIVE";
 const HOA_OBJECTIVE_CLEAR: &str = "HOA_OBJECTIVE_CLEAR";
 const HOA_OBJECTIVE_PING: &str = "HOA_OBJECTIVE_PING";
+const HOA_MOB: &str = "HOA_MOB";
+const HOA_MOB_DEAD: &str = "HOA_MOB_DEAD";
+const HOA_MOB_CLEAR: &str = "HOA_MOB_CLEAR";
+const HOA_ALLY: &str = "HOA_ALLY";
+const HOA_ALLY_DONE: &str = "HOA_ALLY_DONE";
+const HOA_AFFIX_INFO: &str = "HOA_AFFIX_INFO";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -112,6 +118,60 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Mob(mob) => {
+                    script.fire_event(
+                        HOA_MOB,
+                        vec![lua_table(vec![
+                            ("kind", ScriptValue::Int(i64::from(mob.kind))),
+                            ("name", ScriptValue::Str(mob.name)),
+                            ("icons", ScriptValue::Str(mob.icons)),
+                            ("plate_id", ScriptValue::Int(i64::from(mob.plate_id))),
+                            ("guid", ScriptValue::Str(mob.guid)),
+                        ])],
+                    );
+                }
+                HoaMessage::MobDead(dead) => {
+                    script.fire_event(
+                        HOA_MOB_DEAD,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(dead.name)),
+                            ("plate_id", ScriptValue::Int(i64::from(dead.plate_id))),
+                            ("guid", ScriptValue::Str(dead.guid)),
+                        ])],
+                    );
+                }
+                HoaMessage::MobClear(_) => {
+                    script.fire_event(HOA_MOB_CLEAR, Vec::new());
+                }
+                HoaMessage::Ally(ally) => {
+                    script.fire_event(
+                        HOA_ALLY,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(ally.name)),
+                            ("plate_id", ScriptValue::Int(i64::from(ally.plate_id))),
+                            ("guid", ScriptValue::Str(ally.guid)),
+                        ])],
+                    );
+                }
+                HoaMessage::AllyDone(done) => {
+                    script.fire_event(
+                        HOA_ALLY_DONE,
+                        vec![lua_table(vec![
+                            ("plate_id", ScriptValue::Int(i64::from(done.plate_id))),
+                            ("guid", ScriptValue::Str(done.guid)),
+                        ])],
+                    );
+                }
+                HoaMessage::AffixInfo(info) => {
+                    script.fire_event(
+                        HOA_AFFIX_INFO,
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(info.name)),
+                            ("icon", ScriptValue::Str(info.icon)),
+                            ("description", ScriptValue::Str(info.description)),
+                        ])],
+                    );
+                }
                 HoaMessage::Objective(objective) => {
                     script.fire_event(
                         HOA_OBJECTIVE,
@@ -376,6 +436,12 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_OBJECTIVE);
         add_in_game_event(HOA_OBJECTIVE_CLEAR);
         add_in_game_event(HOA_OBJECTIVE_PING);
+        add_in_game_event(HOA_MOB);
+        add_in_game_event(HOA_MOB_DEAD);
+        add_in_game_event(HOA_MOB_CLEAR);
+        add_in_game_event(HOA_ALLY);
+        add_in_game_event(HOA_ALLY_DONE);
+        add_in_game_event(HOA_AFFIX_INFO);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),
@@ -656,5 +722,13 @@ mod tests {
         assert_eq!(objective.seconds, 30);
         assert_eq!(objective.icon, "icon");
         assert_eq!(objective.description, "desc");
+    }
+
+    #[test]
+    fn an_empty_message_decodes_without_fields() {
+        let Some(HoaMessage::MobClear(_)) = protocol_generated::decode(protocol_generated::MSG_MOB_CLEAR, &[]) else {
+            panic!("empty mob clear did not decode");
+        };
+        assert!(protocol_generated::decode(protocol_generated::MSG_MOB_CLEAR, &[1]).is_none());
     }
 }
