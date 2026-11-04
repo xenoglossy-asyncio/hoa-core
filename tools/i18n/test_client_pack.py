@@ -43,9 +43,11 @@ class ClientPackTests(unittest.TestCase):
     def test_glue_aliases_are_unique_or_agree(self) -> None:
         aliases = self.packs["enUS"]["aliases"]
         messages = self.packs["zhCN"]["messages"]
+        fallback = self.packs["enUS"]["fallbackMessages"]
+        alias_ids = set(aliases.values())
         by_english = {}
-        for message_id, text in self.packs["enUS"]["fallbackMessages"].items():
-            english = text
+        for message_id in alias_ids:
+            english = fallback[message_id]
             previous = by_english.get(english)
             if previous is not None:
                 self.assertEqual(

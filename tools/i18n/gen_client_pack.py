@@ -41,6 +41,10 @@ def render() -> dict[str, bytes]:
                 f"duplicate global {name}: {globals_map[name]} and {entry['id']}"
             )
         globals_map[name] = entry["id"]
+        if name.startswith(("BINDING_", "KEY_")):
+            # Stock key labels can share an English word with UI prose ("Delete"); they are not
+            # English-sentence aliases for Lua call sites.
+            continue
         english = entry["enUS"]
         existing = alias_text.get(english)
         if existing is not None and existing != entry["zhCN"]:

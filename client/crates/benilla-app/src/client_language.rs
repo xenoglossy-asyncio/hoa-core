@@ -210,6 +210,7 @@ pub(crate) fn install_for_script(script: &UiScript) {
         .as_deref()
         == Some(pack.locale.as_str());
     if already {
+        refresh_globals(script);
         return;
     }
 
@@ -296,6 +297,18 @@ pub(crate) fn install_for_script(script: &UiScript) {
     if let Err(e) = globals.set("HOA_UI_LOCALE", pack.locale.as_str()) {
         warn!("client_language: cannot set HOA_UI_LOCALE: {e}");
     }
+    refresh_globals(script);
+}
+
+/// Re-apply the pack's global values, including stock names such as `BINDING_NAME_*` that the
+/// core's `GlobalStrings.lua` writes after `new_vm` has seated the pack.
+pub(crate) fn refresh_globals(script: &UiScript) {
+    let index = script.ui_locale().unwrap_or_else(|| script.locale());
+    let code = Locale::from_index(index)
+        .map(Locale::name)
+        .unwrap_or(FALLBACK);
+    let pack = PACKS.get(code);
+    let globals = script.lua().globals();
     for (name, id) in &pack.globals {
         let text = pack.text(id).unwrap_or(id);
         if let Err(e) = globals.set(name.as_str(), text) {

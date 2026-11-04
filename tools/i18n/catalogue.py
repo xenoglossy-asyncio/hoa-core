@@ -16,7 +16,7 @@ UI = ROOT / "shared" / "i18n" / "ui"
 CONFIG = ROOT / "shared" / "i18n" / "config.yaml"
 
 ID_RE = re.compile(r"^hoa\.[a-z0-9_]+(\.[a-z0-9_]+)*$")
-GLOBAL_RE = re.compile(r"^HOA_[A-Z0-9_]+$")
+GLOBAL_RE = re.compile(r"^(?:HOA|BINDING|KEY)_[A-Z0-9_]+$")
 PLACEHOLDER_RE = re.compile(r"\{(\d+)\}")
 
 
