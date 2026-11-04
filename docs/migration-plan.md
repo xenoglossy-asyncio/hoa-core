@@ -21,6 +21,7 @@
 - 版本从 **0.1.0** 开始（`VERSION`）。
 - 建立统一构建脚本和 CI：服务端 CMake、客户端 Cargo、启动器 dotnet、插件 Lua 语法检查。
 - 验收：一条命令构建全部组件；现有功能可运行；CI 绿。
+- 进度（2026-11-04）：代码已导入并提交；`scripts/build.ps1 -Component server` 构建通过，launcher 通过，addon 64 个 Lua 文件语法通过，client workspace 清单通过；client 完整 `cargo build` 待跑。
 - 风险：仓库体积（只导入 tracked 文件，不含 `target/`、`bin/`、`obj/`、数据库）；许可证混用（按目录保留）。
 
 ## 阶段 2：i18n 基础

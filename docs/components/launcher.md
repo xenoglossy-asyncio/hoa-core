@@ -16,3 +16,9 @@ Avalonia C# 启动器。
 ## 构建
 
 导入后补充：.NET SDK 版本、发布命令、Windows/Linux 打包。
+
+## 待改
+
+- 删除公网大厅/注册逻辑（`CoopAgent` 的 `/host` 注册、`LobbyUrl` 元数据、相关网络探测）；保留局域网自动发现和 `ip/domain:port` 直连。
+- 语言选择改为账号级，启动前按 `(locale, contentVersion)` 失效缓存。
+- 清理 `Repository`/`StatsUrl`/`MirrorUrl` 等上游地址，换成新仓库或留空。

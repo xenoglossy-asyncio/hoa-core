@@ -13,7 +13,7 @@
 | 效果 | 一个效果 = 一个真实服务端光环，插件只读 |
 | 内容 | `shared/content` 单一来源，工具生成各端产物 |
 | 联机 | 只支持局域网和 `ip/domain:port` 直连；不做公网大厅/注册服务器 |
-| 第一步 | 阶段 0 文档 + 骨架已完成；阶段 1 导入代码和构建基线 |
+| 第一步 | 阶段 0 文档 + 骨架完成；阶段 1 代码导入完成，构建基线进行中 |
 
 ## 阅读顺序
 
@@ -25,6 +25,13 @@
 6. [内容与数据](content-data.md)
 7. [协议](protocol.md)
 8. [迁移计划](migration-plan.md)
+
+## 组件说明
+
+- [server](components/server.md)
+- [client](components/client.md)
+- [addon](components/addon.md)
+- [launcher](components/launcher.md)
 
 ## 待确认
 
