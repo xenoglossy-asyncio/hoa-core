@@ -100,6 +100,16 @@ UPDATE `hoa_spell_clone` SET `entry` = 60046, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60047, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60048, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60049, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60050, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60051, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60052, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 DROP TEMPORARY TABLE `hoa_spell_clone`;
 
 UPDATE `spell_template` SET
@@ -759,3 +769,73 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60047 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Clearcasting',
+  `nameSubtext` = '',
+  `description` = 'Your next spell deals more damage.',
+  `auraDescription` = 'Your next spell deals more damage.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60048 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Fingers of Frost',
+  `nameSubtext` = '',
+  `description` = 'Your next Frostbolt treats its target as frozen.',
+  `auraDescription` = 'Your next Frostbolt treats its target as frozen.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60049 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Arcane Potency',
+  `nameSubtext` = '',
+  `description` = 'Your next spells have increased critical chance.',
+  `auraDescription` = 'Your next spells have increased critical chance.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60050 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Aegis',
+  `nameSubtext` = '',
+  `description` = 'Your next absorbed hit triggers Aegis.',
+  `auraDescription` = 'Your next absorbed hit triggers Aegis.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60051 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Vanish',
+  `nameSubtext` = '',
+  `description` = 'Your next attack from stealth is a critical strike.',
+  `auraDescription` = 'Your next attack from stealth is a critical strike.',
+  `spellIconId` = 28,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60052 AND `build` = 5875;

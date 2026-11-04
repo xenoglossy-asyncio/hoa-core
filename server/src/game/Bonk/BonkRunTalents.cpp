@@ -560,6 +560,11 @@ void BonkRun::UpdateTalentAuras()
     SyncStackAura(BONK_SPELL_BULWARK, m_bulwarkStacks);
     SyncStackAura(BONK_SPELL_ANCIENT_MADNESS, m_madnessStacks);
     SyncStackAura(BONK_SPELL_BLOODTALONS, m_bloodtalonsStacks);
+    SyncStackAura(BONK_SPELL_CLEARCASTING, m_clearcastBoostReady ? 1 : 0);
+    SyncStackAura(BONK_SPELL_FINGERS_OF_FROST, m_fingersReady ? 1 : 0);
+    SyncStackAura(BONK_SPELL_ARCANE_POTENCY, m_potencyCasts);
+    SyncStackAura(BONK_SPELL_AEGIS, m_aegisPending ? 1 : 0);
+    SyncStackAura(BONK_SPELL_VANISH_CRIT, m_vanishCritPending ? 1 : 0);
 }
 
 void BonkRun::UpdateTalents()

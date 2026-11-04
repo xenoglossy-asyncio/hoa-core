@@ -376,3 +376,43 @@
   icon: Interface\Icons\Spell_Holy_HammerOfWrath
   description: This enemy takes more damage from you for a short time.
   description_zhCN: 短时间内该敌人受到的伤害提高。
+- id: 60048
+  key: clearcasting
+  cpp: BONK_SPELL_CLEARCASTING
+  name: Clearcasting
+  name_zhCN: 节能施法
+  icon: Interface\Icons\Spell_Shadow_ManaBurn
+  description: Your next spell deals more damage.
+  description_zhCN: 你的下一个法术造成更高伤害。
+- id: 60049
+  key: fingers_of_frost
+  cpp: BONK_SPELL_FINGERS_OF_FROST
+  name: Fingers of Frost
+  name_zhCN: 寒冰指
+  icon: Interface\Icons\Spell_Frost_FrostNova
+  description: Your next Frostbolt treats its target as frozen.
+  description_zhCN: 你的下一个寒冰箭将目标视为被冻结。
+- id: 60050
+  key: arcane_potency
+  cpp: BONK_SPELL_ARCANE_POTENCY
+  name: Arcane Potency
+  name_zhCN: 奥术潜能
+  icon: Interface\Icons\Spell_Nature_StarFall
+  description: Your next spells have increased critical chance.
+  description_zhCN: 你接下来的法术暴击率提高。
+- id: 60051
+  key: aegis
+  cpp: BONK_SPELL_AEGIS
+  name: Aegis
+  name_zhCN: 神盾
+  icon: Interface\Icons\Spell_Holy_DevotionAura
+  description: Your next absorbed hit triggers Aegis.
+  description_zhCN: 下一次被吸收的攻击会触发神盾。
+- id: 60052
+  key: vanish_crit
+  cpp: BONK_SPELL_VANISH_CRIT
+  name: Vanish
+  name_zhCN: 消失
+  icon: Interface\Icons\Ability_Stealth
+  description: Your next attack from stealth is a critical strike.
+  description_zhCN: 你潜行后的下一次攻击必定暴击。
