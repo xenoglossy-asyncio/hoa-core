@@ -2821,6 +2821,17 @@ handlers["leyofferclose"] = function()
 end
 
 UI.ListenHoa({
+    HOA_GEAR = function(gear)
+        handlers["gear"]({ false, tostring(gear.id), gear.stats })
+    end,
+    HOA_GEAR_END = function()
+        handlers["gearend"]()
+    end,
+    HOA_ARENA = function(arena)
+        handlers["arena"]({
+            false, arena.npc_present and "1" or "0", arena.npc, arena.gold_bonus, arena.challenges, arena.perks,
+        })
+    end,
     HOA_SHOP_OPEN = function(shop)
         local kind = tostring(shop.kind)
         if kind == FORTUNE_SHOP then

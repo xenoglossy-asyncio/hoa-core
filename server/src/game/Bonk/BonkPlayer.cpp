@@ -3368,13 +3368,27 @@ void BonkPlayer::NotifyFind(std::string const& text) const
 
 void BonkPlayer::SendGearInfo() const
 {
+    if (!m_addonReady)
+        return;
     for (auto const& itr : sBonkMgr.GetItemStats())
-        SendAddon("gear~" + std::to_string(itr.first) + "~" + FormatStatList(itr.second.stats));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGear(data, itr.first, FormatStatList(itr.second.stats));
+        m_player->GetSession()->SendPacket(&data);
+    }
     for (uint8 effect = 0; effect < MAX_BONK_TRINKET_EFFECT; ++effect)
-        SendAddon("trinkettip~" + std::to_string(BonkMgr::GetGearEntry(BONK_GEAR_FIRST_TRINKET + effect, BONK_GEAR_LOWEST_QUALITY, 1)) + "~" +
-            std::to_string(BONK_GEAR_QUALITIES * BONK_GEAR_TIERS) + "~" + GetString(BonkMgr::GetTrinket(BonkTrinketEffect(effect)).text));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteTrinketTip(data, BonkMgr::GetGearEntry(BONK_GEAR_FIRST_TRINKET + effect, BONK_GEAR_LOWEST_QUALITY, 1),
+            BONK_GEAR_QUALITIES * BONK_GEAR_TIERS, GetString(BonkMgr::GetTrinket(BonkTrinketEffect(effect)).text));
+        m_player->GetSession()->SendPacket(&data);
+    }
 
-    SendAddon("gearend");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGearEnd(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     SendFoundItems();
     if (m_run)
         m_run->SendEnchants();
@@ -3467,8 +3481,9 @@ void BonkPlayer::SendArena(std::string const& npc) const
         for (std::string const& perk : perks)
             perkText = perkText.empty() ? perk : GetString(BONK_STRING_LIST_ITEM, { perkText, perk });
 
-        SendAddon("arena~" + std::string(npc.empty() ? "0" : "1") + "~" + npc + "~" + std::to_string(uint32(bonuses.goldBonus + 0.5f)) + "~" +
-            challenges + "~" + perkText);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteArena(data, !npc.empty(), npc, uint32(bonuses.goldBonus + 0.5f), challenges, perkText);
+        m_player->GetSession()->SendPacket(&data);
     }
 
     if (m_addonReady)

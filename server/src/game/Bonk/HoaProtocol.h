@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 22
+#define HOA_PROTOCOL_VERSION 23
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -133,6 +133,10 @@
 #define HOA_MSG_MASTERY_PRESET_RANKS 0x0083
 #define HOA_MSG_SHOP_END 0x0084
 #define HOA_MSG_SHOP_CLOSE 0x0085
+#define HOA_MSG_GEAR 0x0086
+#define HOA_MSG_GEAR_END 0x0087
+#define HOA_MSG_TRINKET_TIP 0x0088
+#define HOA_MSG_ARENA 0x0089
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -1170,4 +1174,34 @@ inline void HoAWriteShopEnd(WorldPacket& packet)
 inline void HoAWriteShopClose(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_SHOP_CLOSE);
+}
+
+inline void HoAWriteGear(WorldPacket& packet, uint32 const& id, std::string const& stats)
+{
+    packet << uint16(HOA_MSG_GEAR);
+    packet << uint32(id);
+    HoAWriteString(packet, stats);
+}
+
+inline void HoAWriteGearEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_GEAR_END);
+}
+
+inline void HoAWriteTrinketTip(WorldPacket& packet, uint32 const& entry, uint32 const& count, std::string const& text)
+{
+    packet << uint16(HOA_MSG_TRINKET_TIP);
+    packet << uint32(entry);
+    packet << uint32(count);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteArena(WorldPacket& packet, bool const& npcPresent, std::string const& npc, uint32 const& goldBonus, std::string const& challenges, std::string const& perks)
+{
+    packet << uint16(HOA_MSG_ARENA);
+    packet << bool(npcPresent);
+    HoAWriteString(packet, npc);
+    packet << uint32(goldBonus);
+    HoAWriteString(packet, challenges);
+    HoAWriteString(packet, perks);
 }

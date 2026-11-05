@@ -140,6 +140,10 @@ const HOA_MASTERY_PRESETS: &str = "HOA_MASTERY_PRESETS";
 const HOA_MASTERY_PRESET_RANKS: &str = "HOA_MASTERY_PRESET_RANKS";
 const HOA_SHOP_END: &str = "HOA_SHOP_END";
 const HOA_SHOP_CLOSE: &str = "HOA_SHOP_CLOSE";
+const HOA_GEAR: &str = "HOA_GEAR";
+const HOA_GEAR_END: &str = "HOA_GEAR_END";
+const HOA_TRINKET_TIP: &str = "HOA_TRINKET_TIP";
+const HOA_ARENA: &str = "HOA_ARENA";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -216,6 +220,40 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Gear(gear) => {
+                    script.fire_event(
+                        HOA_GEAR,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(gear.id))),
+                            ("stats", ScriptValue::Str(gear.stats)),
+                        ])],
+                    );
+                }
+                HoaMessage::GearEnd(_) => {
+                    script.fire_event(HOA_GEAR_END, Vec::new());
+                }
+                HoaMessage::TrinketTip(tip) => {
+                    script.fire_event(
+                        HOA_TRINKET_TIP,
+                        vec![lua_table(vec![
+                            ("entry", ScriptValue::Int(i64::from(tip.entry))),
+                            ("count", ScriptValue::Int(i64::from(tip.count))),
+                            ("text", ScriptValue::Str(tip.text)),
+                        ])],
+                    );
+                }
+                HoaMessage::Arena(arena) => {
+                    script.fire_event(
+                        HOA_ARENA,
+                        vec![lua_table(vec![
+                            ("npc_present", ScriptValue::Bool(arena.npc_present)),
+                            ("npc", ScriptValue::Str(arena.npc)),
+                            ("gold_bonus", ScriptValue::Int(i64::from(arena.gold_bonus))),
+                            ("challenges", ScriptValue::Str(arena.challenges)),
+                            ("perks", ScriptValue::Str(arena.perks)),
+                        ])],
+                    );
+                }
                 HoaMessage::ShopOpen(shop) => {
                     script.fire_event(
                         HOA_SHOP_OPEN,
@@ -1481,6 +1519,10 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_MASTERY_PRESET_RANKS);
         add_in_game_event(HOA_SHOP_END);
         add_in_game_event(HOA_SHOP_CLOSE);
+        add_in_game_event(HOA_GEAR);
+        add_in_game_event(HOA_GEAR_END);
+        add_in_game_event(HOA_TRINKET_TIP);
+        add_in_game_event(HOA_ARENA);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

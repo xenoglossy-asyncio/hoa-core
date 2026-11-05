@@ -1164,4 +1164,10 @@ handlers["trinkettip"] = function(f)
     end
 end
 
+UI.ListenHoa({
+    HOA_TRINKET_TIP = function(tip)
+        handlers["trinkettip"]({ false, tip.entry, tip.count, tip.text })
+    end,
+})
+
 UI.Listen(handlers)
