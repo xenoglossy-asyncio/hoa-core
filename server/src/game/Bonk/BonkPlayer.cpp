@@ -842,6 +842,8 @@ bool BonkPlayer::LoadMasteryPreset(uint8 slot, std::string& message)
 
 void BonkPlayer::SendMasteryPresetRanks() const
 {
+    if (!m_addonReady)
+        return;
     size_t const nodesPerLine = 16;
     for (auto const& preset : m_masteryPresets)
     {
@@ -854,29 +856,15 @@ void BonkPlayer::SendMasteryPresetRanks() const
             ranks += (ranks.empty() ? "" : ",") + std::to_string(itr.first) + ":" + std::to_string(itr.second);
             if (++count % nodesPerLine == 0 || count == preset.second.size())
             {
-                SendAddon("presetranks~" + std::to_string(preset.first) + "~" + ranks);
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteMasteryPresetRanks(data, preset.first, ranks);
+                m_player->GetSession()->SendPacket(&data);
                 ranks.clear();
             }
         }
     }
 }
 
-std::string BonkPlayer::DescribeMasteryPresets() const
-{
-    uint8 const active = m_activeMasteryPreset;
-    std::string line = "presets~" + std::to_string(active);
-    for (uint8 slot = 1; slot <= BONK_MASTERY_PRESET_SLOTS; ++slot)
-    {
-        uint32 spent = 0;
-        if (slot == active)
-            spent = GetMasterySpent();
-        else
-            for (auto const& itr : ReadMasteryPreset(slot))
-                spent += itr.second;
-        line += "~" + std::to_string(spent);
-    }
-    return line;
-}
 
 bool BonkPlayer::RefundMastery(uint32 nodeId, std::string& message)
 {
@@ -1835,7 +1823,7 @@ void BonkPlayer::ShopLearn(uint32 id)
     if (!IsAtShop())
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1857,7 +1845,7 @@ void BonkPlayer::ShopUnlearn(uint32 id)
     if (!IsAtShop())
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1879,7 +1867,7 @@ void BonkPlayer::ShopToggle(uint32 id)
     if (!IsAtShop() || m_shop != BONK_SHOP_TALENTS)
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1895,7 +1883,7 @@ void BonkPlayer::ShopPreset(uint8 slot)
     if (!IsAtShop() || m_shop != BONK_SHOP_MASTERY)
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1912,7 +1900,7 @@ void BonkPlayer::ShopRespec()
     if (!IsAtShop())
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1931,29 +1919,46 @@ void BonkPlayer::ShopRespec()
 
 void BonkPlayer::SendMasteryShop(bool open, bool inspect) const
 {
+    if (!m_addonReady)
+        return;
     uint8 const classId = m_player->GetClass();
     uint32 const level = GetMasteryLevel();
     uint32 const earned = GetMasteryPoints();
     uint32 const spent = GetMasterySpent();
-    SendAddon("shop~" + std::to_string(uint32(BONK_SHOP_MASTERY)) + "~" + (open ? "1" : "0") + "~" + (inspect ? std::string() : m_shopNpcName) + "~points~" +
-        std::to_string(earned > spent ? earned - spent : 0) + "~" + std::to_string(level) + "~" +
-        std::to_string(BonkMastery::GetXpIntoLevel(m_masteryXp)) + "~" +
-        std::to_string(level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0) + "~" +
-        std::to_string(BONK_MASTERY_MAX_LEVEL) + "~" + std::to_string(earned) + "~" + std::to_string(earned - level) + "~" +
-        GetClassName() + "~" + std::to_string(BONK_MASTERY_POINTS_PER_ROW) + (inspect ? "~1" : ""));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShopOpen(data, uint32(BONK_SHOP_MASTERY), open, inspect ? std::string() : m_shopNpcName, "points",
+            earned > spent ? earned - spent : 0, level, BonkMastery::GetXpIntoLevel(m_masteryXp),
+            level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0, BONK_MASTERY_MAX_LEVEL, earned,
+            earned - level, GetClassName(), BONK_MASTERY_POINTS_PER_ROW, inspect, "", false);
+        m_player->GetSession()->SendPacket(&data);
+    }
 
     for (BonkMasteryTree const* tree : sBonkMastery.GetTrees(classId))
     {
         std::string gates;
         for (uint8 row = 0; row < BONK_MASTERY_FREE_ROWS; ++row)
             gates += (row ? "," : "") + std::to_string(tree->IsFree() ? BONK_MASTERY_FREE_GATES[row] : uint32(std::max<uint8>(row, 1) - 1) * BONK_MASTERY_POINTS_PER_ROW);
-        SendAddon("tree~" + std::to_string(tree->id) + "~" + Localize(BONK_FIELD_MASTERY_TREE_NAME, tree->id, tree->name) + "~" + tree->background + "~" + std::to_string(uint32(tree->layout)) + "~" + gates +
-            "~" + std::to_string(GetMasterySpentInTree(tree->id)));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMasteryTree(data, tree->id, Localize(BONK_FIELD_MASTERY_TREE_NAME, tree->id, tree->name), tree->background,
+            uint32(tree->layout), gates, GetMasterySpentInTree(tree->id));
+        m_player->GetSession()->SendPacket(&data);
     }
 
     if (!inspect)
     {
-        SendAddon(DescribeMasteryPresets());
+        uint32 points[BONK_MASTERY_PRESET_SLOTS] = {};
+        for (uint8 slot = 1; slot <= BONK_MASTERY_PRESET_SLOTS; ++slot)
+        {
+            if (slot == m_activeMasteryPreset)
+                points[slot - 1] = GetMasterySpent();
+            else
+                for (auto const& itr : ReadMasteryPreset(slot))
+                    points[slot - 1] += itr.second;
+        }
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMasteryPresets(data, m_activeMasteryPreset, points[0], points[1], points[2]);
+        m_player->GetSession()->SendPacket(&data);
         SendMasteryPresetRanks();
     }
 
@@ -1963,23 +1968,27 @@ void BonkPlayer::SendMasteryShop(bool open, bool inspect) const
         if (node.classId != classId)
             continue;
         uint8 const rank = GetMasteryRank(node.id);
-        std::ostringstream line;
-        line << "node~" << node.tree << '~' << node.id << '~' << uint32(node.row) << '~' << uint32(node.column) << '~' << node.icon
-             << '~' << uint32(rank) << '~' << uint32(node.maxRank) << '~' << (rank < node.maxRank ? 1 : 0)
-             << '~' << node.requiredId << '~' << uint32(node.requiredRank) << "~0~0~" << Localize(BONK_FIELD_MASTERY_NAME, node.id, node.name)
-             << '~' << Localize(BONK_FIELD_MASTERY_DESCRIPTION, node.id, node.description) << "~0~~" << FormatStat(node.valuePerRank) << '~' << (rank ? 1 : 0);
         std::string parents;
         for (uint32 parentId : node.parents)
             parents += (parents.empty() ? "" : ",") + std::to_string(parentId);
-        line << '~' << uint32(node.shape) << '~' << FormatStat(node.position) << '~' << parents << '~' << node.excludes;
-        SendAddon(line.str());
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMasteryNode(data, node.tree, node.id, uint32(node.row), uint32(node.column), node.icon, uint32(rank),
+            uint32(node.maxRank), rank < node.maxRank ? 1 : 0, node.requiredId, uint32(node.requiredRank),
+            Localize(BONK_FIELD_MASTERY_NAME, node.id, node.name),
+            Localize(BONK_FIELD_MASTERY_DESCRIPTION, node.id, node.description), FormatStat(node.valuePerRank),
+            rank ? 1 : 0, uint32(node.shape), FormatStat(node.position), parents, std::to_string(node.excludes));
+        m_player->GetSession()->SendPacket(&data);
     }
 
-    SendAddon("shopend");
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteShopEnd(end);
+    m_player->GetSession()->SendPacket(&end);
 }
 
 void BonkPlayer::SendShop(bool open) const
 {
+    if (!m_addonReady)
+        return;
     if (m_shop == BONK_SHOP_MASTERY)
     {
         SendMasteryShop(open, false);
@@ -1996,13 +2005,22 @@ void BonkPlayer::SendShop(bool open) const
         for (uint8 row = 1; row <= lastRow; ++row)
             gates += (row > 1 ? "," : "") + std::to_string(GetFortuneRowGate(row)) + ":" + std::to_string(GetFortuneSpentAbove(row));
     }
-    SendAddon("shop~" + std::to_string(uint32(m_shop)) + "~" + (open ? "1" : "0") + "~" + m_shopNpcName + "~" +
-        (shards ? "shards~" + std::to_string(m_shards) + "~" + gates + "~" + (BonkCoop::IsGuestAccount(m_player) ? "1" : "0") : "gold~" + std::to_string(m_player->GetMoney())));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShopOpen(data, uint32(m_shop), open, m_shopNpcName, shards ? "shards" : "gold",
+            shards ? m_shards : m_player->GetMoney(), 0, 0, 0, 0, 0, 0, "", 0, false, gates,
+            BonkCoop::IsGuestAccount(m_player));
+        m_player->GetSession()->SendPacket(&data);
+    }
 
     for (auto const& itr : sBonkMgr.GetShopTrees())
         if (itr.second.shop == m_shop)
-            SendAddon("tree~" + std::to_string(itr.first) + "~" + Localize(BONK_FIELD_SHOP_TREE_NAME, itr.first, itr.second.name) + "~" + itr.second.background + "~" +
-                std::to_string(shards ? GetFortuneSpent(itr.first) : 0));
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteShopTree(data, itr.first, Localize(BONK_FIELD_SHOP_TREE_NAME, itr.first, itr.second.name), itr.second.background,
+                shards ? GetFortuneSpent(itr.first) : 0);
+            m_player->GetSession()->SendPacket(&data);
+        }
 
     BonkQuestReward const lockType = m_shop == BONK_SHOP_UPGRADES ? BONK_REWARD_UPGRADE : BONK_REWARD_TALENT;
     auto sendNode = [this, lockType](uint32 id, BonkShopNode const& layout, uint8 rank, uint8 maxRank, uint32 nextCost, uint32 refund, bool toggle,
@@ -2014,14 +2032,13 @@ void BonkPlayer::SendShop(bool open) const
         BonkQuest const* lock = GetLockingQuest(m_player, lockType, id);
 
         rank = std::min(rank, maxRank);
-        std::ostringstream line;
-        line << "node~" << layout.tree << '~' << id << '~' << uint32(layout.row) << '~' << uint32(layout.column) << '~' << layout.icon
-             << '~' << uint32(rank) << '~' << uint32(maxRank) << '~' << (rank < maxRank ? nextCost : 0)
-             << '~' << layout.requiredId << '~' << uint32(layout.requiredRank) << '~' << (toggle ? 1 : 0) << '~' << (enabled ? 1 : 0)
-             << '~' << name << '~' << description << '~' << (lock ? 1 : 0) << '~' << (lock ? Localize(BONK_FIELD_QUEST_NAME, lock->id, lock->name) : "") << '~' << FormatStat(valuePerRank)
-             << '~' << (rank ? refund : 0) << '~' << (lock ? Localize(BONK_FIELD_QUEST_DESCRIPTION, lock->id, lock->description) : "")
-             << '~' << (rank < maxRank ? rankLock : std::string());
-        SendAddon(line.str());
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShopNode(data, layout.tree, id, uint32(layout.row), uint32(layout.column), layout.icon, uint32(rank),
+            uint32(maxRank), rank < maxRank ? nextCost : 0, layout.requiredId, uint32(layout.requiredRank), toggle, enabled, name,
+            description, lock != nullptr, lock ? Localize(BONK_FIELD_QUEST_NAME, lock->id, lock->name) : "", FormatStat(valuePerRank),
+            rank ? refund : 0, lock ? Localize(BONK_FIELD_QUEST_DESCRIPTION, lock->id, lock->description) : "",
+            rank < maxRank ? rankLock : std::string());
+        m_player->GetSession()->SendPacket(&data);
     };
 
     if (m_shop == BONK_SHOP_UPGRADES)
@@ -2057,7 +2074,18 @@ void BonkPlayer::SendShop(bool open) const
         }
     }
 
-    SendAddon("shopend");
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteShopEnd(end);
+    m_player->GetSession()->SendPacket(&end);
+}
+
+void BonkPlayer::SendShopClose() const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteShopClose(data);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 BonkRunBonuses BonkPlayer::GetRunBonuses() const

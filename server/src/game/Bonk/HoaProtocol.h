@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 21
+#define HOA_PROTOCOL_VERSION 22
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -124,6 +124,15 @@
 #define HOA_MSG_BOARD_PAGE 0x007A
 #define HOA_MSG_BOARD_CHOICE 0x007B
 #define HOA_MSG_BOARD_END 0x007C
+#define HOA_MSG_SHOP_OPEN 0x007D
+#define HOA_MSG_SHOP_TREE 0x007E
+#define HOA_MSG_MASTERY_TREE 0x007F
+#define HOA_MSG_SHOP_NODE 0x0080
+#define HOA_MSG_MASTERY_NODE 0x0081
+#define HOA_MSG_MASTERY_PRESETS 0x0082
+#define HOA_MSG_MASTERY_PRESET_RANKS 0x0083
+#define HOA_MSG_SHOP_END 0x0084
+#define HOA_MSG_SHOP_CLOSE 0x0085
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -1046,4 +1055,119 @@ inline void HoAWriteBoardChoice(WorldPacket& packet, int32 const& choice, uint32
 inline void HoAWriteBoardEnd(WorldPacket& packet)
 {
     packet << uint16(HOA_MSG_BOARD_END);
+}
+
+inline void HoAWriteShopOpen(WorldPacket& packet, uint32 const& kind, bool const& open, std::string const& npc, std::string const& currency, uint32 const& balance, uint32 const& level, uint32 const& xp, uint32 const& xpNext, uint32 const& maxLevel, uint32 const& earned, uint32 const& fromQuests, std::string const& className, uint32 const& pointsPerRow, bool const& inspect, std::string const& gates, bool const& coopGuest)
+{
+    packet << uint16(HOA_MSG_SHOP_OPEN);
+    packet << uint32(kind);
+    packet << bool(open);
+    HoAWriteString(packet, npc);
+    HoAWriteString(packet, currency);
+    packet << uint32(balance);
+    packet << uint32(level);
+    packet << uint32(xp);
+    packet << uint32(xpNext);
+    packet << uint32(maxLevel);
+    packet << uint32(earned);
+    packet << uint32(fromQuests);
+    HoAWriteString(packet, className);
+    packet << uint32(pointsPerRow);
+    packet << bool(inspect);
+    HoAWriteString(packet, gates);
+    packet << bool(coopGuest);
+}
+
+inline void HoAWriteShopTree(WorldPacket& packet, uint32 const& id, std::string const& name, std::string const& background, uint32 const& spent)
+{
+    packet << uint16(HOA_MSG_SHOP_TREE);
+    packet << uint32(id);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, background);
+    packet << uint32(spent);
+}
+
+inline void HoAWriteMasteryTree(WorldPacket& packet, uint32 const& id, std::string const& name, std::string const& background, uint32 const& layout, std::string const& gates, uint32 const& spent)
+{
+    packet << uint16(HOA_MSG_MASTERY_TREE);
+    packet << uint32(id);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, background);
+    packet << uint32(layout);
+    HoAWriteString(packet, gates);
+    packet << uint32(spent);
+}
+
+inline void HoAWriteShopNode(WorldPacket& packet, uint32 const& tree, uint32 const& id, uint32 const& row, uint32 const& column, std::string const& icon, uint32 const& rank, uint32 const& maxRank, uint32 const& cost, uint32 const& requiredId, uint32 const& requiredRank, bool const& toggle, bool const& enabled, std::string const& name, std::string const& description, bool const& locked, std::string const& quest, std::string const& valuePerRank, uint32 const& refund, std::string const& questDescription, std::string const& rankLock)
+{
+    packet << uint16(HOA_MSG_SHOP_NODE);
+    packet << uint32(tree);
+    packet << uint32(id);
+    packet << uint32(row);
+    packet << uint32(column);
+    HoAWriteString(packet, icon);
+    packet << uint32(rank);
+    packet << uint32(maxRank);
+    packet << uint32(cost);
+    packet << uint32(requiredId);
+    packet << uint32(requiredRank);
+    packet << bool(toggle);
+    packet << bool(enabled);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, description);
+    packet << bool(locked);
+    HoAWriteString(packet, quest);
+    HoAWriteString(packet, valuePerRank);
+    packet << uint32(refund);
+    HoAWriteString(packet, questDescription);
+    HoAWriteString(packet, rankLock);
+}
+
+inline void HoAWriteMasteryNode(WorldPacket& packet, uint32 const& tree, uint32 const& id, uint32 const& row, uint32 const& column, std::string const& icon, uint32 const& rank, uint32 const& maxRank, uint32 const& cost, uint32 const& requiredId, uint32 const& requiredRank, std::string const& name, std::string const& description, std::string const& valuePerRank, uint32 const& refund, uint32 const& shape, std::string const& position, std::string const& parents, std::string const& excludes)
+{
+    packet << uint16(HOA_MSG_MASTERY_NODE);
+    packet << uint32(tree);
+    packet << uint32(id);
+    packet << uint32(row);
+    packet << uint32(column);
+    HoAWriteString(packet, icon);
+    packet << uint32(rank);
+    packet << uint32(maxRank);
+    packet << uint32(cost);
+    packet << uint32(requiredId);
+    packet << uint32(requiredRank);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, valuePerRank);
+    packet << uint32(refund);
+    packet << uint32(shape);
+    HoAWriteString(packet, position);
+    HoAWriteString(packet, parents);
+    HoAWriteString(packet, excludes);
+}
+
+inline void HoAWriteMasteryPresets(WorldPacket& packet, uint32 const& active, uint32 const& points1, uint32 const& points2, uint32 const& points3)
+{
+    packet << uint16(HOA_MSG_MASTERY_PRESETS);
+    packet << uint32(active);
+    packet << uint32(points1);
+    packet << uint32(points2);
+    packet << uint32(points3);
+}
+
+inline void HoAWriteMasteryPresetRanks(WorldPacket& packet, uint32 const& preset, std::string const& ranks)
+{
+    packet << uint16(HOA_MSG_MASTERY_PRESET_RANKS);
+    packet << uint32(preset);
+    HoAWriteString(packet, ranks);
+}
+
+inline void HoAWriteShopEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_SHOP_END);
+}
+
+inline void HoAWriteShopClose(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_SHOP_CLOSE);
 }

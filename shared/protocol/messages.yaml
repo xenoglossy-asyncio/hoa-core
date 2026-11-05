@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 21
+version: 22
 messages:
   - name: aura_value
     id: 0x0002
@@ -801,5 +801,111 @@ messages:
       - { name: climb, type: u32 }
   - name: board_end
     id: 0x007C
+    direction: server_to_client
+    fields: []
+  - name: shop_open
+    id: 0x007D
+    direction: server_to_client
+    fields:
+      - { name: kind, type: u32 }
+      - { name: open, type: bool }
+      - { name: npc, type: string }
+      - { name: currency, type: string }
+      - { name: balance, type: u32 }
+      - { name: level, type: u32 }
+      - { name: xp, type: u32 }
+      - { name: xp_next, type: u32 }
+      - { name: max_level, type: u32 }
+      - { name: earned, type: u32 }
+      - { name: from_quests, type: u32 }
+      - { name: class_name, type: string }
+      - { name: points_per_row, type: u32 }
+      - { name: inspect, type: bool }
+      - { name: gates, type: string }
+      - { name: coop_guest, type: bool }
+  - name: shop_tree
+    id: 0x007E
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: name, type: string }
+      - { name: background, type: string }
+      - { name: spent, type: u32 }
+  - name: mastery_tree
+    id: 0x007F
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: name, type: string }
+      - { name: background, type: string }
+      - { name: layout, type: u32 }
+      - { name: gates, type: string }
+      - { name: spent, type: u32 }
+  - name: shop_node
+    id: 0x0080
+    direction: server_to_client
+    fields:
+      - { name: tree, type: u32 }
+      - { name: id, type: u32 }
+      - { name: row, type: u32 }
+      - { name: column, type: u32 }
+      - { name: icon, type: string }
+      - { name: rank, type: u32 }
+      - { name: max_rank, type: u32 }
+      - { name: cost, type: u32 }
+      - { name: required_id, type: u32 }
+      - { name: required_rank, type: u32 }
+      - { name: toggle, type: bool }
+      - { name: enabled, type: bool }
+      - { name: name, type: string }
+      - { name: description, type: string }
+      - { name: locked, type: bool }
+      - { name: quest, type: string }
+      - { name: value_per_rank, type: string }
+      - { name: refund, type: u32 }
+      - { name: quest_description, type: string }
+      - { name: rank_lock, type: string }
+  - name: mastery_node
+    id: 0x0081
+    direction: server_to_client
+    fields:
+      - { name: tree, type: u32 }
+      - { name: id, type: u32 }
+      - { name: row, type: u32 }
+      - { name: column, type: u32 }
+      - { name: icon, type: string }
+      - { name: rank, type: u32 }
+      - { name: max_rank, type: u32 }
+      - { name: cost, type: u32 }
+      - { name: required_id, type: u32 }
+      - { name: required_rank, type: u32 }
+      - { name: name, type: string }
+      - { name: description, type: string }
+      - { name: value_per_rank, type: string }
+      - { name: refund, type: u32 }
+      - { name: shape, type: u32 }
+      - { name: position, type: string }
+      - { name: parents, type: string }
+      - { name: excludes, type: string }
+  - name: mastery_presets
+    id: 0x0082
+    direction: server_to_client
+    fields:
+      - { name: active, type: u32 }
+      - { name: points_1, type: u32 }
+      - { name: points_2, type: u32 }
+      - { name: points_3, type: u32 }
+  - name: mastery_preset_ranks
+    id: 0x0083
+    direction: server_to_client
+    fields:
+      - { name: preset, type: u32 }
+      - { name: ranks, type: string }
+  - name: shop_end
+    id: 0x0084
+    direction: server_to_client
+    fields: []
+  - name: shop_close
+    id: 0x0085
     direction: server_to_client
     fields: []

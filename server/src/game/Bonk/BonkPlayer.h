@@ -377,7 +377,6 @@ class BonkPlayer
         std::map<uint32, uint8> ReadMasteryPreset(uint8 slot) const;
         void LoadMasteryPresets();
         void WriteMasteryPreset(uint8 slot, std::map<uint32, uint8> const& ranks);
-        std::string DescribeMasteryPresets() const;
         void SendMasteryPresetRanks() const;
         void SendStatTotals(float const* totals, bool inRun, float const* afterCaps = nullptr) const;
         void WatchStats(bool watching);
@@ -434,6 +433,7 @@ class BonkPlayer
         void SaveTalent(uint32 talentId) const;
 
         void SendShop(bool open) const;
+        void SendShopClose() const;
         void SendArena(std::string const& npc) const;
         void SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bonuses) const;
         bool IsAtShop() const;

@@ -131,6 +131,15 @@ const HOA_BOARD_ROW: &str = "HOA_BOARD_ROW";
 const HOA_BOARD_PAGE: &str = "HOA_BOARD_PAGE";
 const HOA_BOARD_CHOICE: &str = "HOA_BOARD_CHOICE";
 const HOA_BOARD_END: &str = "HOA_BOARD_END";
+const HOA_SHOP_OPEN: &str = "HOA_SHOP_OPEN";
+const HOA_SHOP_TREE: &str = "HOA_SHOP_TREE";
+const HOA_MASTERY_TREE: &str = "HOA_MASTERY_TREE";
+const HOA_SHOP_NODE: &str = "HOA_SHOP_NODE";
+const HOA_MASTERY_NODE: &str = "HOA_MASTERY_NODE";
+const HOA_MASTERY_PRESETS: &str = "HOA_MASTERY_PRESETS";
+const HOA_MASTERY_PRESET_RANKS: &str = "HOA_MASTERY_PRESET_RANKS";
+const HOA_SHOP_END: &str = "HOA_SHOP_END";
+const HOA_SHOP_CLOSE: &str = "HOA_SHOP_CLOSE";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -207,6 +216,131 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::ShopOpen(shop) => {
+                    script.fire_event(
+                        HOA_SHOP_OPEN,
+                        vec![lua_table(vec![
+                            ("kind", ScriptValue::Int(i64::from(shop.kind))),
+                            ("open", ScriptValue::Bool(shop.open)),
+                            ("npc", ScriptValue::Str(shop.npc)),
+                            ("currency", ScriptValue::Str(shop.currency)),
+                            ("balance", ScriptValue::Int(i64::from(shop.balance))),
+                            ("level", ScriptValue::Int(i64::from(shop.level))),
+                            ("xp", ScriptValue::Int(i64::from(shop.xp))),
+                            ("xp_next", ScriptValue::Int(i64::from(shop.xp_next))),
+                            ("max_level", ScriptValue::Int(i64::from(shop.max_level))),
+                            ("earned", ScriptValue::Int(i64::from(shop.earned))),
+                            ("from_quests", ScriptValue::Int(i64::from(shop.from_quests))),
+                            ("class_name", ScriptValue::Str(shop.class_name)),
+                            ("points_per_row", ScriptValue::Int(i64::from(shop.points_per_row))),
+                            ("inspect", ScriptValue::Bool(shop.inspect)),
+                            ("gates", ScriptValue::Str(shop.gates)),
+                            ("coop_guest", ScriptValue::Bool(shop.coop_guest)),
+                        ])],
+                    );
+                }
+                HoaMessage::ShopTree(tree) => {
+                    script.fire_event(
+                        HOA_SHOP_TREE,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(tree.id))),
+                            ("name", ScriptValue::Str(tree.name)),
+                            ("background", ScriptValue::Str(tree.background)),
+                            ("spent", ScriptValue::Int(i64::from(tree.spent))),
+                        ])],
+                    );
+                }
+                HoaMessage::MasteryTree(tree) => {
+                    script.fire_event(
+                        HOA_MASTERY_TREE,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(tree.id))),
+                            ("name", ScriptValue::Str(tree.name)),
+                            ("background", ScriptValue::Str(tree.background)),
+                            ("layout", ScriptValue::Int(i64::from(tree.layout))),
+                            ("gates", ScriptValue::Str(tree.gates)),
+                            ("spent", ScriptValue::Int(i64::from(tree.spent))),
+                        ])],
+                    );
+                }
+                HoaMessage::ShopNode(node) => {
+                    script.fire_event(
+                        HOA_SHOP_NODE,
+                        vec![lua_table(vec![
+                            ("tree", ScriptValue::Int(i64::from(node.tree))),
+                            ("id", ScriptValue::Int(i64::from(node.id))),
+                            ("row", ScriptValue::Int(i64::from(node.row))),
+                            ("column", ScriptValue::Int(i64::from(node.column))),
+                            ("icon", ScriptValue::Str(node.icon)),
+                            ("rank", ScriptValue::Int(i64::from(node.rank))),
+                            ("max_rank", ScriptValue::Int(i64::from(node.max_rank))),
+                            ("cost", ScriptValue::Int(i64::from(node.cost))),
+                            ("required_id", ScriptValue::Int(i64::from(node.required_id))),
+                            ("required_rank", ScriptValue::Int(i64::from(node.required_rank))),
+                            ("toggle", ScriptValue::Bool(node.toggle)),
+                            ("enabled", ScriptValue::Bool(node.enabled)),
+                            ("name", ScriptValue::Str(node.name)),
+                            ("description", ScriptValue::Str(node.description)),
+                            ("locked", ScriptValue::Bool(node.locked)),
+                            ("quest", ScriptValue::Str(node.quest)),
+                            ("value_per_rank", ScriptValue::Str(node.value_per_rank)),
+                            ("refund", ScriptValue::Int(i64::from(node.refund))),
+                            ("quest_description", ScriptValue::Str(node.quest_description)),
+                            ("rank_lock", ScriptValue::Str(node.rank_lock)),
+                        ])],
+                    );
+                }
+                HoaMessage::MasteryNode(node) => {
+                    script.fire_event(
+                        HOA_MASTERY_NODE,
+                        vec![lua_table(vec![
+                            ("tree", ScriptValue::Int(i64::from(node.tree))),
+                            ("id", ScriptValue::Int(i64::from(node.id))),
+                            ("row", ScriptValue::Int(i64::from(node.row))),
+                            ("column", ScriptValue::Int(i64::from(node.column))),
+                            ("icon", ScriptValue::Str(node.icon)),
+                            ("rank", ScriptValue::Int(i64::from(node.rank))),
+                            ("max_rank", ScriptValue::Int(i64::from(node.max_rank))),
+                            ("cost", ScriptValue::Int(i64::from(node.cost))),
+                            ("required_id", ScriptValue::Int(i64::from(node.required_id))),
+                            ("required_rank", ScriptValue::Int(i64::from(node.required_rank))),
+                            ("name", ScriptValue::Str(node.name)),
+                            ("description", ScriptValue::Str(node.description)),
+                            ("value_per_rank", ScriptValue::Str(node.value_per_rank)),
+                            ("refund", ScriptValue::Int(i64::from(node.refund))),
+                            ("shape", ScriptValue::Int(i64::from(node.shape))),
+                            ("position", ScriptValue::Str(node.position)),
+                            ("parents", ScriptValue::Str(node.parents)),
+                            ("excludes", ScriptValue::Str(node.excludes)),
+                        ])],
+                    );
+                }
+                HoaMessage::MasteryPresets(presets) => {
+                    script.fire_event(
+                        HOA_MASTERY_PRESETS,
+                        vec![lua_table(vec![
+                            ("active", ScriptValue::Int(i64::from(presets.active))),
+                            ("points_1", ScriptValue::Int(i64::from(presets.points_1))),
+                            ("points_2", ScriptValue::Int(i64::from(presets.points_2))),
+                            ("points_3", ScriptValue::Int(i64::from(presets.points_3))),
+                        ])],
+                    );
+                }
+                HoaMessage::MasteryPresetRanks(ranks) => {
+                    script.fire_event(
+                        HOA_MASTERY_PRESET_RANKS,
+                        vec![lua_table(vec![
+                            ("preset", ScriptValue::Int(i64::from(ranks.preset))),
+                            ("ranks", ScriptValue::Str(ranks.ranks)),
+                        ])],
+                    );
+                }
+                HoaMessage::ShopEnd(_) => {
+                    script.fire_event(HOA_SHOP_END, Vec::new());
+                }
+                HoaMessage::ShopClose(_) => {
+                    script.fire_event(HOA_SHOP_CLOSE, Vec::new());
+                }
                 HoaMessage::BoardOpen(_) => {
                     script.fire_event(HOA_BOARD_OPEN, Vec::new());
                 }
@@ -1338,6 +1472,15 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_BOARD_PAGE);
         add_in_game_event(HOA_BOARD_CHOICE);
         add_in_game_event(HOA_BOARD_END);
+        add_in_game_event(HOA_SHOP_OPEN);
+        add_in_game_event(HOA_SHOP_TREE);
+        add_in_game_event(HOA_MASTERY_TREE);
+        add_in_game_event(HOA_SHOP_NODE);
+        add_in_game_event(HOA_MASTERY_NODE);
+        add_in_game_event(HOA_MASTERY_PRESETS);
+        add_in_game_event(HOA_MASTERY_PRESET_RANKS);
+        add_in_game_event(HOA_SHOP_END);
+        add_in_game_event(HOA_SHOP_CLOSE);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

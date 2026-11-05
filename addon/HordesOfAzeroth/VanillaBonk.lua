@@ -2821,6 +2821,54 @@ handlers["leyofferclose"] = function()
 end
 
 UI.ListenHoa({
+    HOA_SHOP_OPEN = function(shop)
+        local kind = tostring(shop.kind)
+        if kind == FORTUNE_SHOP then
+            handlers["shop"]({
+                false, kind, shop.open and "1" or "0", shop.npc, shop.currency, shop.balance, shop.gates,
+                shop.coop_guest and "1" or "0",
+            })
+        else
+            handlers["shop"]({
+                false, kind, shop.open and "1" or "0", shop.npc, shop.currency, shop.balance, shop.level, shop.xp,
+                shop.xp_next, shop.max_level, shop.earned, shop.from_quests, shop.class_name, shop.points_per_row,
+                shop.inspect and "1" or "0",
+            })
+        end
+    end,
+    HOA_SHOP_TREE = function(tree)
+        handlers["tree"]({ false, tostring(tree.id), tree.name, tree.background, tree.spent })
+    end,
+    HOA_MASTERY_TREE = function(tree)
+        handlers["tree"]({ false, tostring(tree.id), tree.name, tree.background, tree.layout, tree.gates, tree.spent })
+    end,
+    HOA_SHOP_NODE = function(node)
+        handlers["node"]({
+            false, tostring(node.tree), tostring(node.id), node.row, node.column, node.icon, node.rank, node.max_rank,
+            node.cost, tostring(node.required_id), node.required_rank, node.toggle and "1" or "0",
+            node.enabled and "1" or "0", node.name, node.description, node.locked and "1" or "0", node.quest,
+            node.value_per_rank, node.refund, node.quest_description, node.rank_lock,
+        })
+    end,
+    HOA_MASTERY_NODE = function(node)
+        handlers["node"]({
+            false, tostring(node.tree), tostring(node.id), node.row, node.column, node.icon, node.rank, node.max_rank,
+            node.cost, tostring(node.required_id), node.required_rank, "0", "0", node.name, node.description, "0", "",
+            node.value_per_rank, node.refund, node.shape, node.position, node.parents, node.excludes,
+        })
+    end,
+    HOA_MASTERY_PRESETS = function(presets)
+        handlers["presets"]({ false, presets.active, presets.points_1, presets.points_2, presets.points_3 })
+    end,
+    HOA_MASTERY_PRESET_RANKS = function(ranks)
+        handlers["presetranks"]({ false, ranks.preset, ranks.ranks })
+    end,
+    HOA_SHOP_END = function()
+        handlers["shopend"]()
+    end,
+    HOA_SHOP_CLOSE = function()
+        handlers["shopclose"]()
+    end,
     HOA_STARTER = function(starter)
         handlers["starter"]({
             false, tostring(starter.id), starter.icon, starter.name, starter.unlocked and "1" or "0",
