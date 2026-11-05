@@ -68,6 +68,7 @@ Deliver phase by phase. At the end of every phase the repository must build, run
 - Establish benchmarks (server tick, login time, memory, client frame time).
 - Remove migration switches and dead code.
 - Acceptance: benchmarks are no worse than before; no regressions; docs updated.
+- Progress (2026-11-05): mob pathing is Detour A* (`dtNavMeshQuery::findPath`), wrapped by `PathInfo`; Bonk crowd, spawn-point and run checks use it. A Barrens sandbox stress run with a 150-mob pack measured a 27–28 ms server tick, 0.1 ms HoA run code, a 0.04–0.24 ms crowd step and 0.00 ms of path time, so A* is not a hot spot in open ground; the map update interval dominates the tick. The remaining phase 6 work is the per-frame addon loops and the client-side benchmarks.
 
 ## Why this order
 
