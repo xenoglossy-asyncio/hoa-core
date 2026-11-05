@@ -197,5 +197,3 @@ UI.ListenHoa({
         end
     end,
 })
-
-UI.SelfBar = plainBar

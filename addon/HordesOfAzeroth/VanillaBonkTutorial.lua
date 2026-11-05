@@ -314,11 +314,6 @@ local function DashText()
         .. L["hoa.addon.try_it_now_you_can_change_the_key_under_key_bindings"]
 end
 
-local function ControllerTipText()
-    return L["hoa.addon.hordes_of_azeroth_supports_xbox_and_playstation_controllers_"]
-        .. L["hoa.addon.the_controller_page_in_the_pause_menu_shows_what_every_butto"]
-end
-
 local function ControllerTipHint()
     local style = PadStyle()
     if style then

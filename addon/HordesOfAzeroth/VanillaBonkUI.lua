@@ -693,7 +693,6 @@ function UI.Button(parent, width, text, onClick)
 end
 
 UI.PANEL_EDGE = { 0.69, 0.59, 0.38 }
-UI.PANEL_EDGE_DIM = { 0.36, 0.31, 0.23 }
 UI.WINDOW_BG = { 0.035, 0.03, 0.045, 0.97 }
 UI.PANEL_BG = { 0.012, 0.01, 0.015, 0.75 }
 local GOLD_HEADER_WIDTH = 300

@@ -37,13 +37,6 @@ local function Kind()
     return KINDS[kindIndex]
 end
 
-local function Flat(parent, layer, r, g, b, a)
-    local texture = parent:CreateTexture(nil, layer or "ARTWORK")
-    texture:SetTexture(UI.FLAT)
-    texture:SetVertexColor(r or 1, g or 1, b or 1, a or 1)
-    return texture
-end
-
 local function Hairline(parent, width)
     local line = UI.Divider(parent, width)
     line.left:SetVertexColor(HAIR[1], HAIR[2], HAIR[3])

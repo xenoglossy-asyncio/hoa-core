@@ -132,19 +132,6 @@ local function SyncKeys()
     end
 end
 
-function UI.DashOnShift()
-    return onShift
-end
-
-function UI.SetDashOnShift(on)
-    if on then
-        SetBinding(SHIFT, DASH)
-    else
-        SetBinding(SHIFT)
-    end
-    VanillaBonkDashShift = onShift
-end
-
 function SetBinding(key, command)
     if key ~= SHIFT then
         return BlizzardSetBinding(key, command)

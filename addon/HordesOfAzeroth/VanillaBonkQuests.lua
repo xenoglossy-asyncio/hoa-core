@@ -14,20 +14,6 @@ local incoming
 local pendingNpc
 local openRequested
 
-local function Split(text, separator)
-    local fields = {}
-    local start = 1
-    while true do
-        local found = strfind(text, separator, start, true)
-        if not found then
-            tinsert(fields, strsub(text, start))
-            return fields
-        end
-        tinsert(fields, strsub(text, start, found - 1))
-        start = found + 1
-    end
-end
-
 local function SetFont(fontString, font, size, flags)
     fontString:SetFont(font, size, flags or "")
 end
