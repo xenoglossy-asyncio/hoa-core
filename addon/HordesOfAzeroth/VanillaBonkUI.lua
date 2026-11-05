@@ -14,22 +14,37 @@ StaticPopupDialogs["VANILLABONK_INCOMPATIBLE"] = {
 local protocolFrame = CreateFrame("Frame")
 protocolFrame:RegisterEvent("HOA_HELLO")
 protocolFrame:RegisterEvent("HOA_INCOMPATIBLE")
+function UI.ShowProtocolWarning(serverProtocol, expectedProtocol, protocolMismatch, contentMismatch)
+    local lines = {}
+    if protocolMismatch then
+        tinsert(lines, L("hoa.addon.this_client_and_the_server_use_different_hoa_versions_1_2", expectedProtocol, serverProtocol))
+    end
+    if contentMismatch then
+        tinsert(lines, L["hoa.addon.this_client_and_the_server_use_different_game_content"])
+    end
+    if not lines[1] then
+        tinsert(lines, L["hoa.addon.this_client_and_the_server_use_different_game_content"])
+    end
+    UI.Protocol.incompatible = {
+        protocol_version = serverProtocol,
+        expected_protocol = expectedProtocol,
+        protocol_mismatch = protocolMismatch,
+        content_mismatch = contentMismatch,
+    }
+    pcall(StaticPopup_Show, "VANILLABONK_INCOMPATIBLE", lines[1])
+    for _, line in ipairs(lines) do
+        pcall(function()
+            UIErrorsFrame:AddMessage(line, 1, 0.1, 0.1, 1, 10)
+        end)
+        pcall(function()
+            DEFAULT_CHAT_FRAME:AddMessage("|cffff4040" .. line .. "|r")
+        end)
+    end
+end
 protocolFrame:SetScript("OnEvent", function(self, event, version, contentHash, language)
     if event == "HOA_INCOMPATIBLE" then
-        local warning = version
-        local lines = {}
-        if warning.protocol_mismatch then
-            tinsert(lines, L("hoa.addon.this_client_and_the_server_use_different_hoa_versions_1_2", warning.protocol_version, warning.expected_protocol))
-        end
-        if warning.content_mismatch then
-            tinsert(lines, L["hoa.addon.this_client_and_the_server_use_different_game_content"])
-        end
-        UI.Protocol.incompatible = warning
-        for _, line in ipairs(lines) do
-            UIErrorsFrame:AddMessage(line, 1, 0.1, 0.1, 1, 10)
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff4040" .. line .. "|r")
-        end
-        StaticPopup_Show("VANILLABONK_INCOMPATIBLE", lines[1] or "")
+        local warning = version or {}
+        UI.ShowProtocolWarning(warning.protocol_version, warning.expected_protocol, warning.protocol_mismatch, warning.content_mismatch)
         return
     end
     UI.Protocol.version = tonumber(version)

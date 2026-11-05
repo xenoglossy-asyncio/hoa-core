@@ -1706,6 +1706,20 @@ fn deliver_hoa_messages(world: &mut World) {
                                 ("content_mismatch", ScriptValue::Bool(check.content_mismatch)),
                             ])],
                         );
+                        // The addon's event frame is not always live when hello lands; call its
+                        // warning directly so a mismatch can never pass silently.
+                        let warning = format!(
+                            "if VanillaBonkUI and VanillaBonkUI.ShowProtocolWarning then \
+                             VanillaBonkUI.ShowProtocolWarning({}, {}, {}, {}) \
+                             else DEFAULT_CHAT_FRAME:AddMessage('Hordes of Azeroth: the server and this client use different versions. Update the game.') end",
+                            hello.protocol_version,
+                            PROTOCOL_VERSION,
+                            check.protocol_mismatch,
+                            check.content_mismatch,
+                        );
+                        if let Err(error) = script.run(&warning) {
+                            warn!("hoa protocol: could not show the mismatch warning: {error}");
+                        }
                     }
                 }
             }
