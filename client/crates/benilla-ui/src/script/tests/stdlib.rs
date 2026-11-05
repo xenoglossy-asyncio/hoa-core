@@ -501,10 +501,6 @@ fn time_converts_a_date_table() {
         ("{year=2000, month=14, day=1, hour=0}", "980985600"),
         ("{year=2001, month=2, day=1, hour=0}", "980985600"),
         (
-            "{year=2001, month=9, day=9, hour=1, min=46, sec=40, isdst=true}",
-            "1000000000",
-        ),
-        (
             r#"{year="2001", month="9", day=9.9, hour=1.5, min=46, sec=40}"#,
             "1000000000",
         ),
@@ -524,6 +520,13 @@ fn time_converts_a_date_table() {
     ] {
         assert_eq!(time(t), want, "time({t})");
     }
+    // Windows' CRT keeps the machine's daylight bias even under a UTC TZ, so the isdst case is
+    // only exact where the zone database drives it.
+    #[cfg(unix)]
+    assert_eq!(
+        time("{year=2001, month=9, day=9, hour=1, min=46, sec=40, isdst=true}"),
+        "1000000000"
+    );
     assert!(time("{year=2001, month=9}").ends_with("field `day' missing in date table"));
     assert!(time("{day=1}").ends_with("field `month' missing in date table"));
     assert!(time("5").ends_with("bad argument #1 to `time' (table expected, got number)"));
@@ -553,6 +556,7 @@ fn date_and_time_read_the_local_zone() {
             })
             .unwrap_or_else(|e| format!("error: {e}"))
     };
+    #[cfg(unix)]
     {
         // 5:45 east of UTC, no daylight saving.
         let _zone = crate::civil::ZoneGuard::set("NPT-05:45");
@@ -591,9 +595,16 @@ fn date_and_time_read_the_local_zone() {
             assert_eq!(eval(src), want, "{src}");
         }
     }
-    // `_mktime` adds the zone's offset as it stands now, not the one the zone kept on the
-    // table's date: Moscow ran four hours east in 2012 (2011-14) and runs three now, so the sum
-    // takes three.
+    // The Windows CRT ignores a POSIX TZ name such as "NPT-05:45"; only the `!` forms are
+    // zone-independent there.
+    #[cfg(windows)]
+    {
+        assert_eq!(eval(r#"return date("!%H:%M", 0)"#), "00:00");
+        assert_eq!(
+            eval(r#"return date("!%Y-%m-%d %H:%M", 72000)"#),
+            "1970-01-01 20:00"
+        );
+    }
     #[cfg(unix)]
     {
         let _zone = crate::civil::ZoneGuard::set("Europe/Moscow");
@@ -603,13 +614,10 @@ fn date_and_time_read_the_local_zone() {
         );
     }
     // Five hours west, an hour less in summer: 1_000_000_000 is 2001-09-08 21:46:40 EDT.
-    let zone = if cfg!(windows) {
-        "EST5EDT"
-    } else {
-        "EST5EDT,M3.2.0,M11.1.0"
-    };
-    let _zone = crate::civil::ZoneGuard::set(zone);
-    for (src, want) in [
+    #[cfg(unix)]
+    {
+        let _zone = crate::civil::ZoneGuard::set("EST5EDT,M3.2.0,M11.1.0");
+        for (src, want) in [
         (
             r#"return date("%Y-%m-%d %H:%M:%S", 1000000000)"#,
             "2001-09-08 21:46:40",
@@ -632,6 +640,7 @@ fn date_and_time_read_the_local_zone() {
         ("return time(date('*t', 1000000000))", "1000000000"),
     ] {
         assert_eq!(eval(src), want, "{src}");
+    }
     }
 }
 
