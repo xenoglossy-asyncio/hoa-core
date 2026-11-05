@@ -74,7 +74,6 @@ class BonkTelegraphs
         size_t CountBusyStandIns() const;
 
         ObjectGuid Borrow(Player* owner, float x, float y, float z, uint32 display);
-        ObjectGuid BorrowInvisible(Player* owner, float x, float y, float z);
         void Dress(Player* owner, ObjectGuid const& guid, uint32 display);
         void Release(Player* owner, ObjectGuid const& guid);
         void Hide(Player* owner, ObjectGuid const& guid);

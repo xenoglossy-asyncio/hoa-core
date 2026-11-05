@@ -563,7 +563,6 @@ CreatureAI* GetAI_npc_bonk_codex(Creature* creature)
 
 bool GossipHello_npc_bonk_codex(Player* player, Creature* creature)
 {
-    player->GetBonkPlayer()->VisitSpellbook(creature);
     if (player->GetBonkPlayer()->IsAddonReady())
         player->GetBonkPlayer()->SendNpcName(creature);
     BonkCodex::Send(player, player->GetBonkPlayer()->IsAddonReady() ? player->GetBonkPlayer()->GetLocalName(creature) : "");

@@ -116,13 +116,6 @@ BonkSupportSource BonkRun::CardSupport(BonkCardEffect effect) const
     return {};
 }
 
-BonkSupportSource BonkRun::GlyphSupport(BonkGlyphEffect effect) const
-{
-    if (BonkGlyph const* glyph = GetGlyph(effect))
-        return { glyph->icon, Localize(BONK_FIELD_GLYPH_NAME, glyph->id, glyph->name) };
-    return {};
-}
-
 BonkSupportSource BonkRun::TalentSupport(BonkMasteryEffect effect) const
 {
     for (auto const& itr : m_player->GetBonkPlayer()->GetMasteryRanks())

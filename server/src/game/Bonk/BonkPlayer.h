@@ -193,7 +193,6 @@ class BonkPlayer
         uint32 GetFortuneSpent(uint32 tree) const;
         bool IsTalentEnabled(uint32 talentId) const { return m_enabledTalents.count(talentId) != 0; }
         bool BuyUpgrade(uint32 upgradeId, std::string& message);
-        void VisitSpellbook(Creature const* keeper);
         bool BuyTalent(uint32 talentId, std::string& message);
         bool ResetUpgrades(std::string& message);
         bool ResetTalents(std::string& message);
@@ -436,7 +435,6 @@ class BonkPlayer
         void SendArena(std::string const& npc) const;
         void SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bonuses) const;
         bool IsAtShop() const;
-        bool IsAtSpellbook() const;
 
         Player* m_player;
         std::unique_ptr<BonkRun> m_run;
@@ -532,7 +530,6 @@ class BonkPlayer
         uint32 m_starterChoice = 0;
         BonkShop m_shop{};
         ObjectGuid m_shopNpc;
-        ObjectGuid m_spellbookKeeper;
         ObjectGuid m_deckTable;
         std::string m_shopNpcName;
         std::string m_masteryNotice;

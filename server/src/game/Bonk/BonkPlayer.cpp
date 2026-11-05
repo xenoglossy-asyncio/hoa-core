@@ -1766,20 +1766,6 @@ void BonkPlayer::OpenShop(BonkShop shop, Creature const* npc)
     SendShop(true);
 }
 
-void BonkPlayer::VisitSpellbook(Creature const* keeper)
-{
-    m_spellbookKeeper = keeper->GetObjectGuid();
-}
-
-bool BonkPlayer::IsAtSpellbook() const
-{
-    if (m_spellbookKeeper.IsEmpty() || !m_player->IsInWorld())
-        return false;
-
-    Creature const* keeper = m_player->GetMap()->GetCreature(m_spellbookKeeper);
-    return keeper && keeper->IsAlive() && m_player->IsWithinDistInMap(keeper, BONK_SHOP_RANGE);
-}
-
 void BonkPlayer::VisitDeck(GameObject const* table)
 {
     m_deckTable = table->GetObjectGuid();

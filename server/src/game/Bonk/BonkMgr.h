@@ -1436,7 +1436,6 @@ class BonkMgr
         BonkGearTotals EvaluateItems(std::vector<uint32> const& entries) const;
 
         bool IsStaticCreatureSuppressed(Map const* map, uint32 dbGuid) const;
-        bool IsArenaLocation(uint32 mapId, uint32 zoneId) const;
 
         BonkPetFamily const* GetPetFamily(uint32 id) const;
 

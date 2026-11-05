@@ -10919,11 +10919,6 @@ void BonkRun::ShowMissilesAround(SpellEntry const* spellInfo, float radius, uint
     }
 }
 
-void BonkRun::PlaceAreaLook(uint32 spellId, float x, float y, float z, float radius, uint32 durationMs)
-{
-    PlaceAreaVisual(m_player, spellId, x, y, z, radius, durationMs);
-}
-
 bool BonkRun::FindLargestGroup(float range, float& x, float& y, float& z) const
 {
     std::vector<Creature*> mobs = GetMobsInRange(range);

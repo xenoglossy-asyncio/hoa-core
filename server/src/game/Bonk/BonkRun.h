@@ -1004,7 +1004,6 @@ class BonkRun
         BonkSupportSource SpellSupport(uint32 spellId) const;
         BonkSupportSource PassiveSupport(BonkPassiveEffect effect) const;
         BonkSupportSource CardSupport(BonkCardEffect effect) const;
-        BonkSupportSource GlyphSupport(BonkGlyphEffect effect) const;
         BonkSupportSource TalentSupport(BonkMasteryEffect effect) const;
         BonkSupportSource CapstoneSupport(BonkCapstone capstone) const;
         struct SupportCredit
@@ -2388,7 +2387,6 @@ class BonkRun
         void ShowHeroRing(BonkHeroRing ring, float reach, uint32 fillMs = 0);
         static BonkTelegraphStyle GetRingStyle(BonkHeroRing ring);
         static std::string GetHeroRingKey(BonkHeroRing ring);
-        uint32 GetRingSpell(BonkHeroRing ring, float reach) const;
         void HideHeroRing(BonkHeroRing ring);
         void RemoveHeroRingAuras(BonkHeroRing ring);
         void RemoveHeroLooks();
@@ -3016,7 +3014,6 @@ class BonkRun
         void ShowMissileBetween(SpellEntry const* spellInfo, float fromX, float fromY, float fromZ, float toX, float toY, float toZ);
         void ShowThrowAtSpot(Unit* source, SpellEntry const* spellInfo, Unit const* target);
         void ShowMissilesAround(SpellEntry const* spellInfo, float radius, uint32 count);
-        void PlaceAreaLook(uint32 spellId, float x, float y, float z, float radius, uint32 durationMs);
         struct Bladestorm
         {
             uint32 weaponId = 0;

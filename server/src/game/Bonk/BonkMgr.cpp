@@ -2417,14 +2417,6 @@ std::string BonkMgr::DescribePassiveNow(BonkPassive const& passive, uint32 rank,
     return ScalePassiveText(sBonkLocale.Localize(BONK_FIELD_PASSIVE_DESCRIPTION, passive.id, passive.description, locale), scale);
 }
 
-bool BonkMgr::IsArenaLocation(uint32 mapId, uint32 zoneId) const
-{
-    auto itr = m_arenaZonesByMap.find(mapId);
-    if (itr == m_arenaZonesByMap.end())
-        return false;
-    return itr->second.count(0) || itr->second.count(zoneId);
-}
-
 bool BonkMgr::IsStaticCreatureSuppressed(Map const* map, uint32 dbGuid) const
 {
     auto itr = m_arenaZonesByMap.find(map->GetId());
