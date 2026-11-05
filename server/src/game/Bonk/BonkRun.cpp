@@ -54,7 +54,6 @@ namespace
     uint32 const BONK_ENEMY_FACTION        = 14;
     uint32 const BONK_SUMMON_LIMIT         = 1000;
     uint32 const BONK_OBJECT_LIFETIME_SEC  = 3600;
-    uint32 const BONK_MARKER_LOOK_CHECK_MS = 250;
     uint32 const BONK_STATS_REFRESH_MS     = 1000;
     float const BONK_DROP_SIGHT            = VISIBILITY_DISTANCE_GIGANTIC;
 
@@ -269,8 +268,6 @@ namespace
     float const BONK_WARD_SCALE     = 1.6f;
     float const BONK_WARD_MIN_DISTANCE = 10.0f;
     float const BONK_WARD_MAX_DISTANCE = 14.0f;
-
-    uint32 const BONK_POWERUP_RESTORATION = 900004;
 
     uint32 const BONK_KIT_HOLY_NOVA  = 3154;
     uint32 const BONK_KIT_FROST_NOVA = 160;
@@ -608,7 +605,6 @@ float const BONK_START_POLY_REACH   = 10.0f;
     uint32 const BONK_HEAL_CHECK_MS      = 100;
     size_t const BONK_MAX_HEAL_DROPS     = 20;
 
-    uint32 const BONK_SPELL_LOOT_SPARKLE = 33454;
     uint32 const BONK_HEAL_SPARKLE       = 900135;
     char const* const BONK_CHEST_PIN_ICON = "INV_Box_02";
     char const* const BONK_FREE_CHEST_PIN_ICON = "INV_Box_04";

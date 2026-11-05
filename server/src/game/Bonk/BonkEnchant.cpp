@@ -48,7 +48,6 @@ namespace
         { BONK_PASSIVE_DODGE,       0.4f,  false },
         { BONK_PASSIVE_SHIELD,      0.9f,  false },
     };
-    uint32 const BONK_ENCHANT_STAT_COUNT = uint32(sizeof(BONK_ENCHANT_STATS) / sizeof(BONK_ENCHANT_STATS[0]));
 
     BonkEnchantStat const* FindStat(uint8 effect)
     {
