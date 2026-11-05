@@ -151,6 +151,7 @@ const HOA_LEVEL_PREVIEW: &str = "HOA_LEVEL_PREVIEW";
 const HOA_LEVEL_BEST: &str = "HOA_LEVEL_BEST";
 const HOA_MAP_INFO: &str = "HOA_MAP_INFO";
 const HOA_ZONE_ART: &str = "HOA_ZONE_ART";
+const HOA_CODEX: &str = "HOA_CODEX";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -227,6 +228,15 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Codex(codex) => {
+                    script.fire_event(
+                        HOA_CODEX,
+                        vec![lua_table(vec![
+                            ("kind", ScriptValue::Str(codex.kind)),
+                            ("line", ScriptValue::Str(codex.line)),
+                        ])],
+                    );
+                }
                 HoaMessage::Tier(tier) => {
                     script.fire_event(
                         HOA_TIER,
@@ -1646,6 +1656,7 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_LEVEL_BEST);
         add_in_game_event(HOA_MAP_INFO);
         add_in_game_event(HOA_ZONE_ART);
+        add_in_game_event(HOA_CODEX);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

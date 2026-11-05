@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 24
+#define HOA_PROTOCOL_VERSION 25
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -144,6 +144,7 @@
 #define HOA_MSG_LEVEL_BEST 0x008E
 #define HOA_MSG_MAP_INFO 0x008F
 #define HOA_MSG_ZONE_ART 0x0090
+#define HOA_MSG_CODEX 0x0091
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -1310,4 +1311,11 @@ inline void HoAWriteZoneArt(WorldPacket& packet, std::string const& file, std::s
     packet << uint32(height);
     HoAWriteString(packet, x);
     HoAWriteString(packet, y);
+}
+
+inline void HoAWriteCodex(WorldPacket& packet, std::string const& kind, std::string const& line)
+{
+    packet << uint16(HOA_MSG_CODEX);
+    HoAWriteString(packet, kind);
+    HoAWriteString(packet, line);
 }

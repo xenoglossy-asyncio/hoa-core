@@ -2821,6 +2821,16 @@ handlers["leyofferclose"] = function()
 end
 
 UI.ListenHoa({
+    HOA_CODEX = function(entry)
+        if entry.kind ~= "kwd" then
+            return
+        end
+        local f = { false, entry.kind }
+        for _, part in ipairs(Split(entry.line or "", "~")) do
+            tinsert(f, part)
+        end
+        handlers[entry.kind](f)
+    end,
     HOA_GEAR = function(gear)
         handlers["gear"]({ false, tostring(gear.id), gear.stats })
     end,

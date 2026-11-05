@@ -1511,6 +1511,19 @@ VanillaBonkCodex.TogglePool = function(entry)
 end
 
 VanillaBonkUI.ListenHoa({
+    HOA_CODEX = function(entry)
+        if strsub(entry.kind, 1, 3) ~= "cdx" then
+            return
+        end
+        local f = { entry.kind }
+        for _, part in ipairs(Split(entry.line or "", "~")) do
+            tinsert(f, part)
+        end
+        local handler = handlers[entry.kind]
+        if handler then
+            handler(f)
+        end
+    end,
     HOA_AFFIX_INFO = function(info)
         handlers["affixinfo"]({ false, info.name, info.icon, info.description })
     end,
