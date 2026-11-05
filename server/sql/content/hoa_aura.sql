@@ -23,7 +23,7 @@ VALUES
   (5277, 'evasion_window', 'Interface\\Icons\\Spell_Shadow_ShadowWard', 'Evasion', 'Increases your dodge chance by 50% for 5 sec, up to 85%.', 0, 28, 1, 0, '', 'weapon', 611),
   (8233, 'doom_winds_window', 'Interface\\Icons\\Spell_Nature_Cyclone', 'Doom Winds', 'Swings at the nearest enemy for damage. Every 3rd swing calls Windfury: 2 extra swings that also hit enemies within 4 yards. Every 15 sec, every swing calls Windfury for 4 sec.', 0, 28, 1, 0, '', 'weapon', 721),
   (33461, 'souls_state', '', 'Souls', 'You deal 5% more damage for each soul.', 10, 28, 1, 0, '', 'none', NULL),
-  (18951, 'necrotic_state', '', 'Necrotic', 'Healing received reduced by 5% per stack.', 15, 0, 1, 2, 'Healing received reduced by {1}.', 'none', NULL),
+  (18951, 'necrotic_state', 'Interface\\Icons\\Spell_Shadow_AbominationExplosion', 'Necrotic', 'Healing received reduced by 5% per stack.', 15, 0, 1, 2, 'Healing received reduced by {1}.', 'none', NULL),
   (339, 'rooted_state', '', 'Rooted', 'Rooted for 2 sec.', 0, 28, 1, 0, '', 'none', NULL),
   (1833, 'cheap_shot_state', 'Interface\\Icons\\Ability_CheapShot', 'Cheap Shot', 'Your first hit on each enemy with your other abilities is followed by an Ambush for heavy damage, with double critical strike chance. Ambush stuns normal enemies for 1 sec.', 0, 28, 1, 0, '', 'weapon', 630),
   (2070, 'sapped_state', '', 'Sapped', 'Incapacitated for 2 sec.', 0, 28, 1, 0, '', 'none', NULL),

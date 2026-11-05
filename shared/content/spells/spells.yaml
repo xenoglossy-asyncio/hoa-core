@@ -214,6 +214,7 @@
   display:
     name: Necrotic
     name_zhCN: 死疽
+    icon: Interface\Icons\Spell_Shadow_AbominationExplosion
     description: Healing received reduced by 5% per stack.
     description_zhCN: 每层使受到的治疗降低5%。
     reason: The native DBC description is stale; the HoA stack value is the source.
