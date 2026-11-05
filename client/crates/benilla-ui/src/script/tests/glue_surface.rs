@@ -138,13 +138,10 @@ const NOT_YET: &[(&str, &[&str])] = &[
         &["ReadFile", "DeleteFile", "AppendToFile"],
     ),
     (
-        "the glue core (0x46ddf0, table 0x8373b8): the movie's setter, the \
-         patch and survey and the billing; each a binding of its own, the ones \
-         with an in-game namesake included",
+        "the glue core (0x46ddf0, table 0x8373b8): the movie's setter and the \
+         patch and survey; each a binding of its own, the ones with an in-game \
+         namesake included",
         &[
-            "GetBillingPlan",
-            "GetBillingTimeRemaining",
-            "GetBillingTimeRested",
             "PatchDownloadApply",
             "PatchDownloadCancel",
             "PatchDownloadProgress",
