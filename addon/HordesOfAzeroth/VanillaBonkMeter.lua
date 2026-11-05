@@ -720,6 +720,13 @@ UI.ListenHoa({
     HOA_LOADOUT = function(loadout)
         handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
     end,
+    HOA_WEAPON_INFO = function(weapon)
+        local index = tonumber(weapon.index)
+        if index and index > 0 then
+            Spell(index).name = weapon.name
+            Refresh()
+        end
+    end,
     HOA_RUN_SUPPORT = function(state)
         handlers["support"]({ false, state.text })
     end,

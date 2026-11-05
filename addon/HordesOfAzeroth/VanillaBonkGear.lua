@@ -418,14 +418,16 @@ handlers["gearoffer"] = function(f)
     if not entry then
         return
     end
+    local slot = tonumber(f[8] or "")
+    local otherSlot = tonumber(f[9] or "")
     offer = {
         entry = entry,
         replaced = tonumber(f[3] or "") or 0,
         valor = tonumber(f[4] or "") or 0,
         quality = tonumber(f[5] or "") or 2,
         found = UI.ParseFound(f[6], f[7], f[11]),
-        slot = tonumber(f[8] or ""),
-        otherSlot = tonumber(f[9] or ""),
+        slot = slot ~= 0 and slot or nil,
+        otherSlot = otherSlot ~= 0 and otherSlot or nil,
         otherReplaced = tonumber(f[10] or "") or 0,
     }
     Open()
