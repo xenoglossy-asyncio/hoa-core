@@ -3504,10 +3504,13 @@ void BonkPlayer::SendArena(std::string const& npc) const
             bool const cleared = IsTierCleared(tier);
             for (BonkMap const* dungeon : sBonkMgr.GetDungeons())
                 dungeons += (dungeons.empty() ? "" : ",") + dungeon->key + ":" + dungeon->icon + ":" + Localize(BONK_FIELD_MAP_NAME, dungeon->id, dungeon->name) + ":" + (cleared ? "1" : "0");
-            SendAddon("tier~" + std::to_string(tier.id) + "~" + tier.key + "~" + Localize(BONK_FIELD_TIER_NAME, tier.id, tier.name) + "~" + (unlocked ? "1" : "0") + "~" +
-                (unlocked ? "" : GetUnlockHint(tier)) + "~" + std::to_string(GetTierBest(tier)) + "~" + Localize(BONK_FIELD_TIER_DESCRIPTION, tier.id, tier.description) + "~" + tier.art + "~" + maps + "~" +
-                std::to_string(tier.levels) + "~" + std::to_string(unlocked ? tier.GetBandLevel(GetOpenLevel(tier)) : 0) + "~" + dungeons + "~" + Localize(BONK_FIELD_TIER_DETAILS, tier.id, tier.details) + "~" +
-                std::to_string(tier.firstLevel));
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteTier(data, tier.id, tier.key, Localize(BONK_FIELD_TIER_NAME, tier.id, tier.name), unlocked,
+                unlocked ? "" : GetUnlockHint(tier), GetTierBest(tier),
+                Localize(BONK_FIELD_TIER_DESCRIPTION, tier.id, tier.description), tier.art, maps, tier.levels,
+                unlocked ? tier.GetBandLevel(GetOpenLevel(tier)) : 0, dungeons,
+                Localize(BONK_FIELD_TIER_DETAILS, tier.id, tier.details), tier.firstLevel);
+            m_player->GetSession()->SendPacket(&data);
             SendLevelPreview(tier, GetRunBonuses());
         }
         else if (unlocked)
@@ -3520,7 +3523,12 @@ void BonkPlayer::SendArena(std::string const& npc) const
     if (m_addonReady)
         SendStarters();
     SendBoardChoice();
-    SendAddon("tierend");
+    if (m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteTierEnd(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 namespace
@@ -3611,9 +3619,12 @@ void BonkPlayer::SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bo
     static BonkString const BOSS_ATTACKS[] = { BONK_STRING_BOSS_ATTACKS_NORMAL, BONK_STRING_BOSS_ATTACKS_MORE, BONK_STRING_BOSS_ATTACKS_RELENTLESS };
     uint32 const step = std::min(2u, tier.eliteAffixes ? tier.eliteAffixes - 1u : 0u);
     uint32 const carried = GetTierBand(tier, GetCarriedLevel());
-    SendAddon("tierinfo~" + std::to_string(tier.id) + "~" + GetString(CASTER_AIM[step]) + "~" + GetString(BOSS_ATTACKS[step]) + "~" +
-        std::to_string((tier.chargeIntervalMs + 500) / 1000) + "~" + std::to_string(tier.maxAlive) + "~" +
-        (carried ? GetLevelName(GetAccountBestLevel()) : ""));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteTierInfo(data, tier.id, GetString(CASTER_AIM[step]), GetString(BOSS_ATTACKS[step]),
+            (tier.chargeIntervalMs + 500) / 1000, tier.maxAlive, carried ? GetLevelName(GetAccountBestLevel()) : "");
+        m_player->GetSession()->SendPacket(&data);
+    }
     uint32 const best = GetTierBest(tier);
     uint32 const shown = tier.IsEndlessLevels() ? std::max(best, carried) + 1 : tier.levels;
     for (uint32 band = 1; band <= shown; ++band)
@@ -3628,20 +3639,21 @@ void BonkPlayer::SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bo
         float const epic = rest * level.epicChance;
         float const blue = rest * level.blueChance;
         float const green = rest * level.greenChance;
-        SendAddon("level~" + std::to_string(tier.id) + "~" + std::to_string(band) + "~" + Percent((health - 1.0f) * 100.0f) + "~" +
-            Percent((damage - 1.0f) * 100.0f) + "~" + Percent(veterans) + "~" + std::to_string(affixes) + "~" + Percent((level.reward - 1.0f) * 100.0f) + "~" +
-            Chance(legendary) + "~" + Chance(epic) + "~" + Chance(blue) + "~" + Chance(green) + "~" + Chance(std::max(0.0f, 100.0f - legendary - epic - blue - green)) +
-            "~" + (band <= best ? "1" : band <= carried ? "2" : "0") + "~" + std::to_string(BonkRun::GetLevelDropTier(tier, band)) +
-            "~" + (band <= carried ? "1" : "0"));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteLevelPreview(data, tier.id, band, Percent((health - 1.0f) * 100.0f), Percent((damage - 1.0f) * 100.0f),
+            Percent(veterans), affixes, Percent((level.reward - 1.0f) * 100.0f), Chance(legendary), Chance(epic), Chance(blue),
+            Chance(green), Chance(std::max(0.0f, 100.0f - legendary - epic - blue - green)),
+            band <= best ? "1" : band <= carried ? "2" : "0", BonkRun::GetLevelDropTier(tier, band), band <= carried);
+        m_player->GetSession()->SendPacket(&data);
         auto const record = m_levelBests.find({ uint8(m_player->GetClass()), tier.firstLevel + band - 1 });
         if (record == m_levelBests.end())
             continue;
         LevelBest const& levelBest = record->second;
-        SendAddon("levelbest~" + std::to_string(tier.id) + "~" + std::to_string(band) + "~" + std::to_string(levelBest.clears) + "~" +
-            std::to_string(levelBest.firstClear) + "~" + std::to_string(levelBest.bestMs) + "~" + levelBest.bestMsBy + "~" +
-            std::to_string(levelBest.damagePerSecond) + "~" + levelBest.damageBy + "~" + std::to_string(levelBest.kills) + "~" + levelBest.killsBy + "~" +
-            std::to_string(levelBest.goldPerMinute) + "~" + levelBest.goldBy + "~" + std::to_string(levelBest.valorPerMinute) + "~" + levelBest.valorBy + "~" +
-            std::to_string(levelBest.finale) + "~" + std::to_string(levelBest.finaleSeconds));
+        WorldPacket bestData(SMSG_HOA_MESSAGE);
+        HoAWriteLevelBest(bestData, tier.id, band, levelBest.clears, levelBest.firstClear, levelBest.bestMs, levelBest.bestMsBy,
+            levelBest.damagePerSecond, levelBest.damageBy, levelBest.kills, levelBest.killsBy, levelBest.goldPerMinute,
+            levelBest.goldBy, levelBest.valorPerMinute, levelBest.valorBy, levelBest.finale, levelBest.finaleSeconds);
+        m_player->GetSession()->SendPacket(&bestData);
     }
 }
 
@@ -3676,8 +3688,12 @@ void BonkPlayer::SendZoneArt() const
     m_zoneArtSent = true;
     for (auto const& itr : sBonkMgr.GetZoneArts())
         for (BonkZoneOverlay const& overlay : itr.second.overlays)
-            SendAddon("zoneart~" + itr.second.file + "~" + overlay.texture + "~" + std::to_string(overlay.width) + "~" +
-                std::to_string(overlay.height) + "~" + std::to_string(overlay.x) + "~" + std::to_string(overlay.y));
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteZoneArt(data, itr.second.file, overlay.texture, overlay.width, overlay.height,
+                std::to_string(overlay.x), std::to_string(overlay.y));
+            m_player->GetSession()->SendPacket(&data);
+        }
 }
 
 void BonkPlayer::SendMapInfo() const
@@ -3686,17 +3702,21 @@ void BonkPlayer::SendMapInfo() const
     for (auto const& itr : sBonkMgr.GetMaps())
     {
         BonkMap const& map = itr.second;
-        std::string art = "~~~";
+        std::string zoneFile, uText, vText;
         if (BonkZoneArt const* zone = map.type == BONK_MAP_OPEN ? sBonkMgr.GetZoneArt(map.zoneId) : nullptr)
         {
             float x, y;
             PlayAreaCenter(map, x, y);
             float const u = (zone->left - y) / (zone->left - zone->right);
             float const v = (zone->top - x) / (zone->top - zone->bottom);
-            art = "~" + zone->file + "~" + MapFraction(u) + "~" + MapFraction(v);
+            zoneFile = zone->file;
+            uText = MapFraction(u);
+            vText = MapFraction(v);
         }
-        SendAddon("mapinfo~" + map.key + "~" + std::to_string(map.mapId) + "~" + Localize(BONK_FIELD_MAP_SUMMARY, map.id, map.summary) + "~" +
-            Localize(BONK_FIELD_MAP_DESCRIPTION, map.id, map.description) + art);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMapInfo(data, map.key, map.mapId, Localize(BONK_FIELD_MAP_SUMMARY, map.id, map.summary),
+            Localize(BONK_FIELD_MAP_DESCRIPTION, map.id, map.description), zoneFile, uText, vText);
+        m_player->GetSession()->SendPacket(&data);
     }
 }
 

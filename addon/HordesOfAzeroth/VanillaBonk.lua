@@ -2832,6 +2832,16 @@ UI.ListenHoa({
             false, arena.npc_present and "1" or "0", arena.npc, arena.gold_bonus, arena.challenges, arena.perks,
         })
     end,
+    HOA_TIER = function(tier)
+        handlers["tier"]({
+            false, tostring(tier.id), tier.key, tier.name, tier.unlocked and "1" or "0", tier.hint, tier.best,
+            tier.description, tier.art, tier.maps, tier.levels, tier.open_level, tier.dungeons, tier.details,
+            tier.first_level,
+        })
+    end,
+    HOA_TIER_END = function()
+        handlers["tierend"]()
+    end,
     HOA_SHOP_OPEN = function(shop)
         local kind = tostring(shop.kind)
         if kind == FORTUNE_SHOP then

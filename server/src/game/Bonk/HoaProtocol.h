@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 23
+#define HOA_PROTOCOL_VERSION 24
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -137,6 +137,13 @@
 #define HOA_MSG_GEAR_END 0x0087
 #define HOA_MSG_TRINKET_TIP 0x0088
 #define HOA_MSG_ARENA 0x0089
+#define HOA_MSG_TIER 0x008A
+#define HOA_MSG_TIER_END 0x008B
+#define HOA_MSG_TIER_INFO 0x008C
+#define HOA_MSG_LEVEL_PREVIEW 0x008D
+#define HOA_MSG_LEVEL_BEST 0x008E
+#define HOA_MSG_MAP_INFO 0x008F
+#define HOA_MSG_ZONE_ART 0x0090
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -1204,4 +1211,103 @@ inline void HoAWriteArena(WorldPacket& packet, bool const& npcPresent, std::stri
     packet << uint32(goldBonus);
     HoAWriteString(packet, challenges);
     HoAWriteString(packet, perks);
+}
+
+inline void HoAWriteTier(WorldPacket& packet, uint32 const& id, std::string const& key, std::string const& name, bool const& unlocked, std::string const& hint, uint32 const& best, std::string const& description, std::string const& art, std::string const& maps, uint32 const& levels, uint32 const& openLevel, std::string const& dungeons, std::string const& details, uint32 const& firstLevel)
+{
+    packet << uint16(HOA_MSG_TIER);
+    packet << uint32(id);
+    HoAWriteString(packet, key);
+    HoAWriteString(packet, name);
+    packet << bool(unlocked);
+    HoAWriteString(packet, hint);
+    packet << uint32(best);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, art);
+    HoAWriteString(packet, maps);
+    packet << uint32(levels);
+    packet << uint32(openLevel);
+    HoAWriteString(packet, dungeons);
+    HoAWriteString(packet, details);
+    packet << uint32(firstLevel);
+}
+
+inline void HoAWriteTierEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_TIER_END);
+}
+
+inline void HoAWriteTierInfo(WorldPacket& packet, uint32 const& tierId, std::string const& aim, std::string const& boss, uint32 const& chargeSeconds, uint32 const& crowd, std::string const& carriedFrom)
+{
+    packet << uint16(HOA_MSG_TIER_INFO);
+    packet << uint32(tierId);
+    HoAWriteString(packet, aim);
+    HoAWriteString(packet, boss);
+    packet << uint32(chargeSeconds);
+    packet << uint32(crowd);
+    HoAWriteString(packet, carriedFrom);
+}
+
+inline void HoAWriteLevelPreview(WorldPacket& packet, uint32 const& tierId, uint32 const& band, std::string const& health, std::string const& damage, std::string const& veterans, uint32 const& affixes, std::string const& gold, std::string const& legendary, std::string const& epic, std::string const& blue, std::string const& green, std::string const& white, std::string const& cleared, uint32 const& dropTier, bool const& stone)
+{
+    packet << uint16(HOA_MSG_LEVEL_PREVIEW);
+    packet << uint32(tierId);
+    packet << uint32(band);
+    HoAWriteString(packet, health);
+    HoAWriteString(packet, damage);
+    HoAWriteString(packet, veterans);
+    packet << uint32(affixes);
+    HoAWriteString(packet, gold);
+    HoAWriteString(packet, legendary);
+    HoAWriteString(packet, epic);
+    HoAWriteString(packet, blue);
+    HoAWriteString(packet, green);
+    HoAWriteString(packet, white);
+    HoAWriteString(packet, cleared);
+    packet << uint32(dropTier);
+    packet << bool(stone);
+}
+
+inline void HoAWriteLevelBest(WorldPacket& packet, uint32 const& tierId, uint32 const& band, uint32 const& clears, uint32 const& firstClear, uint32 const& bestMs, std::string const& bestMsBy, uint32 const& damage, std::string const& damageBy, uint32 const& kills, std::string const& killsBy, uint32 const& gold, std::string const& goldBy, uint32 const& valor, std::string const& valorBy, uint32 const& finale, uint32 const& finaleSeconds)
+{
+    packet << uint16(HOA_MSG_LEVEL_BEST);
+    packet << uint32(tierId);
+    packet << uint32(band);
+    packet << uint32(clears);
+    packet << uint32(firstClear);
+    packet << uint32(bestMs);
+    HoAWriteString(packet, bestMsBy);
+    packet << uint32(damage);
+    HoAWriteString(packet, damageBy);
+    packet << uint32(kills);
+    HoAWriteString(packet, killsBy);
+    packet << uint32(gold);
+    HoAWriteString(packet, goldBy);
+    packet << uint32(valor);
+    HoAWriteString(packet, valorBy);
+    packet << uint32(finale);
+    packet << uint32(finaleSeconds);
+}
+
+inline void HoAWriteMapInfo(WorldPacket& packet, std::string const& key, uint32 const& mapId, std::string const& summary, std::string const& description, std::string const& zoneFile, std::string const& u, std::string const& v)
+{
+    packet << uint16(HOA_MSG_MAP_INFO);
+    HoAWriteString(packet, key);
+    packet << uint32(mapId);
+    HoAWriteString(packet, summary);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, zoneFile);
+    HoAWriteString(packet, u);
+    HoAWriteString(packet, v);
+}
+
+inline void HoAWriteZoneArt(WorldPacket& packet, std::string const& file, std::string const& texture, uint32 const& width, uint32 const& height, std::string const& x, std::string const& y)
+{
+    packet << uint16(HOA_MSG_ZONE_ART);
+    HoAWriteString(packet, file);
+    HoAWriteString(packet, texture);
+    packet << uint32(width);
+    packet << uint32(height);
+    HoAWriteString(packet, x);
+    HoAWriteString(packet, y);
 }

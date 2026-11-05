@@ -144,6 +144,13 @@ const HOA_GEAR: &str = "HOA_GEAR";
 const HOA_GEAR_END: &str = "HOA_GEAR_END";
 const HOA_TRINKET_TIP: &str = "HOA_TRINKET_TIP";
 const HOA_ARENA: &str = "HOA_ARENA";
+const HOA_TIER: &str = "HOA_TIER";
+const HOA_TIER_END: &str = "HOA_TIER_END";
+const HOA_TIER_INFO: &str = "HOA_TIER_INFO";
+const HOA_LEVEL_PREVIEW: &str = "HOA_LEVEL_PREVIEW";
+const HOA_LEVEL_BEST: &str = "HOA_LEVEL_BEST";
+const HOA_MAP_INFO: &str = "HOA_MAP_INFO";
+const HOA_ZONE_ART: &str = "HOA_ZONE_ART";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -220,6 +227,115 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Tier(tier) => {
+                    script.fire_event(
+                        HOA_TIER,
+                        vec![lua_table(vec![
+                            ("id", ScriptValue::Int(i64::from(tier.id))),
+                            ("key", ScriptValue::Str(tier.key)),
+                            ("name", ScriptValue::Str(tier.name)),
+                            ("unlocked", ScriptValue::Bool(tier.unlocked)),
+                            ("hint", ScriptValue::Str(tier.hint)),
+                            ("best", ScriptValue::Int(i64::from(tier.best))),
+                            ("description", ScriptValue::Str(tier.description)),
+                            ("art", ScriptValue::Str(tier.art)),
+                            ("maps", ScriptValue::Str(tier.maps)),
+                            ("levels", ScriptValue::Int(i64::from(tier.levels))),
+                            ("open_level", ScriptValue::Int(i64::from(tier.open_level))),
+                            ("dungeons", ScriptValue::Str(tier.dungeons)),
+                            ("details", ScriptValue::Str(tier.details)),
+                            ("first_level", ScriptValue::Int(i64::from(tier.first_level))),
+                        ])],
+                    );
+                }
+                HoaMessage::TierEnd(_) => {
+                    script.fire_event(HOA_TIER_END, Vec::new());
+                }
+                HoaMessage::TierInfo(info) => {
+                    script.fire_event(
+                        HOA_TIER_INFO,
+                        vec![lua_table(vec![
+                            ("tier_id", ScriptValue::Int(i64::from(info.tier_id))),
+                            ("aim", ScriptValue::Str(info.aim)),
+                            ("boss", ScriptValue::Str(info.boss)),
+                            ("charge_seconds", ScriptValue::Int(i64::from(info.charge_seconds))),
+                            ("crowd", ScriptValue::Int(i64::from(info.crowd))),
+                            ("carried_from", ScriptValue::Str(info.carried_from)),
+                        ])],
+                    );
+                }
+                HoaMessage::LevelPreview(level) => {
+                    script.fire_event(
+                        HOA_LEVEL_PREVIEW,
+                        vec![lua_table(vec![
+                            ("tier_id", ScriptValue::Int(i64::from(level.tier_id))),
+                            ("band", ScriptValue::Int(i64::from(level.band))),
+                            ("health", ScriptValue::Str(level.health)),
+                            ("damage", ScriptValue::Str(level.damage)),
+                            ("veterans", ScriptValue::Str(level.veterans)),
+                            ("affixes", ScriptValue::Int(i64::from(level.affixes))),
+                            ("gold", ScriptValue::Str(level.gold)),
+                            ("legendary", ScriptValue::Str(level.legendary)),
+                            ("epic", ScriptValue::Str(level.epic)),
+                            ("blue", ScriptValue::Str(level.blue)),
+                            ("green", ScriptValue::Str(level.green)),
+                            ("white", ScriptValue::Str(level.white)),
+                            ("cleared", ScriptValue::Str(level.cleared)),
+                            ("drop_tier", ScriptValue::Int(i64::from(level.drop_tier))),
+                            ("stone", ScriptValue::Bool(level.stone)),
+                        ])],
+                    );
+                }
+                HoaMessage::LevelBest(best) => {
+                    script.fire_event(
+                        HOA_LEVEL_BEST,
+                        vec![lua_table(vec![
+                            ("tier_id", ScriptValue::Int(i64::from(best.tier_id))),
+                            ("band", ScriptValue::Int(i64::from(best.band))),
+                            ("clears", ScriptValue::Int(i64::from(best.clears))),
+                            ("first_clear", ScriptValue::Int(i64::from(best.first_clear))),
+                            ("best_ms", ScriptValue::Int(i64::from(best.best_ms))),
+                            ("best_ms_by", ScriptValue::Str(best.best_ms_by)),
+                            ("damage", ScriptValue::Int(i64::from(best.damage))),
+                            ("damage_by", ScriptValue::Str(best.damage_by)),
+                            ("kills", ScriptValue::Int(i64::from(best.kills))),
+                            ("kills_by", ScriptValue::Str(best.kills_by)),
+                            ("gold", ScriptValue::Int(i64::from(best.gold))),
+                            ("gold_by", ScriptValue::Str(best.gold_by)),
+                            ("valor", ScriptValue::Int(i64::from(best.valor))),
+                            ("valor_by", ScriptValue::Str(best.valor_by)),
+                            ("finale", ScriptValue::Int(i64::from(best.finale))),
+                            ("finale_seconds", ScriptValue::Int(i64::from(best.finale_seconds))),
+                        ])],
+                    );
+                }
+                HoaMessage::MapInfo(map) => {
+                    script.fire_event(
+                        HOA_MAP_INFO,
+                        vec![lua_table(vec![
+                            ("key", ScriptValue::Str(map.key)),
+                            ("map_id", ScriptValue::Int(i64::from(map.map_id))),
+                            ("summary", ScriptValue::Str(map.summary)),
+                            ("description", ScriptValue::Str(map.description)),
+                            ("zone_file", ScriptValue::Str(map.zone_file)),
+                            ("u", ScriptValue::Str(map.u)),
+                            ("v", ScriptValue::Str(map.v)),
+                        ])],
+                    );
+                }
+                HoaMessage::ZoneArt(art) => {
+                    script.fire_event(
+                        HOA_ZONE_ART,
+                        vec![lua_table(vec![
+                            ("file", ScriptValue::Str(art.file)),
+                            ("texture", ScriptValue::Str(art.texture)),
+                            ("width", ScriptValue::Int(i64::from(art.width))),
+                            ("height", ScriptValue::Int(i64::from(art.height))),
+                            ("x", ScriptValue::Str(art.x)),
+                            ("y", ScriptValue::Str(art.y)),
+                        ])],
+                    );
+                }
                 HoaMessage::Gear(gear) => {
                     script.fire_event(
                         HOA_GEAR,
@@ -1523,6 +1639,13 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_GEAR_END);
         add_in_game_event(HOA_TRINKET_TIP);
         add_in_game_event(HOA_ARENA);
+        add_in_game_event(HOA_TIER);
+        add_in_game_event(HOA_TIER_END);
+        add_in_game_event(HOA_TIER_INFO);
+        add_in_game_event(HOA_LEVEL_PREVIEW);
+        add_in_game_event(HOA_LEVEL_BEST);
+        add_in_game_event(HOA_MAP_INFO);
+        add_in_game_event(HOA_ZONE_ART);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

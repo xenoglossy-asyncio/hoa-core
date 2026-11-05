@@ -1450,6 +1450,31 @@ RunMaster.Hairline = Hairline
 RunMaster.SOFT, RunMaster.MUTED = SOFT, MUTED
 
 UI.ListenHoa({
+    HOA_TIER_INFO = function(info)
+        handlers["tierinfo"]({
+            false, tostring(info.tier_id), info.aim, info.boss, info.charge_seconds, info.crowd, info.carried_from,
+        })
+    end,
+    HOA_LEVEL_PREVIEW = function(level)
+        handlers["level"]({
+            false, tostring(level.tier_id), level.band, level.health, level.damage, level.veterans, level.affixes,
+            level.gold, level.legendary, level.epic, level.blue, level.green, level.white, level.cleared,
+            level.drop_tier, level.stone and "1" or "0",
+        })
+    end,
+    HOA_LEVEL_BEST = function(best)
+        handlers["levelbest"]({
+            false, tostring(best.tier_id), best.band, best.clears, best.first_clear, best.best_ms, best.best_ms_by,
+            best.damage, best.damage_by, best.kills, best.kills_by, best.gold, best.gold_by, best.valor, best.valor_by,
+            best.finale, best.finale_seconds,
+        })
+    end,
+    HOA_MAP_INFO = function(map)
+        handlers["mapinfo"]({ false, map.key, map.map_id, map.summary, map.description, map.zone_file, map.u, map.v })
+    end,
+    HOA_ZONE_ART = function(art)
+        handlers["zoneart"]({ false, art.file, art.texture, art.width, art.height, art.x, art.y })
+    end,
     HOA_EPIC_LUCK = function(luck)
         epicLuck = luck.bonus or 0
     end,
