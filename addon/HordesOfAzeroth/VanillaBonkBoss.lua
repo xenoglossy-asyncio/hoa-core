@@ -284,6 +284,17 @@ UI.Listen({
 })
 
 UI.ListenHoa({
+    HOA_BOSS_BAR = function(bar)
+        local f = { false }
+        for _, part in ipairs(UI.Split(bar.data or "", "~")) do
+            tinsert(f, part)
+        end
+        if f[2] and f[2] ~= "" then
+            ShowBosses(f)
+        else
+            HideBosses()
+        end
+    end,
     HOA_RUN_START = HideBosses,
     HOA_RUN_END = HideBosses,
 })

@@ -582,10 +582,15 @@ BonkTitle const* BonkPlayer::GetActiveTitle() const
 void BonkPlayer::SendTitles() const
 {
     BonkTitle const* active = GetActiveTitle();
-    std::string line = "titles~" + std::to_string(active ? active->id : 0);
+    std::string list;
     for (BonkTitle const* title : sBonkQuests.GetEarnedTitles(GetProgressAccount()))
-        line += "~" + std::to_string(title->id) + "~" + Localize(BONK_FIELD_TITLE_PATTERN, title->id, title->pattern) + "~" + std::to_string(title->stat) + "~" + std::to_string(title->value);
-    SendAddon(line);
+        list += (list.empty() ? "" : "~") + std::to_string(title->id) + "~" + Localize(BONK_FIELD_TITLE_PATTERN, title->id, title->pattern) +
+            "~" + std::to_string(title->stat) + "~" + std::to_string(title->value);
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteTitles(data, active ? active->id : 0, list);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 bool BonkPlayer::SetTitle(uint32 titleId, std::string& error)
@@ -2478,7 +2483,11 @@ void BonkPlayer::AddScrap(uint32 points)
 
 void BonkPlayer::SendQuartermaster() const
 {
-    SendAddon("quartermaster~" + std::to_string(GetStockTier()) + "~" + std::to_string(m_scrap));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteQuartermaster(data, GetStockTier(), m_scrap);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 uint32 BonkPlayer::GetUpgradeCeiling() const
@@ -2505,7 +2514,13 @@ std::vector<Item*> BonkPlayer::GetUpgradableGear() const
 
 void BonkPlayer::SendFoundUpgrades() const
 {
-    SendAddon("qmupclear");
+    if (!m_addonReady)
+        return;
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteQuartermasterUpgradeClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     uint32 const ceiling = GetUpgradeCeiling();
     for (Item* item : GetUpgradableGear())
     {
@@ -2517,14 +2532,18 @@ void BonkPlayer::SendFoundUpgrades() const
         if (item->GetGUIDLow() == m_rerollItem)
             for (auto const& offer : m_rerollOffers)
                 offers.push_back({ offer.first, offer.second });
-        SendAddon("qmup~" + std::to_string(item->GetGUIDLow()) + "~" + std::to_string(item->GetEntry()) + "~" + std::to_string(tier) + "~" +
-            std::to_string(cost) + "~" + (tier < ceiling && found.upgrades < BONK_FOUND_MAX_UPGRADES ? "1" : "0") + "~" + (item->IsEquipped() ? "1" : "0") + "~" +
-            BonkFound::DescribeLines(found, tier) + "~" + BonkFound::DescribeExtra(item, tier) + "~" +
-            std::to_string(BonkFound::GetRerollCost(found.rerolls)) + "~" + std::to_string(found.rerollLine) + "~" +
-            (offers.empty() ? "~" : std::to_string(m_rerollLine) + "~" + BonkFound::DescribeOffers(offers, tier)) + "~" +
-            BonkFound::DescribeRanges(tier) + "~" + std::to_string(BONK_FOUND_MAX_UPGRADES - std::min(found.upgrades, BONK_FOUND_MAX_UPGRADES)));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteQuartermasterUpgrade(data, item->GetGUIDLow(), item->GetEntry(), tier, cost,
+            tier < ceiling && found.upgrades < BONK_FOUND_MAX_UPGRADES, item->IsEquipped(),
+            BonkFound::DescribeLines(found, tier), BonkFound::DescribeExtra(item, tier),
+            BonkFound::GetRerollCost(found.rerolls), found.rerollLine, offers.empty() ? 0 : m_rerollLine,
+            offers.empty() ? "" : BonkFound::DescribeOffers(offers, tier), BonkFound::DescribeRanges(tier),
+            BONK_FOUND_MAX_UPGRADES - std::min(found.upgrades, BONK_FOUND_MAX_UPGRADES));
+        m_player->GetSession()->SendPacket(&data);
     }
-    SendAddon("qmupend~" + std::to_string(m_scrap));
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteQuartermasterUpgradeEnd(end, m_scrap);
+    m_player->GetSession()->SendPacket(&end);
 }
 
 Item* BonkPlayer::FindUpgradableGear(uint32 guidLow) const
@@ -3161,14 +3180,6 @@ void BonkPlayer::SendAuraPercent(uint32 spellId, float percent) const
     m_player->GetSession()->SendPacket(&data);
 }
 
-void BonkPlayer::SendAddon(std::string const& line) const
-{
-    if (!m_addonReady)
-        return;
-
-    ChatHandler(m_player).SendSysMessage(("BONK~" + line).c_str());
-}
-
 std::vector<BonkPlayer::BanSource> BonkPlayer::GetBanSources(BonkQuestReward type) const
 {
     bool const cards = type == BONK_REWARD_CARD;
@@ -3421,19 +3432,22 @@ void BonkPlayer::SendStats() const
 
 void BonkPlayer::SendStatTotals(float const* totals, bool inRun, float const* afterCaps) const
 {
-    std::string line = "stats~" + std::string(inRun ? "1" : "0") + "~";
+    std::string caps, after;
     for (uint8 effect = 0; effect < MAX_BONK_PASSIVE_EFFECT; ++effect)
     {
         float value = totals[effect];
         if (effect == BONK_PASSIVE_CRIT)
             value += BONK_BASE_CRIT;
-        line += (effect ? "," : "") + FormatStat(value);
+        caps += (effect ? "," : "") + FormatStat(value);
     }
-    line += "~";
     if (afterCaps)
         for (uint8 effect = 0; effect < MAX_BONK_PASSIVE_EFFECT; ++effect)
-            line += (effect ? "," : "") + FormatStat(afterCaps[effect]);
-    SendAddon(line);
+            after += (effect ? "," : "") + FormatStat(afterCaps[effect]);
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteStats(data, inRun, caps, after);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::WatchStats(bool watching)

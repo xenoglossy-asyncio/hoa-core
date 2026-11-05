@@ -1033,6 +1033,34 @@ local function QueueXpPickupSounds(orbs)
 end
 
 UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+    end,
+    HOA_WEAPON_INFO = function(weapon)
+        local f = {
+            false, weapon.index, weapon.name, weapon.ranks, weapon.interval, weapon.next_cast, weapon.line, weapon.description,
+            weapon.damage, weapon.header, weapon.faster and "1" or "0",
+        }
+        for _, part in ipairs(UI.Split(weapon.tags or "", "~")) do
+            tinsert(f, part)
+        end
+        for _, part in ipairs(UI.Split(weapon.radius or "", "~")) do
+            tinsert(f, part)
+        end
+        handlers["pw"](f)
+    end,
+    HOA_WEAPON_EVOLUTION = function(evolution)
+        handlers["pwe"]({
+            false, evolution.index, evolution.evolution, evolution.evolution_text, evolution.evolved_from,
+            evolution.chance_text, evolution.chance,
+        })
+    end,
+    HOA_WEAPON_EVOLUTION_OPTION = function(option)
+        handlers["pwev"]({ false, option.index, option.name, option.text })
+    end,
+    HOA_COOLDOWN_PIE = function(pie)
+        handlers["pcd"]({ false, pie.index, pie.pie_ms, pie.timer, pie.held and "1" or "0" })
+    end,
     HOA_REACH_RING = function(ring)
         handlers["reachring"]({ false, ring.spell_id, ring.slot })
     end,

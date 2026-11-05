@@ -23,6 +23,16 @@ local function StopBossMusic()
     end
 end
 
+UI.ListenHoa({
+    HOA_MUSIC = function(music)
+        if music.track == "boss" then
+            PlayBossMusic()
+        else
+            StopBossMusic()
+        end
+    end,
+})
+
 UI.Listen({
     ["music"] = function(f)
         if f[2] == "boss" then

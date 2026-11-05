@@ -717,6 +717,9 @@ function UI.ApplyDamageMeter()
 end
 
 UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+    end,
     HOA_RUN_SUPPORT = function(state)
         handlers["support"]({ false, state.text })
     end,

@@ -622,23 +622,27 @@ void BonkStats::UpdateBossBar(Player* player, uint32 diff)
             shown.resize(BONK_BOSS_BAR_MAX);
     }
 
-    std::string line = "boss~";
+    std::string data;
     if (!shown.empty())
     {
-        line += std::to_string(shown.size());
+        data += std::to_string(shown.size());
         for (ShownBoss const& entry : shown)
         {
             Creature* creature = entry.creature;
             BonkMobAI const* ai = static_cast<BonkMobAI const*>(creature->AI());
-            line += "~" + player->GetBonkPlayer()->GetLocalName(creature) + "~" + std::to_string(ai->GetTrueHealth(creature->GetHealth())) + "~" +
+            data += "~" + player->GetBonkPlayer()->GetLocalName(creature) + "~" + std::to_string(ai->GetTrueHealth(creature->GetHealth())) + "~" +
                 std::to_string(ai->GetTrueHealth(creature->GetMaxHealth())) + "~" + (entry.isBoss ? "boss" : "mini") + "~" +
                 ai->GetAffixNames(player->GetBonkPlayer()->GetLocale()) + "~" + KeywordStacksText(player, creature) + "~" + BonkMobAI::GetUnitGuidText(creature);
         }
     }
-    if (line == bar->lastLine)
+    if (data == bar->lastLine)
         return;
-    bar->lastLine = line;
-    player->GetBonkPlayer()->SendAddon(line);
+    bar->lastLine = data;
+    if (!player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket packet(SMSG_HOA_MESSAGE);
+    HoAWriteBossBar(packet, data);
+    player->GetSession()->SendPacket(&packet);
 }
 
 void BonkOnDamage(Unit* attacker, Unit* victim, uint32 damage, SpellEntry const* spellProto)

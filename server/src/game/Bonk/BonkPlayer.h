@@ -341,7 +341,6 @@ class BonkPlayer
         std::string GetItemName(ItemPrototype const* proto) const;
         std::string GetCreatureName(uint32 entry, std::string const& fallback) const;
 
-        void SendAddon(std::string const& line) const;
         void Notify(std::string const& text) const;
         void ResetReworkedTrinkets();
         void NotifyFind(std::string const& text) const;

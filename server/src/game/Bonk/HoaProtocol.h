@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 25
+#define HOA_PROTOCOL_VERSION 27
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -145,6 +145,21 @@
 #define HOA_MSG_MAP_INFO 0x008F
 #define HOA_MSG_ZONE_ART 0x0090
 #define HOA_MSG_CODEX 0x0091
+#define HOA_MSG_WEAPON_INFO 0x0092
+#define HOA_MSG_WEAPON_EVOLUTION 0x0093
+#define HOA_MSG_WEAPON_EVOLUTION_OPTION 0x0094
+#define HOA_MSG_COOLDOWN_PIE 0x0095
+#define HOA_MSG_QUARTERMASTER 0x0096
+#define HOA_MSG_QUARTERMASTER_UPGRADE_CLEAR 0x0097
+#define HOA_MSG_QUARTERMASTER_UPGRADE 0x0098
+#define HOA_MSG_QUARTERMASTER_UPGRADE_END 0x0099
+#define HOA_MSG_MUSIC 0x009A
+#define HOA_MSG_LOADOUT 0x009B
+#define HOA_MSG_DRUID_SLOTS 0x009C
+#define HOA_MSG_BOSS_BAR 0x009D
+#define HOA_MSG_TITLES 0x009E
+#define HOA_MSG_STATS 0x009F
+#define HOA_MSG_KEYWORD_TIMERS 0x00A0
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -1318,4 +1333,133 @@ inline void HoAWriteCodex(WorldPacket& packet, std::string const& kind, std::str
     packet << uint16(HOA_MSG_CODEX);
     HoAWriteString(packet, kind);
     HoAWriteString(packet, line);
+}
+
+inline void HoAWriteWeaponInfo(WorldPacket& packet, uint32 const& index, std::string const& name, std::string const& ranks, uint32 const& interval, int32 const& nextCast, std::string const& line, std::string const& description, std::string const& damage, std::string const& header, bool const& faster, std::string const& tags, std::string const& radius)
+{
+    packet << uint16(HOA_MSG_WEAPON_INFO);
+    packet << uint32(index);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, ranks);
+    packet << uint32(interval);
+    packet << int32(nextCast);
+    HoAWriteString(packet, line);
+    HoAWriteString(packet, description);
+    HoAWriteString(packet, damage);
+    HoAWriteString(packet, header);
+    packet << bool(faster);
+    HoAWriteString(packet, tags);
+    HoAWriteString(packet, radius);
+}
+
+inline void HoAWriteWeaponEvolution(WorldPacket& packet, uint32 const& index, std::string const& evolution, std::string const& evolutionText, std::string const& evolvedFrom, std::string const& chanceText, uint32 const& chance)
+{
+    packet << uint16(HOA_MSG_WEAPON_EVOLUTION);
+    packet << uint32(index);
+    HoAWriteString(packet, evolution);
+    HoAWriteString(packet, evolutionText);
+    HoAWriteString(packet, evolvedFrom);
+    HoAWriteString(packet, chanceText);
+    packet << uint32(chance);
+}
+
+inline void HoAWriteWeaponEvolutionOption(WorldPacket& packet, uint32 const& index, std::string const& name, std::string const& text)
+{
+    packet << uint16(HOA_MSG_WEAPON_EVOLUTION_OPTION);
+    packet << uint32(index);
+    HoAWriteString(packet, name);
+    HoAWriteString(packet, text);
+}
+
+inline void HoAWriteCooldownPie(WorldPacket& packet, uint32 const& index, uint32 const& pieMs, int32 const& timer, bool const& held)
+{
+    packet << uint16(HOA_MSG_COOLDOWN_PIE);
+    packet << uint32(index);
+    packet << uint32(pieMs);
+    packet << int32(timer);
+    packet << bool(held);
+}
+
+inline void HoAWriteQuartermaster(WorldPacket& packet, uint32 const& tier, uint32 const& scrap)
+{
+    packet << uint16(HOA_MSG_QUARTERMASTER);
+    packet << uint32(tier);
+    packet << uint32(scrap);
+}
+
+inline void HoAWriteQuartermasterUpgradeClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_QUARTERMASTER_UPGRADE_CLEAR);
+}
+
+inline void HoAWriteQuartermasterUpgrade(WorldPacket& packet, uint32 const& guid, uint32 const& entry, uint32 const& tier, uint32 const& cost, bool const& can, bool const& worn, std::string const& lines, std::string const& extra, uint32 const& rerollCost, uint32 const& rerollLine, uint32 const& offerLine, std::string const& offers, std::string const& ranges, uint32 const& left)
+{
+    packet << uint16(HOA_MSG_QUARTERMASTER_UPGRADE);
+    packet << uint32(guid);
+    packet << uint32(entry);
+    packet << uint32(tier);
+    packet << uint32(cost);
+    packet << bool(can);
+    packet << bool(worn);
+    HoAWriteString(packet, lines);
+    HoAWriteString(packet, extra);
+    packet << uint32(rerollCost);
+    packet << uint32(rerollLine);
+    packet << uint32(offerLine);
+    HoAWriteString(packet, offers);
+    HoAWriteString(packet, ranges);
+    packet << uint32(left);
+}
+
+inline void HoAWriteQuartermasterUpgradeEnd(WorldPacket& packet, uint32 const& scrap)
+{
+    packet << uint16(HOA_MSG_QUARTERMASTER_UPGRADE_END);
+    packet << uint32(scrap);
+}
+
+inline void HoAWriteMusic(WorldPacket& packet, std::string const& track)
+{
+    packet << uint16(HOA_MSG_MUSIC);
+    HoAWriteString(packet, track);
+}
+
+inline void HoAWriteLoadout(WorldPacket& packet, std::string const& entries, uint32 const& spellSlots, uint32 const& passiveSlots)
+{
+    packet << uint16(HOA_MSG_LOADOUT);
+    HoAWriteString(packet, entries);
+    packet << uint32(spellSlots);
+    packet << uint32(passiveSlots);
+}
+
+inline void HoAWriteDruidSlots(WorldPacket& packet, std::string const& slots)
+{
+    packet << uint16(HOA_MSG_DRUID_SLOTS);
+    HoAWriteString(packet, slots);
+}
+
+inline void HoAWriteBossBar(WorldPacket& packet, std::string const& data)
+{
+    packet << uint16(HOA_MSG_BOSS_BAR);
+    HoAWriteString(packet, data);
+}
+
+inline void HoAWriteTitles(WorldPacket& packet, uint32 const& active, std::string const& list)
+{
+    packet << uint16(HOA_MSG_TITLES);
+    packet << uint32(active);
+    HoAWriteString(packet, list);
+}
+
+inline void HoAWriteStats(WorldPacket& packet, bool const& inRun, std::string const& caps, std::string const& afterCaps)
+{
+    packet << uint16(HOA_MSG_STATS);
+    packet << bool(inRun);
+    HoAWriteString(packet, caps);
+    HoAWriteString(packet, afterCaps);
+}
+
+inline void HoAWriteKeywordTimers(WorldPacket& packet, std::string const& entries)
+{
+    packet << uint16(HOA_MSG_KEYWORD_TIMERS);
+    HoAWriteString(packet, entries);
 }

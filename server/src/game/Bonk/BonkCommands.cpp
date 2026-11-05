@@ -54,7 +54,6 @@ namespace
     void SendAddonData(Player* player)
     {
         BonkPlayer* bonk = player->GetBonkPlayer();
-        bonk->SendAddon("hello~1");
         if (BonkRun* run = bonk->GetRun())
             run->SetMenuOpen(false);
         bonk->SendTierList();

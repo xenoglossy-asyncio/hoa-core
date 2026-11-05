@@ -131,6 +131,16 @@ UI.ListenHoa({
     HOA_DRUID_FORM = function(form)
         current = FORM_ICONS[form.form] and form.form or nil
     end,
+    HOA_DRUID_SLOTS = function(slots)
+        local f = { false }
+        for _, part in ipairs(UI.Split(slots.slots or "", "~")) do
+            tinsert(f, part)
+        end
+        slotStates = {}
+        for index = 2, table.getn(f) do
+            slotStates[index - 1] = f[index]
+        end
+    end,
 })
 
 UI.Listen({

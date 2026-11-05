@@ -152,6 +152,21 @@ const HOA_LEVEL_BEST: &str = "HOA_LEVEL_BEST";
 const HOA_MAP_INFO: &str = "HOA_MAP_INFO";
 const HOA_ZONE_ART: &str = "HOA_ZONE_ART";
 const HOA_CODEX: &str = "HOA_CODEX";
+const HOA_WEAPON_INFO: &str = "HOA_WEAPON_INFO";
+const HOA_WEAPON_EVOLUTION: &str = "HOA_WEAPON_EVOLUTION";
+const HOA_WEAPON_EVOLUTION_OPTION: &str = "HOA_WEAPON_EVOLUTION_OPTION";
+const HOA_COOLDOWN_PIE: &str = "HOA_COOLDOWN_PIE";
+const HOA_QUARTERMASTER: &str = "HOA_QUARTERMASTER";
+const HOA_QUARTERMASTER_UPGRADE_CLEAR: &str = "HOA_QUARTERMASTER_UPGRADE_CLEAR";
+const HOA_QUARTERMASTER_UPGRADE: &str = "HOA_QUARTERMASTER_UPGRADE";
+const HOA_QUARTERMASTER_UPGRADE_END: &str = "HOA_QUARTERMASTER_UPGRADE_END";
+const HOA_MUSIC: &str = "HOA_MUSIC";
+const HOA_LOADOUT: &str = "HOA_LOADOUT";
+const HOA_DRUID_SLOTS: &str = "HOA_DRUID_SLOTS";
+const HOA_BOSS_BAR: &str = "HOA_BOSS_BAR";
+const HOA_TITLES: &str = "HOA_TITLES";
+const HOA_STATS: &str = "HOA_STATS";
+const HOA_KEYWORD_TIMERS: &str = "HOA_KEYWORD_TIMERS";
 
 fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
     ScriptValue::Table(fields.into_iter().map(|(key, value)| (key.to_string(), value)).collect())
@@ -228,6 +243,151 @@ fn deliver_hoa_messages(world: &mut World) {
                 continue;
             };
             match message {
+                HoaMessage::Music(music) => {
+                    script.fire_event(
+                        HOA_MUSIC,
+                        vec![lua_table(vec![("track", ScriptValue::Str(music.track))])],
+                    );
+                }
+                HoaMessage::Loadout(loadout) => {
+                    script.fire_event(
+                        HOA_LOADOUT,
+                        vec![lua_table(vec![
+                            ("entries", ScriptValue::Str(loadout.entries)),
+                            ("spell_slots", ScriptValue::Int(i64::from(loadout.spell_slots))),
+                            ("passive_slots", ScriptValue::Int(i64::from(loadout.passive_slots))),
+                        ])],
+                    );
+                }
+                HoaMessage::DruidSlots(slots) => {
+                    script.fire_event(
+                        HOA_DRUID_SLOTS,
+                        vec![lua_table(vec![("slots", ScriptValue::Str(slots.slots))])],
+                    );
+                }
+                HoaMessage::BossBar(bar) => {
+                    script.fire_event(
+                        HOA_BOSS_BAR,
+                        vec![lua_table(vec![("data", ScriptValue::Str(bar.data))])],
+                    );
+                }
+                HoaMessage::Titles(titles) => {
+                    script.fire_event(
+                        HOA_TITLES,
+                        vec![lua_table(vec![
+                            ("active", ScriptValue::Int(i64::from(titles.active))),
+                            ("list", ScriptValue::Str(titles.list)),
+                        ])],
+                    );
+                }
+                HoaMessage::Stats(stats) => {
+                    script.fire_event(
+                        HOA_STATS,
+                        vec![lua_table(vec![
+                            ("in_run", ScriptValue::Bool(stats.in_run)),
+                            ("caps", ScriptValue::Str(stats.caps)),
+                            ("after_caps", ScriptValue::Str(stats.after_caps)),
+                        ])],
+                    );
+                }
+                HoaMessage::KeywordTimers(timers) => {
+                    script.fire_event(
+                        HOA_KEYWORD_TIMERS,
+                        vec![lua_table(vec![("entries", ScriptValue::Str(timers.entries))])],
+                    );
+                }
+                HoaMessage::WeaponInfo(weapon) => {
+                    script.fire_event(
+                        HOA_WEAPON_INFO,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(weapon.index))),
+                            ("name", ScriptValue::Str(weapon.name)),
+                            ("ranks", ScriptValue::Str(weapon.ranks)),
+                            ("interval", ScriptValue::Int(i64::from(weapon.interval))),
+                            ("next_cast", ScriptValue::Int(i64::from(weapon.next_cast))),
+                            ("line", ScriptValue::Str(weapon.line)),
+                            ("description", ScriptValue::Str(weapon.description)),
+                            ("damage", ScriptValue::Str(weapon.damage)),
+                            ("header", ScriptValue::Str(weapon.header)),
+                            ("faster", ScriptValue::Bool(weapon.faster)),
+                            ("tags", ScriptValue::Str(weapon.tags)),
+                            ("radius", ScriptValue::Str(weapon.radius)),
+                        ])],
+                    );
+                }
+                HoaMessage::WeaponEvolution(evolution) => {
+                    script.fire_event(
+                        HOA_WEAPON_EVOLUTION,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(evolution.index))),
+                            ("evolution", ScriptValue::Str(evolution.evolution)),
+                            ("evolution_text", ScriptValue::Str(evolution.evolution_text)),
+                            ("evolved_from", ScriptValue::Str(evolution.evolved_from)),
+                            ("chance_text", ScriptValue::Str(evolution.chance_text)),
+                            ("chance", ScriptValue::Int(i64::from(evolution.chance))),
+                        ])],
+                    );
+                }
+                HoaMessage::WeaponEvolutionOption(option) => {
+                    script.fire_event(
+                        HOA_WEAPON_EVOLUTION_OPTION,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(option.index))),
+                            ("name", ScriptValue::Str(option.name)),
+                            ("text", ScriptValue::Str(option.text)),
+                        ])],
+                    );
+                }
+                HoaMessage::CooldownPie(pie) => {
+                    script.fire_event(
+                        HOA_COOLDOWN_PIE,
+                        vec![lua_table(vec![
+                            ("index", ScriptValue::Int(i64::from(pie.index))),
+                            ("pie_ms", ScriptValue::Int(i64::from(pie.pie_ms))),
+                            ("timer", ScriptValue::Int(i64::from(pie.timer))),
+                            ("held", ScriptValue::Bool(pie.held)),
+                        ])],
+                    );
+                }
+                HoaMessage::Quartermaster(qm) => {
+                    script.fire_event(
+                        HOA_QUARTERMASTER,
+                        vec![lua_table(vec![
+                            ("tier", ScriptValue::Int(i64::from(qm.tier))),
+                            ("scrap", ScriptValue::Int(i64::from(qm.scrap))),
+                        ])],
+                    );
+                }
+                HoaMessage::QuartermasterUpgradeClear(_) => {
+                    script.fire_event(HOA_QUARTERMASTER_UPGRADE_CLEAR, Vec::new());
+                }
+                HoaMessage::QuartermasterUpgrade(upgrade) => {
+                    script.fire_event(
+                        HOA_QUARTERMASTER_UPGRADE,
+                        vec![lua_table(vec![
+                            ("guid", ScriptValue::Int(i64::from(upgrade.guid))),
+                            ("entry", ScriptValue::Int(i64::from(upgrade.entry))),
+                            ("tier", ScriptValue::Int(i64::from(upgrade.tier))),
+                            ("cost", ScriptValue::Int(i64::from(upgrade.cost))),
+                            ("can", ScriptValue::Bool(upgrade.can)),
+                            ("worn", ScriptValue::Bool(upgrade.worn)),
+                            ("lines", ScriptValue::Str(upgrade.lines)),
+                            ("extra", ScriptValue::Str(upgrade.extra)),
+                            ("reroll_cost", ScriptValue::Int(i64::from(upgrade.reroll_cost))),
+                            ("reroll_line", ScriptValue::Int(i64::from(upgrade.reroll_line))),
+                            ("offer_line", ScriptValue::Int(i64::from(upgrade.offer_line))),
+                            ("offers", ScriptValue::Str(upgrade.offers)),
+                            ("ranges", ScriptValue::Str(upgrade.ranges)),
+                            ("left", ScriptValue::Int(i64::from(upgrade.left))),
+                        ])],
+                    );
+                }
+                HoaMessage::QuartermasterUpgradeEnd(end) => {
+                    script.fire_event(
+                        HOA_QUARTERMASTER_UPGRADE_END,
+                        vec![lua_table(vec![("scrap", ScriptValue::Int(i64::from(end.scrap)))])],
+                    );
+                }
                 HoaMessage::Codex(codex) => {
                     script.fire_event(
                         HOA_CODEX,
@@ -1657,6 +1817,21 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_MAP_INFO);
         add_in_game_event(HOA_ZONE_ART);
         add_in_game_event(HOA_CODEX);
+        add_in_game_event(HOA_WEAPON_INFO);
+        add_in_game_event(HOA_WEAPON_EVOLUTION);
+        add_in_game_event(HOA_WEAPON_EVOLUTION_OPTION);
+        add_in_game_event(HOA_COOLDOWN_PIE);
+        add_in_game_event(HOA_QUARTERMASTER);
+        add_in_game_event(HOA_QUARTERMASTER_UPGRADE_CLEAR);
+        add_in_game_event(HOA_QUARTERMASTER_UPGRADE);
+        add_in_game_event(HOA_QUARTERMASTER_UPGRADE_END);
+        add_in_game_event(HOA_MUSIC);
+        add_in_game_event(HOA_LOADOUT);
+        add_in_game_event(HOA_DRUID_SLOTS);
+        add_in_game_event(HOA_BOSS_BAR);
+        add_in_game_event(HOA_TITLES);
+        add_in_game_event(HOA_STATS);
+        add_in_game_event(HOA_KEYWORD_TIMERS);
         let hosts = LuaHosts {
             snapshot: SharedSnapshot::default(),
             areas: SharedMapAreas::from_install(),

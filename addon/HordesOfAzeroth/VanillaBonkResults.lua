@@ -1299,6 +1299,9 @@ end
 local handlers = {}
 
 UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+    end,
     HOA_DEATH_RECAP = function(recap)
         handlers["dr"]({
             false, recap.max_health, recap.start_health, recap.killer, recap.kill_amount, recap.overkill, recap.taken,

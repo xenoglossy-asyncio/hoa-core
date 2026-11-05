@@ -517,6 +517,9 @@ UI.Listen({
 })
 
 UI.ListenHoa({
+    HOA_KEYWORD_TIMERS = function(timers)
+        ReadTimers(timers.entries)
+    end,
     HOA_CODEX = function(entry)
         if entry.kind ~= "gls" and entry.kind ~= "kwdaura" and entry.kind ~= "kwd" then
             return

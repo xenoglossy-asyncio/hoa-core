@@ -2619,10 +2619,6 @@ end)
 
 local handlers = {}
 
-handlers["hello"] = function()
-    VB.connected = true
-end
-
 handlers["kwd"] = function(f)
     local id = tonumber(f[2])
     if not id then
@@ -2830,6 +2826,9 @@ UI.ListenHoa({
             tinsert(f, part)
         end
         handlers[entry.kind](f)
+    end,
+    HOA_STATS = function(stats)
+        handlers["stats"]({ false, stats.in_run and "1" or "0", stats.caps, stats.after_caps })
     end,
     HOA_GEAR = function(gear)
         handlers["gear"]({ false, tostring(gear.id), gear.stats })

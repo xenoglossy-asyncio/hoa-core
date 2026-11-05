@@ -1165,6 +1165,22 @@ handlers["trinkettip"] = function(f)
 end
 
 UI.ListenHoa({
+    HOA_QUARTERMASTER = function(qm)
+        handlers["quartermaster"]({ false, qm.tier, qm.scrap })
+    end,
+    HOA_QUARTERMASTER_UPGRADE_CLEAR = function()
+        handlers["qmupclear"]()
+    end,
+    HOA_QUARTERMASTER_UPGRADE = function(upgrade)
+        handlers["qmup"]({
+            false, tostring(upgrade.guid), upgrade.entry, upgrade.tier, upgrade.cost, upgrade.can and "1" or "0",
+            upgrade.worn and "1" or "0", upgrade.lines, upgrade.extra, upgrade.reroll_cost, upgrade.reroll_line,
+            upgrade.offer_line, upgrade.offers, upgrade.ranges, upgrade.left,
+        })
+    end,
+    HOA_QUARTERMASTER_UPGRADE_END = function(finish)
+        handlers["qmupend"]({ false, finish.scrap })
+    end,
     HOA_TRINKET_TIP = function(tip)
         handlers["trinkettip"]({ false, tip.entry, tip.count, tip.text })
     end,

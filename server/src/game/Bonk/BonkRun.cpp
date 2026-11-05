@@ -12699,7 +12699,11 @@ void BonkRun::UpdateBossVoices()
 
 void BonkRun::SendBossMusic(bool playing) const
 {
-    m_player->GetBonkPlayer()->SendAddon(playing ? "music~boss" : "music~stop");
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteMusic(data, playing ? "boss" : "stop");
+    m_player->GetSession()->SendPacket(&data);
 }
 
 BonkRun::OwnedWeapon* BonkRun::FindOwned(uint32 weaponId)
@@ -14136,16 +14140,20 @@ std::string BonkRun::DescribeBuildTotals() const
 
 void BonkRun::SendLoadout() const
 {
-    std::string line = "loadout~";
+    std::string entries;
     for (auto const& owned : m_weapons)
-        line += std::string(owned.weapon.evolvesFrom ? "e:" : "w:") + owned.weapon.icon + ":" + std::to_string(owned.rank) + ":" +
+        entries += std::string(owned.weapon.evolvesFrom ? "e:" : "w:") + owned.weapon.icon + ":" + std::to_string(owned.rank) + ":" +
             std::to_string(IsRankMaxed(owned) ? owned.rank : 0) + ",";
     for (auto const& itr : m_passiveRanks)
         if (BonkPassive const* passive = sBonkMgr.GetPassive(itr.first))
-            line += "p:" + passive->icon + ":" + std::to_string(itr.second) + ":" + std::to_string(passive->maxRank) + ",";
-    line += "~" + std::to_string(GetSpellSlots()) + "~" + std::to_string(GetPassiveSlots());
+            entries += "p:" + passive->icon + ":" + std::to_string(itr.second) + ":" + std::to_string(passive->maxRank) + ",";
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    bonk->SendAddon(line);
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteLoadout(data, entries, GetSpellSlots(), GetPassiveSlots());
+        m_player->GetSession()->SendPacket(&data);
+    }
 
     uint32 index = 0;
     for (auto const& owned : m_weapons)
@@ -14169,12 +14177,22 @@ void BonkRun::SendLoadout() const
                 evolutionText = sBonkMgr.DescribeEvolutionAdds(*evolutions.front(), GetLocale());
             chanceText = DescribeEvolutionChance(owned, chance);
         }
-        bonk->SendAddon("pwe~" + std::to_string(index) + "~" + evolution + "~" + evolutionText + "~" + evolvedFrom + "~" + chanceText + "~" +
-            std::to_string(chance));
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteWeaponEvolution(data, index, evolution, evolutionText, evolvedFrom, chanceText, chance);
+            m_player->GetSession()->SendPacket(&data);
+        }
         if (!weapon.evolvesFrom && evolutions.size() > 1)
             for (BonkWeapon const* evolved : evolutions)
-                bonk->SendAddon("pwev~" + std::to_string(index) + "~" + Localize(BONK_FIELD_WEAPON_NAME, evolved->id, evolved->name) + "~" +
+            {
+                if (!bonk->IsAddonReady())
+                    continue;
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteWeaponEvolutionOption(data, index, Localize(BONK_FIELD_WEAPON_NAME, evolved->id, evolved->name),
                     sBonkMgr.DescribeEvolutionAdds(*evolved, GetLocale()));
+                m_player->GetSession()->SendPacket(&data);
+            }
     }
     for (auto const& itr : m_passiveRanks)
     {
@@ -14182,8 +14200,13 @@ void BonkRun::SendLoadout() const
         if (!passive)
             continue;
         ++index;
-        bonk->SendAddon("pw~" + std::to_string(index) + "~" + Localize(BONK_FIELD_PASSIVE_NAME, passive->id, passive->name) + "~~0~0~~" +
-            sBonkMgr.DescribePassiveNow(*passive, itr.second, GetLocale()));
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteWeaponInfo(data, index, Localize(BONK_FIELD_PASSIVE_NAME, passive->id, passive->name), "", 0, 0, "",
+                sBonkMgr.DescribePassiveNow(*passive, itr.second, GetLocale()), "", "", false, "", "");
+            m_player->GetSession()->SendPacket(&data);
+        }
     }
 }
 
@@ -14211,8 +14234,11 @@ void BonkRun::SendCooldownPie(uint32 index, OwnedWeapon const& owned) const
     uint32 const interval = GetWeaponCooldown(owned);
     owned.shownIntervalMs = interval;
     uint32 const pieMs = owned.weapon.IsBlink() || owned.weapon.IsSeal() || owned.weapon.behavior == BONK_BEHAVIOR_PET ? 0u : interval;
-    m_player->GetBonkPlayer()->SendAddon("pcd~" + std::to_string(index) + "~" + std::to_string(pieMs) + "~" +
-        std::to_string(std::max<int32>(0, owned.timer)) + "~" + (owned.held ? "1" : "0"));
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteCooldownPie(data, index, pieMs, std::max<int32>(0, owned.timer), owned.held);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkRun::RefreshChangedWeaponInfo() const
@@ -14281,9 +14307,16 @@ void BonkRun::SendWeaponInfo(uint32 index, OwnedWeapon const& owned, bool onlyIf
     if (onlyIfChanged && shown == owned.shownTip)
         return;
     owned.shownTip = shown;
-    m_player->GetBonkPlayer()->SendAddon("pw~" + std::to_string(index) + "~" + Localize(BONK_FIELD_WEAPON_NAME, weapon.id, weapon.name) + "~" + owned.rarities + "~" + std::to_string(weapon.IsTrigger() || weapon.IsBlink() || weapon.IsSeal() || weapon.behavior == BONK_BEHAVIOR_PET ? 0u : interval) + "~" +
-        std::to_string(std::max<int32>(0, owned.timer)) + "~" + picks + "~" + description + "~" + (owned.shownDamage = DescribeShownDamage(owned)) + "~" +
-        header + "~" + (faster ? "1" : "0") + "~" + DescribeBonkWeaponTags(weapon, GetShownSchool(owned), GetLocale()) + "~" + radius);
+    owned.shownDamage = DescribeShownDamage(owned);
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteWeaponInfo(data, index, Localize(BONK_FIELD_WEAPON_NAME, weapon.id, weapon.name), owned.rarities,
+            weapon.IsTrigger() || weapon.IsBlink() || weapon.IsSeal() || weapon.behavior == BONK_BEHAVIOR_PET ? 0u : interval,
+            std::max<int32>(0, owned.timer), picks, description, owned.shownDamage, header, faster,
+            DescribeBonkWeaponTags(weapon, GetShownSchool(owned), GetLocale()), radius);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::SendOffer() const

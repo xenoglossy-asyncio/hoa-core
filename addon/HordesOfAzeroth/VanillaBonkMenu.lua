@@ -538,6 +538,9 @@ end
 local handlers = {}
 
 UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+    end,
     HOA_RUN_START = function(start)
         run.inRun = true
         run.difficulty = start.difficulty or ""

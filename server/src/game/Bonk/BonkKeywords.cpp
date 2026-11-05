@@ -3,10 +3,12 @@
 #include "BonkPlayer.h"
 #include "BonkRunStats.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
+#include "WorldSession.h"
 
 #include <algorithm>
 
@@ -533,7 +535,15 @@ void BonkRun::SendKeywordTimers(uint32 diff)
     Map* map = m_player->GetMap();
     uint32 const now = WorldTimer::getMSTime();
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    std::string line;
+    auto send = [bonk](std::string const& entries)
+    {
+        if (!bonk->IsAddonReady())
+            return;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteKeywordTimers(data, entries);
+        bonk->GetPlayer()->GetSession()->SendPacket(&data);
+    };
+    std::string entries;
     for (auto const& itr : marked)
     {
         Creature* mob = map->GetCreature(itr.first);
@@ -543,15 +553,15 @@ void BonkRun::SendKeywordTimers(uint32 diff)
             continue;
         std::string const entry = BonkMobAI::GetUnitGuidText(mob) + ":" + std::to_string(uint32(itr.second)) + ":" +
             std::to_string(leftMs) + ":" + std::to_string(fullMs);
-        if (!line.empty() && line.size() + entry.size() + 1 > BONK_KEYWORD_TIMER_LINE)
+        if (!entries.empty() && entries.size() + entry.size() + 1 > BONK_KEYWORD_TIMER_LINE)
         {
-            bonk->SendAddon(line);
-            line.clear();
+            send(entries);
+            entries.clear();
         }
-        line += (line.empty() ? "kwdt~" : ",") + entry;
+        entries += (entries.empty() ? "" : ",") + entry;
     }
-    if (!line.empty())
-        bonk->SendAddon(line);
+    if (!entries.empty())
+        send(entries);
 }
 
 uint32 BonkRun::GetKeywordStacks(Unit const* victim, BonkKeyword keyword) const

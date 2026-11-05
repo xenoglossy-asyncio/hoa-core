@@ -88,6 +88,16 @@ handlers["titles"] = function(f)
     end
     ShowName()
 end
+UI.ListenHoa({
+    HOA_TITLES = function(titles)
+        local f = { false, titles.active }
+        for _, part in ipairs(UI.Split(titles.list or "", "~")) do
+            tinsert(f, part)
+        end
+        handlers["titles"](f)
+    end,
+})
+
 UI.Listen(handlers)
 
 local paperDollOnShow = PaperDollFrame:GetScript("OnShow")

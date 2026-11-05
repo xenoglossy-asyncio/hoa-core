@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 25
+version: 27
 messages:
   - name: aura_value
     id: 0x0002
@@ -1033,3 +1033,117 @@ messages:
     fields:
       - { name: kind, type: string }
       - { name: line, type: string }
+  - name: weapon_info
+    id: 0x0092
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: name, type: string }
+      - { name: ranks, type: string }
+      - { name: interval, type: u32 }
+      - { name: next_cast, type: i32 }
+      - { name: line, type: string }
+      - { name: description, type: string }
+      - { name: damage, type: string }
+      - { name: header, type: string }
+      - { name: faster, type: bool }
+      - { name: tags, type: string }
+      - { name: radius, type: string }
+  - name: weapon_evolution
+    id: 0x0093
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: evolution, type: string }
+      - { name: evolution_text, type: string }
+      - { name: evolved_from, type: string }
+      - { name: chance_text, type: string }
+      - { name: chance, type: u32 }
+  - name: weapon_evolution_option
+    id: 0x0094
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: name, type: string }
+      - { name: text, type: string }
+  - name: cooldown_pie
+    id: 0x0095
+    direction: server_to_client
+    fields:
+      - { name: index, type: u32 }
+      - { name: pie_ms, type: u32 }
+      - { name: timer, type: i32 }
+      - { name: held, type: bool }
+  - name: quartermaster
+    id: 0x0096
+    direction: server_to_client
+    fields:
+      - { name: tier, type: u32 }
+      - { name: scrap, type: u32 }
+  - name: quartermaster_upgrade_clear
+    id: 0x0097
+    direction: server_to_client
+    fields: []
+  - name: quartermaster_upgrade
+    id: 0x0098
+    direction: server_to_client
+    fields:
+      - { name: guid, type: u32 }
+      - { name: entry, type: u32 }
+      - { name: tier, type: u32 }
+      - { name: cost, type: u32 }
+      - { name: can, type: bool }
+      - { name: worn, type: bool }
+      - { name: lines, type: string }
+      - { name: extra, type: string }
+      - { name: reroll_cost, type: u32 }
+      - { name: reroll_line, type: u32 }
+      - { name: offer_line, type: u32 }
+      - { name: offers, type: string }
+      - { name: ranges, type: string }
+      - { name: left, type: u32 }
+  - name: quartermaster_upgrade_end
+    id: 0x0099
+    direction: server_to_client
+    fields:
+      - { name: scrap, type: u32 }
+  - name: music
+    id: 0x009A
+    direction: server_to_client
+    fields:
+      - { name: track, type: string }
+  - name: loadout
+    id: 0x009B
+    direction: server_to_client
+    fields:
+      - { name: entries, type: string }
+      - { name: spell_slots, type: u32 }
+      - { name: passive_slots, type: u32 }
+  - name: druid_slots
+    id: 0x009C
+    direction: server_to_client
+    fields:
+      - { name: slots, type: string }
+  - name: boss_bar
+    id: 0x009D
+    direction: server_to_client
+    fields:
+      - { name: data, type: string }
+  - name: titles
+    id: 0x009E
+    direction: server_to_client
+    fields:
+      - { name: active, type: u32 }
+      - { name: list, type: string }
+  - name: stats
+    id: 0x009F
+    direction: server_to_client
+    fields:
+      - { name: in_run, type: bool }
+      - { name: caps, type: string }
+      - { name: after_caps, type: string }
+  - name: keyword_timers
+    id: 0x00A0
+    direction: server_to_client
+    fields:
+      - { name: entries, type: string }
