@@ -13,10 +13,11 @@ use crate::lua_api::{scripted_login_from_env, LuaHosts};
 use crate::nameplates::{add_plate_events, track_nameplates, SharedPlates};
 use crate::pad::{log_new_pads, poll_pads, SharedController};
 use crate::protocol_generated::{self, HoaMessage, CONTENT_HASH, PROTOCOL_VERSION};
+use crate::server_draw::DrawCommand;
 use crate::snapshot::{capture_snapshot, SharedSnapshot};
 use crate::world_map::SharedMapAreas;
 use crate::telegraphs::{expire_telegraphs, follow_marks, project_telegraphs, push_telegraphs, Telegraphs};
-use crate::world_fx::{apply_draw_lines, expire_kit_anchors, move_flights, tap_draw_lines, DisplayModels};
+use crate::world_fx::{apply_draw_lines, expire_kit_anchors, move_flights, DisplayModels, DrawCommandMessage};
 
 const HOA_HELLO: &str = "HOA_HELLO";
 const HOA_INCOMPATIBLE: &str = "HOA_INCOMPATIBLE";
@@ -265,6 +266,7 @@ fn deliver_hoa_messages(world: &mut World) {
             benilla_app::set_hoa_account_language(world, &hello.language);
         }
     }
+    let mut draws: Vec<DrawCommand> = Vec::new();
     benilla_app::run_hosted(world, |script| {
         let Some(script) = script else {
             return;
@@ -1657,6 +1659,18 @@ fn deliver_hoa_messages(world: &mut World) {
                     catalog_total = end.total;
                     catalog_done = true;
                 }
+                HoaMessage::VisualMark(mark) => draws.push(DrawCommand::from(mark)),
+                HoaMessage::VisualMarkRemove(mark) => draws.push(DrawCommand::from(mark)),
+                HoaMessage::VisualTelegraphClear(clear) => draws.push(DrawCommand::from(clear)),
+                HoaMessage::VisualClear(clear) => draws.push(DrawCommand::from(clear)),
+                HoaMessage::VisualKit(kit) => draws.push(DrawCommand::from(kit)),
+                HoaMessage::VisualFlight(flight) => draws.push(DrawCommand::from(flight)),
+                HoaMessage::VisualLand(land) => draws.push(DrawCommand::from(land)),
+                HoaMessage::VisualMissile(missile) => draws.push(DrawCommand::from(missile)),
+                HoaMessage::VisualProp(prop) => draws.push(DrawCommand::from(prop)),
+                HoaMessage::VisualPropRemove(prop) => draws.push(DrawCommand::from(prop)),
+                HoaMessage::VisualAura(aura) => draws.push(DrawCommand::from(aura)),
+                HoaMessage::VisualAuraRemove(aura) => draws.push(DrawCommand::from(aura)),
                 HoaMessage::Hello(hello) => {
                     let check = HelloCheck::of(hello.protocol_version, &hello.content_hash);
                     if check.protocol_mismatch {
@@ -1724,6 +1738,9 @@ fn deliver_hoa_messages(world: &mut World) {
         buffer.rows = catalog_rows;
         buffer.total = catalog_total;
         buffer.active = true;
+    }
+    for draw in draws {
+        world.write_message(DrawCommandMessage(draw));
     }
     world.resource_mut::<HoaHandshake>().blocked = blocked;
     apply_pending_catalog(world);
@@ -1902,10 +1919,11 @@ impl Plugin for HordesOfAzerothPlugin {
             .init_resource::<Telegraphs>()
             .init_resource::<HoaInbox>()
             .init_resource::<HoaHandshake>()
+            .add_message::<DrawCommandMessage>()
             .init_resource::<AuraCatalogBuffer>()
             .net_handler(SessionEventKind::HoaMessage, on_hoa_message)
             .insert_resource(DisplayModels::from_install())
-            .add_systems(Startup, (name_window, announce_addon_folder, tap_draw_lines))
+            .add_systems(Startup, (name_window, announce_addon_folder))
             .add_systems(
                 PreUpdate,
                 (log_new_pads, notice_keyboard_and_mouse, poll_pads, drive_pad_cursor)

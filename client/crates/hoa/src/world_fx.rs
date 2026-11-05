@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use benilla_app::{AnchorFx, ChatTap, FxAnchor, TappedLine};
+use benilla_app::{AnchorFx, FxAnchor};
 use benilla_formats::{load_creature_catalog, wow_data, Chain};
 use benilla_world::decal::WorldDecal;
 use bevy::prelude::*;
 
-use crate::server_draw::{parse_line, DrawCommand, FlightSpec, KitSpec, MissileSpec, PropSpec, DRAW_PREFIX};
+use crate::server_draw::{DrawCommand, FlightSpec, KitSpec, MissileSpec, PropSpec};
 use crate::telegraphs::Telegraphs;
 
 const GROUND_SNAP_YARDS: f32 = 2.0;
@@ -59,11 +59,8 @@ pub struct Flight {
     duration: f32,
 }
 
-pub fn tap_draw_lines(mut tap: ResMut<ChatTap>) {
-    if !tap.prefixes.iter().any(|p| p == DRAW_PREFIX) {
-        tap.prefixes.push(DRAW_PREFIX.to_string());
-    }
-}
+#[derive(Message, Clone, Debug)]
+pub struct DrawCommandMessage(pub DrawCommand);
 
 #[derive(Component)]
 pub struct AuraAnchor {
@@ -78,7 +75,7 @@ pub struct PropAnchor {
 #[allow(clippy::too_many_arguments)]
 pub fn apply_draw_lines(
     mut commands: Commands,
-    mut lines: MessageReader<TappedLine>,
+    mut lines: MessageReader<DrawCommandMessage>,
     mut telegraphs: ResMut<Telegraphs>,
     mut fx: MessageWriter<AnchorFx>,
     displays: Res<DisplayModels>,
@@ -91,9 +88,7 @@ pub fn apply_draw_lines(
     let now = time.elapsed_secs();
     let mut fresh_auras: Vec<(u32, Entity)> = Vec::new();
     for line in lines.read() {
-        let Some(command) = parse_line(&line.0) else {
-            continue;
-        };
+        let command = line.0.clone();
         match command {
             DrawCommand::Mark(spec) => telegraphs.add(spec, now),
             DrawCommand::RemoveMark(key) => telegraphs.remove(&key),

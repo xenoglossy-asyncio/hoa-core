@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 27
+version: 28
 messages:
   - name: aura_value
     id: 0x0002
@@ -1147,3 +1147,108 @@ messages:
     direction: server_to_client
     fields:
       - { name: entries, type: string }
+  - name: visual_mark
+    id: 0x00A1
+    direction: server_to_client
+    fields:
+      - { name: key, type: string }
+      - { name: shape, type: u8 }
+      - { name: x, type: f32 }
+      - { name: y, type: f32 }
+      - { name: z, type: f32 }
+      - { name: yaw, type: f32 }
+      - { name: size, type: f32 }
+      - { name: duration_ms, type: u32 }
+      - { name: flags, type: u8 }
+      - { name: style, type: u8 }
+      - { name: follow, type: u64 }
+      - { name: texture, type: string }
+      - { name: done_ms, type: u32 }
+      - { name: opacity_percent, type: u8 }
+      - { name: persistent, type: bool }
+  - name: visual_mark_remove
+    id: 0x00A2
+    direction: server_to_client
+    fields:
+      - { name: key, type: string }
+  - name: visual_telegraph_clear
+    id: 0x00A3
+    direction: server_to_client
+    fields: []
+  - name: visual_clear
+    id: 0x00A4
+    direction: server_to_client
+    fields: []
+  - name: visual_kit
+    id: 0x00A5
+    direction: server_to_client
+    fields:
+      - { name: kit_id, type: u32 }
+      - { name: x, type: f32 }
+      - { name: y, type: f32 }
+      - { name: z, type: f32 }
+      - { name: yaw, type: f32 }
+      - { name: hold_ms, type: u32 }
+      - { name: raised, type: bool }
+  - name: visual_flight
+    id: 0x00A6
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+      - { name: from_x, type: f32 }
+      - { name: from_y, type: f32 }
+      - { name: from_z, type: f32 }
+      - { name: to_x, type: f32 }
+      - { name: to_y, type: f32 }
+      - { name: to_z, type: f32 }
+      - { name: duration_ms, type: u32 }
+      - { name: display_id, type: u32 }
+      - { name: scale, type: f32 }
+  - name: visual_land
+    id: 0x00A7
+    direction: server_to_client
+    fields:
+      - { name: id, type: u32 }
+  - name: visual_missile
+    id: 0x00A8
+    direction: server_to_client
+    fields:
+      - { name: spell_id, type: u32 }
+      - { name: from_x, type: f32 }
+      - { name: from_y, type: f32 }
+      - { name: from_z, type: f32 }
+      - { name: to_x, type: f32 }
+      - { name: to_y, type: f32 }
+      - { name: to_z, type: f32 }
+      - { name: hold_ms, type: u32 }
+  - name: visual_prop
+    id: 0x00A9
+    direction: server_to_client
+    fields:
+      - { name: key, type: u32 }
+      - { name: display_id, type: u32 }
+      - { name: x, type: f32 }
+      - { name: y, type: f32 }
+      - { name: z, type: f32 }
+      - { name: yaw, type: f32 }
+      - { name: scale, type: f32 }
+  - name: visual_prop_remove
+    id: 0x00AA
+    direction: server_to_client
+    fields:
+      - { name: key, type: u32 }
+  - name: visual_aura
+    id: 0x00AB
+    direction: server_to_client
+    fields:
+      - { name: key, type: u32 }
+      - { name: spell_id, type: u32 }
+      - { name: x, type: f32 }
+      - { name: y, type: f32 }
+      - { name: z, type: f32 }
+      - { name: scale, type: f32 }
+  - name: visual_aura_remove
+    id: 0x00AC
+    direction: server_to_client
+    fields:
+      - { name: key, type: u32 }

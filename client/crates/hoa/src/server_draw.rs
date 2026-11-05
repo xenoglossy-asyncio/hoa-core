@@ -1,9 +1,12 @@
 use benilla_assets::coords::wow_to_bevy;
 use bevy::prelude::Vec3;
 
-pub const DRAW_PREFIX: &str = "HOA~";
+use crate::protocol_generated::{
+    VisualAura, VisualAuraRemove, VisualClear, VisualFlight, VisualKit, VisualLand, VisualMark, VisualMarkRemove,
+    VisualMissile, VisualProp, VisualPropRemove, VisualTelegraphClear,
+};
+
 pub const TELEGRAPH_KEY_PREFIX: &str = "t";
-const MARK_KEY_PREFIX: &str = "m";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Shape {
@@ -91,133 +94,140 @@ pub enum DrawCommand {
     RemoveAura(u32),
 }
 
-const OUTLINE_ONLY: u32 = 1;
-const ADDITIVE: u32 = 2;
-const GROUND_EFFECT: u32 = 4;
-const KIT_RAISED: u32 = 1;
+const OUTLINE_ONLY: u8 = 1;
+const ADDITIVE: u8 = 2;
+const GROUND_EFFECT: u8 = 4;
 
-struct Fields<'a>(std::str::Split<'a, char>);
-
-impl Fields<'_> {
-    fn next_str(&mut self) -> Option<&str> {
-        self.0.next()
-    }
-
-    fn u32(&mut self) -> Option<u32> {
-        self.0.next()?.parse().ok()
-    }
-
-    fn u64(&mut self) -> Option<u64> {
-        self.0.next()?.parse().ok()
-    }
-
-    fn f32(&mut self) -> Option<f32> {
-        self.0.next()?.parse().ok()
-    }
-
-    fn secs(&mut self) -> Option<f32> {
-        Some(self.u32()? as f32 / 1000.0)
-    }
-
-    fn point(&mut self) -> Option<Vec3> {
-        let (x, y, z) = (self.f32()?, self.f32()?, self.f32()?);
-        Some(wow_to_bevy([x, y, z]))
-    }
-
-    fn shape(&mut self) -> Option<Shape> {
-        match self.u32()? {
-            0 => Some(Shape::Circle),
-            1 => Some(Shape::Cone),
-            2 => Some(Shape::Line),
-            3 => Some(Shape::Ring),
-            _ => None,
-        }
+fn shape_of(value: u8) -> Shape {
+    match value {
+        1 => Shape::Cone,
+        2 => Shape::Line,
+        3 => Shape::Ring,
+        _ => Shape::Circle,
     }
 }
 
-fn mark(key: String, fields: &mut Fields, persistent_allowed: bool) -> Option<DrawCommand> {
-    let shape = fields.shape()?;
-    let at = fields.point()?;
-    let yaw = fields.f32()?;
-    let size = fields.f32()?;
-    let duration = fields.secs()?;
-    let flags = fields.u32().unwrap_or(0);
-    let style = fields.u32().unwrap_or(0) as u8;
-    let follow = fields.u64().unwrap_or(0);
-    let texture = fields.next_str().filter(|t| !t.is_empty()).map(str::to_string);
-    let done = fields.secs().unwrap_or(0.0);
-    let opacity = fields.u32().map_or(1.0, |percent| percent.min(100) as f32 / 100.0);
-    Some(DrawCommand::Mark(MarkSpec {
-        key,
-        shape,
-        at,
-        yaw,
-        size,
-        duration: (duration > 0.0 || !persistent_allowed).then_some(duration),
-        outline_only: flags & OUTLINE_ONLY != 0,
-        additive: flags & ADDITIVE != 0,
-        ground_effect: flags & GROUND_EFFECT != 0,
-        style,
-        follow,
-        texture,
-        done,
-        opacity,
-    }))
+fn point(x: f32, y: f32, z: f32) -> Vec3 {
+    wow_to_bevy([x, y, z])
 }
 
-pub fn parse_line(line: &str) -> Option<DrawCommand> {
-    let mut fields = Fields(line.strip_prefix(DRAW_PREFIX)?.split('~'));
-    match fields.next_str()? {
-        "tg" => {
-            let key = format!("{TELEGRAPH_KEY_PREFIX}{}", fields.u32()?);
-            mark(key, &mut fields, false)
-        }
-        "tgx" => Some(DrawCommand::RemoveMark(format!("{TELEGRAPH_KEY_PREFIX}{}", fields.u32()?))),
-        "tgc" => Some(DrawCommand::ClearTelegraphs),
-        "clr" => Some(DrawCommand::ClearAll),
-        "mark" => {
-            let key = format!("{MARK_KEY_PREFIX}{}", fields.next_str()?);
-            mark(key, &mut fields, true)
-        }
-        "markx" => Some(DrawCommand::RemoveMark(format!("{MARK_KEY_PREFIX}{}", fields.next_str()?))),
-        "kit" => Some(DrawCommand::Kit(KitSpec {
-            kit_id: fields.u32()?,
-            at: fields.point()?,
-            yaw: fields.f32()?,
-            hold: fields.secs()?,
-            raised: fields.u32().unwrap_or(0) == KIT_RAISED,
-        })),
-        "fly" => Some(DrawCommand::Fly(FlightSpec {
-            id: fields.u32()?,
-            from: fields.point()?,
-            to: fields.point()?,
-            duration: fields.secs()?,
-            display_id: fields.u32()?,
-            scale: fields.f32()?,
-        })),
-        "land" => Some(DrawCommand::Land(fields.u32()?)),
-        "msl" => Some(DrawCommand::Missile(MissileSpec {
-            spell_id: fields.u32()?,
-            from: fields.point()?,
-            to: fields.point()?,
-            hold: fields.secs()?,
-        })),
-        "prop" => Some(DrawCommand::Prop(PropSpec {
-            key: fields.u32()?,
-            display_id: fields.u32()?,
-            at: fields.point()?,
-            yaw: fields.f32()?,
-            scale: fields.f32().unwrap_or(1.0),
-        })),
-        "propx" => Some(DrawCommand::RemoveProp(fields.u32()?)),
-        "aura" => Some(DrawCommand::Aura(AuraSpec {
-            key: fields.u32()?,
-            spell_id: fields.u32()?,
-            at: fields.point()?,
-            scale: fields.f32().unwrap_or(1.0),
-        })),
-        "aurax" => Some(DrawCommand::RemoveAura(fields.u32()?)),
-        _ => None,
+fn secs(ms: u32) -> f32 {
+    ms as f32 / 1000.0
+}
+
+impl From<VisualMark> for DrawCommand {
+    fn from(mark: VisualMark) -> Self {
+        Self::Mark(MarkSpec {
+            key: mark.key,
+            shape: shape_of(mark.shape),
+            at: point(mark.x, mark.y, mark.z),
+            yaw: mark.yaw,
+            size: mark.size,
+            duration: (mark.duration_ms > 0 || !mark.persistent).then(|| secs(mark.duration_ms)),
+            outline_only: mark.flags & OUTLINE_ONLY != 0,
+            additive: mark.flags & ADDITIVE != 0,
+            ground_effect: mark.flags & GROUND_EFFECT != 0,
+            style: mark.style,
+            follow: mark.follow,
+            texture: (!mark.texture.is_empty()).then_some(mark.texture),
+            done: secs(mark.done_ms),
+            opacity: f32::from(mark.opacity_percent.min(100)) / 100.0,
+        })
+    }
+}
+
+impl From<VisualMarkRemove> for DrawCommand {
+    fn from(mark: VisualMarkRemove) -> Self {
+        Self::RemoveMark(mark.key)
+    }
+}
+
+impl From<VisualTelegraphClear> for DrawCommand {
+    fn from(_: VisualTelegraphClear) -> Self {
+        Self::ClearTelegraphs
+    }
+}
+
+impl From<VisualClear> for DrawCommand {
+    fn from(_: VisualClear) -> Self {
+        Self::ClearAll
+    }
+}
+
+impl From<VisualKit> for DrawCommand {
+    fn from(kit: VisualKit) -> Self {
+        Self::Kit(KitSpec {
+            kit_id: kit.kit_id,
+            at: point(kit.x, kit.y, kit.z),
+            yaw: kit.yaw,
+            hold: secs(kit.hold_ms),
+            raised: kit.raised,
+        })
+    }
+}
+
+impl From<VisualFlight> for DrawCommand {
+    fn from(flight: VisualFlight) -> Self {
+        Self::Fly(FlightSpec {
+            id: flight.id,
+            from: point(flight.from_x, flight.from_y, flight.from_z),
+            to: point(flight.to_x, flight.to_y, flight.to_z),
+            duration: secs(flight.duration_ms),
+            display_id: flight.display_id,
+            scale: flight.scale,
+        })
+    }
+}
+
+impl From<VisualLand> for DrawCommand {
+    fn from(land: VisualLand) -> Self {
+        Self::Land(land.id)
+    }
+}
+
+impl From<VisualMissile> for DrawCommand {
+    fn from(missile: VisualMissile) -> Self {
+        Self::Missile(MissileSpec {
+            spell_id: missile.spell_id,
+            from: point(missile.from_x, missile.from_y, missile.from_z),
+            to: point(missile.to_x, missile.to_y, missile.to_z),
+            hold: secs(missile.hold_ms),
+        })
+    }
+}
+
+impl From<VisualProp> for DrawCommand {
+    fn from(prop: VisualProp) -> Self {
+        Self::Prop(PropSpec {
+            key: prop.key,
+            display_id: prop.display_id,
+            at: point(prop.x, prop.y, prop.z),
+            yaw: prop.yaw,
+            scale: prop.scale,
+        })
+    }
+}
+
+impl From<VisualPropRemove> for DrawCommand {
+    fn from(prop: VisualPropRemove) -> Self {
+        Self::RemoveProp(prop.key)
+    }
+}
+
+impl From<VisualAura> for DrawCommand {
+    fn from(aura: VisualAura) -> Self {
+        Self::Aura(AuraSpec {
+            key: aura.key,
+            spell_id: aura.spell_id,
+            at: point(aura.x, aura.y, aura.z),
+            scale: aura.scale,
+        })
+    }
+}
+
+impl From<VisualAuraRemove> for DrawCommand {
+    fn from(aura: VisualAuraRemove) -> Self {
+        Self::RemoveAura(aura.key)
     }
 }
 
@@ -225,16 +235,28 @@ pub fn parse_line(line: &str) -> Option<DrawCommand> {
 mod tests {
     use super::*;
 
-    fn marked(line: &str) -> MarkSpec {
-        match parse_line(line) {
-            Some(DrawCommand::Mark(spec)) => spec,
-            other => panic!("{line} is a mark, got {other:?}"),
-        }
-    }
-
     #[test]
-    fn a_cone_telegraph_reads_every_field() {
-        let spec = marked("HOA~tg~7~1~-8949.5~-132.25~83.5~1.5~10~2000~1~2");
+    fn a_typed_mark_keeps_every_field() {
+        let command = DrawCommand::from(VisualMark {
+            key: "t7".into(),
+            shape: 1,
+            x: -8949.5,
+            y: -132.25,
+            z: 83.5,
+            yaw: 1.5,
+            size: 10.0,
+            duration_ms: 2000,
+            flags: OUTLINE_ONLY,
+            style: 2,
+            follow: 0,
+            texture: String::new(),
+            done_ms: 0,
+            opacity_percent: 100,
+            persistent: false,
+        });
+        let DrawCommand::Mark(spec) = command else {
+            panic!("a mark message is a mark");
+        };
         assert_eq!(spec.key, "t7");
         assert_eq!(spec.shape, Shape::Cone);
         assert_eq!(spec.at, wow_to_bevy([-8949.5, -132.25, 83.5]));
@@ -242,106 +264,48 @@ mod tests {
         assert!(spec.outline_only);
         assert!(!spec.additive);
         assert_eq!(spec.style, 2);
-        assert_eq!(spec.follow, 0);
         assert_eq!(spec.texture, None);
     }
 
     #[test]
-    fn flags_and_style_are_optional() {
-        let spec = marked("HOA~tg~1~0~0~0~0~0~4~1500");
-        assert!(!spec.outline_only);
-        assert_eq!(spec.style, 0);
-        assert_eq!(spec.opacity, 1.0);
-    }
-
-    #[test]
-    fn a_mark_can_be_drawn_faint() {
-        let spec = marked("HOA~mark~reach~0~1~2~3~0~10~0~1~3~4294967297~~0~40");
-        assert_eq!(spec.opacity, 0.4);
-        assert_eq!(marked("HOA~mark~reach~0~1~2~3~0~10~0~1~3~0~~0~250").opacity, 1.0);
-    }
-
-    #[test]
-    fn a_mark_without_time_stays_and_can_follow_and_wear_a_texture() {
-        let spec = marked("HOA~mark~ley3~0~1~2~3~0.5~5~0~2~1~4294967297~World\\Goober\\RuneGroundBlue01.blp");
-        assert_eq!(spec.key, "mley3");
+    fn a_persistent_mark_without_time_has_no_duration() {
+        let command = DrawCommand::from(VisualMark {
+            key: "mreach".into(),
+            shape: 0,
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+            yaw: 0.0,
+            size: 5.0,
+            duration_ms: 0,
+            flags: ADDITIVE | GROUND_EFFECT,
+            style: 2,
+            follow: 4_294_967_297,
+            texture: "World\\Goober\\RuneGroundBlue01.blp".into(),
+            done_ms: 4500,
+            opacity_percent: 40,
+            persistent: true,
+        });
+        let DrawCommand::Mark(spec) = command else {
+            panic!("a mark message is a mark");
+        };
         assert_eq!(spec.duration, None);
         assert!(spec.additive);
+        assert!(spec.ground_effect);
         assert_eq!(spec.follow, 4_294_967_297);
         assert_eq!(spec.texture.as_deref(), Some("World\\Goober\\RuneGroundBlue01.blp"));
-        assert_eq!(spec.done, 0.0);
-        assert_eq!(parse_line("HOA~markx~ley3"), Some(DrawCommand::RemoveMark("mley3".into())));
-    }
-
-    #[test]
-    fn a_resumed_mark_carries_the_time_already_filled() {
-        let spec = marked("HOA~mark~hearth~0~1~2~3~0~5~15000~0~3~0~~4500");
-        assert_eq!(spec.duration, Some(15.0));
-        assert_eq!(spec.texture, None);
         assert_eq!(spec.done, 4.5);
+        assert_eq!(spec.opacity, 0.4);
     }
 
     #[test]
-    fn a_kit_is_on_the_ground_unless_the_server_says_it_is_raised() {
-        let kit = |line: &str| match parse_line(line) {
-            Some(DrawCommand::Kit(kit)) => kit,
-            other => panic!("{line} is a kit, got {other:?}"),
-        };
-        let grounded = kit("HOA~kit~92~1~2~3~0.5~1500");
-        assert_eq!(grounded.at, wow_to_bevy([1.0, 2.0, 3.0]));
-        assert_eq!(grounded.hold, 1.5);
-        assert!(!grounded.raised);
-        assert!(kit("HOA~kit~92~1~2~3~0.5~1500~1").raised);
-    }
-
-    #[test]
-    fn a_flight_reads_both_ends_and_its_look() {
+    fn no_field_visuals_clear_and_remove() {
+        assert_eq!(DrawCommand::from(VisualTelegraphClear {}), DrawCommand::ClearTelegraphs);
+        assert_eq!(DrawCommand::from(VisualClear {}), DrawCommand::ClearAll);
+        assert_eq!(DrawCommand::from(VisualLand { id: 3 }), DrawCommand::Land(3));
         assert_eq!(
-            parse_line("HOA~fly~3~1~2~3~4~5~6~750~18600~1.25"),
-            Some(DrawCommand::Fly(FlightSpec {
-                id: 3,
-                from: wow_to_bevy([1.0, 2.0, 3.0]),
-                to: wow_to_bevy([4.0, 5.0, 6.0]),
-                duration: 0.75,
-                display_id: 18600,
-                scale: 1.25,
-            }))
+            DrawCommand::from(VisualMarkRemove { key: "t12".into() }),
+            DrawCommand::RemoveMark("t12".into())
         );
-    }
-
-    #[test]
-    fn a_missile_reads_its_spell_both_points_and_hold() {
-        assert_eq!(
-            parse_line("HOA~msl~13241~1~2~3~4~5~6~1500"),
-            Some(DrawCommand::Missile(MissileSpec {
-                spell_id: 13241,
-                from: wow_to_bevy([1.0, 2.0, 3.0]),
-                to: wow_to_bevy([4.0, 5.0, 6.0]),
-                hold: 1.5,
-            }))
-        );
-    }
-
-    #[test]
-    fn a_prop_reads_its_key_display_and_place() {
-        assert_eq!(
-            parse_line("HOA~prop~9~17986~1~2~3~0.5~1.25"),
-            Some(DrawCommand::Prop(PropSpec {
-                key: 9,
-                display_id: 17986,
-                at: wow_to_bevy([1.0, 2.0, 3.0]),
-                yaw: 0.5,
-                scale: 1.25,
-            }))
-        );
-        assert_eq!(parse_line("HOA~propx~9"), Some(DrawCommand::RemoveProp(9)));
-    }
-
-    #[test]
-    fn other_lines_and_broken_lines_are_ignored() {
-        assert_eq!(parse_line("BONK~hearth~1"), None);
-        assert_eq!(parse_line("HOA~tg~1~9~0~0~0~0~4~1500"), None);
-        assert_eq!(parse_line("HOA~kit~92~1~2"), None);
-        assert_eq!(parse_line("HOA~tgx~12"), Some(DrawCommand::RemoveMark("t12".into())));
     }
 }

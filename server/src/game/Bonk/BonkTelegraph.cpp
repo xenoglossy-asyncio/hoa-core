@@ -2,6 +2,7 @@
 #include "BonkMgr.h"
 #include "Chat.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "MotionMaster.h"
 #include "NullCreatureAI.h"
@@ -9,7 +10,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdio>
 
 namespace
 {
@@ -34,7 +34,6 @@ namespace
 
     uint32 const BONK_TELEGRAPH_OUTLINE_ONLY = 1;
     uint32 const BONK_TELEGRAPH_GROUND_EFFECT = 4;
-    uint32 const BONK_KIT_RAISED = 1;
 
     char const* const BONK_TELEGRAPH_SHAPE_NAMES[MAX_BONK_TELEGRAPH_SHAPE] = { "circle", "cone", "line", "ring" };
 
@@ -86,51 +85,42 @@ namespace
         creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PLAYER | UNIT_FLAG_IMMUNE_TO_NPC);
     }
 
-    std::string FormatPoint(float x, float y, float z)
+    void SendVisual(Player* player, WorldPacket& data)
     {
-        char buffer[64];
-        std::snprintf(buffer, sizeof(buffer), "%.2f~%.2f~%.2f", x, y, z);
-        return buffer;
+        if (player && player->GetSession())
+            player->GetSession()->SendPacket(&data);
     }
-
-    std::string FormatFloat(float value)
-    {
-        char buffer[24];
-        std::snprintf(buffer, sizeof(buffer), "%.3f", value);
-        return buffer;
-    }
-}
-
-void SendBonkDraw(Player* player, std::string const& line)
-{
-    if (player && player->GetSession())
-        ChatHandler(player).SendSysMessage(("HOA~" + line).c_str());
 }
 
 void SendBonkKitAt(Player* player, uint32 kit, float x, float y, float z, float orientation, uint32 holdMs, bool raised)
 {
     if (!kit)
         return;
-    SendBonkDraw(player, "kit~" + std::to_string(kit) + "~" + FormatPoint(x, y, z) + "~" + FormatFloat(orientation) + "~" +
-        std::to_string(holdMs) + (raised ? "~" + std::to_string(BONK_KIT_RAISED) : ""));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualKit(data, kit, x, y, z, orientation, holdMs, raised);
+    SendVisual(player, data);
 }
 
 void SendBonkFlight(Player* player, uint32 id, float fromX, float fromY, float fromZ, float toX, float toY, float toZ, uint32 flightMs,
     uint32 display, float scale)
 {
-    SendBonkDraw(player, "fly~" + std::to_string(id) + "~" + FormatPoint(fromX, fromY, fromZ) + "~" + FormatPoint(toX, toY, toZ) + "~" +
-        std::to_string(flightMs) + "~" + std::to_string(display) + "~" + FormatFloat(scale));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualFlight(data, id, fromX, fromY, fromZ, toX, toY, toZ, flightMs, display, scale);
+    SendVisual(player, data);
 }
 
 void SendBonkLanding(Player* player, uint32 id)
 {
-    SendBonkDraw(player, "land~" + std::to_string(id));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualLand(data, id);
+    SendVisual(player, data);
 }
 
 void SendBonkMissile(Player* player, uint32 spellId, float fromX, float fromY, float fromZ, float toX, float toY, float toZ, uint32 holdMs)
 {
-    SendBonkDraw(player, "msl~" + std::to_string(spellId) + "~" + FormatPoint(fromX, fromY, fromZ) + "~" + FormatPoint(toX, toY, toZ) + "~" +
-        std::to_string(holdMs));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualMissile(data, spellId, fromX, fromY, fromZ, toX, toY, toZ, holdMs);
+    SendVisual(player, data);
 }
 
 void SendBonkMark(Player* player, std::string const& key, BonkTelegraphShape shape, float x, float y, float z, float orientation, float size,
@@ -139,36 +129,46 @@ void SendBonkMark(Player* player, std::string const& key, BonkTelegraphShape sha
 {
     if (Map* map = player ? player->FindMap() : nullptr)
         z = GetTelegraphGround(map, shape, x, y, z, orientation, size);
-    SendBonkDraw(player, "mark~" + key + "~" + std::to_string(uint32(shape)) + "~" + FormatPoint(x, y, z) + "~" + FormatFloat(orientation) + "~" +
-        FormatFloat(size) + "~" + std::to_string(durationMs) + "~" + std::to_string((outlineOnly ? BONK_TELEGRAPH_OUTLINE_ONLY : 0) | (groundEffect ? BONK_TELEGRAPH_GROUND_EFFECT : 0)) + "~" +
-        std::to_string(uint32(style)) + "~" + std::to_string(follow.GetRawValue()) + "~" + texture + "~" + std::to_string(doneMs) + "~" +
-        std::to_string(std::min(opacityPercent, 100u)));
+    uint8 const flags = (outlineOnly ? BONK_TELEGRAPH_OUTLINE_ONLY : 0) | (groundEffect ? BONK_TELEGRAPH_GROUND_EFFECT : 0);
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualMark(data, "m" + key, uint8(shape), x, y, z, orientation, size, durationMs, flags, style, follow.GetRawValue(),
+        texture, doneMs, uint8(std::min(opacityPercent, 100u)), true);
+    SendVisual(player, data);
 }
 
 void SendBonkUnmark(Player* player, std::string const& key)
 {
-    SendBonkDraw(player, "markx~" + key);
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualMarkRemove(data, "m" + key);
+    SendVisual(player, data);
 }
 
 void SendBonkAuraAt(Player* player, uint32 key, uint32 spellId, float x, float y, float z, float scale)
 {
-    SendBonkDraw(player, "aura~" + std::to_string(key) + "~" + std::to_string(spellId) + "~" + FormatPoint(x, y, z) + "~" + FormatFloat(scale));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualAura(data, key, spellId, x, y, z, scale);
+    SendVisual(player, data);
 }
 
 void SendBonkAuraGone(Player* player, uint32 key)
 {
-    SendBonkDraw(player, "aurax~" + std::to_string(key));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualAuraRemove(data, key);
+    SendVisual(player, data);
 }
 
 void SendBonkProp(Player* player, uint32 key, uint32 display, float x, float y, float z, float orientation, float scale)
 {
-    SendBonkDraw(player, "prop~" + std::to_string(key) + "~" + std::to_string(display) + "~" + FormatPoint(x, y, z) + "~" + FormatFloat(orientation) +
-        "~" + FormatFloat(scale));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualProp(data, key, display, x, y, z, orientation, scale);
+    SendVisual(player, data);
 }
 
 void SendBonkPropGone(Player* player, uint32 key)
 {
-    SendBonkDraw(player, "propx~" + std::to_string(key));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualPropRemove(data, key);
+    SendVisual(player, data);
 }
 
 uint32 NextBonkAuraKey()
@@ -271,9 +271,10 @@ void BonkTelegraphs::Add(Player* owner, BonkTelegraphShape shape, float x, float
     telegraph.windId = windId;
 
     float const ground = GetTelegraphGround(owner->GetMap(), shape, x, y, z, orientation, size);
-    SendBonkDraw(owner, "tg~" + std::to_string(telegraph.id) + "~" + std::to_string(uint32(shape)) + "~" + FormatPoint(x, y, ground) + "~" +
-        FormatFloat(orientation) + "~" + FormatFloat(size) + "~" + std::to_string(durationMs) + "~" +
-        std::to_string(lingers ? BONK_TELEGRAPH_OUTLINE_ONLY : 0) + "~" + std::to_string(uint32(style)));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualMark(data, "t" + std::to_string(telegraph.id), uint8(shape), x, y, ground, orientation, size, durationMs,
+        lingers ? BONK_TELEGRAPH_OUTLINE_ONLY : 0, uint8(style), 0, "", 0, 100, false);
+    SendVisual(owner, data);
     m_telegraphs.push_back(std::move(telegraph));
 }
 
@@ -309,7 +310,11 @@ void BonkTelegraphs::Update(Player* owner, uint32 diff)
 void BonkTelegraphs::Clear(Player* owner)
 {
     if (!m_telegraphs.empty())
-        SendBonkDraw(owner, "tgc");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVisualTelegraphClear(data);
+        SendVisual(owner, data);
+    }
     m_telegraphs.clear();
 }
 
@@ -330,7 +335,9 @@ void BonkTelegraphs::CancelFrom(Player* owner, ObjectGuid const& caster, uint32 
 void BonkTelegraphs::Dismiss(Player* owner)
 {
     Clear(owner);
-    SendBonkDraw(owner, "clr");
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualClear(data);
+    SendVisual(owner, data);
     if (Map* map = owner->FindMap())
         for (StandIn const& standIn : m_standIns)
             if (Creature* creature = map->GetCreature(standIn.guid))
@@ -340,7 +347,9 @@ void BonkTelegraphs::Dismiss(Player* owner)
 
 void BonkTelegraphs::TakeOff(Player* owner, Telegraph const& telegraph)
 {
-    SendBonkDraw(owner, "tgx~" + std::to_string(telegraph.id));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteVisualMarkRemove(data, "t" + std::to_string(telegraph.id));
+    SendVisual(owner, data);
 }
 
 size_t BonkTelegraphs::CountBusyStandIns() const

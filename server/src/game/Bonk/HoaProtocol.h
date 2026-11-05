@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 27
+#define HOA_PROTOCOL_VERSION 28
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -160,6 +160,18 @@
 #define HOA_MSG_TITLES 0x009E
 #define HOA_MSG_STATS 0x009F
 #define HOA_MSG_KEYWORD_TIMERS 0x00A0
+#define HOA_MSG_VISUAL_MARK 0x00A1
+#define HOA_MSG_VISUAL_MARK_REMOVE 0x00A2
+#define HOA_MSG_VISUAL_TELEGRAPH_CLEAR 0x00A3
+#define HOA_MSG_VISUAL_CLEAR 0x00A4
+#define HOA_MSG_VISUAL_KIT 0x00A5
+#define HOA_MSG_VISUAL_FLIGHT 0x00A6
+#define HOA_MSG_VISUAL_LAND 0x00A7
+#define HOA_MSG_VISUAL_MISSILE 0x00A8
+#define HOA_MSG_VISUAL_PROP 0x00A9
+#define HOA_MSG_VISUAL_PROP_REMOVE 0x00AA
+#define HOA_MSG_VISUAL_AURA 0x00AB
+#define HOA_MSG_VISUAL_AURA_REMOVE 0x00AC
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -1462,4 +1474,121 @@ inline void HoAWriteKeywordTimers(WorldPacket& packet, std::string const& entrie
 {
     packet << uint16(HOA_MSG_KEYWORD_TIMERS);
     HoAWriteString(packet, entries);
+}
+
+inline void HoAWriteVisualMark(WorldPacket& packet, std::string const& key, uint8 const& shape, float const& x, float const& y, float const& z, float const& yaw, float const& size, uint32 const& durationMs, uint8 const& flags, uint8 const& style, uint64 const& follow, std::string const& texture, uint32 const& doneMs, uint8 const& opacityPercent, bool const& persistent)
+{
+    packet << uint16(HOA_MSG_VISUAL_MARK);
+    HoAWriteString(packet, key);
+    packet << uint8(shape);
+    packet << float(x);
+    packet << float(y);
+    packet << float(z);
+    packet << float(yaw);
+    packet << float(size);
+    packet << uint32(durationMs);
+    packet << uint8(flags);
+    packet << uint8(style);
+    packet << uint64(follow);
+    HoAWriteString(packet, texture);
+    packet << uint32(doneMs);
+    packet << uint8(opacityPercent);
+    packet << bool(persistent);
+}
+
+inline void HoAWriteVisualMarkRemove(WorldPacket& packet, std::string const& key)
+{
+    packet << uint16(HOA_MSG_VISUAL_MARK_REMOVE);
+    HoAWriteString(packet, key);
+}
+
+inline void HoAWriteVisualTelegraphClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VISUAL_TELEGRAPH_CLEAR);
+}
+
+inline void HoAWriteVisualClear(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_VISUAL_CLEAR);
+}
+
+inline void HoAWriteVisualKit(WorldPacket& packet, uint32 const& kitId, float const& x, float const& y, float const& z, float const& yaw, uint32 const& holdMs, bool const& raised)
+{
+    packet << uint16(HOA_MSG_VISUAL_KIT);
+    packet << uint32(kitId);
+    packet << float(x);
+    packet << float(y);
+    packet << float(z);
+    packet << float(yaw);
+    packet << uint32(holdMs);
+    packet << bool(raised);
+}
+
+inline void HoAWriteVisualFlight(WorldPacket& packet, uint32 const& id, float const& fromX, float const& fromY, float const& fromZ, float const& toX, float const& toY, float const& toZ, uint32 const& durationMs, uint32 const& displayId, float const& scale)
+{
+    packet << uint16(HOA_MSG_VISUAL_FLIGHT);
+    packet << uint32(id);
+    packet << float(fromX);
+    packet << float(fromY);
+    packet << float(fromZ);
+    packet << float(toX);
+    packet << float(toY);
+    packet << float(toZ);
+    packet << uint32(durationMs);
+    packet << uint32(displayId);
+    packet << float(scale);
+}
+
+inline void HoAWriteVisualLand(WorldPacket& packet, uint32 const& id)
+{
+    packet << uint16(HOA_MSG_VISUAL_LAND);
+    packet << uint32(id);
+}
+
+inline void HoAWriteVisualMissile(WorldPacket& packet, uint32 const& spellId, float const& fromX, float const& fromY, float const& fromZ, float const& toX, float const& toY, float const& toZ, uint32 const& holdMs)
+{
+    packet << uint16(HOA_MSG_VISUAL_MISSILE);
+    packet << uint32(spellId);
+    packet << float(fromX);
+    packet << float(fromY);
+    packet << float(fromZ);
+    packet << float(toX);
+    packet << float(toY);
+    packet << float(toZ);
+    packet << uint32(holdMs);
+}
+
+inline void HoAWriteVisualProp(WorldPacket& packet, uint32 const& key, uint32 const& displayId, float const& x, float const& y, float const& z, float const& yaw, float const& scale)
+{
+    packet << uint16(HOA_MSG_VISUAL_PROP);
+    packet << uint32(key);
+    packet << uint32(displayId);
+    packet << float(x);
+    packet << float(y);
+    packet << float(z);
+    packet << float(yaw);
+    packet << float(scale);
+}
+
+inline void HoAWriteVisualPropRemove(WorldPacket& packet, uint32 const& key)
+{
+    packet << uint16(HOA_MSG_VISUAL_PROP_REMOVE);
+    packet << uint32(key);
+}
+
+inline void HoAWriteVisualAura(WorldPacket& packet, uint32 const& key, uint32 const& spellId, float const& x, float const& y, float const& z, float const& scale)
+{
+    packet << uint16(HOA_MSG_VISUAL_AURA);
+    packet << uint32(key);
+    packet << uint32(spellId);
+    packet << float(x);
+    packet << float(y);
+    packet << float(z);
+    packet << float(scale);
+}
+
+inline void HoAWriteVisualAuraRemove(WorldPacket& packet, uint32 const& key)
+{
+    packet << uint16(HOA_MSG_VISUAL_AURA_REMOVE);
+    packet << uint32(key);
 }
