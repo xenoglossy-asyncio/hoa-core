@@ -206,9 +206,9 @@
   permanent: false
   dynamic:
     kind: none
-- id: 18951
+- id: 60056
   key: necrotic_state
-  native: true
+  cpp: BONK_SPELL_NECROTIC
   source: none
   reason: Mythic boss mechanic stacks; no weapon, mastery, card or glyph owns the debuff.
   display:
@@ -221,7 +221,7 @@
   stacks:
     source: aura
     max: 15
-  permanent: true
+  permanent: false
   dynamic:
     kind: wounds_heal_cut
     enUS: Healing received reduced by {1}.

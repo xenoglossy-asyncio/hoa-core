@@ -1616,6 +1616,14 @@ bool BonkRun::RunSandboxVerb(std::string const& verb, uint32 first, uint32 secon
         ResetSandbox(RESET_COOLDOWNS);
     else if (verb == "god")
         ToggleSandbox(TOGGLE_GOD);
+    else if (verb == "necrotic")
+    {
+        if (!first)
+            SetNecroticStacks(0);
+        else
+            for (uint32 i = 0; i < first; ++i)
+                AddNecroticStack();
+    }
     else if (verb == "passive")
         ToggleSandbox(TOGGLE_PASSIVE);
     else if (verb == "unkillable")

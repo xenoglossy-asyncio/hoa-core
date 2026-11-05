@@ -580,8 +580,8 @@ float const BONK_START_POLY_REACH   = 10.0f;
     float const BONK_ELITE_CHEST_PER_LUCK  = 0.1f;
     uint32 const BONK_ELITE_CHEST_PITY     = 5;
 
-    uint32 const BONK_SPELL_NECROTIC       = 18951;
     float const BONK_NECROTIC_PER_STACK    = 5.0f;
+    uint32 const BONK_NECROTIC_DURATION_MS = 6000;
     uint32 const BONK_NECROTIC_MAX_STACKS  = 15;
     uint32 const BONK_NECROTIC_CHECK_MS    = 250;
     float const BONK_BOLSTER_RANGE         = 12.0f;
@@ -4485,9 +4485,14 @@ void BonkRun::SetNecroticStacks(uint32 stacks)
     if (stacks && m_player->IsAlive())
     {
         if (!m_player->HasAura(BONK_SPELL_NECROTIC))
-            m_player->AddAura(BONK_SPELL_NECROTIC, ADD_AURA_NEGATIVE | ADD_AURA_PERMANENT);
+            m_player->AddAura(BONK_SPELL_NECROTIC, ADD_AURA_NEGATIVE);
         if (SpellAuraHolder* holder = m_player->GetSpellAuraHolder(BONK_SPELL_NECROTIC))
+        {
             holder->SetStackAmount(stacks);
+            holder->SetAuraDuration(BONK_NECROTIC_DURATION_MS);
+            holder->SetAuraMaxDuration(BONK_NECROTIC_DURATION_MS);
+            holder->UpdateAuraDuration();
+        }
     }
     else if (!stacks)
         m_player->RemoveAurasDueToSpell(BONK_SPELL_NECROTIC);
@@ -4499,7 +4504,7 @@ void BonkRun::SetNecroticStacks(uint32 stacks)
 
 void BonkRun::UpdateNecrotic(uint32 diff)
 {
-    if (!GetNecroticStacks())
+    if (!GetNecroticStacks() || IsSandbox())
         return;
     m_necroticCheckMs += diff;
     if (m_necroticCheckMs < BONK_NECROTIC_CHECK_MS)

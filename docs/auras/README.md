@@ -132,7 +132,7 @@ Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom 
 - Dash: a skill, not a buff. Its charges and recharge stay in `BonkPlayer`; `hoa.dash` carries the available charges and remaining recharge to the UI, and the native buff frame never changes when a charge is spent or returns.
 - Determination: custom aura `60001`, permanent, stacks mirror the account value; the addon reads the stacks from the aura, and the server keeps the account row as the persistent source.
 - Wounds: custom aura `60003`; stacks and duration live on the aura; the addon reads stacks and only takes the server-computed healing cut percentage from the notice.
-- Necrotic: spell `18951` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
+- Necrotic: spell `60056` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
 - Weapon buffs: the server reads the live aura instead of the removed `m_buffs` expiry map.
 
 ### 7.5 Native spells
