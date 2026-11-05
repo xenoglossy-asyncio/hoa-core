@@ -68,7 +68,7 @@ Deliver phase by phase. At the end of every phase the repository must build, run
 - Establish benchmarks (server tick, login time, memory, client frame time).
 - Remove migration switches and dead code.
 - Acceptance: benchmarks are no worse than before; no regressions; docs updated.
-- Progress (2026-11-05): mob pathing is Detour A* (`dtNavMeshQuery::findPath`), wrapped by `PathInfo`; Bonk crowd, spawn-point and run checks use it. A Barrens sandbox stress run with a 150-mob pack measured a 27–28 ms server tick, 0.1 ms HoA run code, a 0.04–0.24 ms crowd step and 0.00 ms of path time, so A* is not a hot spot in open ground; the map update interval dominates the tick. The remaining phase 6 work is the per-frame addon loops and the client-side benchmarks.
+- Progress (2026-11-05): mob pathing is Detour A* (`dtNavMeshQuery::findPath`), wrapped by `PathInfo`; Bonk crowd, spawn-point and run checks use it. A Barrens sandbox stress run with a 150-mob pack measured a 27–28 ms server tick, 0.1 ms HoA run code, a 0.04–0.24 ms crowd step and 0.00 ms of path time, so A* is not a hot spot in open ground; the map update interval dominates the tick. The remaining phase 6 work is the per-frame addon loops and the client-side benchmarks. A warm client launch reaches character select in 2.1 s, the in-game UI is up 0.45 s after entry and the loading screen clears after 2.0 s (about 6 s from process start); the release client held a 2.36 GB working set (4.47 GB private) and `mangosd` 504 MB while idle in the sandbox, with a 1 s warm server start.
 
 ## Why this order
 
