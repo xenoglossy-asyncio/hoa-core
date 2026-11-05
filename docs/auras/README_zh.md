@@ -10,7 +10,9 @@ HoA 的效果目前有三种表示，互相之间没有唯一权威：
 
 暗月卡牌的触发型属性加成横跨三类。以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 力量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）：服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura；界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
 
-插件端只解析 `BONK~` 聊天行（`VanillaBonkUI.lua:231-243`），没有用 `UNIT_AURA`/`GetPlayerBuff`；客户端自带的 `C_UnitAuras` 只用于敌方姓名板 debuff（`VanillaBonkDebuffs.lua:62-78`），Boss debuff 仍走 BONK（`VanillaBonkBoss.lua:194`）。插件还有多处每帧 `OnUpdate`（`VanillaBonkDebuffs.lua:385`、`VanillaBonkCards.lua:255`、`VanillaBonkPlates.lua:652`、`VanillaBonkDash.lua:89` 等）。
+插件过去只解析 `BONK~` 聊天行，没有用 `UNIT_AURA`/`GetPlayerBuff`；现在它消费类型化 `HOA_*` 事件，并通过 `C_UnitAuras` 读取姓名板和 Boss debuff。仍有若干每帧 `OnUpdate`（`VanillaBonkDebuffs.lua`、`VanillaBonkCards.lua`、`VanillaBonkPlates.lua`、`VanillaBonkDash.lua`）。
+
+**进度（2026-11-05）：** 阶段 3 已把效果集迁到真实光环，阶段 4 统一了法术与内容源，阶段 5 把剩余状态/展示聊天行换成了类型化协议。上面的“三种表示”是重构前基线，保留作背景；后续工作是阶段 6（每帧轮询、重复计时器、光环刷新频率）。
 
 结果：玩家看到的、插件显示的、服务端实际生效的可能是三份状态；其他插件/战斗日志无法通过标准 API 识别 HoA 效果。
 

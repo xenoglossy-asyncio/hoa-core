@@ -100,10 +100,33 @@ local frame = CreateFrame("Frame")
 local started, index = nil, 1
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("CHAT_MSG_SYSTEM")
+frame:RegisterEvent("HOA_RUN_STATE")
+frame:RegisterEvent("HOA_RUN_START")
+frame:RegisterEvent("HOA_MESSAGE")
 frame:SetScript("OnEvent", function()
     if event == "CHAT_MSG_SYSTEM" then
         if BenchCrowdProbeEvery and string.find(arg1, "enemies walk in the crowd", 1, true) then
             mark(arg1)
+        end
+        return
+    end
+    if event == "HOA_RUN_STATE" then
+        local state = arg1
+        if state and state.damage_types then
+            mark("BONK~state~" .. state.elapsed_s .. "~0~" .. state.kills .. "~0~0~0~0~0~0~0~0~" .. state.damage_types)
+        end
+        return
+    end
+    if event == "HOA_RUN_START" then
+        if arg1 and arg1.sandbox then
+            mark("BONK~msg~Bench mode is on")
+        end
+        return
+    end
+    if event == "HOA_MESSAGE" then
+        local notice = arg1 and arg1.text or ""
+        if string.sub(notice, 1, 7) == "vitals " then
+            mark(notice)
         end
         return
     end

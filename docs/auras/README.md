@@ -10,7 +10,9 @@ HoA effects currently have three representations and no single source of truth:
 
 Card procs span all three. Zandalarian Hero Charm, for example, grants "25% Power for 10 sec every 30 sec" (`server/core/sql/migrations/20261027710000_world.sql:46-47`): the server uses `m_cardSurgeUntilMs` plus cooldown bookkeeping (`BonkRunCards.cpp:486-493`), `GetCardPower` folds the bonus into damage and stats (`BonkRunCards.cpp:156-170`, `BonkRun.cpp:4867,6284`), and there is no Unit aura. The UI relies on per-second `cardnow~` text (`BonkRunCards.cpp:507-533,586-596`) and one `Notify` (`:491`); the addon assembles the tooltip (`VanillaBonkCards.lua:84-86,205,313-328`).
 
-The addon parses only `BONK~` chat lines (`VanillaBonkUI.lua:231-243`) and never uses `UNIT_AURA`/`GetPlayerBuff`; the client's `C_UnitAuras` serves only enemy nameplate debuffs (`VanillaBonkDebuffs.lua:62-78`), and boss debuffs still go through BONK (`VanillaBonkBoss.lua:194`). The addon also has several per-frame `OnUpdate` loops (`VanillaBonkDebuffs.lua:385`, `VanillaBonkCards.lua:255`, `VanillaBonkPlates.lua:652`, `VanillaBonkDash.lua:89`, etc.).
+The addon used to parse only `BONK~` chat lines and never used `UNIT_AURA`/`GetPlayerBuff`; it now consumes typed `HOA_*` events and reads `C_UnitAuras` for nameplate and boss debuffs. Several per-frame `OnUpdate` loops remain (`VanillaBonkDebuffs.lua`, `VanillaBonkCards.lua`, `VanillaBonkPlates.lua`, `VanillaBonkDash.lua`).
+
+**Progress (2026-11-05):** phase 3 moved the effect set onto real auras, phase 4 gave spells and content a single source, and phase 5 replaced the remaining state/presentation chat lines with the typed protocol. The three-representation baseline above is kept for context; the follow-up work is phase 6 (per-frame polling, duplicated timers, aura refresh rate).
 
 Result: what the player sees, what the addon shows and what the server applies may be three states; other addons/combat logs cannot identify HoA effects through standard APIs.
 

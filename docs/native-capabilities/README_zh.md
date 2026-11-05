@@ -43,13 +43,16 @@ benilla 的 Lua/FrameXML 覆盖不完整，迁移前要先盘点并补齐标准 
 - `UnitAffectingCombat`/`PLAYER_REGEN_*`
 - 队伍成员与目标相关 API
 
-现有实现里 `C_UnitAuras` 只服务敌方姓名板（`Interface/AddOns/HordesOfAzeroth/VanillaBonkDebuffs.lua:62-78`），需要扩展成完整的光环读取接口。
+`C_UnitAuras` 现在服务敌方姓名板、Boss debuff、关键词层数和玩家光环；剩余缺口是上面列出的原版法术/冷却和队伍 API。
 
 ## 插件迁移
 
-删除：
+阶段 5 已完成：
 
-- `BONK~state` 类消息的解析和本地计时器（`VanillaBonk.lua:3611-3655`、`VanillaBonkDetermination.lua:35-44`、`VanillaBonkHeroBar.lua:1072-1080`、`VanillaBonkDash.lua:89`、`VanillaBonkCards.lua:255-328`）；
+- `BONK~state` 解析和本地状态计时器已删除；服务端状态走类型化 `HOA_*` 事件，效果本身走原生光环。
+
+剩余：
+
 - 每帧 `OnUpdate` 里重建冷却/倒计时；
 - 自己算的物品等级/属性/装备提示（改读服务端数据）。
 

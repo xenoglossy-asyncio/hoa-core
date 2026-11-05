@@ -26,7 +26,9 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 - **原生法术 + 插件副本**：剑刃乱舞/狂怒等复用原生 spell，但插件另有一套计时。
 - **卡牌 proc 横跨三套**：以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 力量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）。服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura。界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
 
-插件端只解析 `BONK~` 聊天行（`VanillaBonkUI.lua:231-243`），完全没有用 `UNIT_AURA`/`GetPlayerBuff`；客户端自带的 `C_UnitAuras` 只用于敌方姓名板 debuff（`VanillaBonkDebuffs.lua:62-78`），Boss debuff 仍走 BONK（`VanillaBonkBoss.lua:194`）。
+插件过去只解析 `BONK~` 聊天行，完全没有用 `UNIT_AURA`/`GetPlayerBuff`；现在它消费 Rust 客户端解码后的类型化 `HOA_*` 事件，`C_UnitAuras` 用于敌方姓名板和 Boss debuff。聊天解析器已不存在。
+
+**进度（2026-11-05）：** 阶段 3 已把效果集迁到真实光环，阶段 5 已把服务端所有展示/状态字符串换成类型化协议。上面的条目是重构前的基线，保留作背景。
 
 重复和轮询的例子：
 

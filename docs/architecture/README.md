@@ -26,7 +26,9 @@ The new repository therefore puts all components together, hard-forks, and evolv
 - **Native spells plus an addon copy:** Blade Flurry, Enrage and friends reuse native spells, but the addon keeps a second set of timers.
 - **Card procs span all three:** Zandalarian Hero Charm, for example, grants "25% Power for 10 sec every 30 sec" (`server/core/sql/migrations/20261027710000_world.sql:46-47`). The server uses `m_cardSurgeUntilMs` plus cooldown bookkeeping (`BonkRunCards.cpp:486-493`), and `GetCardPower` folds the bonus into damage and stats (`BonkRunCards.cpp:156-170`, `BonkRun.cpp:4867,6284`) with no Unit aura. The UI relies on the per-second `cardnow~` text (`BonkRunCards.cpp:507-533,586-596`) and a one-shot `Notify` (`:491`); the addon assembles the tooltip (`VanillaBonkCards.lua:84-86,205,313-328`).
 
-The addon only parses `BONK~` chat lines (`VanillaBonkUI.lua:231-243`) and never uses `UNIT_AURA`/`GetPlayerBuff`; the client's own `C_UnitAuras` is used only for enemy nameplate debuffs (`VanillaBonkDebuffs.lua:62-78`), and boss debuffs still go through BONK (`VanillaBonkBoss.lua:194`).
+The addon used to parse only `BONK~` chat lines and never used `UNIT_AURA`/`GetPlayerBuff`; it now consumes typed `HOA_*` events decoded by the Rust client, while `C_UnitAuras` serves enemy nameplate and boss debuffs. No chat parser remains.
+
+**Progress (2026-11-05):** phase 3 moved the effect set onto real auras, and phase 5 replaced every server presentation/state string with the typed protocol. The bullets above describe the pre-refactor baseline kept for context.
 
 Examples of duplication and polling:
 
