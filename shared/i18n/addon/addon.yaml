@@ -5356,3 +5356,12 @@
 - id: hoa.addon.troll
   enUS: Troll
   zhCN: 巨魔
+- id: hoa.addon.this_client_and_the_server_use_different_hoa_versions_1_2
+  enUS: This game client and the server use different HoA versions (client {1}, server {2}). Update the game so both sides match.
+  zhCN: 游戏客户端与服务端的 HoA 版本不一致（客户端 {1}，服务端 {2}）。请更新游戏，使双方版本一致。
+  placeholders:
+  - 1
+  - 2
+- id: hoa.addon.this_client_and_the_server_use_different_game_content
+  enUS: This game client and the server use different game content. Update the game so both sides match.
+  zhCN: 游戏客户端与服务端的游戏内容不一致。请更新游戏，使双方版本一致。

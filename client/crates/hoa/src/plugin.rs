@@ -19,6 +19,7 @@ use crate::telegraphs::{expire_telegraphs, follow_marks, project_telegraphs, pus
 use crate::world_fx::{apply_draw_lines, expire_kit_anchors, move_flights, tap_draw_lines, DisplayModels};
 
 const HOA_HELLO: &str = "HOA_HELLO";
+const HOA_INCOMPATIBLE: &str = "HOA_INCOMPATIBLE";
 const HOA_AURA_VALUE: &str = "HOA_AURA_VALUE";
 const HOA_DASH: &str = "HOA_DASH";
 const HOA_AURA_PERCENT: &str = "HOA_AURA_PERCENT";
@@ -176,6 +177,31 @@ fn lua_table(fields: Vec<(&str, ScriptValue)>) -> ScriptValue {
 #[derive(Resource, Default)]
 struct HoaInbox(Vec<(u16, Vec<u8>)>);
 
+/// Set once hello disagrees with this build, so no later packet is decoded as if it agreed.
+#[derive(Resource, Default)]
+struct HoaHandshake {
+    blocked: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+struct HelloCheck {
+    protocol_mismatch: bool,
+    content_mismatch: bool,
+}
+
+impl HelloCheck {
+    fn of(protocol_version: u16, content_hash: &str) -> Self {
+        Self {
+            protocol_mismatch: protocol_version != PROTOCOL_VERSION,
+            content_mismatch: content_hash != CONTENT_HASH,
+        }
+    }
+
+    fn compatible(self) -> bool {
+        !self.protocol_mismatch && !self.content_mismatch
+    }
+}
+
 /// A catalog that arrived before the spell catalog existed, retried each frame.
 #[derive(Resource, Default)]
 struct AuraCatalogBuffer {
@@ -224,14 +250,20 @@ fn deliver_hoa_messages(world: &mut World) {
     let mut catalog_done = false;
     // The account language arrives with hello. Seat it before the closure fires HOA_HELLO, so the
     // addon's handler and GetLocale already read the new language.
-    let account_language = pending.iter().find_map(|(id, body)| {
+    let hello = pending.iter().rev().find_map(|(id, body)| {
         match protocol_generated::decode(*id, body) {
-            Some(HoaMessage::Hello(hello)) => Some(hello.language),
+            Some(HoaMessage::Hello(hello)) => Some(hello),
             _ => None,
         }
     });
-    if let Some(language) = account_language {
-        benilla_app::set_hoa_account_language(world, &language);
+    let mut blocked = world.resource::<HoaHandshake>().blocked;
+    if let Some(hello) = &hello {
+        blocked = !HelloCheck::of(hello.protocol_version, &hello.content_hash).compatible();
+    }
+    if !blocked {
+        if let Some(hello) = &hello {
+            benilla_app::set_hoa_account_language(world, &hello.language);
+        }
     }
     benilla_app::run_hosted(world, |script| {
         let Some(script) = script else {
@@ -242,6 +274,9 @@ fn deliver_hoa_messages(world: &mut World) {
                 warn!("hoa protocol: unknown message id {id}");
                 continue;
             };
+            if blocked && !matches!(&message, HoaMessage::Hello(_)) {
+                continue;
+            }
             match message {
                 HoaMessage::Music(music) => {
                     script.fire_event(
@@ -1623,26 +1658,41 @@ fn deliver_hoa_messages(world: &mut World) {
                     catalog_done = true;
                 }
                 HoaMessage::Hello(hello) => {
-                    if hello.protocol_version != PROTOCOL_VERSION {
+                    let check = HelloCheck::of(hello.protocol_version, &hello.content_hash);
+                    if check.protocol_mismatch {
                         warn!(
                             "hoa protocol: server speaks {}, this build speaks {PROTOCOL_VERSION}",
                             hello.protocol_version
                         );
                     }
-                    if hello.content_hash != CONTENT_HASH {
+                    if check.content_mismatch {
                         warn!(
                             "hoa protocol: server content {} does not match this build's {CONTENT_HASH}",
                             hello.content_hash
                         );
                     }
-                    script.fire_event(
-                        HOA_HELLO,
-                        vec![
-                            ScriptValue::Int(i64::from(hello.protocol_version)),
-                            ScriptValue::Str(hello.content_hash),
-                            ScriptValue::Str(hello.language),
-                        ],
-                    );
+                    if check.compatible() {
+                        script.fire_event(
+                            HOA_HELLO,
+                            vec![
+                                ScriptValue::Int(i64::from(hello.protocol_version)),
+                                ScriptValue::Str(hello.content_hash),
+                                ScriptValue::Str(hello.language),
+                            ],
+                        );
+                    } else {
+                        script.fire_event(
+                            HOA_INCOMPATIBLE,
+                            vec![lua_table(vec![
+                                ("protocol_version", ScriptValue::Int(i64::from(hello.protocol_version))),
+                                ("expected_protocol", ScriptValue::Int(i64::from(PROTOCOL_VERSION))),
+                                ("content_hash", ScriptValue::Str(hello.content_hash)),
+                                ("expected_content", ScriptValue::Str(CONTENT_HASH.to_string())),
+                                ("protocol_mismatch", ScriptValue::Bool(check.protocol_mismatch)),
+                                ("content_mismatch", ScriptValue::Bool(check.content_mismatch)),
+                            ])],
+                        );
+                    }
                 }
             }
         }
@@ -1675,6 +1725,7 @@ fn deliver_hoa_messages(world: &mut World) {
         buffer.total = catalog_total;
         buffer.active = true;
     }
+    world.resource_mut::<HoaHandshake>().blocked = blocked;
     apply_pending_catalog(world);
 }
 
@@ -1684,6 +1735,7 @@ impl Plugin for HordesOfAzerothPlugin {
     fn build(&self, app: &mut App) {
         add_plate_events();
         add_in_game_event(HOA_HELLO);
+        add_in_game_event(HOA_INCOMPATIBLE);
         add_in_game_event(HOA_AURA_VALUE);
         add_in_game_event(HOA_DASH);
         add_in_game_event(HOA_AURA_PERCENT);
@@ -1849,6 +1901,7 @@ impl Plugin for HordesOfAzerothPlugin {
             .insert_non_send_resource(hosts.controller.clone())
             .init_resource::<Telegraphs>()
             .init_resource::<HoaInbox>()
+            .init_resource::<HoaHandshake>()
             .init_resource::<AuraCatalogBuffer>()
             .net_handler(SessionEventKind::HoaMessage, on_hoa_message)
             .insert_resource(DisplayModels::from_install())
@@ -1927,6 +1980,21 @@ mod tests {
         assert_eq!(hello.protocol_version, PROTOCOL_VERSION);
         assert_eq!(hello.content_hash, CONTENT_HASH);
         assert_eq!(hello.language, "zhCN");
+    }
+
+    #[test]
+    fn the_hello_check_rejects_protocol_and_content_mismatches() {
+        assert!(HelloCheck::of(PROTOCOL_VERSION, CONTENT_HASH).compatible());
+
+        let protocol = HelloCheck::of(PROTOCOL_VERSION + 1, CONTENT_HASH);
+        assert!(protocol.protocol_mismatch);
+        assert!(!protocol.content_mismatch);
+        assert!(!protocol.compatible());
+
+        let content = HelloCheck::of(PROTOCOL_VERSION, "sha256:other");
+        assert!(!content.protocol_mismatch);
+        assert!(content.content_mismatch);
+        assert!(!content.compatible());
     }
 
     #[test]

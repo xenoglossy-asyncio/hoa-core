@@ -4,9 +4,34 @@ local UI = VanillaBonkUI
 
 -- The server's typed hello, once the Rust client has decoded it.
 UI.Protocol = {}
+StaticPopupDialogs["VANILLABONK_INCOMPATIBLE"] = {
+    text = "%s",
+    button1 = OKAY,
+    timeout = 0,
+    whileDead = 1,
+    hideOnEscape = 0,
+}
 local protocolFrame = CreateFrame("Frame")
 protocolFrame:RegisterEvent("HOA_HELLO")
+protocolFrame:RegisterEvent("HOA_INCOMPATIBLE")
 protocolFrame:SetScript("OnEvent", function(self, event, version, contentHash, language)
+    if event == "HOA_INCOMPATIBLE" then
+        local warning = version
+        local lines = {}
+        if warning.protocol_mismatch then
+            tinsert(lines, L("hoa.addon.this_client_and_the_server_use_different_hoa_versions_1_2", warning.protocol_version, warning.expected_protocol))
+        end
+        if warning.content_mismatch then
+            tinsert(lines, L["hoa.addon.this_client_and_the_server_use_different_game_content"])
+        end
+        UI.Protocol.incompatible = warning
+        for _, line in ipairs(lines) do
+            UIErrorsFrame:AddMessage(line, 1, 0.1, 0.1, 1, 10)
+            DEFAULT_CHAT_FRAME:AddMessage("|cffff4040" .. line .. "|r")
+        end
+        StaticPopup_Show("VANILLABONK_INCOMPATIBLE", lines[1] or "")
+        return
+    end
     UI.Protocol.version = tonumber(version)
     UI.Protocol.contentHash = contentHash
     UI.Protocol.serverLanguage = language
