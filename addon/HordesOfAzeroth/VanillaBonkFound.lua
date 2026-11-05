@@ -152,7 +152,6 @@ UI.ListenHoa({
     end,
 })
 
-UI.Listen(handlers)
 
 local refresh = CreateFrame("Frame")
 refresh:Hide()

@@ -33,16 +33,6 @@ UI.ListenHoa({
     end,
 })
 
-UI.Listen({
-    ["music"] = function(f)
-        if f[2] == "boss" then
-            PlayBossMusic()
-        else
-            StopBossMusic()
-        end
-    end,
-})
-
 UI.ListenHoa({
     HOA_RUN_START = StopBossMusic,
     HOA_RUN_END = StopBossMusic,

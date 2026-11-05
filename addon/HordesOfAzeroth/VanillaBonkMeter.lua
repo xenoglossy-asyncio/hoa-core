@@ -856,4 +856,3 @@ handlers["pw"] = function(f)
     end
 end
 
-UI.Listen(handlers)

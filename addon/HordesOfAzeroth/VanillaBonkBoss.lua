@@ -273,16 +273,6 @@ local function ShowBosses(fields)
     holder:Show()
 end
 
-UI.Listen({
-    ["boss"] = function(f)
-        if f[2] and f[2] ~= "" then
-            ShowBosses(f)
-        else
-            HideBosses()
-        end
-    end,
-})
-
 UI.ListenHoa({
     HOA_BOSS_BAR = function(bar)
         local f = { false }

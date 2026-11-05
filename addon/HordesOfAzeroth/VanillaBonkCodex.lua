@@ -1,5 +1,4 @@
 local L = VanillaBonkL
-local PREFIX = "BONK~"
 local FLAT = "Interface\\Buttons\\WHITE8X8"
 local FONT = VanillaBonkUI.FONT
 local NUMBER_FONT = VanillaBonkUI.NUMBER_FONT
@@ -1530,21 +1529,9 @@ VanillaBonkUI.ListenHoa({
 })
 
 local events = CreateFrame("Frame")
-events:RegisterEvent("CHAT_MSG_SYSTEM")
 events:RegisterEvent("PLAYER_MONEY")
 events:SetScript("OnEvent", function()
-    if event == "PLAYER_MONEY" then
-        if window:IsShown() then
-            Refresh(true)
-        end
-        return
-    end
-    if not arg1 or strsub(arg1, 1, strlen(PREFIX)) ~= PREFIX then
-        return
-    end
-    local f = Split(strsub(arg1, strlen(PREFIX) + 1), "~")
-    local handler = handlers[f[1]]
-    if handler then
-        handler(f)
+    if event == "PLAYER_MONEY" and window:IsShown() then
+        Refresh(true)
     end
 end)

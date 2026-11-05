@@ -353,7 +353,6 @@ UI.ListenHoa({
     HOA_RUN_END = RemoveAll,
 })
 
-UI.Listen(handlers)
 
 UI.objectives = objectives
 UI.SMALL_OBJECTIVE_KINDS = SMALL_KINDS

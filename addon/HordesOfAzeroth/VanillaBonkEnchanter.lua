@@ -292,7 +292,6 @@ UI.ListenHoa({
     end,
 })
 
-UI.Listen(handlers)
 
 window:RegisterEvent("UNIT_INVENTORY_CHANGED")
 window:SetScript("OnEvent", Refresh)

@@ -947,8 +947,15 @@ local function EnterRun()
     inRun = true
 end
 
-UI.Listen({
-    cdx = function(f)
+UI.ListenHoa({
+    HOA_CODEX = function(entry)
+        if entry.kind ~= "cdx" then
+            return
+        end
+        local f = { entry.kind }
+        for _, part in ipairs(UI.Split(entry.line or "", "~")) do
+            tinsert(f, part)
+        end
         if f[4] ~= "1" then
             return
         end
@@ -957,9 +964,6 @@ UI.Listen({
             EndLesson()
         end
     end,
-})
-
-UI.ListenHoa({
     HOA_RUN_START = EnterRun,
     HOA_RUN_STATE = EnterRun,
     HOA_RUN_END = function()

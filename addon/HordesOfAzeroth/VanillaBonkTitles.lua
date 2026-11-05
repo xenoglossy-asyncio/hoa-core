@@ -98,7 +98,6 @@ UI.ListenHoa({
     end,
 })
 
-UI.Listen(handlers)
 
 local paperDollOnShow = PaperDollFrame:GetScript("OnShow")
 PaperDollFrame:SetScript("OnShow", function()

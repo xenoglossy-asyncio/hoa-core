@@ -460,4 +460,3 @@ UI.ListenHoa({
         HideNow()
     end,
 })
-UI.Listen(handlers)

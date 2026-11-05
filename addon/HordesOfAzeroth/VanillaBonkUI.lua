@@ -258,22 +258,6 @@ function UI.Text(parent, size, font, flags, layer)
     return text
 end
 
-function UI.Listen(handlers)
-    local frame = CreateFrame("Frame")
-    frame:RegisterEvent("CHAT_MSG_SYSTEM")
-    frame:SetScript("OnEvent", function()
-        if not arg1 or strsub(arg1, 1, 5) ~= "BONK~" then
-            return
-        end
-        local stop = strfind(arg1, "~", 6, true)
-        local handler = handlers[strsub(arg1, 6, stop and stop - 1 or -1)]
-        if handler then
-            handler(UI.Split(strsub(arg1, 6), "~"))
-        end
-    end)
-    return frame
-end
-
 -- Typed HoA messages the Rust client decoded; the handler gets the fields as event arguments.
 function UI.ListenHoa(handlers)
     local frame = CreateFrame("Frame")

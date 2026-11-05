@@ -1449,6 +1449,8 @@ RunMaster.RIGHT_X, RunMaster.RIGHT_WIDTH = RIGHT_X, RIGHT_WIDTH
 RunMaster.Hairline = Hairline
 RunMaster.SOFT, RunMaster.MUTED = SOFT, MUTED
 
+local handlers
+
 UI.ListenHoa({
     HOA_TIER_INFO = function(info)
         handlers["tierinfo"]({
@@ -1480,7 +1482,7 @@ UI.ListenHoa({
     end,
 })
 
-UI.Listen({
+handlers = {
     mapinfo = function(f)
         if f[2] and f[2] ~= "" then
             mapInfo[f[2]] = { continent = f[3] or "", summary = f[4] or "", description = f[5] or "",
@@ -1532,4 +1534,4 @@ UI.Listen({
             banner.map.file = nil
         end
     end,
-})
+}

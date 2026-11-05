@@ -1261,7 +1261,6 @@ handlers["reachring"] = function(f)
     UI.RefreshReachMarks()
 end
 
-UI.Listen(handlers)
 
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_ENTERING_WORLD")

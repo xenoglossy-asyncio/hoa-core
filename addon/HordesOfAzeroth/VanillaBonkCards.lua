@@ -378,4 +378,3 @@ UI.ListenHoa({
     HOA_RUN_END = Clear,
 })
 
-UI.Listen(handlers)

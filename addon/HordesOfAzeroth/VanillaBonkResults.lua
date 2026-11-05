@@ -1459,4 +1459,3 @@ end
 
 handlers["sumend"] = ShowSummary
 
-UI.Listen(handlers)

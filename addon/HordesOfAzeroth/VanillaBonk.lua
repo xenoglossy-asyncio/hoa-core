@@ -1,5 +1,4 @@
 local L = VanillaBonkL
-local PREFIX = "BONK~"
 local ICON_PATH = "Interface\\Icons\\"
 local FONT = VanillaBonkUI.FONT
 
@@ -3847,14 +3846,6 @@ shieldEvents:SetScript("OnEvent", function()
     end
 end)
 
-local function Handle(text)
-    local fields = Split(strsub(text, strlen(PREFIX) + 1), "~")
-    local handler = handlers[fields[1]]
-    if handler then
-        handler(fields)
-    end
-end
-
 local function LinePattern(text)
     if not text then
         return nil
@@ -3884,9 +3875,6 @@ function ChatFrame_OnEvent(event)
         return
     end
     if event == "CHAT_MSG_SYSTEM" and arg1 then
-        if strsub(arg1, 1, strlen(PREFIX)) == PREFIX then
-            return
-        end
         for _, pattern in ipairs(HIDDEN_SYSTEM_LINES) do
             if strfind(arg1, pattern) then
                 return
@@ -3898,14 +3886,9 @@ end
 
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("CHAT_MSG_SYSTEM")
 events:RegisterEvent("PLAYER_MONEY")
 events:SetScript("OnEvent", function()
-    if event == "CHAT_MSG_SYSTEM" then
-        if arg1 and strsub(arg1, 1, strlen(PREFIX)) == PREFIX then
-            Handle(arg1)
-        end
-    elseif event == "PLAYER_MONEY" then
+    if event == "PLAYER_MONEY" then
         PlayPurchaseSound()
         if shop:IsShown() then
             RefreshShop()

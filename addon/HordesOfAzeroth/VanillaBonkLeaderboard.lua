@@ -599,4 +599,3 @@ UI.ListenHoa({
     end,
 })
 
-UI.Listen(handlers)

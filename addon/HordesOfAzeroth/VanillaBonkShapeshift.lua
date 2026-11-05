@@ -142,15 +142,3 @@ UI.ListenHoa({
         end
     end,
 })
-
-UI.Listen({
-    druidform = function(f)
-        current = FORM_ICONS[f[2]] and f[2] or nil
-    end,
-    druidslots = function(f)
-        slotStates = {}
-        for index = 2, table.getn(f) do
-            slotStates[index - 1] = f[index]
-        end
-    end,
-})

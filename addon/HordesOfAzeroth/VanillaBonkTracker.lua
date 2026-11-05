@@ -294,4 +294,3 @@ handlers["coopdown"] = function(f)
     Refresh()
 end
 
-UI.Listen(handlers)

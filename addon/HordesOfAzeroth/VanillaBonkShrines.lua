@@ -311,4 +311,3 @@ UI.ListenHoa({
     HOA_RUN_END = HideAll,
 })
 
-UI.Listen(handlers)

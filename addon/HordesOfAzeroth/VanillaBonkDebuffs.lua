@@ -501,24 +501,17 @@ local function HandleKeyword(f)
     end
 end
 
-UI.Listen({
-    ["gls"] = HandleGlossary,
-    ["kwdaura"] = HandleKeywordAura,
-    ["kwd"] = HandleKeyword,
-    ["kwdt"] = function(f)
-        ReadTimers(f[2])
-    end,
-    ["mobdead"] = function(f)
-        if f[4] and f[4] ~= "" then
-            timers[f[4]] = nil
-        end
-    end,
-    ["mobclear"] = ClearTimers,
-})
-
 UI.ListenHoa({
     HOA_KEYWORD_TIMERS = function(timers)
         ReadTimers(timers.entries)
+    end,
+    HOA_MOB_DEAD = function(dead)
+        if dead.guid ~= "" then
+            timers[dead.guid] = nil
+        end
+    end,
+    HOA_MOB_CLEAR = function()
+        ClearTimers()
     end,
     HOA_CODEX = function(entry)
         if entry.kind ~= "gls" and entry.kind ~= "kwdaura" and entry.kind ~= "kwd" then

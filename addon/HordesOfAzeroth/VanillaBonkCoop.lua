@@ -572,35 +572,6 @@ do
 		end
 	end
 
-	VanillaBonkUI.Listen({
-		coopwait = function(f)
-			ShowWait(f[2], tonumber(f[3]) or 0);
-		end,
-		coopwatch = function(f)
-			ShowWatchChoice(f[2] or "", tonumber(f[3]) or 0);
-		end,
-		coopremoved = function()
-			Call("POST", "/join/removed");
-		end,
-		coopdown = function(f)
-			ShowDowned(ReadDowned(f[4]));
-		end,
-		leash = function(f)
-			ShowLeash(tonumber(f[2]) or 0, tonumber(f[3]) or 80, tonumber(f[4]) or 0);
-		end,
-		coopready = function(f)
-			local seconds = tonumber(f[3]) or 20;
-			readyTitle:SetText(f[2] or "");
-			readyBar:SetMinMaxValues(0, seconds);
-			ready.left = seconds;
-			ready:Show();
-			PlaySound("ReadyCheck");
-		end,
-		coopreadyend = function()
-			ready:Hide();
-		end,
-	});
-
 	VanillaBonkUI.ListenHoa({
 		HOA_COOP_WAIT = function(wait)
 			ShowWait(wait.names, tonumber(wait.seconds) or 0);
