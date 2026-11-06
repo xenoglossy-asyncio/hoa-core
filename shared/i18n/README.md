@@ -31,7 +31,7 @@ Language is a **session/account property** decided by the server at login. The i
 
 ## Current seed
 
-The catalogue now holds 995 server messages (`messages/server.yaml`), 1558 addon entries (`addon/addon.yaml`), 1324 client UI entries (`ui/options.yaml`, `ui/glue.yaml`, `ui/keybindings.yaml`) and 304 launcher entries (`launcher/launcher.yaml`), all with enUS and zhCN. `BonkStrings.h/.cpp`, `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua` and the client language packs are generated from it. zhTW is not translated yet and is reported as a warning, not an error. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
+The catalogue now holds 995 server messages (`messages/server.yaml`), 1558 addon entries (`addon/addon.yaml`), 1324 client UI entries (`ui/options.yaml`, `ui/glue.yaml`, `ui/keybindings.yaml`) and 304 launcher entries (`launcher/launcher.yaml`), all with enUS, zhCN and zhTW. `BonkStrings.h/.cpp`, `addon/HordesOfAzeroth/VanillaBonkLocaleData.lua` and the client language packs are generated from it. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
 
 ```bash
 python tools/i18n/gen_server_strings.py       # write BonkStrings.h/.cpp from the catalogue
@@ -50,7 +50,7 @@ python -m unittest discover -s tools/i18n -p "test_*.py"
 - `server/src/game/Bonk/BonkStrings.h/.cpp`: enum + English source, generated from the catalogue
 - `shared/i18n/generated/`: JSON catalogue (translation tool/export)
 - `client/crates/benilla-app/assets/i18n/<locale>.json`: client UI language packs
-- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`: generated addon language table (the file name is fixed by the TOC)
+- `addon/HordesOfAzeroth/VanillaBonkLocaleData.lua`: one generated addon data file holding every language (the file name is fixed by the TOC)
 
 ## Client and caches
 

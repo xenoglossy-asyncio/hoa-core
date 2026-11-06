@@ -53,7 +53,7 @@ Survey results (server = `server/core/src/game/Bonk/`, addon = `Interface/AddOns
 - **IDs:** game objects 900001-900062 (`BonkMgr.h:40-46` vs `VanillaBonkSettings.lua:9-11`, `VanillaBonkController.lua:1699`, `VanillaBonkTutorial.lua:4-8`), Hearthstone 900230 (`BonkMgr.h:1054` vs `VanillaBonkHearth.lua:5`).
 - **Key counts:** spell/passive slots (`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`), glyph offers (`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`), level-up offers (`BonkMgr.h:1028` vs `VanillaBonk.lua:353`), evolve rank (`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`).
 - **Duplicated computation:** leaderboard eligibility (`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`).
-- **Text:** the same Chinese sentence appears in the server migration (`server/core/sql/migrations/20261104010444_world.sql:959-963,2143-2145`) and the addon table (`VanillaBonkLocaleZhCN.lua:264,385,606,840,1137,490,694,728`).
+- **Text:** resolved. Server text, addon text and client UI text now come from `shared/i18n`; the addon's single generated `VanillaBonkLocaleData.lua` replaces the old hand-kept ZH table.
 - **Custom spell IDs:** file-local `uint32 const`s in anonymous namespaces (`BonkRun.cpp:43` and kin), with no shared registry; the addon and client each keep their own display ID lists.
 - Spell/item names come half from client DBCs and half from server query responses; the server has zhCN names in `locales_spell`, but the client only reads the installed `Spell.dbc`, so custom spells are blank.
 - Text is keyed by English sentences plus a source hash (`BonkLocale`); when the English changes, the translation goes "out of date" and the server falls back to English.

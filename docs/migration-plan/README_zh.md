@@ -32,7 +32,7 @@
 - 插件语言表改为生成物；删除英文键索引和反向查找。
 - 缓存键加入 `(locale, contentVersion)`；语言切换刷新物品/生物/法术名字。
 - 验收：任意语言 1.12.1 安装 + 中文账号 → 全中文；切换 enUS/zhCN 不重启游戏、不残留旧名字；缺翻译有清单。
-- 进度（2026-11-04）：995 条服务端字符串和 1451 条插件文本已抽成稳定 ID（`shared/i18n/messages/server.yaml`、`shared/i18n/addon/addon.yaml`，enUS + zhCN 完整，zhTW 待翻译）；`tools/i18n` 的提取/校验/生成工具和 CI `i18n-check` 已加；`BonkStrings.h/.cpp` 和 `VanillaBonkLocaleZhCN.lua` 已改为由目录生成，服务端构建通过；客户端 WDB 头部已把 HOA 账号语言折进缓存 tag（FORMAT 2）。下一步做客户端界面语言包和 zhTW 翻译。
+- 进度（2026-11-06）：995 条服务端字符串、1558 条插件文本、1324 条客户端界面文本和 304 条启动器文本已抽成稳定 ID（`shared/i18n/messages/server.yaml`、`shared/i18n/addon/addon.yaml`、`ui/options.yaml`、`ui/glue.yaml`、`ui/keybindings.yaml`，enUS、zhCN、zhTW 完整）；`tools/i18n` 的提取/校验/生成工具和 CI `i18n-check` 已加；`BonkStrings.h/.cpp`、`addon/HordesOfAzeroth/VanillaBonkLocaleData.lua`（一个文件承载全部语言）和 `client/crates/benilla-app/assets/i18n/{enUS,zhCN,zhTW}.json` 都由目录生成；HoA UI/GlueXML 使用 `HOA_UI_*` 键，`GetLocale` 跟账号语言，客户端 WDB 头部已把 HOA 账号语言折进缓存 tag（FORMAT 2），zhTW 使用 Noto Sans TC 排版和绘制。下一步：原生 GlobalStrings 和 DBC 名称覆盖。
 - 说明：这一步会触碰客户端大量文本，但不动游戏数值。
 
 ## 阶段 3：光环统一

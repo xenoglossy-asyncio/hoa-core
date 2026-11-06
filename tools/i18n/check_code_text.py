@@ -72,7 +72,7 @@ def scan_launcher() -> list[str]:
 
 
 def main() -> int:
-    errors = scan(ADDON, {"VanillaBonkLocaleZhCN.lua", "VanillaBonkLocale.lua"})
+    errors = scan(ADDON, {"VanillaBonkLocaleData.lua", "VanillaBonkLocale.lua"})
     errors += scan(GLUE, {"BonkGlueLocale.lua"})
     errors += scan_launcher()
     if errors:

@@ -53,7 +53,7 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 - **ID**：游戏对象 900001-900062（`BonkMgr.h:40-46` vs `VanillaBonkSettings.lua:9-11`、`VanillaBonkController.lua:1699`、`VanillaBonkTutorial.lua:4-8`）、炉石 900230（`BonkMgr.h:1054` vs `VanillaBonkHearth.lua:5`）。
 - **关键数量**：法术/被动槽位（`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`）、glyph 选项（`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`）、升级选项（`BonkMgr.h:1028` vs `VanillaBonk.lua:353`）、进化等级（`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`）。
 - **重复计算**：排行榜资格（`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`）。
-- **文本**：同一句中文同时出现在服务端迁移（`server/core/sql/migrations/20261104010444_world.sql:959-963,2143-2145`）和插件表（`VanillaBonkLocaleZhCN.lua:264,385,606,840,1137,490,694,728`）。
+- **文本**：已解决。服务端、插件和客户端界面文本现在都由 `shared/i18n` 生成；插件只有一个生成的 `VanillaBonkLocaleData.lua`，不再手工维护中文表。
 - **自定义 spell id**：各 `.cpp` 匿名命名空间里的 `uint32 const`（`BonkRun.cpp:43` 等），没有共享注册表；插件和客户端各存一份显示用的 id 列表。
 - 法术/物品名称一半来自客户端 DBC，一半来自服务端查询响应；服务端 `locales_spell` 有中文名，客户端却只查安装的 `Spell.dbc`，自定义 spell 在客户端直接空白。
 - 文本以英文句子为键 + 源哈希（`BonkLocale`），英文一改翻译就“过期”，服务端回退英文。

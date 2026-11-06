@@ -82,7 +82,7 @@ shared/i18n/
 
 - `server/src/game/Hoa/i18n/generated/Messages.h/.cpp`：ID 枚举 + 英文源 + 查表
 - `client/assets/i18n/<locale>.json`：客户端语言包
-- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`：生成的插件语言表（TOC 固定文件名）
+- `addon/HordesOfAzeroth/VanillaBonkLocaleData.lua`：生成的插件数据文件，一个文件包含全部语言（TOC 固定文件名）
 - `tools/translate` 直接读写 `shared/i18n` 源，不再维护独立 JSON
 
 ## 6. 服务端
@@ -97,15 +97,15 @@ shared/i18n/
 
 ## 7. 客户端
 
-- **语言包**：客户端启动时根据启动器/上次语言加载 `client/crates/benilla-app/assets/i18n/<locale>.json`；登录后用账号语言覆盖。第一阶段内置 enUS + zhCN，并编译进客户端。
-- **GlobalStrings**：原生界面仍读安装 MPQ 里的 `GlobalStrings.lua`（`benilla-app/src/ui_script/lifecycle.rs:1165-1188`）。第一阶段只替换 HoA 自有 UI 和 GlueXML；仓库自带原生 GlobalStrings 是下一阶段。
+- **语言包**：客户端启动时根据启动器/上次语言加载 `client/crates/benilla-app/assets/i18n/<locale>.json`；登录后用账号语言覆盖。enUS、zhCN、zhTW 都编译进客户端。
+- **GlobalStrings**：原生界面仍读安装 MPQ 里的 `GlobalStrings.lua`（`benilla-app/src/ui_script/lifecycle.rs:1165-1188`）。只有 HoA 自有 UI 和 GlueXML 走语言包；仓库自带原生 GlobalStrings 仍是下一阶段。
 - **`GetLocale`**：已用独立的 UI locale 实现：登录前返回启动器/上次语言，登录后返回账号语言；插件调用 `GetLocale()` 得到的是游戏语言，不是安装语言。安装 `Wow.ini` 的 locale 仍用于解析 DBC 列、资源和名字字符集。
 - **界面文本**：`OptionsFrame.xml`、`GameMenuAdapters.xml`、`ScriptLogFrame.xml`、`AccountLoginRealmlist.xml`、`KeyBindingsPage.xml` 和 GlueXML 已改为读取语言包生成的 `HOA_UI_*` 键；Lua/FrameXML 读同一张表。
 - **DBC 名称**：法术书、地图、天赋、职业/种族等显示名称目前仍来自安装数据的本地化列；内容包名称覆盖留到后续。
-- **字体**：按语言选字体回退链（zhCN：Noto Sans SC；zhTW：Noto Sans TC；enUS：原版字体），缺字回退顺序固定。第一阶段只带 Noto Sans SC，zhTW/韩文字体后续补。
-- **排版**：CJK 无空格换行、禁则处理、按钮/标签最小宽度；长文本自动缩放或换行。排版引擎的 shaping locale 仍写死 `"en-US"`（`ui_text/engine/mod.rs:169`），随 zhTW 阶段一起改。
+- **字体**：按所选界面语言选字体回退链（zhCN：Noto Sans SC；zhTW：Noto Sans TC；enUS：原版字体），缺字回退顺序固定。
+- **排版**：CJK 无空格换行、禁则处理、按钮/标签最小宽度；长文本自动缩放或换行。排版引擎从 `UiLanguage::shaping_locale()` 取得 `zh-CN`/`zh-TW`/`en-US`。
 
-**进度（2026-11-04）**：`shared/i18n/ui` + `tools/i18n/gen_client_pack.py` 已生成 enUS/zhCN 语言包；`HOA_UI_*` 覆盖 HoA 的 Options、GameMenu、ScriptLog、Realmlist、KeyBindings 和 GlueXML，`GetLocale` 已跟账号语言。原生 GlobalStrings、DBC 名称、zhTW 和 shaper locale 仍待后续。
+**进度（2026-11-06）**：`shared/i18n/ui` + `tools/i18n/gen_client_pack.py` 已生成 enUS/zhCN/zhTW 语言包；`HOA_UI_*` 覆盖 HoA 的 Options、GameMenu、ScriptLog、Realmlist、KeyBindings 和 GlueXML，`GetLocale` 已跟账号语言。zhTW 已有自己的字体和 shaping locale。原生 GlobalStrings、DBC 名称仍待后续。
 
 - **缓存**：WDB/模板缓存文件名或头部加入 `(locale, contentVersion)`；语言或内容变化时旧缓存自动失效。第一块已落在 `client/crates/benilla-app/src/wdb.rs`：WDB 头部（格式 2）把 HOA 账号语言折进 locale tag，另一种语言写的缓存会被丢弃。
 - **自定义法术**：客户端没有 spell 查询通道（`benilla-app/src/net.rs:1034-1058`），`Spell.dbc` 里没有的 ID 会显示空白（`ui_spellbook.rs:351-355`、`ui_aura.rs:256-260`）。自定义光环行由服务端在 addon ready 和切语言时下发（`aura_catalog_entry`/`aura_catalog_end`）；Rust 侧只保存已本地化的名称/图标/描述，不再自行选择语言。
@@ -114,8 +114,8 @@ shared/i18n/
 
 ## 8. 插件
 
-- 删除 `VanillaBonkLocale*.lua` 中按英文句子索引的表，改为生成的 `locale_<locale>.lua` + 消息 ID。
-- 生成的 `zhCN` 表现在按稳定消息 ID 索引；`L()` 调用点仍传英文查找文本，生成器额外输出英文→ID 映射，迁移期间保持兼容。
+- 所有语言都放在一个生成的 `VanillaBonkLocaleData.lua` 中，按稳定消息 ID 索引；不再按语言拆 Lua 文件。
+- 插件通过 `VanillaBonkLocale.RegisterLanguages` 注册数据。`L()` 调用点仍传英文查找文本，生成器额外输出英文→ID 映射，迁移期间保持兼容。
 - 删除 `VanillaBonkLocale.English` 反向查找（它现在用于跨语言匹配 NPC 名字）；NPC 窗口改为按 NPC entry/ID 匹配，不按名字。
 - 选项文本（`VanillaBonkOptionsText.lua`）改为语言包驱动，不再在 Lua 里维护英文→中文映射。
 - 文本参数统一用 `L(id, args)`；禁止在 Lua 里拼接可变语序的句子。
@@ -134,7 +134,7 @@ shared/i18n/
 | --- | --- |
 | 服务端 `BonkLocale`：英文句子 + `source_hash` | 抽出 900+ 条消息，分配稳定 ID，生成枚举；旧翻译按英文匹配导入 |
 | `bonk_*_locale` 表 | 行键改为内容 ID；生成器维护 |
-| 插件 `VanillaBonkLocaleZhCN.lua`（约 1000+ 条） | 按英文匹配导入新目录，生成 Lua 表 |
+| 插件 `VanillaBonkLocaleData.lua`（约 1000+ 条） | 由目录生成；一个数据文件承载所有语言 |
 | `VanillaBonkOptionsText.lua` 的客户端选项补丁 | 改为客户端语言包原生支持；过渡期保留补丁 |
 | GlueXML `BonkGlueLocaleZhCN.lua` | 并入 `shared/i18n/ui` 的 Glue 部分 |
 | 客户端 `OptionsFrame.xml` 等硬编码英文 | 改为语言包键；随客户端 PR 落地 |
