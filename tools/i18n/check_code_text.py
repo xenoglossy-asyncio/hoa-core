@@ -30,7 +30,7 @@ def unescape(value: str) -> str:
 
 def scan(root: Path, skip: set[str]) -> list[str]:
     errors = []
-    for path in sorted(root.glob("*.lua")):
+    for path in sorted(root.rglob("*.lua")):
         if path.name in skip:
             continue
         text = path.read_text(encoding="utf-8")

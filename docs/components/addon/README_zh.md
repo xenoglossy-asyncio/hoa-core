@@ -39,9 +39,12 @@
 ```
 addon/
   HordesOfAzeroth/
-    *.lua            界面与交互
-    generated/       由 shared/i18n 和 shared/content 生成（不手改）
+    core/            核心状态、UI 工具箱、语言、选项文本、聊天过滤
+    run/             跑团机制及其面板（报价、商店、装备、HeroBar 等）
+    panels/          菜单、图鉴、地图、任务、设置、手柄、联机等
     Fonts/           语言字体回退（Noto Sans SC / Noto Sans TC）
+    VanillaBonkAuraIds.lua       生成的内容 ID（根目录）
+    VanillaBonkLocaleData.lua    生成的语言数据（根目录）
     HordesOfAzeroth.toc
 ```
 
