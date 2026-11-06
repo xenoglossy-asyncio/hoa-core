@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 local BAG_OFFSET_Y = 88
 local MICRO_STEP = 26
 
@@ -118,13 +119,13 @@ if TargetofTargetManaBar and TargetofTarget_Update then
     end
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:SetScript("OnEvent", function()
-    RaiseBags()
-    UpdateTalentButton()
-    HidePlayerPower()
-end)
+UI.Module("bars"):Listen({
+    PLAYER_ENTERING_WORLD = function()
+        RaiseBags()
+        UpdateTalentButton()
+        HidePlayerPower()
+    end,
+})
 
 VanillaBonkUI.ListenHoa({
     HOA_RUN_START = function() corner:Hide() end,

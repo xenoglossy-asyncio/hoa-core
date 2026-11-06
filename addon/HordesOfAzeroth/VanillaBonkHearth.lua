@@ -164,8 +164,8 @@ end
 
 UI.RefreshHearthKey = Refresh
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("BAG_UPDATE")
-events:RegisterEvent("UPDATE_BINDINGS")
-events:SetScript("OnEvent", Refresh)
+UI.Module("hearth"):Listen({
+    PLAYER_ENTERING_WORLD = Refresh,
+    BAG_UPDATE = Refresh,
+    UPDATE_BINDINGS = Refresh,
+})

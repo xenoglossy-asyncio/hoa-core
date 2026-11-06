@@ -175,20 +175,25 @@ driver:SetScript("OnUpdate", function()
     Refresh(bar)
     bar:Show()
 end)
-driver:RegisterEvent("PLAYER_ENTERING_WORLD")
-driver:RegisterEvent("UNIT_HEALTH")
-driver:RegisterEvent("UNIT_MAXHEALTH")
-driver:SetScript("OnEvent", function()
-    if event == "PLAYER_ENTERING_WORLD" then
+UI.Module("selfBar"):Listen({
+    PLAYER_ENTERING_WORLD = function()
         if GetCVar("statusBarText") == "1" then
             SetCVar("statusBarText", "0")
         end
         UI.ApplyHealthBarMode()
         UI.ApplyHealthNumbers()
-    elseif arg1 == "player" then
-        RefreshFrameNumbers()
-    end
-end)
+    end,
+    UNIT_HEALTH = function(unit)
+        if unit == "player" then
+            RefreshFrameNumbers()
+        end
+    end,
+    UNIT_MAXHEALTH = function(unit)
+        if unit == "player" then
+            RefreshFrameNumbers()
+        end
+    end,
+}, driver)
 
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)

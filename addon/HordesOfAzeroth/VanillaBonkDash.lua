@@ -294,18 +294,17 @@ if IsAddOnLoaded("Blizzard_BindingUI") then
     HookBindingWindow()
 end
 
-owner:RegisterEvent("ADDON_LOADED")
-owner:RegisterEvent("UPDATE_BINDINGS")
-owner:SetScript("OnEvent", function()
-    if event == "UPDATE_BINDINGS" then
-        SyncKeys()
-    elseif arg1 == "HordesOfAzeroth" then
-        onShift = SavedOnShift()
-        SyncKeys()
-    elseif arg1 == "Blizzard_BindingUI" then
-        HookBindingWindow()
-    end
-end)
+UI.Module("dash"):Listen({
+    UPDATE_BINDINGS = SyncKeys,
+    ADDON_LOADED = function(name)
+        if name == "HordesOfAzeroth" then
+            onShift = SavedOnShift()
+            SyncKeys()
+        elseif name == "Blizzard_BindingUI" then
+            HookBindingWindow()
+        end
+    end,
+}, owner)
 
 UI.ListenHoa({
     HOA_DASH = function(_, _, _, _, available)

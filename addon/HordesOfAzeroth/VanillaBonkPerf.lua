@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 local SAMPLE_SECONDS = 1
 local MINUTE_SECONDS = 60
 local SLOW_FPS = 30
@@ -104,21 +105,18 @@ probe:SetScript("OnUpdate", function()
     end
 end)
 
-probe:RegisterEvent("ADDON_LOADED")
-probe:RegisterEvent("PLAYER_LOGOUT")
-probe:SetScript("OnEvent", function()
-    if event == "ADDON_LOADED" then
-        if arg1 == "HordesOfAzeroth" then
+UI.Module("perf"):Listen({
+    ADDON_LOADED = function(name)
+        if name == "HordesOfAzeroth" then
             if type(VanillaBonkPerfLog) ~= "table" then
                 VanillaBonkPerfLog = {}
             end
             VanillaBonkPerfLog.slow = VanillaBonkPerfLog.slow or {}
             VanillaBonkPerfLog.minutes = VanillaBonkPerfLog.minutes or {}
         end
-    elseif event == "PLAYER_LOGOUT" then
-        CloseMinute()
-    end
-end)
+    end,
+    PLAYER_LOGOUT = CloseMinute,
+}, probe)
 
 SLASH_VANILLABONKPERF1 = "/bonkperf"
 SlashCmdList["VANILLABONKPERF"] = function(text)

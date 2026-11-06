@@ -668,7 +668,6 @@ scanner:SetScript("OnUpdate", function()
     end
 end)
 
-scanner:RegisterEvent("PLAYER_ENTERING_WORLD")
 function VanillaBonkUI.ApplyEnemyPlates()
     if VanillaBonkUI.Option("enemyPlates", true) then
         ShowNameplates()
@@ -679,10 +678,12 @@ function VanillaBonkUI.ApplyEnemyPlates()
     end
 end
 
-scanner:SetScript("OnEvent", function()
-    VanillaBonkUI.ApplyEnemyPlates()
-    this:UnregisterEvent("PLAYER_ENTERING_WORLD")
-end)
+UI.Listen({
+    PLAYER_ENTERING_WORLD = function()
+        VanillaBonkUI.ApplyEnemyPlates()
+        scanner:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    end,
+}, scanner)
 
 local function Split(text, separator)
     local fields = {}
@@ -719,18 +720,18 @@ end
 
 if C_NamePlate and C_NamePlate.GetNamePlateForUnit and UnitGUID then
     local units = CreateFrame("Frame")
-    units:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-    units:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-    units:SetScript("OnEvent", function()
-        if not arg1 then
-            return
-        end
-        if event == "NAME_PLATE_UNIT_ADDED" then
-            OnPlateUnit(arg1, UnitGUID(arg1))
-        else
-            OnPlateUnit(arg1, nil)
-        end
-    end)
+    UI.Listen({
+        NAME_PLATE_UNIT_ADDED = function(unit)
+            if unit then
+                OnPlateUnit(unit, UnitGUID(unit))
+            end
+        end,
+        NAME_PLATE_UNIT_REMOVED = function(unit)
+            if unit then
+                OnPlateUnit(unit, nil)
+            end
+        end,
+    }, units)
 end
 
 local handlers = {}

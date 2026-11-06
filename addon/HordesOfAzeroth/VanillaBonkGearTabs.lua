@@ -1,3 +1,4 @@
+local UI = VanillaBonkUI
 local MERCHANT_SLOTS = 10
 local SLOT_SIZE = 37
 
@@ -61,14 +62,16 @@ function MerchantFrame_Update()
     RefreshQualities()
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("MERCHANT_SHOW")
-events:RegisterEvent("PLAYER_MONEY")
 local lastMoney = GetMoney()
-events:SetScript("OnEvent", function()
-    local money = GetMoney()
-    if event == "PLAYER_MONEY" and money > lastMoney and (MerchantFrame:IsShown() or (VanillaBonkQuartermasterFrame and VanillaBonkQuartermasterFrame:IsShown())) then
-        PlaySound("LOOTWINDOWCOINSOUND")
-    end
-    lastMoney = money
-end)
+UI.Module("gearTabs"):Listen({
+    MERCHANT_SHOW = function()
+        lastMoney = GetMoney()
+    end,
+    PLAYER_MONEY = function()
+        local money = GetMoney()
+        if money > lastMoney and (MerchantFrame:IsShown() or (VanillaBonkQuartermasterFrame and VanillaBonkQuartermasterFrame:IsShown())) then
+            PlaySound("LOOTWINDOWCOINSOUND")
+        end
+        lastMoney = money
+    end,
+})

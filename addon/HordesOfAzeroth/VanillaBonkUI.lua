@@ -302,9 +302,10 @@ function UI.Text(parent, size, font, flags, layer)
 end
 
 -- One event frame for a table of handlers: handlers[event](arg1..arg8). Client events and the
--- Rust client's typed HoA messages dispatch the same way.
-function UI.Listen(handlers)
-    local frame = CreateFrame("Frame")
+-- Rust client's typed HoA messages dispatch the same way. `frame` reuses a frame that already
+-- carries other scripts (OnUpdate, OnShow).
+function UI.Listen(handlers, frame)
+    frame = frame or CreateFrame("Frame")
     for name in pairs(handlers) do
         frame:RegisterEvent(name)
     end
@@ -320,6 +321,23 @@ end
 -- Typed HoA messages the Rust client decoded; the handler gets the fields as event arguments.
 function UI.ListenHoa(handlers)
     return UI.Listen(handlers)
+end
+
+-- Named modules: each owns one event frame and shows up in UI.modules for diagnostics.
+-- Registration order is file load order; nothing in the addon depends on it.
+UI.modules = {}
+local Module = {}
+Module.__index = Module
+
+function Module:Listen(handlers, frame)
+    self.frame = UI.Listen(handlers, frame)
+    return self.frame
+end
+
+function UI.Module(name)
+    local module = setmetatable({ name = name }, Module)
+    UI.modules[name] = module
+    return module
 end
 
 -- Show a tooltip while the pointer is over `frames` (one frame or a list). `show` runs with

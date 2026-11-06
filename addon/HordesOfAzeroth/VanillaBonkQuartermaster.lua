@@ -1076,31 +1076,39 @@ frame:SetScript("OnHide", function()
     end
 end)
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("MERCHANT_SHOW")
-events:RegisterEvent("MERCHANT_UPDATE")
-events:RegisterEvent("MERCHANT_CLOSED")
-events:RegisterEvent("PLAYER_MONEY")
-events:RegisterEvent("UNIT_INVENTORY_CHANGED")
-events:SetScript("OnEvent", function()
-    if event == "MERCHANT_SHOW" then
+UI.Module("quartermaster"):Listen({
+    MERCHANT_SHOW = function()
         if qm.pending then
             OpenWindow()
         elseif qm.open then
             HideMerchantFrame()
             Refresh()
         end
-    elseif event == "MERCHANT_CLOSED" then
+    end,
+    MERCHANT_CLOSED = function()
         qm.pending = nil
         if qm.open then
             qm.open = nil
             RestoreMerchantFrame()
             frame:Hide()
         end
-    elseif frame:IsShown() then
-        Refresh()
-    end
-end)
+    end,
+    MERCHANT_UPDATE = function()
+        if frame:IsShown() then
+            Refresh()
+        end
+    end,
+    PLAYER_MONEY = function()
+        if frame:IsShown() then
+            Refresh()
+        end
+    end,
+    UNIT_INVENTORY_CHANGED = function()
+        if frame:IsShown() then
+            Refresh()
+        end
+    end,
+})
 
 local function Receive(pending)
     qm.pending = pending

@@ -776,30 +776,31 @@ local function TalkingToUpgradeVendor()
     return false
 end
 
-tutorial:RegisterEvent("PLAYER_ENTERING_WORLD")
-tutorial:RegisterEvent("PLAYER_LEAVING_WORLD")
-tutorial:RegisterEvent("GOSSIP_SHOW")
-tutorial:SetScript("OnEvent", function()
-    if event == "PLAYER_ENTERING_WORLD" then
+UI.Module("tutorial"):Listen({
+    PLAYER_ENTERING_WORLD = function()
         inWorld = true
-    elseif event == "PLAYER_LEAVING_WORLD" then
+    end,
+    PLAYER_LEAVING_WORLD = function()
         inWorld = false
-    elseif event == "GOSSIP_SHOW" and UI.TalkingTo(UI.INNKEEPER_NAME) then
-        if step == "innkeeper" then
-            step = "innkeeperopen"
-            HideCallouts()
-        else
-            VanillaBonkInnkeeperTip = true
+    end,
+    GOSSIP_SHOW = function()
+        if UI.TalkingTo(UI.INNKEEPER_NAME) then
+            if step == "innkeeper" then
+                step = "innkeeperopen"
+                HideCallouts()
+            else
+                VanillaBonkInnkeeperTip = true
+            end
+        elseif TalkingToUpgradeVendor() then
+            if VanillaBonkVendorTip == "waiting" or VanillaBonkVendorTip == "ready" then
+                VanillaBonkVendorTip = true
+            end
+            if step == "vendors" then
+                EndLesson()
+            end
         end
-    elseif event == "GOSSIP_SHOW" and TalkingToUpgradeVendor() then
-        if VanillaBonkVendorTip == "waiting" or VanillaBonkVendorTip == "ready" then
-            VanillaBonkVendorTip = true
-        end
-        if step == "vendors" then
-            EndLesson()
-        end
-    end
-end)
+    end,
+}, tutorial)
 
 local plateGuide
 

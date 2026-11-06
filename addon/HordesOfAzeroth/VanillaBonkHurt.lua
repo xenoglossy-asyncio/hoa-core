@@ -94,28 +94,27 @@ end
 
 MuteStockDamageText()
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("UNIT_COMBAT")
-events:RegisterEvent("ADDON_LOADED")
-events:SetScript("OnEvent", function()
-    if event == "ADDON_LOADED" then
-        if arg1 == "Blizzard_CombatText" then
+UI.Module("hurt"):Listen({
+    ADDON_LOADED = function(name)
+        if name == "Blizzard_CombatText" then
             MuteStockDamageText()
         end
-        return
-    end
-    if arg1 ~= "player" then
-        return
-    end
-    local action, flags, amount, school = arg2, arg3, tonumber(arg4) or 0, tonumber(arg5) or PHYSICAL_SCHOOL
-    if action == "WOUND" then
-        if amount > 0 then
-            local big = flags == "CRITICAL" or flags == "CRUSHING"
-            Show("-" .. amount, school == PHYSICAL_SCHOOL and RED or SPELL_PINK, big and CRIT_SIZE or SIZE)
-        elseif WORDS[flags] then
-            Show(WORDS[flags], GREY, WORD_SIZE)
+    end,
+    UNIT_COMBAT = function(unit, action, flags, amount, school)
+        if unit ~= "player" then
+            return
         end
-    elseif WORDS[action] then
-        Show(WORDS[action], GREY, WORD_SIZE)
-    end
-end)
+        amount = tonumber(amount) or 0
+        school = tonumber(school) or PHYSICAL_SCHOOL
+        if action == "WOUND" then
+            if amount > 0 then
+                local big = flags == "CRITICAL" or flags == "CRUSHING"
+                Show("-" .. amount, school == PHYSICAL_SCHOOL and RED or SPELL_PINK, big and CRIT_SIZE or SIZE)
+            elseif WORDS[flags] then
+                Show(WORDS[flags], GREY, WORD_SIZE)
+            end
+        elseif WORDS[action] then
+            Show(WORDS[action], GREY, WORD_SIZE)
+        end
+    end,
+})

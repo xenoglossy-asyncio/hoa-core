@@ -43,13 +43,13 @@ local function Refresh()
     end
 end
 
-local aura = CreateFrame("Frame")
-aura:RegisterEvent("UNIT_AURA")
-aura:SetScript("OnEvent", function()
-    if arg1 == "player" then
-        Refresh()
-    end
-end)
+UI.Module("determination"):Listen({
+    UNIT_AURA = function(unit)
+        if unit == "player" then
+            Refresh()
+        end
+    end,
+})
 
 UI.ListenHoa({
     HOA_AURA_PERCENT = function(spellId, percent)

@@ -1,3 +1,4 @@
+local UI = VanillaBonkUI
 local MAX_CAPTURE_BARS = 5
 
 local function HideWorldStateUI()
@@ -21,8 +22,9 @@ end
 WorldStateAlwaysUpFrame_Update = HideWorldStateUI
 
 local watcher = CreateFrame("Frame")
-watcher:RegisterEvent("PLAYER_ENTERING_WORLD")
-watcher:RegisterEvent("UPDATE_WORLD_STATES")
-watcher:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-watcher:SetScript("OnEvent", HideWorldStateUI)
+UI.Module("worldState"):Listen({
+    PLAYER_ENTERING_WORLD = HideWorldStateUI,
+    UPDATE_WORLD_STATES = HideWorldStateUI,
+    ZONE_CHANGED_NEW_AREA = HideWorldStateUI,
+})
 HideWorldStateUI()
