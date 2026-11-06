@@ -1,17 +1,17 @@
 # TODO
 
-## Addon object refactor (phase D)
+## Addon object refactor (phase D) — complete
 
-Controllers now exist for the shop, offer/results, gear, starters, the hero bar, the scoreboard
-and the codex; the tracker is the panel/list/row pilot. Remaining work:
+Run and panel state now lives on `UI.Module` controllers; the remaining local helpers are stateless
+layout/text utilities or the public `VanillaBonkRun` API. The tracker remains the panel/list/row pilot.
 
 - [x] Convert `run/VanillaBonkHeroBar.lua` to a `UI.Module("heroBar")` controller with explicit state.
 - [x] Convert `run/VanillaBonkResults.lua` and `panels/VanillaBonkCodex.lua` to controllers.
-- [ ] Convert `run/VanillaBonkMeter.lua`, `run/VanillaBonkQuartermaster.lua`, `run/VanillaBonkVault.lua`
+- [x] Convert `run/VanillaBonkMeter.lua`, `run/VanillaBonkQuartermaster.lua`, `run/VanillaBonkVault.lua`
       and `run/VanillaBonkTransmog.lua` to controllers.
-- [ ] Convert the controller panels (`panels/VanillaBonkController*.lua`) to one controller object.
-- [ ] Introduce an `OfferCard` class so offer cards own their frame, option and layout methods.
-- [ ] Reduce the remaining free functions in `core/VanillaBonk.lua` to a thin protocol/state bridge.
+- [x] Convert the controller panels (`panels/VanillaBonkController*.lua`) to one controller object.
+- [x] Introduce an `OfferCard` class so offer cards own their frame, option and layout methods.
+- [x] Reduce the remaining free functions in `core/VanillaBonk.lua` to a thin protocol/state bridge.
 
 ## Licensing and repository structure
 
