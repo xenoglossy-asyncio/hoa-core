@@ -971,12 +971,10 @@ handlers["vaultclose"] = function()
     frame:Hide()
 end
 
-UI.ListenHoa({
-    HOA_RUN_END = function()
-        frame:Hide()
-        vault.finds, vault.chosen, vault.order = {}, {}, {}
-    end,
-})
+UI.Module("vault"):OnRunEnd(function()
+    frame:Hide()
+    vault.finds, vault.chosen, vault.order = {}, {}, {}
+end)
 
 UI.ListenHoa({
     HOA_VAULT_CLEAR = function()

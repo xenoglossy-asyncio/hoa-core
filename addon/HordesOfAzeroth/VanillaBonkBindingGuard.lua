@@ -118,12 +118,12 @@ local function Check()
 end
 
 local events = CreateFrame("Frame")
+UI.Module("bindingGuard"):OnEnterWorld(function()
+    if not checked then
+        checkAt = GetTime() + CHECK_DELAY
+    end
+end)
 UI.Module("bindingGuard"):Listen({
-    PLAYER_ENTERING_WORLD = function()
-        if not checked then
-            checkAt = GetTime() + CHECK_DELAY
-        end
-    end,
     UPDATE_BINDINGS = function()
         captureAt = GetTime() + CAPTURE_DELAY
     end,

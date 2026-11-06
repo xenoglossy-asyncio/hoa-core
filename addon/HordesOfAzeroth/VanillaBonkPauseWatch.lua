@@ -44,14 +44,13 @@ UI.ListenHoa({
         paused = state.paused and true or false
         stuckFor = 0
     end,
-    HOA_RUN_START = function()
-        inRun = true
-    end,
     HOA_RUN_STATE = function()
         inRun = true
     end,
-    HOA_RUN_END = function()
-        inRun = false
-        paused = false
-    end,
 })
+UI.Module("pauseWatch"):OnRunStart(function()
+    inRun = true
+end):OnRunEnd(function()
+    inRun = false
+    paused = false
+end)

@@ -776,13 +776,13 @@ local function TalkingToUpgradeVendor()
     return false
 end
 
+UI.Module("tutorial"):OnEnterWorld(function()
+    inWorld = true
+end)
+UI.Module("tutorial"):OnLeaveWorld(function()
+    inWorld = false
+end)
 UI.Module("tutorial"):Listen({
-    PLAYER_ENTERING_WORLD = function()
-        inWorld = true
-    end,
-    PLAYER_LEAVING_WORLD = function()
-        inWorld = false
-    end,
     GOSSIP_SHOW = function()
         if UI.TalkingTo(UI.INNKEEPER_NAME) then
             if step == "innkeeper" then
@@ -960,20 +960,7 @@ UI.ListenHoa({
             EndLesson()
         end
     end,
-    HOA_RUN_START = EnterRun,
     HOA_RUN_STATE = EnterRun,
-    HOA_RUN_END = function()
-        if inRun and VanillaBonkVendorTip == "waiting" then
-            VanillaBonkVendorTip = "ready"
-        end
-        if inRun and VanillaBonkDeckTip == "waiting" then
-            VanillaBonkDeckTip = "ready"
-        end
-        inRun = false
-        if not AllDone() then
-            tutorial:Show()
-        end
-    end,
     HOA_DASH = function(_, _, _, _, available)
         local charges = tonumber(available) or 0
         if step == "dash" and lastCharges and charges < lastCharges and not dashedAt then
@@ -982,3 +969,15 @@ UI.ListenHoa({
         lastCharges = charges
     end,
 })
+UI.Module("tutorial"):OnRunStart(EnterRun):OnRunEnd(function()
+    if inRun and VanillaBonkVendorTip == "waiting" then
+        VanillaBonkVendorTip = "ready"
+    end
+    if inRun and VanillaBonkDeckTip == "waiting" then
+        VanillaBonkDeckTip = "ready"
+    end
+    inRun = false
+    if not AllDone() then
+        tutorial:Show()
+    end
+end)

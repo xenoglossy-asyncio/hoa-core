@@ -528,6 +528,5 @@ UI.ListenHoa({
             HandleKeyword(f)
         end
     end,
-    HOA_RUN_START = ClearTimers,
-    HOA_RUN_END = ClearTimers,
 })
+UI.Module("debuffs"):OnRunStart(ClearTimers):OnRunEnd(ClearTimers)

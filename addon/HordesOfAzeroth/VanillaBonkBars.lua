@@ -119,15 +119,10 @@ if TargetofTargetManaBar and TargetofTarget_Update then
     end
 end
 
-UI.Module("bars"):Listen({
-    PLAYER_ENTERING_WORLD = function()
-        RaiseBags()
-        UpdateTalentButton()
-        HidePlayerPower()
-    end,
-})
+UI.Module("bars"):OnEnterWorld(function()
+    RaiseBags()
+    UpdateTalentButton()
+    HidePlayerPower()
+end)
 
-VanillaBonkUI.ListenHoa({
-    HOA_RUN_START = function() corner:Hide() end,
-    HOA_RUN_END = function() corner:Show() end,
-})
+UI.Module("bars"):OnRunStart(function() corner:Hide() end):OnRunEnd(function() corner:Show() end)

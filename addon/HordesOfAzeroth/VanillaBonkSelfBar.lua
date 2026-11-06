@@ -175,14 +175,14 @@ driver:SetScript("OnUpdate", function()
     Refresh(bar)
     bar:Show()
 end)
+UI.Module("selfBar"):OnEnterWorld(function()
+    if GetCVar("statusBarText") == "1" then
+        SetCVar("statusBarText", "0")
+    end
+    UI.ApplyHealthBarMode()
+    UI.ApplyHealthNumbers()
+end)
 UI.Module("selfBar"):Listen({
-    PLAYER_ENTERING_WORLD = function()
-        if GetCVar("statusBarText") == "1" then
-            SetCVar("statusBarText", "0")
-        end
-        UI.ApplyHealthBarMode()
-        UI.ApplyHealthNumbers()
-    end,
     UNIT_HEALTH = function(unit)
         if unit == "player" then
             RefreshFrameNumbers()

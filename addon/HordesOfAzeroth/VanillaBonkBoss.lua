@@ -284,6 +284,5 @@ UI.ListenHoa({
             HideBosses()
         end
     end,
-    HOA_RUN_START = HideBosses,
-    HOA_RUN_END = HideBosses,
 })
+UI.Module("boss"):OnRunStart(HideBosses):OnRunEnd(HideBosses)

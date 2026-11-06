@@ -541,16 +541,6 @@ UI.ListenHoa({
     HOA_LOADOUT = function(loadout)
         handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
     end,
-    HOA_RUN_START = function(start)
-        run.inRun = true
-        run.difficulty = start.difficulty or ""
-        run.levelName = (start.level_name and start.level_name ~= "") and start.level_name or run.difficulty
-        run.stage = tonumber(start.stage) or 1
-        run.stages = tonumber(start.stages) or 3
-        run.finale = start.finale and true or false
-        run.elapsed = 0
-        run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
-    end,
     HOA_RUN_STATE = function(state)
         run.inRun = true
         run.elapsed = tonumber(state.elapsed_s) or run.elapsed
@@ -564,14 +554,23 @@ UI.ListenHoa({
             Refresh()
         end
     end,
-    HOA_RUN_END = function()
-        run.inRun = false
-        run.spells, run.passives = {}, {}
-        if menu:IsShown() then
-            Refresh()
-        end
-    end,
 })
+UI.Module("menu"):OnRunStart(function(start)
+    run.inRun = true
+    run.difficulty = start.difficulty or ""
+    run.levelName = (start.level_name and start.level_name ~= "") and start.level_name or run.difficulty
+    run.stage = tonumber(start.stage) or 1
+    run.stages = tonumber(start.stages) or 3
+    run.finale = start.finale and true or false
+    run.elapsed = 0
+    run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
+end):OnRunEnd(function()
+    run.inRun = false
+    run.spells, run.passives = {}, {}
+    if menu:IsShown() then
+        Refresh()
+    end
+end)
 
 handlers["loadout"] = function(f)
     run.spells, run.passives = {}, {}

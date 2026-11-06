@@ -614,10 +614,7 @@ handlers["vendorclose"] = function()
     shop.slots = {}
 end
 
-UI.ListenHoa({
-    HOA_RUN_START = HideNow,
-    HOA_RUN_END = HideNow,
-})
+UI.Module("vendor"):OnRunStart(HideNow):OnRunEnd(HideNow)
 
 UI.ListenHoa({
     HOA_VENDOR_OPEN = function(open)
