@@ -109,13 +109,18 @@ Gossip.frame = nil
 Gossip.pending = nil
 
 function Gossip.TakeOver(pending)
+    if not pending then
+        return
+    end
     if Gossip.frame and Gossip.frame ~= pending.frame then
         Gossip.frame.gossipClosed = true
         Gossip.frame:Hide()
     end
     Gossip.frame = pending.frame
     VB.gossipFrame = Gossip.frame
-    pending.refresh()
+    if pending.refresh then
+        pending.refresh()
+    end
     pending.frame:Show()
 end
 

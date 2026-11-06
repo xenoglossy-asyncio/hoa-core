@@ -669,7 +669,7 @@ end
 
 local function Fields(prefix, text)
     local fields = prefix
-    for field in string.gmatch(text, "([^~]*)~?") do
+    for field in string.gfind(text, "([^~]*)~?") do
         if field ~= "" or true then
             table.insert(fields, field)
         end
