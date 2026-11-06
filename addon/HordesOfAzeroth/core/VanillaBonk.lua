@@ -104,37 +104,44 @@ end
 
 UseAction = function() end
 
-function VB.TakeOverGossip(pending)
-    if VB.gossipFrame and VB.gossipFrame ~= pending.frame then
-        VB.gossipFrame.gossipClosed = true
-        VB.gossipFrame:Hide()
+local Gossip = UI.Module("gossip")
+Gossip.frame = nil
+Gossip.pending = nil
+
+function Gossip.TakeOver(pending)
+    if Gossip.frame and Gossip.frame ~= pending.frame then
+        Gossip.frame.gossipClosed = true
+        Gossip.frame:Hide()
     end
-    VB.gossipFrame = pending.frame
+    Gossip.frame = pending.frame
+    VB.gossipFrame = Gossip.frame
     pending.refresh()
     pending.frame:Show()
 end
 
-function VB.HideBlizzardGossipKeepingItOpen()
+function Gossip.HideBlizzardKeepingOpen()
     local onHide = GossipFrame:GetScript("OnHide")
     GossipFrame:SetScript("OnHide", nil)
     HideUIPanel(GossipFrame)
     GossipFrame:SetScript("OnHide", onHide)
 end
 
-local function ReplaceNextGossip(frame, npc, refresh)
+function Gossip.ReplaceNext(frame, npc, refresh)
     local pending = { frame = frame, npc = npc, refresh = refresh }
     if GossipFrame:IsShown() and VanillaBonkUI.TalkingTo(npc) then
+        Gossip.pending = nil
         VB.gossipPending = nil
-        VB.HideBlizzardGossipKeepingItOpen()
-        VB.TakeOverGossip(pending)
+        Gossip.HideBlizzardKeepingOpen()
+        Gossip.TakeOver(pending)
         return
     end
+    Gossip.pending = pending
     VB.gossipPending = pending
 end
-VB.ReplaceNextGossip = ReplaceNextGossip
 
-local function GossipWindowHidden(frame)
-    if VB.gossipFrame == frame then
+function Gossip.WindowHidden(frame)
+    if Gossip.frame == frame then
+        Gossip.frame = nil
         VB.gossipFrame = nil
         if not frame.gossipClosed then
             CloseGossip()
@@ -142,20 +149,33 @@ local function GossipWindowHidden(frame)
     end
     frame.gossipClosed = nil
 end
-VB.GossipWindowHidden = GossipWindowHidden
+
+VB.TakeOverGossip = function(pending)
+    Gossip.TakeOver(pending)
+end
+VB.HideBlizzardGossipKeepingItOpen = function()
+    Gossip.HideBlizzardKeepingOpen()
+end
+VB.ReplaceNextGossip = function(frame, npc, refresh)
+    Gossip.ReplaceNext(frame, npc, refresh)
+end
+VB.GossipWindowHidden = function(frame)
+    Gossip.WindowHidden(frame)
+end
 
 local BlizzardGossipOnEvent = GossipFrame_OnEvent
 function GossipFrame_OnEvent()
     if event == "GOSSIP_SHOW" then
-        local pending = VB.gossipPending
+        local pending = Gossip.pending
+        Gossip.pending = nil
         VB.gossipPending = nil
         if pending and VanillaBonkUI.TalkingTo(pending.npc) then
-            VB.TakeOverGossip(pending)
+            Gossip.TakeOver(pending)
             return
         end
-    elseif event == "GOSSIP_CLOSED" and VB.gossipFrame then
-        VB.gossipFrame.gossipClosed = true
-        VB.gossipFrame:Hide()
+    elseif event == "GOSSIP_CLOSED" and Gossip.frame then
+        Gossip.frame.gossipClosed = true
+        Gossip.frame:Hide()
     end
     BlizzardGossipOnEvent()
 end
@@ -248,7 +268,7 @@ handlers["tierend"] = function()
     VB.tiers = VB.pendingTiers
     VB.pendingTiers = {}
     if VB.arenaNpc then
-        ReplaceNextGossip(arena, VB.arenaNpc, RefreshArena)
+        Gossip.ReplaceNext(arena, VB.arenaNpc, RefreshArena)
         VB.arenaNpc = nil
     elseif arena:IsShown() then
         RefreshArena()
@@ -259,23 +279,24 @@ handlers["tierend"] = function()
     end
 end
 
-local combatLogQuiet = false
+local CombatLog = UI.Module("combatLog")
+CombatLog.quiet = false
 
-local function IsCombatLogGroup(group)
+function CombatLog:IsGroup(group)
     return strsub(group, 1, 7) == "COMBAT_" or strsub(group, 1, 6) == "SPELL_"
 end
 
-local function SetCombatLogQuiet(quiet)
-    if quiet == combatLogQuiet or not ChatTypeGroup then
+function CombatLog:SetQuiet(quiet)
+    if quiet == self.quiet or not ChatTypeGroup then
         return
     end
-    combatLogQuiet = quiet
+    self.quiet = quiet
     for index = 1, NUM_CHAT_WINDOWS do
         local chat = getglobal("ChatFrame" .. index)
         if chat then
             if quiet then
                 for group, chatEvents in pairs(ChatTypeGroup) do
-                    if IsCombatLogGroup(group) then
+                    if self:IsGroup(group) then
                         for _, chatEvent in ipairs(chatEvents) do
                             chat:UnregisterEvent(chatEvent)
                         end
@@ -283,7 +304,7 @@ local function SetCombatLogQuiet(quiet)
                 end
             elseif chat.messageTypeList then
                 for _, group in ipairs(chat.messageTypeList) do
-                    if IsCombatLogGroup(group) and ChatTypeGroup[group] then
+                    if self:IsGroup(group) and ChatTypeGroup[group] then
                         for _, chatEvent in ipairs(ChatTypeGroup[group]) do
                             chat:RegisterEvent(chatEvent)
                         end
@@ -297,7 +318,7 @@ end
 UI.ListenHoa({
     HOA_RUN_START = function(start)
         VB.inRun = true
-        SetCombatLogQuiet(true)
+        CombatLog:SetQuiet(true)
         VB.duration = tonumber(start.duration_s) or 0
         VB.results:Hide()
         arena:Hide()
@@ -307,7 +328,7 @@ UI.ListenHoa({
     end,
     HOA_RUN_STATE = function()
         VB.inRun = true
-        SetCombatLogQuiet(true)
+        CombatLog:SetQuiet(true)
     end,
 })
 
@@ -464,7 +485,7 @@ UI.ListenHoa({
         if VanillaBonkUI.InspectShown() and VB.shopFrame then
             VB.shopFrame:Hide()
         end
-        SetCombatLogQuiet(false)
+        CombatLog:SetQuiet(false)
         VB.offer = {}
         VB.offerFrame:Hide()
         if ending.victory then
@@ -502,28 +523,35 @@ handlers["valor"] = function()
     PlaySound("LOOTWINDOWCOINSOUND")
 end
 
-local shieldBar = CreateFrame("StatusBar", "VanillaBonkShieldBar", PlayerFrame)
-shieldBar:SetAllPoints(PlayerFrameHealthBar)
-shieldBar:SetFrameLevel(PlayerFrameHealthBar:GetFrameLevel() + 1)
-VanillaBonkUI.DressShield(shieldBar)
-shieldBar:Hide()
+local Shield = UI.Module("shield")
+Shield.value = 0
+Shield.bar = CreateFrame("StatusBar", "VanillaBonkShieldBar", PlayerFrame)
+Shield.bar:SetAllPoints(PlayerFrameHealthBar)
+Shield.bar:SetFrameLevel(PlayerFrameHealthBar:GetFrameLevel() + 1)
+VanillaBonkUI.DressShield(Shield.bar)
+Shield.bar:Hide()
 VB.shield = 0
 
-local function RefreshShield()
+function Shield:Refresh()
     local maxHealth = UnitHealthMax("player")
-    if VB.shield <= 0 or not maxHealth or maxHealth <= 0 then
-        shieldBar:Hide()
+    if self.value <= 0 or not maxHealth or maxHealth <= 0 then
+        self.bar:Hide()
         return
     end
-    shieldBar:SetValue(min(1, VB.shield / maxHealth))
-    shieldBar:Show()
+    self.bar:SetValue(min(1, self.value / maxHealth))
+    self.bar:Show()
+end
+
+function Shield:Set(value)
+    self.value = value
+    VB.shield = value
+    self:Refresh()
 end
 
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
         if tonumber(spellId) == HOA_AURA_IDS.shield then
-            VB.shield = tonumber(value) or 0
-            RefreshShield()
+            Shield:Set(tonumber(value) or 0)
         end
     end,
 })
@@ -531,7 +559,7 @@ UI.ListenHoa({
 UI.Module("shieldEvents"):Listen({
     UNIT_MAXHEALTH = function(unit)
         if unit == "player" then
-            RefreshShield()
+            Shield:Refresh()
         end
     end,
 })
