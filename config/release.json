@@ -84,6 +84,7 @@
         { "from": "release/build/linux/server/bin/realmd", "to": "server/run/realmd" },
         { "from": "release/build/linux/server/bin/libmariadb.so.3", "to": "server/run/libmariadb.so.3" },
         { "from": "release/build/linux/server/bin/libcrypto.so.3", "to": "server/run/libcrypto.so.3" },
+        { "from": "release/build/linux/server/bin/libssl.so.3", "to": "server/run/libssl.so.3" },
         { "from": "release/build/linux/server/etc/mangosd.conf.dist", "to": "server/run/mangosd.conf.dist" },
         { "from": "release/build/linux/server/etc/realmd.conf.dist", "to": "server/run/realmd.conf.dist" },
         { "from": "LICENSE", "to": "server/run/LICENSE" },
