@@ -3,6 +3,7 @@ local UI = VanillaBonkUI
 local VB = VanillaBonkRun
 local handlers = VB.handlers
 local Split = VB.Split
+local Gear = UI.Module("gear")
 
 local STATS = {
     [0]  = { name = L["hoa.addon.power"], pct = true, text = L["hoa.addon.increases_all_damage_you_and_your_minions_deal_by_s"] },
@@ -78,14 +79,14 @@ local function Percent(value)
     return format("%g", value) .. "%"
 end
 
-local function FormatStat(id, value)
+function Gear:FormatStat(id, value)
     if STATS[id] and STATS[id].pct then
         return Percent(value)
     end
     return format("%g", value)
 end
 
-local function ParseStats(text)
+function Gear:ParseStats(text)
     local stats = {}
     for _, pair in ipairs(Split(text or "", ",")) do
         local colon = strfind(pair, ":", 1, true)
@@ -99,7 +100,7 @@ local function ParseStats(text)
     return stats
 end
 
-local function ItemIdFromLink(link)
+function Gear:ItemIdFromLink(link)
     if not link then
         return nil
     end
@@ -107,10 +108,10 @@ local function ItemIdFromLink(link)
     return tonumber(id)
 end
 
-local function GearTotals()
+function Gear:GearTotals()
     local totals = {}
     for slot = 1, EQUIPPED_SLOTS do
-        local id = ItemIdFromLink(GetInventoryItemLink("player", slot))
+        local id = Gear:ItemIdFromLink(GetInventoryItemLink("player", slot))
         local stat = id and VB.gear[id]
         if stat then
             for statId, value in pairs(stat.stats) do
@@ -151,7 +152,7 @@ function PRIMARY_STATS.AddLine(tooltip, statId, value, r, g, b)
         return
     end
     local sign = value > 0 and "+" or ""
-    tooltip:AddLine(sign .. FormatStat(statId, value) .. " " .. STATS[statId].name, r, g, b)
+    tooltip:AddLine(sign .. Gear:FormatStat(statId, value) .. " " .. STATS[statId].name, r, g, b)
 end
 
 function VanillaBonkUI.StatText(statId, value)
@@ -159,18 +160,18 @@ function VanillaBonkUI.StatText(statId, value)
     if not stat or not value then
         return ""
     end
-    return (value > 0 and "+" or "") .. FormatStat(statId, value) .. " " .. stat.name
+    return (value > 0 and "+" or "") .. Gear:FormatStat(statId, value) .. " " .. stat.name
 end
 
 function VanillaBonkUI.StatRangeText(statId, low, high)
     if not STATS[statId] or not low or not high then
         return ""
     end
-    return "(" .. FormatStat(statId, low) .. "-" .. FormatStat(statId, high) .. ")"
+    return "(" .. Gear:FormatStat(statId, low) .. "-" .. Gear:FormatStat(statId, high) .. ")"
 end
 
-local function AddGearLines(tooltip, link, found, enchantLine)
-    local id = ItemIdFromLink(link)
+function Gear:AddGearLines(tooltip, link, found, enchantLine)
+    local id = Gear:ItemIdFromLink(link)
     local stat = id and VB.gear[id]
     if not stat then
         return
@@ -221,14 +222,14 @@ end
 
 VanillaBonkUI.AddGearLines = AddGearLines
 
-local function HookTooltip(tooltip, method, linkOf)
+function Gear:HookTooltip(tooltip, method, linkOf)
     local original = tooltip and tooltip[method]
     if not original then
         return
     end
     tooltip[method] = function(self, a1, a2, a3)
         local r1, r2, r3 = original(self, a1, a2, a3)
-        AddGearLines(self, linkOf(a1, a2, a3))
+        Gear:AddGearLines(self, linkOf(a1, a2, a3))
         return r1, r2, r3
     end
 end
@@ -257,19 +258,19 @@ do
     MakeTooltipSolid(ItemRefTooltip)
 end
 
-HookTooltip(GameTooltip, "SetBagItem", function(bag, slot) return GetContainerItemLink(bag, slot), VanillaBonkUI.FoundAt(bag, slot) end)
-HookTooltip(GameTooltip, "SetInventoryItem", function(unit, slot)
+Gear:HookTooltip(GameTooltip, "SetBagItem", function(bag, slot) return GetContainerItemLink(bag, slot), VanillaBonkUI.FoundAt(bag, slot) end)
+Gear:HookTooltip(GameTooltip, "SetInventoryItem", function(unit, slot)
     if unit ~= "player" then
         return GetInventoryItemLink(unit, slot)
     end
     return GetInventoryItemLink(unit, slot), VanillaBonkUI.FoundAt("inv", slot), VanillaBonkUI.EnchantLine and VanillaBonkUI.EnchantLine(slot)
 end)
-HookTooltip(GameTooltip, "SetMerchantItem", function(index) return GetMerchantItemLink(index) end)
-HookTooltip(GameTooltip, "SetLootItem", function(slot) return GetLootSlotLink(slot) end)
-HookTooltip(GameTooltip, "SetHyperlink", function(link) return link, VanillaBonkUI.TakeHyperlinkFound() end)
-HookTooltip(ItemRefTooltip, "SetHyperlink", function(link) return link end)
+Gear:HookTooltip(GameTooltip, "SetMerchantItem", function(index) return GetMerchantItemLink(index) end)
+Gear:HookTooltip(GameTooltip, "SetLootItem", function(slot) return GetLootSlotLink(slot) end)
+Gear:HookTooltip(GameTooltip, "SetHyperlink", function(link) return link, VanillaBonkUI.TakeHyperlinkFound() end)
+Gear:HookTooltip(ItemRefTooltip, "SetHyperlink", function(link) return link end)
 
-local function GearLinkNamed(name)
+function Gear:GearLinkNamed(name)
     if not name then
         return nil
     end
@@ -280,11 +281,11 @@ local function GearLinkNamed(name)
     end
 end
 
-local function InboxItemLink(index)
-    return GearLinkNamed(GetInboxItem(index))
+function Gear:InboxItemLink(index)
+    return Gear:GearLinkNamed(GetInboxItem(index))
 end
 
-HookTooltip(GameTooltip, "SetInboxItem", InboxItemLink)
+Gear:HookTooltip(GameTooltip, "SetInboxItem", InboxItemLink)
 
 local SLOTS_BY_EQUIP_LOC = {
     INVTYPE_HEAD = { 1 }, INVTYPE_NECK = { 2 }, INVTYPE_SHOULDER = { 3 }, INVTYPE_BODY = { 4 },
@@ -296,7 +297,7 @@ local SLOTS_BY_EQUIP_LOC = {
     INVTYPE_THROWN = { 18 }, INVTYPE_RANGEDRIGHT = { 18 }, INVTYPE_RELIC = { 18 }, INVTYPE_TABARD = { 19 },
 }
 
-local function HideCompare()
+function Gear:HideCompare()
     for index = 1, 2 do
         local tooltip = getglobal("ShoppingTooltip" .. index)
         if tooltip then
@@ -305,8 +306,8 @@ local function HideCompare()
     end
 end
 
-local function EquippedSlotsFor(link)
-    local id = ItemIdFromLink(link)
+function Gear:EquippedSlotsFor(link)
+    local id = Gear:ItemIdFromLink(link)
     if not id then
         return nil
     end
@@ -314,19 +315,19 @@ local function EquippedSlotsFor(link)
     return equipLoc and SLOTS_BY_EQUIP_LOC[equipLoc]
 end
 
-local function CursorOnRightHalf()
+function Gear:CursorOnRightHalf()
     local x = GetCursorPosition()
     return x / UIParent:GetEffectiveScale() > GetScreenWidth() / 2
 end
 
-local function ShowCompare(link)
-    HideCompare()
-    local slots = EquippedSlotsFor(link)
+function Gear:ShowCompare(link)
+    Gear:HideCompare()
+    local slots = Gear:EquippedSlotsFor(link)
     if not slots or not ShoppingTooltip1 then
         return
     end
 
-    local onLeft = CursorOnRightHalf()
+    local onLeft = Gear:CursorOnRightHalf()
     local previous = GameTooltip
     local shown = 0
     for _, slot in ipairs(slots) do
@@ -347,31 +348,31 @@ local function ShowCompare(link)
     end
 end
 
-local function CompareOn(method, linkOf)
+function Gear:CompareOn(method, linkOf)
     local original = GameTooltip[method]
     if not original then
         return
     end
     GameTooltip[method] = function(self, a1, a2, a3)
         local r1, r2, r3 = original(self, a1, a2, a3)
-        ShowCompare(linkOf(a1, a2, a3))
+        Gear:ShowCompare(linkOf(a1, a2, a3))
         return r1, r2, r3
     end
 end
 
-CompareOn("SetBagItem", function(bag, slot) return GetContainerItemLink(bag, slot) end)
-CompareOn("SetLootItem", function(slot) return GetLootSlotLink(slot) end)
-CompareOn("SetMerchantItem", function(index) return GetMerchantItemLink(index) end)
-CompareOn("SetInboxItem", InboxItemLink)
+Gear:CompareOn("SetBagItem", function(bag, slot) return GetContainerItemLink(bag, slot) end)
+Gear:CompareOn("SetLootItem", function(slot) return GetLootSlotLink(slot) end)
+Gear:CompareOn("SetMerchantItem", function(index) return GetMerchantItemLink(index) end)
+Gear:CompareOn("SetInboxItem", InboxItemLink)
 
 local compareOnHide = GameTooltip:GetScript("OnHide")
 GameTooltip:SetScript("OnHide", function()
     if compareOnHide then
         compareOnHide()
     end
-    HideCompare()
+    Gear:HideCompare()
 end)
-local function WornLinkNamed(tooltip)
+function Gear:WornLinkNamed(tooltip)
     for line = 1, 3 do
         local text = getglobal(tooltip:GetName() .. "TextLeft" .. line)
         local name = text and text:GetText()
@@ -394,10 +395,10 @@ for _, name in ipairs({ "ShoppingTooltip1", "ShoppingTooltip2" }) do
             if onUpdate then
                 onUpdate()
             end
-            local link, itemName, slot = WornLinkNamed(this)
+            local link, itemName, slot = Gear:WornLinkNamed(this)
             if link and (itemName ~= this.bonkItem or this:NumLines() < (this.bonkLines or 0)) then
                 this.bonkItem = itemName
-                AddGearLines(this, link, VanillaBonkUI.FoundAt("inv", slot))
+                Gear:AddGearLines(this, link, VanillaBonkUI.FoundAt("inv", slot))
                 this.bonkLines = this:NumLines()
             end
         end)
@@ -413,20 +414,21 @@ for _, name in ipairs({ "ShoppingTooltip1", "ShoppingTooltip2" }) do
 end
 
 function VanillaBonk_HookItemTooltip(tooltip)
-    HookTooltip(tooltip, "SetHyperlink", function(link) return link, VanillaBonkUI.TakeHyperlinkFound() end)
+    Gear:HookTooltip(tooltip, "SetHyperlink", function(link) return link, VanillaBonkUI.TakeHyperlinkFound() end)
 end
 
 function VanillaBonk_AddGearLines(tooltip, link, found)
-    AddGearLines(tooltip, link, found)
+    Gear:AddGearLines(tooltip, link, found)
     local name = getglobal(tooltip:GetName() .. "TextLeft1")
     tooltip.bonkItem = name and name:GetText()
     tooltip.bonkLines = tooltip:NumLines()
 end
 if GetBuybackItemLink then
-    HookTooltip(GameTooltip, "SetBuybackItem", function(index) return GetBuybackItemLink(index) end)
+    Gear:HookTooltip(GameTooltip, "SetBuybackItem", function(index) return GetBuybackItemLink(index) end)
 end
 
 local heroStats = CreateFrame("Frame", "VanillaBonkHeroStats", PaperDollFrame)
+Gear.frame = heroStats
 if CharacterAttributesFrame then
     heroStats:SetAllPoints(CharacterAttributesFrame)
 else
@@ -437,7 +439,7 @@ end
 
 local STAT_ROW_HEIGHT = 11
 
-local function CreateStatLine(column, row)
+function Gear:CreateStatLine(column, row)
     local line = CreateFrame("Frame", nil, heroStats)
     line:SetWidth(104)
     line:SetHeight(STAT_ROW_HEIGHT)
@@ -464,23 +466,23 @@ local STAT_LAYOUT = {
     { 0, 1, 15, 16, 10, 18 },
     { 12, 14, 17, 4, 3, 8 },
 }
-local statLines = {}
+Gear.statLines = {}
 for column, ids in ipairs(STAT_LAYOUT) do
     for row, statId in ipairs(ids) do
-        local line = CreateStatLine(column, row)
+        local line = Gear:CreateStatLine(column, row)
         line.label:SetText((STATS[statId].short or STATS[statId].name) .. ":")
-        statLines[statId] = line
+        Gear.statLines[statId] = line
     end
 end
 
-local function RefreshHeroStats()
+function Gear:Refresh()
     if CharacterAttributesFrame then
         CharacterAttributesFrame:Hide()
     end
 
-    local gear = GearTotals()
+    local gear = Gear:GearTotals()
 
-    for statId, line in pairs(statLines) do
+    for statId, line in pairs(Gear.statLines) do
         local stat = STATS[statId]
         local gearTotal = gear[statId] or 0
         local fromGear = stat.gearCap and min(gearTotal, stat.gearCap) or gearTotal
@@ -496,9 +498,9 @@ local function RefreshHeroStats()
         shown = shown + (VB.statsAfterCaps[statId] or 0)
 
         local compact = math.abs(shown) >= 100 and floor(shown + 0.5) or floor(10 * shown + 0.5) / 10
-        line.value:SetText(FormatStat(statId, compact))
+        line.value:SetText(Gear:FormatStat(statId, compact))
         line.title = stat.name
-        local explained = FormatStat(statId, shown)
+        local explained = Gear:FormatStat(statId, shown)
         if statId == 12 then
             explained = Percent(floor(1000 * min(0.6, max(0, shown) / (max(0, shown) * 4 / 3 + 100)) + 0.5) / 10)
         end
@@ -510,7 +512,7 @@ local function RefreshHeroStats()
             tinsert(line.lines, L("hoa.addon.armor_past_300_gives_1_maximum_health", Percent(floor(5 * (shown - 300) + 0.5) / 10)))
         end
         if stat.cap then
-            tinsert(line.lines, L("hoa.addon.maximum_1", FormatStat(statId, stat.cap)))
+            tinsert(line.lines, L("hoa.addon.maximum_1", Gear:FormatStat(statId, stat.cap)))
         end
         if stat.note then
             tinsert(line.lines, " ")
@@ -524,7 +526,7 @@ PaperDollFrame:SetScript("OnShow", function()
     if paperDollOnShow then
         paperDollOnShow()
     end
-    RefreshHeroStats()
+    Gear:Refresh()
     SendChatMessage(".bonk stats on", "SAY")
 end)
 
@@ -538,29 +540,31 @@ do
     end)
 end
 
-UI.Module("gearEvents"):OnInventory(function(unit)
+Gear:OnInventory(function(unit)
     if unit == "player" and PaperDollFrame:IsVisible() then
-        RefreshHeroStats()
+        Gear:Refresh()
     end
 end)
 
-handlers["gear"] = function(f)
-    VB.gear[tonumber(f[2])] = { stats = ParseStats(f[3]) }
+function Gear:ApplyGear(f)
+    VB.gear[tonumber(f[2])] = { stats = self:ParseStats(f[3]) }
 end
+handlers["gear"] = function(f) Gear:ApplyGear(f) end
 
-handlers["gearend"] = function()
+function Gear:EndGear()
     if PaperDollFrame:IsVisible() then
-        RefreshHeroStats()
+        self:Refresh()
     end
 end
+handlers["gearend"] = function() Gear:EndGear() end
 
 function VanillaBonkUI.FoundRefreshed()
     if PaperDollFrame:IsVisible() then
-        RefreshHeroStats()
+        Gear:Refresh()
     end
 end
 
-handlers["stats"] = function(f)
+function Gear:ApplyStats(f)
     VB.statsInRun = f[2] == "1"
     VB.stats = {}
     local values = Split(f[3] or "", ",")
@@ -573,7 +577,8 @@ handlers["stats"] = function(f)
         VB.statsAfterCaps[i - 1] = tonumber(afterCaps[i]) or 0
     end
     if PaperDollFrame:IsVisible() then
-        RefreshHeroStats()
+        self:Refresh()
     end
 end
+handlers["stats"] = function(f) Gear:ApplyStats(f) end
 
