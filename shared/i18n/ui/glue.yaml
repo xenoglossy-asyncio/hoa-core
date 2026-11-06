@@ -3080,3 +3080,167 @@
   enUS: Zul'Gurub
   zhCN: 祖尔格拉布
   zhTW: "祖爾格拉布"
+- id: hoa.ui.glue.1_character
+  enUS: 1 character
+  zhCN: 1个角色
+  zhTW: 1個角色
+- id: hoa.ui.glue.best
+  enUS: Best
+  zhCN: 最佳
+  zhTW: 最佳
+- id: hoa.ui.glue.character
+  enUS: Character
+  zhCN: 角色
+  zhTW: 角色
+- id: hoa.ui.glue.click_a_name_to_see_its_record
+  enUS: Click a name to see its record.
+  zhCN: 点击名字查看记录。
+  zhTW: 點選名字檢視記錄。
+- id: hoa.ui.glue.fled_the_fight_in_1
+  enUS: Fled the fight in {1}.
+  zhCN: 在{1}逃离了战斗。
+  zhTW: 在{1}逃離了戰鬥。
+  placeholders:
+  - 1
+- id: hoa.ui.glue.fled_the_fight_in_1_laid_to_rest
+  enUS: Fled the fight in {1}. Laid to rest.
+  zhCN: 在{1}逃离战斗。已安葬。
+  zhTW: 在{1}逃離戰鬥。已安葬。
+  placeholders:
+  - 1
+- id: hoa.ui.glue.forgiven_crashes
+  enUS: Forgiven crashes
+  zhCN: 免罚崩溃
+  zhTW: 免罰崩潰
+- id: hoa.ui.glue.graveyard
+  enUS: Graveyard
+  zhCN: 墓地
+  zhTW: 墓地
+- id: hoa.ui.glue.graveyard_1
+  enUS: Graveyard ({1})
+  zhCN: 墓地（{1}）
+  zhTW: 墓地（{1}）
+  placeholders:
+  - 1
+- id: hoa.ui.glue.hardcore
+  enUS: Hardcore
+  zhCN: 硬核
+  zhTW: 硬核
+- id: hoa.ui.glue.hardcore_ironman
+  enUS: Hardcore Ironman
+  zhCN: 硬核铁人
+  zhTW: 硬核鐵人
+- id: hoa.ui.glue.hardcore_mode
+  enUS: Hardcore Mode
+  zhCN: 硬核模式
+  zhTW: 硬核模式
+- id: hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet
+  enUS: Hardcore characters can't play co-op yet.
+  zhCN: 硬核角色暂时还不能进行联机合作。
+  zhTW: 硬核角色暫時還不能進行聯機合作。
+- id: hoa.ui.glue.hardcore_characters_share_their_own_gold_mastery_and_bank_if
+  enUS: Hardcore characters share their own gold, mastery and bank. If this character dies, it leaves Hardcore and plays on as a regular character.
+  zhCN: 硬核角色共享他们自己的金币、专精和银行。如果这个角色死亡，它会离开硬核模式，作为普通角色继续游戏。
+  zhTW: 硬核角色共享他們自己的金幣、專精和銀行。如果這個角色死亡，它會離開硬核模式，作為普通角色繼續遊戲。
+- id: hoa.ui.glue.ironman
+  enUS: Ironman
+  zhCN: 铁人
+  zhTW: 鐵人
+- id: hoa.ui.glue.level_1
+  enUS: Level {1}
+  zhCN: 等级 {1}
+  zhTW: 等級 {1}
+  placeholders:
+  - 1
+- id: hoa.ui.glue.level_1_2
+  enUS: Level {1} {2}
+  zhCN: 等级 {1} {2}
+  zhTW: 等級 {1} {2}
+  placeholders:
+  - 1
+  - 2
+- id: hoa.ui.glue.mastery
+  enUS: Mastery
+  zhCN: 专精
+  zhTW: 專精
+- id: hoa.ui.glue.mastery_1_2_3_fell_in_hardcore
+  enUS: Mastery {1} {2} {3} (Fell in Hardcore)
+  zhCN: 专精{1} {2}{3}（在硬核模式中阵亡）
+  zhTW: 專精{1} {2}{3}（在硬核模式中陣亡）
+  placeholders:
+  - 1
+  - 2
+  - 3
+- id: hoa.ui.glue.mastery_1_2_3_fell_in_hardcore_4
+  enUS: Mastery {1} {2} {3} (Fell in Hardcore, {4})
+  zhCN: 专精{1} {2}{3}（在硬核模式中阵亡，{4}）
+  zhTW: 專精{1} {2}{3}（在硬核模式中陣亡，{4}）
+  placeholders:
+  - 1
+  - 2
+  - 3
+  - 4
+- id: hoa.ui.glue.mastery_1_2_3_hardcore_ironman
+  enUS: Mastery {1} {2} {3} (Hardcore Ironman)
+  zhCN: 专精{1} {2}{3}（硬核铁人）
+  zhTW: 專精{1} {2}{3}（硬核鐵人）
+  placeholders:
+  - 1
+  - 2
+  - 3
+- id: hoa.ui.glue.mastery_1_2_3_hardcore
+  enUS: Mastery {1} {2} {3} (Hardcore)
+  zhCN: 专精{1} {2}{3}（硬核）
+  zhTW: 專精{1} {2}{3}（硬核）
+  placeholders:
+  - 1
+  - 2
+  - 3
+- id: hoa.ui.glue.mastery_1_fell_in_hardcore
+  enUS: Mastery {1} · fell in Hardcore
+  zhCN: 专精{1} · 已在硬核模式中阵亡
+  zhTW: 專精{1} · 已在硬核模式中陣亡
+  placeholders:
+  - 1
+- id: hoa.ui.glue.new_1
+  enUS: New {1}
+  zhCN: 新建{1}
+  zhTW: 新建{1}
+  placeholders:
+  - 1
+- id: hoa.ui.glue.no_character_has_fallen_in_hardcore_yet
+  enUS: No character has fallen in Hardcore yet.
+  zhCN: 还没有角色在硬核模式中阵亡。
+  zhTW: 還沒有角色在硬核模式中陣亡。
+- id: hoa.ui.glue.slain_by_1_in_2
+  enUS: Slain by {1} in {2}.
+  zhCN: 在{2}被{1}杀死。
+  zhTW: 在{2}被{1}殺死。
+  placeholders:
+  - 1
+  - 2
+- id: hoa.ui.glue.slain_by_1_in_2_laid_to_rest
+  enUS: Slain by {1} in {2}. Laid to rest.
+  zhCN: 在{2}被{1}杀死。已安葬。
+  zhTW: 在{2}被{1}殺死。已安葬。
+  placeholders:
+  - 1
+  - 2
+- id: hoa.ui.glue.unknown
+  enUS: unknown
+  zhCN: 未知
+  zhTW: 未知
+- id: hoa.ui.glue.1_characters
+  enUS: '{1} characters'
+  zhCN: '{1}个角色'
+  zhTW: '{1}個角色'
+  placeholders:
+  - 1
+- id: hoa.ui.glue.hardcore_mode_2
+  enUS: Hardcore mode
+  zhCN: Hardcore mode
+  zhTW: Hardcore mode
+- id: hoa.ui.glue.fallen
+  enUS: Fallen
+  zhCN: Fallen
+  zhTW: Fallen

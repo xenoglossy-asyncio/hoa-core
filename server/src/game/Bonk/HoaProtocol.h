@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 30
+#define HOA_PROTOCOL_VERSION 31
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -172,6 +172,13 @@
 #define HOA_MSG_VISUAL_PROP_REMOVE 0x00AA
 #define HOA_MSG_VISUAL_AURA 0x00AB
 #define HOA_MSG_VISUAL_AURA_REMOVE 0x00AC
+#define HOA_MSG_HARDCORE_RESTED 0x00AD
+#define HOA_MSG_HARDCORE_FELL 0x00AE
+#define HOA_MSG_MOG_OUTFIT 0x00AF
+#define HOA_MSG_MOG_BEGIN 0x00B0
+#define HOA_MSG_MOG_SLOT 0x00B1
+#define HOA_MSG_MOG_LOOK 0x00B2
+#define HOA_MSG_MOG_END 0x00B3
 
 inline void HoAWriteString(WorldPacket& packet, std::string const& value)
 {
@@ -648,7 +655,7 @@ inline void HoAWriteFoundEnd(WorldPacket& packet)
     packet << uint16(HOA_MSG_FOUND_END);
 }
 
-inline void HoAWriteGearOffer(WorldPacket& packet, uint32 const& entry, uint32 const& replaced, uint32 const& valor, uint32 const& quality, uint32 const& tier, std::string const& lines, uint32 const& slot, uint32 const& otherSlot, uint32 const& otherReplaced, std::string const& extra)
+inline void HoAWriteGearOffer(WorldPacket& packet, uint32 const& entry, uint32 const& replaced, uint32 const& valor, uint32 const& quality, uint32 const& tier, std::string const& lines, uint32 const& slot, uint32 const& otherSlot, uint32 const& otherReplaced, std::string const& extra, bool const& newLook)
 {
     packet << uint16(HOA_MSG_GEAR_OFFER);
     packet << uint32(entry);
@@ -661,6 +668,7 @@ inline void HoAWriteGearOffer(WorldPacket& packet, uint32 const& entry, uint32 c
     packet << uint32(otherSlot);
     packet << uint32(otherReplaced);
     HoAWriteString(packet, extra);
+    packet << bool(newLook);
 }
 
 inline void HoAWriteGearClose(WorldPacket& packet)
@@ -1594,4 +1602,63 @@ inline void HoAWriteVisualAuraRemove(WorldPacket& packet, uint32 const& key)
 {
     packet << uint16(HOA_MSG_VISUAL_AURA_REMOVE);
     packet << uint32(key);
+}
+
+inline void HoAWriteHardcoreRested(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_HARDCORE_RESTED);
+}
+
+inline void HoAWriteHardcoreFell(WorldPacket& packet, std::string const& name, uint8 const& classId, uint32 const& level, uint32 const& bestLevel, uint32 const& mastery, uint32 const& played, uint32 const& runs, uint32 const& kills, std::string const& killer, std::string const& map, bool const& ironman)
+{
+    packet << uint16(HOA_MSG_HARDCORE_FELL);
+    HoAWriteString(packet, name);
+    packet << uint8(classId);
+    packet << uint32(level);
+    packet << uint32(bestLevel);
+    packet << uint32(mastery);
+    packet << uint32(played);
+    packet << uint32(runs);
+    packet << uint32(kills);
+    HoAWriteString(packet, killer);
+    HoAWriteString(packet, map);
+    packet << bool(ironman);
+}
+
+inline void HoAWriteMogOutfit(WorldPacket& packet, uint8 const& slot, std::string const& name)
+{
+    packet << uint16(HOA_MSG_MOG_OUTFIT);
+    packet << uint8(slot);
+    HoAWriteString(packet, name);
+}
+
+inline void HoAWriteMogBegin(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_MOG_BEGIN);
+}
+
+inline void HoAWriteMogSlot(WorldPacket& packet, uint8 const& slot, uint32 const& wornEntry, uint32 const& look, uint8 const& group, uint32 const& catalogEntry, bool const& canHide)
+{
+    packet << uint16(HOA_MSG_MOG_SLOT);
+    packet << uint8(slot);
+    packet << uint32(wornEntry);
+    packet << uint32(look);
+    packet << uint8(group);
+    packet << uint32(catalogEntry);
+    packet << bool(canHide);
+}
+
+inline void HoAWriteMogLook(WorldPacket& packet, uint8 const& group, uint32 const& entry, uint32 const& quality, bool const& owned, std::string const& source)
+{
+    packet << uint16(HOA_MSG_MOG_LOOK);
+    packet << uint8(group);
+    packet << uint32(entry);
+    packet << uint32(quality);
+    packet << bool(owned);
+    HoAWriteString(packet, source);
+}
+
+inline void HoAWriteMogEnd(WorldPacket& packet)
+{
+    packet << uint16(HOA_MSG_MOG_END);
 }

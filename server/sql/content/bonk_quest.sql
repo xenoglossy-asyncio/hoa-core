@@ -228,4 +228,7 @@ VALUES
   (573, 'Halfway Down', 'Clear Mythic 5 as a druid.', 'Spell_Nature_Reincarnation', 3, 0, 0, 14, 1, 50, 11, 2),
   (574, 'Keeper of the Grove', 'Clear Mythic 8 as a druid.', 'Spell_Nature_Reincarnation', 3, 0, 0, 17, 10, 18, 11, 2),
   (575, 'Archdruid', 'Clear Mythic 10 as a druid.', 'Spell_Nature_Reincarnation', 3, 0, 0, 19, 10, 19, 11, 2),
-  (576, 'Old Guard', 'Played before Mythic levels replaced floors.', 'INV_Misc_Medal_01', 40, 0, 0, 1, 10, 20, 0, 1);
+  (576, 'Old Guard', 'Played before Mythic levels replaced floors.', 'INV_Misc_Medal_01', 40, 0, 0, 1, 10, 20, 0, 1),
+  (577, 'For the King', 'Clear Heroic 5.', 'INV_Shirt_GuildTabard_01', 3, 0, 0, 9, 15, 939002, 0, 1),
+  (578, 'Heart of the Mountain', 'Clear the Molten Core dungeon or its invasion.', 'INV_Shirt_GuildTabard_01', 41, 2, 0, 1, 15, 939003, 0, 3),
+  (579, 'Winter''s Edge', 'Clear Mythic 20.', 'INV_Shirt_GuildTabard_01', 3, 0, 0, 29, 15, 939004, 0, 1);

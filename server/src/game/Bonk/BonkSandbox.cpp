@@ -10,6 +10,7 @@
 #include "HoaProtocol.h"
 #include "Map.h"
 #include "ObjectMgr.h"
+#include "BonkTransmog.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "TemporarySummon.h"
@@ -1549,6 +1550,28 @@ bool BonkRun::OfferSandboxGear(uint32 entry, std::string& error)
     return true;
 }
 
+void BonkRun::QueueSandboxGearOffer(uint8 quality)
+{
+    PendingGear piece;
+    if (!MakeBagPiece(quality, piece))
+        return;
+    m_pendingGear.push_back(piece);
+    UpdateOffers();
+}
+
+void BonkRun::RollSandboxDrops(uint8 quality, uint32 count)
+{
+    for (uint32 roll = 0; roll < count; ++roll)
+    {
+        PendingGear piece;
+        if (!MakeBagPiece(quality, piece))
+            continue;
+        ItemPrototype const* proto = sObjectMgr.GetItemPrototype(piece.entry);
+        m_player->GetBonkPlayer()->Notify("droptest " + std::to_string(piece.entry) + " " + (proto ? proto->Name1 : "?") +
+            " challenge " + GetChallengeMapKey());
+    }
+}
+
 bool BonkRun::RunSandboxVerb(std::string const& verb, uint32 first, uint32 second, std::string& error)
 {
     if (m_state != STATE_RUNNING)
@@ -1562,6 +1585,15 @@ bool BonkRun::RunSandboxVerb(std::string const& verb, uint32 first, uint32 secon
         QueueSandboxPack(first ? first : BONK_SANDBOX_DEFAULT_PACK, second != 0);
     else if (verb == "dummies")
         SpawnSandboxDummies(std::max(1u, std::min(first, 20u)), BONK_SPAWN_NORMAL, float(second));
+    else if (verb == "challenge")
+        m_dungeonId = first;
+    else if (verb == "droptest")
+        RollSandboxDrops(uint8(first), std::max(1u, std::min(second, 20u)));
+    else if (verb == "gearoffer")
+        QueueSandboxGearOffer(uint8(first));
+    else if (verb == "tabardroll")
+        for (uint32 roll = 0; roll < first; ++roll)
+            BonkTransmog::RollTabardDrops(m_player, m_map.key);
     else if (verb == "crowddummies")
         SpawnSandboxDummies(std::max(1u, std::min(first, BONK_CROWD_DUMMY_MAX)), BONK_SPAWN_NORMAL, -1.0f);
     else if (verb == "spell")

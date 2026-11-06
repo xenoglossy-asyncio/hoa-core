@@ -343,13 +343,13 @@ function BonkCoop_SetClassIcon(texture, token)
 end
 
 function BonkCoop_Hero()
-	local class = BONK_CLASSES[Bonk.classIndex];
-	local hero = class and Bonk.heroes[class.token];
+	local class = BonkHero_SelectedClass();
+	local hero = BonkHero_Selected();
 	if ( not hero ) then
 		return nil;
 	end
 	local stats = BONK_STATS and BONK_STATS.heroes and BONK_STATS.heroes[hero.name] or {};
-	return { name = hero.name, class = class.token, className = class.display, race = hero.race, mastery = stats.mastery or 0, best = stats.bestLevel or 0, ironman = stats.ironman };
+	return { name = hero.name, class = class.token, className = class.display, race = hero.race, mastery = stats.mastery or 0, best = stats.bestLevel or 0, ironman = stats.ironman, hardcore = stats.hardcore };
 end
 
 function BonkCoop_IsJoined()
@@ -416,7 +416,7 @@ function BonkCoop_Apply()
 			BonkCoopFindButton:Enable();
 			BonkCoopHostButton:Enable();
 		else
-			BonkCoopBarText:SetText(L("hoa.ui.glue.create_a_1_first", BONK_CLASSES[Bonk.classIndex].display));
+			BonkCoopBarText:SetText(L("hoa.ui.glue.create_a_1_first", BonkHero_SelectedClass().display));
 			BonkCoopFindButton:Disable();
 			BonkCoopHostButton:Disable();
 		end
@@ -623,6 +623,9 @@ function BonkCoop_Fit(lobby, hero)
 	if ( not hero ) then
 		return nil, L["hoa.ui.glue.select_a_character_first"];
 	end
+	if ( hero.hardcore ) then
+		return nil, L["hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet"];
+	end
 	if ( lobby.players >= lobby.max ) then
 		return nil, L["hoa.ui.glue.that_game_is_full"];
 	end
@@ -730,6 +733,10 @@ function BonkCoop_Ask(target, hostName)
 	if ( not hero ) then
 		return;
 	end
+	if ( hero.hardcore ) then
+		BonkHero_SetStatus(L["hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet"]);
+		return;
+	end
 	target.name = hero.name;
 	target.class = strlower(hero.class);
 	target.race = hero.race;
@@ -797,15 +804,13 @@ function BonkCoop_Reconnect(delay)
 end
 
 function BonkCoop_SelectJoinedHero()
-	if ( not Bonk.listLoaded or Bonk.heroes[BONK_CLASSES[Bonk.classIndex].token] ) then
+	if ( not Bonk.listLoaded or BonkHero_Selected() ) then
 		return;
 	end
-	for index, class in ipairs(BONK_CLASSES) do
-		if ( Bonk.heroes[class.token] ) then
-			Bonk.classIndex = index;
-			BonkHero_Refresh();
-			return;
-		end
+	local hero = Bonk.heroes[1];
+	if ( hero ) then
+		BonkHero_ShowHero(hero);
+		BonkHero_Refresh();
 	end
 end
 
@@ -955,6 +960,10 @@ end
 function BonkCoop_OpenHostForm()
 	local hero = BonkCoop_Hero();
 	if ( not hero ) then
+		return;
+	end
+	if ( hero.hardcore ) then
+		BonkHero_SetStatus(L["hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet"]);
 		return;
 	end
 	if ( BonkCoopHostForm:IsShown() ) then
@@ -1214,7 +1223,7 @@ function BonkCoop_OnUpdate(elapsed)
 	if ( BonkCoop_IsJoined() and not BonkCoop.reconnectAt ) then
 		BonkCoop_SelectJoinedHero();
 	end
-	local hero = BonkCoop_IsJoined() and Bonk.listLoaded and Bonk.heroes[BONK_CLASSES[Bonk.classIndex].token];
+	local hero = BonkCoop_IsJoined() and Bonk.listLoaded and BonkHero_Selected();
 	if ( hero and not BonkCoop.checkedEnter and not BonkCoop.reconnectAt ) then
 		BonkCoop.enterAt = BonkCoop.enterAt or GetTime() + BONK_COOP_ENTER_DELAY;
 		if ( GetTime() >= BonkCoop.enterAt ) then

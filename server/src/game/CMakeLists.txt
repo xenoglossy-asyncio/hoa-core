@@ -29,6 +29,8 @@ set (game_SRCS
     Bonk/BonkCrowd.cpp
     Bonk/BonkEnchant.cpp
     Bonk/BonkFoundGear.cpp
+    Bonk/BonkHardcore.cpp
+    Bonk/BonkCharacterProgress.cpp
     Bonk/BonkIntegrity.cpp
     Bonk/BonkKeywords.cpp
     Bonk/BonkLeaderboard.cpp
@@ -82,6 +84,7 @@ set (game_SRCS
     Bonk/BonkSpawnPoints.cpp
     Bonk/BonkStrings.cpp
     Bonk/BonkTelegraph.cpp
+    Bonk/BonkTransmog.cpp
     Camera.cpp
     Conditions.cpp
     CreatureGroups.cpp
@@ -316,6 +319,8 @@ set (game_SRCS
     AuraRemovalMgr.h
     AutoBroadCastMgr.h
     Bonk/BonkCodex.h
+    Bonk/BonkHardcore.h
+    Bonk/BonkCharacterProgress.h
     Bonk/BonkIntegrity.h
     Bonk/BonkLeaderboard.h
     Bonk/BonkLocale.h
@@ -331,6 +336,7 @@ set (game_SRCS
     Bonk/BonkSpawnPoints.h
     Bonk/BonkStrings.h
     Bonk/BonkTelegraph.h
+    Bonk/BonkTransmog.h
     Camera.h
     ClientDefines.h
     Conditions.h

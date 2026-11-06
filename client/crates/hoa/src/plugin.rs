@@ -784,6 +784,67 @@ fn deliver_hoa_messages(world: &mut World) {
                 HoaMessage::BoardEnd(_) => {
                     script.fire_event(HOA_BOARD_END, Vec::new());
                 }
+                HoaMessage::HardcoreRested(_) => {
+                    script.fire_event("HOA_HARDCORE_RESTED", Vec::new());
+                }
+                HoaMessage::HardcoreFell(fell) => {
+                    script.fire_event(
+                        "HOA_HARDCORE_FELL",
+                        vec![lua_table(vec![
+                            ("name", ScriptValue::Str(fell.name)),
+                            ("class_id", ScriptValue::Int(i64::from(fell.class_id))),
+                            ("level", ScriptValue::Int(i64::from(fell.level))),
+                            ("best_level", ScriptValue::Int(i64::from(fell.best_level))),
+                            ("mastery", ScriptValue::Int(i64::from(fell.mastery))),
+                            ("played", ScriptValue::Int(i64::from(fell.played))),
+                            ("runs", ScriptValue::Int(i64::from(fell.runs))),
+                            ("kills", ScriptValue::Int(i64::from(fell.kills))),
+                            ("killer", ScriptValue::Str(fell.killer)),
+                            ("map", ScriptValue::Str(fell.map)),
+                            ("ironman", ScriptValue::Bool(fell.ironman)),
+                        ])],
+                    );
+                }
+                HoaMessage::MogBegin(_) => {
+                    script.fire_event("HOA_MOG_BEGIN", Vec::new());
+                }
+                HoaMessage::MogSlot(slot) => {
+                    script.fire_event(
+                        "HOA_MOG_SLOT",
+                        vec![lua_table(vec![
+                            ("slot", ScriptValue::Int(i64::from(slot.slot))),
+                            ("worn_entry", ScriptValue::Int(i64::from(slot.worn_entry))),
+                            ("look", ScriptValue::Int(i64::from(slot.look))),
+                            ("group", ScriptValue::Int(i64::from(slot.group))),
+                            ("catalog_entry", ScriptValue::Int(i64::from(slot.catalog_entry))),
+                            ("can_hide", ScriptValue::Bool(slot.can_hide)),
+                        ])],
+                    );
+                }
+                HoaMessage::MogLook(look) => {
+                    script.fire_event(
+                        "HOA_MOG_LOOK",
+                        vec![lua_table(vec![
+                            ("group", ScriptValue::Int(i64::from(look.group))),
+                            ("entry", ScriptValue::Int(i64::from(look.entry))),
+                            ("quality", ScriptValue::Int(i64::from(look.quality))),
+                            ("owned", ScriptValue::Bool(look.owned)),
+                            ("source", ScriptValue::Str(look.source)),
+                        ])],
+                    );
+                }
+                HoaMessage::MogOutfit(outfit) => {
+                    script.fire_event(
+                        "HOA_MOG_OUTFIT",
+                        vec![lua_table(vec![
+                            ("slot", ScriptValue::Int(i64::from(outfit.slot))),
+                            ("name", ScriptValue::Str(outfit.name)),
+                        ])],
+                    );
+                }
+                HoaMessage::MogEnd(_) => {
+                    script.fire_event("HOA_MOG_END", Vec::new());
+                }
                 HoaMessage::DeathRecap(recap) => {
                     script.fire_event(
                         HOA_DEATH_RECAP,

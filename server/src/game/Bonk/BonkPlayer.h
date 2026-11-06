@@ -168,7 +168,39 @@ class BonkPlayer
         static uint32 GetIronmanAccount(uint32 guidLow);
         static void GatherAccountBank(uint32 accountId, uint32 guidLow);
         static void ParkAccountBank(uint32 guidLow);
+        static bool IsHardcoreName(std::string const& name);
+        static void RequestHardcore(uint32 accountId);
+        static bool TakeHardcoreRequest(uint32 accountId);
+        static void MarkHardcore(uint32 guidLow);
+        static bool IsHardcoreCharacter(uint32 guidLow);
+        static uint32 GetHardcoreAccount(uint32 accountId);
+        static uint32 GetProgressAccountOf(uint32 guidLow, uint32 accountId);
+        static void ParkFallenBanks(uint32 accountId);
+        static uint32 GetCharacterAccountOf(uint32 guidLow);
+        static uint32 GetPlainCharacterAccount(uint32 guidLow);
+        static uint32 GetStagedCharacterAccount(uint32 accountId);
+        void ClaimStagedCharacterRows();
+        static void AdoptClassProgress(uint32 guidLow);
+        static void DeleteCharacterProgress(uint32 guidLow);
+        static void RaisePoolBestLevel(uint32 poolAccount, uint32 level);
+        uint32 GetCharacterAccount() const;
         bool IsIronman() const;
+        bool IsHardcore() const;
+        bool HasFallenInHardcore() const { return m_fellInHardcore; }
+        void OnHardcoreDeath(std::string const& killer, std::string const& mapName, uint32 level, uint32 kills);
+        uint32 BeginHardcoreRun(std::string const& mapName);
+        void EndHardcoreRun();
+        uint32 GetHardcoreRun() const { return m_hardcoreRun; }
+        uint32 GetHardcoreCrashes() const { return m_hardcoreCrashes; }
+        bool HoldsAfterDisconnect() const;
+        void OnHardcoreDisconnected();
+        void OnHardcoreReconnected();
+        void SendUnannouncedFall();
+        static uint32 HardcoreHoldMs();
+        static uint32 HardcoreShutdownHoldSeconds();
+        static uint32 OpenHardcoreRuns();
+        bool RequestRest();
+        static bool TakeRestRequest(uint32 guidLow);
         uint32 GetProgressAccount() const;
 
         void RecordRun(uint32 level, uint32 seconds, uint32 kills, uint32 goldEarned);
@@ -378,6 +410,7 @@ class BonkPlayer
         void SendUpdateNotices();
         void SeeGearNotice();
         void SendStats() const;
+        void SendNoEnchants() const;
         void SendMasteryShop(bool open, bool inspect) const;
         std::map<uint32, uint8> ReadMasteryPreset(uint8 slot) const;
         void LoadMasteryPresets();
@@ -505,6 +538,16 @@ class BonkPlayer
         void UpdateMailboxGlow(uint32 diff);
         bool m_goldLoaded = false;
         mutable int8 m_ironman = -1;
+        mutable int8 m_hardcore = -1;
+        uint32 m_poolBestLevel = 0;
+        bool m_fellInHardcore = false;
+        bool m_mayRest = false;
+        uint32 m_hardcoreRun = 0;
+        uint32 m_hardcoreCrashes = 0;
+        bool UsesHardcorePool() const;
+        void SettleLeftHardcoreRun();
+        void SendFallenRecord(uint32 level, uint32 bestLevel, uint32 mastery, uint32 played, uint32 runs, uint32 kills, std::string const& killer,
+            std::string const& mapName, bool ironman);
         struct LevelRecord
         {
             uint32 best = 0;

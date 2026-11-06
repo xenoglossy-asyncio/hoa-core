@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `hoa_content` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-REPLACE INTO `hoa_content` (`id`, `hash`) VALUES (1, 'sha256:1ab2da2364bcab5028afe7e44ade09cfd2c522c73df77a35050ed54d5446dc2a');
+REPLACE INTO `hoa_content` (`id`, `hash`) VALUES (1, 'sha256:804b813b6ab968ef8794998938d6025d348afd1b714f491a8cd708558c67f5f0');
 
 CREATE TABLE IF NOT EXISTS `hoa_content_section` (
   `name` varchar(32) NOT NULL,
@@ -19,4 +19,4 @@ DELETE FROM `hoa_content_section`;
 INSERT INTO `hoa_content_section` (`name`, `hash`) VALUES
   ('cards', 'sha256:8aba242a5b845e04070eb9abf8bd523cdcbde8cf60a06f9fec25882de07c095b'),
   ('spells', 'sha256:53b232af1f0a8c8165abc0f722157a845cc03c92deeb9f4217cfa592bb2a081f'),
-  ('tables', 'sha256:24e31021c73bf96644f9de2bd60def36a9e638f0b633fb9c50f72cb2f3a68f49');
+  ('tables', 'sha256:faa3b8f018b6c366ead16fff3aae533d7637e23dd0464e0dd4969d0c1d7b0f05');

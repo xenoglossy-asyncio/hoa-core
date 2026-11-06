@@ -588,9 +588,7 @@ void BonkRun::DespawnObjects()
     m_powerups.clear();
     m_powerupObjectives.clear();
     m_powerupGlows.clear();
-    for (VoidZone const& zone : m_voidZones)
-        EndVoidZone(zone);
-    m_voidZones.clear();
+    EndVoidZones();
     ClearHidden();
     m_shardDrops.clear();
     m_glyphDrops.clear();

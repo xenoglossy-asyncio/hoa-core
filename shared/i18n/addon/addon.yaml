@@ -6939,3 +6939,309 @@
   enUS: Another program changed the game while it was running. Restart the game for runs to count for the leaderboard.
   zhCN: 另一个程序在运行期间修改了游戏。重启游戏后跑团才会计入排行榜。
   zhTW: "另一個程式在執行期間修改了遊戲。重新啟動遊戲後跑團才會計入排行榜。"
+- id: hoa.addon.appearance_collected
+  enUS: Appearance collected
+  zhCN: 已收藏外观
+  zhTW: 已收藏外觀
+- id: hoa.addon.arathi_highlands
+  enUS: Arathi Highlands
+  zhCN: 阿拉希高地
+  zhTW: 阿拉希高地
+- id: hoa.addon.best_level
+  enUS: Best level
+  zhCN: 最高级别
+  zhTW: 最高階別
+- id: hoa.addon.click_to_preview_it_in_the_dressing_room
+  enUS: Click to preview it in the dressing room.
+  zhCN: 点击在试衣间预览。
+  zhTW: 點選在試衣間預覽。
+- id: hoa.addon.click_to_save_your_current_looks_as_an_outfit
+  enUS: Click to save your current looks as an outfit.
+  zhCN: 点击将你当前的外观保存为一个方案。
+  zhTW: 點選將你當前的外觀儲存為一個方案。
+- id: hoa.addon.click_to_wear_this_outfit
+  enUS: Click to wear this outfit.
+  zhCN: 点击应用此方案。
+  zhTW: 點選應用此方案。
+- id: hoa.addon.deletes_this_outfit
+  enUS: Deletes this outfit.
+  zhCN: 删除此方案。
+  zhTW: 刪除此方案。
+- id: hoa.addon.drops_from_bosses_everywhere_more_often_in_1
+  enUS: Drops from bosses everywhere, more often in {1}.
+  zhCN: 所有地方的首领都会掉落，在{1}更常见。
+  zhTW: 所有地方的首領都會掉落，在{1}更常見。
+  placeholders:
+  - 1
+- id: hoa.addon.drops_from_bosses_in_mythic_runs
+  enUS: Drops from bosses in Mythic runs.
+  zhCN: 史诗难度远征的首领掉落。
+  zhTW: 史詩難度遠征的首領掉落。
+- id: hoa.addon.drops_from_bosses_in_1
+  enUS: Drops from bosses in {1}.
+  zhCN: '{1}的首领掉落。'
+  zhTW: '{1}的首領掉落。'
+  placeholders:
+  - 1
+- id: hoa.addon.drops_in_heroic_runs
+  enUS: Drops in Heroic runs.
+  zhCN: 在英雄难度远征中掉落。
+  zhTW: 在英雄難度遠征中掉落。
+- id: hoa.addon.drops_in_mythic_runs
+  enUS: Drops in Mythic runs.
+  zhCN: 在史诗难度远征中掉落。
+  zhTW: 在史詩難度遠征中掉落。
+- id: hoa.addon.drops_in_mythic_1_and_higher
+  enUS: Drops in Mythic {1} and higher.
+  zhCN: 在史诗{1}级及更高难度掉落。
+  zhTW: 在史詩{1}級及更高難度掉落。
+  placeholders:
+  - 1
+- id: hoa.addon.drops_in_normal_runs
+  enUS: Drops in Normal runs.
+  zhCN: 在普通难度远征中掉落。
+  zhTW: 在普通難度遠征中掉落。
+- id: hoa.addon.drops_in_the_1_dungeon_and_its_invasion
+  enUS: Drops in the {1} dungeon and its invasion.
+  zhCN: 在{1}地下城及其入侵中掉落。
+  zhTW: 在{1}地下城及其入侵中掉落。
+  placeholders:
+  - 1
+- id: hoa.addon.eastern_plaguelands
+  enUS: Eastern Plaguelands
+  zhCN: 东瘟疫之地
+  zhTW: 東瘟疫之地
+- id: hoa.addon.enemies_slain
+  enUS: Enemies slain
+  zhCN: 击杀敌人
+  zhTW: 擊殺敵人
+- id: hoa.addon.equip_a_tabard_to_change_its_look_durgan_ironbelly_the_gear_
+  enUS: Equip a tabard to change its look. Durgan Ironbelly, the gear vendor, sells a Blank Tabard.
+  zhCN: 装备一件战袍才能改变其外观。装备商人德尔冈·铁腹出售空白战袍。
+  zhTW: 裝備一件戰袍才能改變其外觀。裝備商人德爾岡·鐵腹出售空白戰袍。
+- id: hoa.addon.equip_an_item_in_this_slot_to_change_its_look
+  enUS: Equip an item in this slot to change its look.
+  zhCN: 在此部位装备一件物品才能改变其外观。
+  zhTW: 在此部位裝備一件物品才能改變其外觀。
+- id: hoa.addon.esmeralda_glimmerstitch
+  enUS: Esmeralda Glimmerstitch
+  zhCN: 埃斯梅拉达·微光织
+  zhTW: 埃斯梅拉達·微光織
+- id: hoa.addon.every_piece_you_find_adds_its_look_to_your_collection_choose
+  enUS: Every piece you find adds its look to your collection. Choose a slot, then pick how it looks.
+  zhCN: 你找到的每件装备都会将其外观加入收藏。选择一个部位，然后挑选它的外观。
+  zhTW: 你找到的每件裝備都會將其外觀加入收藏。選擇一個部位，然後挑選它的外觀。
+- id: hoa.addon.fled_the_fight_in_1
+  enUS: Fled the fight in {1}.
+  zhCN: 在{1}逃离了战斗。
+  zhTW: 在{1}逃離了戰鬥。
+  placeholders:
+  - 1
+- id: hoa.addon.hardcore
+  enUS: Hardcore
+  zhCN: 硬核
+  zhTW: 硬核
+- id: hoa.addon.hardcore_ironman
+  enUS: Hardcore Ironman
+  zhCN: 硬核铁人
+  zhTW: 硬核鐵人
+- id: hoa.addon.hides_this_slot_while_you_keep_the_item_equipped
+  enUS: Hides this slot while you keep the item equipped.
+  zhCN: 隐藏此部位的外观，同时保留装备。
+  zhTW: 隱藏此部位的外觀，同時保留裝備。
+- id: hoa.addon.keep_playing
+  enUS: Keep Playing
+  zhCN: 继续游戏
+  zhTW: 繼續遊戲
+- id: hoa.addon.lay_to_rest
+  enUS: Lay to Rest
+  zhCN: 安葬
+  zhTW: 安葬
+- id: hoa.addon.lay_1_to_rest_in_the_graveyard_or_keep_playing_as_a_regular_
+  enUS: Lay {1} to rest in the graveyard, or keep playing as a regular Ironman character with their gear, gold and mastery.
+  zhCN: 让{1}在墓地安息，或保留装备、金币和专精，作为普通铁人角色继续游戏。
+  zhTW: 讓{1}在墓地安息，或保留裝備、金幣和專精，作為普通鐵人角色繼續遊戲。
+  placeholders:
+  - 1
+- id: hoa.addon.lay_1_to_rest_in_the_graveyard_or_keep_playing_as_a_regular__2
+  enUS: Lay {1} to rest in the graveyard, or keep playing as a regular character with their gear and mastery. Hardcore gold and bank stay with your other Hardcore characters.
+  zhCN: 让{1}在墓地安息，或保留装备和专精，作为普通角色继续游戏。硬核金币和银行会留在你的其他硬核角色那里。
+  zhTW: 讓{1}在墓地安息，或保留裝備和專精，作為普通角色繼續遊戲。硬核金幣和銀行會留在你的其他硬核角色那裡。
+  placeholders:
+  - 1
+- id: hoa.addon.mode
+  enUS: Mode
+  zhCN: 模式
+  zhTW: 模式
+- id: hoa.addon.molten_core
+  enUS: Molten Core
+  zhCN: 熔火之心
+  zhTW: 熔火之心
+- id: hoa.addon.name_this_outfit
+  enUS: 'Name this outfit:'
+  zhCN: 为此外观方案命名：
+  zhTW: 為此外觀方案命名：
+- id: hoa.addon.outfit_1
+  enUS: Outfit {1}
+  zhCN: 外观方案{1}
+  zhTW: 外觀方案{1}
+  placeholders:
+  - 1
+- id: hoa.addon.outfits
+  enUS: Outfits
+  zhCN: 外观方案
+  zhTW: 外觀方案
+- id: hoa.addon.ranged
+  enUS: Ranged
+  zhCN: 远程
+  zhTW: 遠端
+- id: hoa.addon.reward_from_the_quest_1
+  enUS: Reward from the quest {1}.
+  zhCN: 任务{1}的奖励。
+  zhTW: 任務{1}的獎勵。
+  placeholders:
+  - 1
+- id: hoa.addon.ruins_of_ahn_qiraj
+  enUS: Ruins of Ahn'Qiraj
+  zhCN: 安其拉废墟
+  zhTW: 安其拉廢墟
+- id: hoa.addon.runs
+  enUS: Runs
+  zhCN: 远征次数
+  zhTW: 遠征次數
+- id: hoa.addon.save
+  enUS: Save
+  zhCN: 保存
+  zhTW: 儲存
+- id: hoa.addon.saves_your_current_looks_as_this_outfit
+  enUS: Saves your current looks as this outfit.
+  zhCN: 将你当前的外观保存为此方案。
+  zhTW: 將你當前的外觀儲存為此方案。
+- id: hoa.addon.shirt
+  enUS: Shirt
+  zhCN: 衬衣
+  zhTW: 襯衣
+- id: hoa.addon.show_equipped_look
+  enUS: Show Equipped Look
+  zhCN: 显示当前装备外观
+  zhTW: 顯示當前裝備外觀
+- id: hoa.addon.slain_by_1_in_2
+  enUS: Slain by {1} in {2}.
+  zhCN: 在{2}被{1}杀死。
+  zhTW: 在{2}被{1}殺死。
+  placeholders:
+  - 1
+  - 2
+- id: hoa.addon.sold_by_durgan_ironbelly
+  enUS: Sold by Durgan Ironbelly.
+  zhCN: 德尔冈·铁腹出售。
+  zhTW: 德爾岡·鐵腹出售。
+- id: hoa.addon.sold_by_sayge_for_darkmoon_tickets
+  enUS: Sold by Sayge for Darkmoon Tickets.
+  zhCN: 塞格出售，用暗月奖券购买。
+  zhTW: 塞格出售，用暗月獎券購買。
+- id: hoa.addon.tabard
+  enUS: Tabard
+  zhCN: 战袍
+  zhTW: 戰袍
+- id: hoa.addon.there_are_no_other_looks_for_this_slot_yet
+  enUS: There are no other looks for this slot yet.
+  zhCN: 此部位还没有其他外观。
+  zhTW: 此部位還沒有其他外觀。
+- id: hoa.addon.time_played
+  enUS: Time played
+  zhCN: 游戏时间
+  zhTW: 遊戲時間
+- id: hoa.addon.western_plaguelands
+  enUS: Western Plaguelands
+  zhCN: 西瘟疫之地
+  zhTW: 西瘟疫之地
+- id: hoa.addon.you_have_fallen
+  enUS: You Have Fallen
+  zhCN: 你已阵亡
+  zhTW: 你已陣亡
+- id: hoa.addon.you_haven_t_collected_this_appearance
+  enUS: You haven't collected this appearance
+  zhCN: 你尚未收藏此外观
+  zhTW: 你尚未收藏此外觀
+- id: hoa.addon.zul_gurub
+  enUS: Zul'Gurub
+  zhCN: 祖尔格拉布
+  zhTW: 祖爾格拉布
+- id: hoa.addon.hours_and_minutes_1_h_2_m
+  enUS: hours and minutes::{1}h {2}m
+  zhCN: '{1}小时{2}分钟'
+  zhTW: '{1}小時{2}分鐘'
+  placeholders:
+  - 1
+  - 2
+- id: hoa.addon.minutes_1_m
+  enUS: minutes::{1}m
+  zhCN: '{1}分钟'
+  zhTW: '{1}分鐘'
+  placeholders:
+  - 1
+- id: hoa.addon.1_fell_in_hardcore_at_level_2
+  enUS: '{1} fell in Hardcore at level {2}.'
+  zhCN: '{1}在硬核模式的{2}级阵亡。'
+  zhTW: '{1}在硬核模式的{2}級陣亡。'
+  placeholders:
+  - 1
+  - 2
+- id: hoa.addon.1_leaves_your_character_list_for_good_and_is_remembered_in_t
+  enUS: '{1} leaves your character list for good and is remembered in the graveyard.'
+  zhCN: '{1}将永久离开你的角色列表，并被铭记在墓地中。'
+  zhTW: '{1}將永久離開你的角色列表，並被銘記在墓地中。'
+  placeholders:
+  - 1
+- id: hoa.addon.previous_page
+  enUS: Previous page
+  zhCN: 上一页
+  zhTW: "上一頁"
+- id: hoa.addon.next_page
+  enUS: Next page
+  zhCN: 下一页
+  zhTW: "下一頁"
+- id: hoa.addon.not_collected
+  enUS: Not collected
+  zhCN: 未收藏
+  zhTW: "未收藏"
+- id: hoa.addon.tabards
+  enUS: Tabards
+  zhCN: 战袍
+  zhTW: "戰袍"
+- id: hoa.addon.fell
+  enUS: Fell
+  zhCN: 阵亡
+  zhTW: 陣亡
+- id: hoa.addon.revived
+  enUS: Revived
+  zhCN: 已复活
+  zhTW: 已復活
+- id: hoa.addon.unverified
+  enUS: Unverified
+  zhCN: 未验证
+  zhTW: 未驗證
+- id: hoa.addon.many_crashes
+  enUS: Many crashes
+  zhCN: 多次崩溃
+  zhTW: 多次崩潰
+- id: hoa.addon.regular
+  enUS: Regular
+  zhCN: 普通
+  zhTW: 普通
+- id: hoa.addon.hardcore_leaderboard
+  enUS: Hardcore Leaderboard
+  zhCN: 硬核排行榜
+  zhTW: 硬核排行榜
+- id: hoa.addon.your_1_clear_is_held_until_you_clear_the_levels_below_it_thi
+  enUS: Your {1} clear is held until you clear the levels below it this season, starting with {2}.
+  zhCN: 你的{1}通关记录会暂缓上榜，直到你本赛季通关其下方的等级，从{2}开始。
+  zhTW: 你的{1}通關記錄會暫緩上榜，直到你本賽季通關其下方的等級，從{2}開始。
+  placeholders:
+  - 1
+  - 2
+- id: hoa.addon.hardcore_characters_a_character_that_falls_keeps_its_place_m
+  enUS: Hardcore characters. A character that falls keeps its place, marked Fell. Revived (restored from a backup) and Unverified (runs missing from the leaderboard) characters aren't ranked.
+  zhCN: 硬核角色。阵亡的角色会保留名次，并标记为“阵亡”。已复活（从备份恢复）和未验证（远征记录未出现在排行榜上）的角色不参与排名。
+  zhTW: 硬核角色。陣亡的角色會保留名次，並標記為“陣亡”。已復活（從備份恢復）和未驗證（遠征記錄未出現在排行榜上）的角色不參與排名。

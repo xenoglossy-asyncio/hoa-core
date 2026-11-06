@@ -40,7 +40,7 @@ local function PadCreating()
 end
 
 local function PadPreviewing()
-	return Bonk and not Bonk.customizing and Bonk.heroes and not Bonk.heroes[BONK_CLASSES[Bonk.classIndex].token];
+	return Bonk and not Bonk.customizing and not BonkHero_Selected();
 end
 
 local function PadHeroScreen()
@@ -96,9 +96,13 @@ function HoAController_OnButton(name, down)
 		else
 			BonkHero_Play();
 		end
-	elseif ( name == "up" or name == "left" ) then
+	elseif ( name == "up" ) then
+		BonkHero_StepRow(-1);
+	elseif ( name == "down" ) then
+		BonkHero_StepRow(1);
+	elseif ( name == "left" ) then
 		BonkHero_StepClass(-1);
-	elseif ( name == "down" or name == "right" ) then
+	elseif ( name == "right" ) then
 		BonkHero_StepClass(1);
 	elseif ( name == "lb" and PadCreating() ) then
 		BonkHero_StepRace(-1);
@@ -137,9 +141,9 @@ local function PadPrompts()
 		return { { "a", L["hoa.ui.glue.create"] }, { "lbrb", L["hoa.ui.glue.race"] }, { "x", L["hoa.ui.glue.gender"] }, { "y", L["hoa.ui.glue.randomize"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.back"] } };
 	end
 	if ( PadPreviewing() ) then
-		return { { "a", L("hoa.ui.glue.create_1", BONK_CLASSES[Bonk.classIndex].display) }, { "dpad", L["hoa.ui.glue.class"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.quit"] } };
+		return { { "a", L("hoa.ui.glue.create_1", BonkHero_SelectedClass().display) }, { "dpad", L["hoa.ui.glue.character"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.quit"] } };
 	end
-	return { { "a", L["hoa.ui.glue.play"] }, { "dpad", L["hoa.ui.glue.class"] }, { "view", L["hoa.ui.glue.delete"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.quit"] } };
+	return { { "a", L["hoa.ui.glue.play"] }, { "dpad", L["hoa.ui.glue.character"] }, { "view", L["hoa.ui.glue.delete"] }, { "rs", L["hoa.ui.glue.turn"] }, { "b", L["hoa.ui.glue.quit"] } };
 end
 
 local function PadSetGlyph(texture, name)

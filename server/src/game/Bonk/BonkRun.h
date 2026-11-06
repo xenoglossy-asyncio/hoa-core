@@ -133,6 +133,7 @@ class BonkRun
         bool IsDungeon() const { return m_dungeonId != 0; }
         bool IsChallenge() const { return m_dungeonId != 0 || m_invaderId != 0; }
         bool IsInvasion() const { return m_invaderId != 0; }
+        std::string GetChallengeMapKey() const;
         std::string DescribeForLobby() const;
         void FollowToPortal();
 
@@ -162,6 +163,7 @@ class BonkRun
         void Update(uint32 diff);
         void Abort();
         void Surrender();
+        void SetConnectionLost(bool lost);
         bool SkipTime(uint32 seconds, std::string& error);
         bool StartMiniEventNow(BonkMiniEventType type, std::string& error);
         bool PlaceShrineNow(BonkShrineType type, std::string& error);
@@ -187,6 +189,7 @@ class BonkRun
         void DiscardEnchantOffers();
         void SendEnchants() const;
         void PlaceEnchanter(float x, float y, float z, float facing);
+        void UseHostEnchanter(ObjectGuid enchanter);
         void CloseVendor();
         bool SpawnVendorNow(std::string& error);
 
@@ -430,6 +433,10 @@ class BonkRun
         void ShowSandboxMenu(Creature* keeper, uint32 menu);
         void SelectSandboxOption(Creature* keeper, uint32 sender, uint32 action);
         bool RunSandboxVerb(std::string const& verb, uint32 first, uint32 second, std::string& error);
+        void RollSandboxDrops(uint8 quality, uint32 count);
+        void QueueSandboxGearOffer(uint8 quality);
+        void RollGroupTabardDrops();
+        void DropTestBags(Creature const* mob, uint32 count);
         void LeaveSandbox();
         time_t GetSkyTime() const;
 
@@ -624,6 +631,7 @@ class BonkRun
         };
         std::vector<VoidZone> m_voidZones;
         void EndVoidZone(VoidZone const& zone);
+        void EndVoidZones();
         std::vector<uint32> m_boltLandings;
         void UpdateVoidZones(uint32 diff);
         void UpdateHeroMark(uint32 diff);
@@ -660,6 +668,8 @@ class BonkRun
         bool IsMythic() const { return m_tier.key == "mythic"; }
         float GetScrapMultiplier() const;
         void PlacePortal(float x, float y, float baseZ);
+        bool HasPortalRoom(float x, float y, float z) const;
+        bool IsAboveTerrain(float x, float y, float z) const;
 
         void PruneMobs();
         BonkMapCreature const* PickCreature(BonkSpawnKind kind, int32 archetype = -1) const;
@@ -1283,6 +1293,7 @@ class BonkRun
             uint32 core = 0;
             uint32 swirl = 0;
             uint8 quality = 0;
+            std::map<ObjectGuid, uint8> memberQuality;
             std::set<ObjectGuid> takenBy;
         };
         bool MakeTierPiece(uint8 quality, PendingGear& piece) const;
@@ -1306,6 +1317,7 @@ class BonkRun
         uint32 GetScrapPoints(Item const* item) const;
         void GetOwnedTiers(uint32 entry, uint32& bestTier, bool& owned) const;
         uint8 RollGearQuality() const;
+        uint8 RollOwnBagQuality(bool boss);
         void UpdateGearDrops(uint32 diff);
         void CollectAllGear();
         void OfferGear();
@@ -1445,6 +1457,8 @@ class BonkRun
         void LogMinute();
         void LogDeath();
         void LogLoadout() const;
+        void BeginHardcoreRun();
+        void EndHardcoreRunOnAbort();
         void LogBuild() const;
         void LogRunEnd(bool wentHome, std::string const& build) const;
         void LogLevelClear() const;
@@ -1531,10 +1545,11 @@ class BonkRun
         bool m_ownPaused = false;
         bool m_groupHeld = false;
         bool m_away = false;
+        bool m_connectionLost = false;
         bool m_followPending = false;
         BonkMap m_followMap;
         uint32 m_followStage = 0;
-        bool WantsPause() const { return (m_ownPaused && (!m_coopNoPause || (m_menuOpen && m_coopPlayers <= 1))) || m_groupHeld || m_away; }
+        bool WantsPause() const { return !m_connectionLost && ((m_ownPaused && (!m_coopNoPause || (m_menuOpen && m_coopPlayers <= 1))) || m_groupHeld || m_away); }
         void ApplyPause(bool paused);
         bool m_wentHome = false;
 
@@ -1794,6 +1809,7 @@ class BonkRun
         void AddEnchantStats(float* passives) const;
         void DespawnEnchanter();
         bool IsNearEnchanter() const;
+        bool IsOwnSummon(Creature const* creature) const;
         float m_leechCarry = 0.0f;
         uint32 m_necroticCheckMs = 0;
         struct HeroMark
@@ -2483,6 +2499,11 @@ class BonkRun
         bool GetShamanCloudKind(OwnedWeapon const& owned, KeywordCloudKind& kind) const;
         bool IsLavaBurstOnBurning(SpellEntry const* spell, Unit const* victim) const;
         float GetShamanDamageMultiplier(SpellEntry const* spell, Unit const* victim) const;
+        float GetHunterDamageMultiplier(SpellEntry const* spell, Unit const* victim) const;
+        float GetMageSpellDamageMultiplier(SpellEntry const* spell, Unit const* victim) const;
+        bool IsChampion(Unit const* victim) const;
+        bool IsInDeepFreeze(Unit const* victim) const;
+        float GetSwipeBleedScale(Creature* mob) const;
         uint32 GetShamanExtraPets(OwnedWeapon const& owned);
         bool ApplyShamanKeyword(OwnedWeapon const& owned, Creature* mob, BonkKeyword keyword, uint32 stacks);
         void BurnWithFlametongue(OwnedWeapon& owned, Creature* target, uint32 stacks);
@@ -2661,6 +2682,7 @@ class BonkRun
         void StabOffHand(OwnedWeapon& owned, SpellEntry const* spellInfo, Creature* target, std::vector<Creature*> const& taken);
         void SlashOnward(OwnedWeapon& owned, SpellEntry const* spellInfo, Creature* target);
         void Mutilate(OwnedWeapon& owned, SpellEntry const* spellInfo, Creature* target);
+        void ShortenEnvenom();
         bool OpenRogueWindow(OwnedWeapon& owned, uint32& untilMs, uint32 auraSpellId);
         void StartShadowDance(OwnedWeapon& owned);
         void StartKillingSpree(OwnedWeapon& owned);
@@ -2713,6 +2735,8 @@ class BonkRun
         bool GetPaladinCloudKind(OwnedWeapon const& owned, KeywordCloudKind& kind) const;
         void OnPaladinCloudPulse(OwnedWeapon const& owned, KeywordCloud const& cloud);
         bool IsStandingInConsecration() const;
+        bool IsInConsecration(Unit const* unit) const;
+        size_t CountConsecrationsAround(Unit const* unit) const;
         bool IsPaladinNear() const;
         void CastExorcism(OwnedWeapon& owned, SpellEntry const* spellInfo);
         void SpinDivineStorm(OwnedWeapon& owned, SpellEntry const* spellInfo);

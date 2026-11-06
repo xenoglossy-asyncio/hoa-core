@@ -26,4 +26,5 @@ VALUES
   (20, 'Might', '+1% Power and +1% Max health.', 19, 1, 0, 30, 15, 0.333333, 'Spell_Holy_FistOfJustice', 8, 1, 1, 0, 0, '', ''),
   (21, 'Insight', '+2% experience in runs.', 12, 2, 0, 25, 15, 0.333333, 'Spell_Holy_MindSooth', 8, 1, 2, 0, 0, '', ''),
   (22, 'Fortune', '+3% gold and Scrap from runs.', 20, 3, 0, 20, 15, 0.333333, 'INV_Misc_Coin_01', 8, 1, 3, 0, 0, '', ''),
-  (23, 'Rewritten Fate', '+1 Glyph reroll per run.', 21, 1, 0, 2, 20, 2, 'INV_Misc_Rune_04', 4, 2, 4, 0, 0, '', '');
+  (23, 'Rewritten Fate', '+1 Glyph reroll per run.', 21, 1, 0, 2, 20, 2, 'INV_Misc_Rune_04', 4, 2, 4, 0, 0, '', ''),
+  (24, 'Darkmoon Tabard', 'Gives you a Darkmoon Tabard.', 22, 939001, 0, 1, 30, 0, 'INV_Shirt_GuildTabard_01', 8, 1, 4, 0, 0, '', '');

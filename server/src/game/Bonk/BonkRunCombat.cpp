@@ -274,6 +274,13 @@ void BonkRun::EndVoidZone(VoidZone const& zone)
         SendBonkAuraGone(m_player, zone.vortexKey);
 }
 
+void BonkRun::EndVoidZones()
+{
+    for (VoidZone const& zone : m_voidZones)
+        EndVoidZone(zone);
+    m_voidZones.clear();
+}
+
 void BonkRun::MarkHero(BonkEnemyHit const& burst, BonkEnemyHit const& pool, float radius, uint32 followMs, uint32 warnMs, uint32 poolMs)
 {
     if (m_state != STATE_RUNNING || m_paused || IsHeroMarked() || !m_player->IsAlive())
@@ -634,7 +641,8 @@ float BonkRun::GetDamageMultiplier(SpellEntry const* spell, Unit const* victim, 
         GetCastChargePower(spell, victim));
     float const mark = GetKeywordDamageMultiplier(spell, victim) * GetMageDamageMultiplier(victim) *
         GetShamanDamageMultiplier(spell, victim) * GetPriestDamageMultiplier(victim) * GetRogueDamageMultiplier(victim) *
-        GetPaladinDamageMultiplier(victim) * GetTrinketDamageMultiplier();
+        GetPaladinDamageMultiplier(victim) * GetHunterDamageMultiplier(spell, victim) * GetMageSpellDamageMultiplier(spell, victim) *
+        GetTrinketDamageMultiplier();
     if (!spell)
         return std::max(0.0f, 1.0f + percent / 100.0f) * GetGearDamageScale() * mark * GetCapstoneDamageMultiplier(false, victim) * minionScale;
 

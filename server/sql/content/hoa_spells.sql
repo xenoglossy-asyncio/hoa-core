@@ -282,8 +282,8 @@ WHERE `entry` = 60012 AND `build` = 5875;
 UPDATE `spell_template` SET
   `name` = 'Arcane Power',
   `nameSubtext` = '',
-  `description` = 'Launches 5 Arcane Missiles at the nearest enemy over 1 sec, each dealing Arcane damage. After each Blink, it fires all 5 at once at the nearest enemies and your spells deal 30% more damage for 4 sec.',
-  `auraDescription` = 'Launches 5 Arcane Missiles at the nearest enemy over 1 sec, each dealing Arcane damage. After each Blink, it fires all 5 at once at the nearest enemies and your spells deal 30% more damage for 4 sec.',
+  `description` = 'Launches 5 Arcane Missiles at the nearest enemy over 1 sec, each dealing Arcane damage, 50% more to elites, mini-bosses and bosses. After each Blink, it fires all 5 at once at the nearest enemies and your spells deal 30% more damage for 4 sec.',
+  `auraDescription` = 'Launches 5 Arcane Missiles at the nearest enemy over 1 sec, each dealing Arcane damage, 50% more to elites, mini-bosses and bosses. After each Blink, it fires all 5 at once at the nearest enemies and your spells deal 30% more damage for 4 sec.',
   `spellIconId` = 60013,
   `stackAmount` = 0,
   `durationIndex` = 28,

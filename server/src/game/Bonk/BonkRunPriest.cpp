@@ -74,6 +74,8 @@ namespace
     float const BONK_SHACKLE_TICK_SHARE       = 0.5f;
     int32 const BONK_MIND_FLAY_SLOW           = -30;
     int32 const BONK_MIND_FLAY_SLOW_MS        = 1000;
+    uint32 const BONK_MIND_FLAY_HEAL_DECAY    = 10;
+    float const BONK_MIND_FLAY_HEAL           = 0.2f;
     uint32 const BONK_MIND_BLAST_MAX_COPY     = 10;
     int32 const BONK_SURGE_OF_DARKNESS_MS     = 600000;
 
@@ -321,7 +323,10 @@ void BonkRun::ShortenHolyWord(uint32 ms)
         ms *= BONK_ARCHANGEL_WORD_SCALE;
     for (OwnedWeapon& owned : m_weapons)
         if (owned.weapon.behavior == BONK_BEHAVIOR_HOLY_WORD)
+        {
             owned.timer = std::max<int32>(0, owned.timer - int32(ms));
+            owned.pieResync = true;
+        }
 }
 
 Creature* BonkRun::FindPriestTarget(float range) const
@@ -747,7 +752,10 @@ void BonkRun::FlayMind(OwnedWeapon& owned, SpellEntry const* spellInfo)
     m_mindFlayTarget = target->GetObjectGuid();
     owned.timer = GetWeaponCooldown(owned);
     ShowStrike(m_player, spellInfo, target);
+    bool const feedsOnDecay = GetKeywordStacks(target, BONK_KEYWORD_DECAY) >= BONK_MIND_FLAY_HEAL_DECAY;
     DealShamanHit(spellInfo, owned.weapon.spellId, target, GetWeaponDamage(owned));
+    if (feedsOnDecay)
+        HealPriest(BONK_MIND_FLAY_HEAL, owned.weapon.spellId, false);
     if (owned.weapon.id == BONK_WEAPON_MIND_SEAR)
         for (Creature* mob : GetMobsInRange(GetWeaponRadius(owned), target))
             DealShamanHit(spellInfo, owned.weapon.spellId, mob, GetWeaponDamage(owned) * BONK_MIND_SEAR_SHARE);

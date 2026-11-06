@@ -1277,3 +1277,15 @@
   enUS: Windows didn't let the launcher restart itself. Close the launcher and open it again to finish the update.
   zhCN: Windows 不允许启动器自行重启。请关闭启动器后重新打开，以完成更新。
   zhTW: "Windows 不允許啟動器自行重新啟動。請關閉啟動器後重新開啟，以完成更新。"
+- id: hoa.launcher.no_data_arrived_for_0_0_seconds
+  enUS: 'No data arrived for {0:0} seconds'
+  zhCN: '{0:0} 秒内没有收到数据'
+  zhTW: '{0:0} 秒內沒有收到資料'
+- id: hoa.launcher.couldn_t_write_0_1
+  enUS: "Couldn't write {0} ({1})."
+  zhCN: 无法写入 {0}（{1}）。
+  zhTW: "無法寫入 {0}（{1}）。"
+- id: hoa.launcher.the_partly_downloaded_file_didn_t_match_and_was_started_over
+  enUS: "The partly downloaded file didn't match and was started over"
+  zhCN: 下载了一部分的文件校验不匹配，已重新开始下载
+  zhTW: "下載了一部分的檔案校驗不匹配，已重新開始下載"

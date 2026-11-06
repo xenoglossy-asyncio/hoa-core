@@ -89,6 +89,8 @@
 #include "Bonk/BonkFoundGear.h"
 #include "Bonk/BonkVersion.h"
 #include "Bonk/BonkCoop.h"
+#include "Bonk/BonkHardcore.h"
+#include "Bonk/BonkPlayer.h"
 
 #include <chrono>
 
@@ -631,7 +633,7 @@ void World::LoadConfigSettings(bool reload)
 
     setConfig(CONFIG_BOOL_WORLD_AVAILABLE, "WorldAvailable", true);
     setConfig(CONFIG_UINT32_CHARACTERS_CREATING_DISABLED, "CharactersCreatingDisabled", 0);
-    setConfigMinMax(CONFIG_UINT32_CHARACTERS_PER_REALM, "CharactersPerRealm", 10, 1, 10);
+    setConfigMinMax(CONFIG_UINT32_CHARACTERS_PER_REALM, "CharactersPerRealm", 50, 1, 50);
     setConfigMin(CONFIG_UINT32_CHARACTERS_PER_ACCOUNT, "CharactersPerAccount", 50, getConfig(CONFIG_UINT32_CHARACTERS_PER_REALM));
     setConfig(CONFIG_BOOL_LIMIT_PLAY_TIME, "LimitPlayTime", false);
     setConfig(CONFIG_BOOL_RESTRICT_UNVERIFIED_ACCOUNTS, "RestrictUnverifiedAccounts", false);
@@ -1843,6 +1845,7 @@ void World::SetInitialWorldSettings()
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading Vanilla Bonk tables");
     sBonkMgr.Load();
     sBonkFound.Load();
+    SettleBonkHardcoreRuns();
 
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Loading AH bot");
     sAuctionHouseBotMgr.Load();
@@ -2454,7 +2457,10 @@ void World::KickAll()
     for (const auto& itr : m_sessions)
         itr.second->KickPlayer();
     for (const auto& itr : m_disconnectedSessions)
+    {
         (*itr).KickPlayer();
+        (*itr).KickDisconnectedFromWorld();
+    }
 }
 
 // Kick (and save) all players with security level less `sec`
@@ -2710,6 +2716,13 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
     // ignore if server shutdown at next tick
     if (m_stopEvent)
         return;
+
+    if (time < BonkPlayer::HardcoreShutdownHoldSeconds() && BonkPlayer::OpenHardcoreRuns() > 0 && !(options & SHUTDOWN_MASK_IDLE))
+    {
+        if (m_ShutdownTimer && m_ShutdownTimer <= BonkPlayer::HardcoreShutdownHoldSeconds())
+            return;
+        time = BonkPlayer::HardcoreShutdownHoldSeconds();
+    }
 
     m_ShutdownMask = options;
     m_ExitCode = exitcode;

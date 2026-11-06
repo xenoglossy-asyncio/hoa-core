@@ -225,6 +225,11 @@ void BonkCoop::JoinHostGroup(Player* guest)
                 Player::RemoveFromGroup(current, guid);
         group = host->GetGroup();
     }
+    if (host->GetBonkPlayer()->IsHardcore())
+    {
+        SendAway(guest, BONK_STRING_COOP_HOST_HARDCORE);
+        return;
+    }
     if (group && ClassTaken(group, guest))
     {
         SendAway(guest, BONK_STRING_COOP_CLASS_TAKEN);
@@ -338,7 +343,7 @@ namespace
         sAccountMgr.DeleteAccount(accountId);
         CharacterDatabase.DirectPExecute("DELETE i FROM `item_instance` i JOIN `bonk_account_bank` b ON b.`item_guid` = i.`guid` WHERE b.`account` = %u", accountId);
         for (char const* table : GUEST_ACCOUNT_TABLES)
-            CharacterDatabase.DirectPExecute("DELETE FROM `%s` WHERE `account` = %u", table, accountId);
+            CharacterDatabase.DirectPExecute("DELETE FROM `%s` WHERE `account` IN (%u, %u)", table, accountId, BonkPlayer::GetStagedCharacterAccount(accountId));
     }
 }
 

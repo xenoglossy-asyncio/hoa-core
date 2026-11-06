@@ -2,6 +2,8 @@
 #include "BonkLocale.h"
 #include "BonkMastery.h"
 #include "BonkPlayer.h"
+#include "BonkTransmog.h"
+#include "ObjectMgr.h"
 #include "Creature.h"
 #include "Database/DatabaseEnv.h"
 #include "HoaProtocol.h"
@@ -137,6 +139,7 @@ void BonkQuests::Load()
             case BONK_REWARD_GLYPH:     rewardExists = sBonkMgr.GetGlyph(quest.rewardValue) != nullptr; break;
             case BONK_REWARD_CARD_BAN:
             case BONK_REWARD_GLYPH_BAN: rewardExists = quest.rewardValue != 0; break;
+            case BONK_REWARD_APPEARANCE:      rewardExists = sObjectMgr.GetItemPrototype(quest.rewardValue) != nullptr; break;
             default: break;
         }
         if (!rewardExists)
@@ -574,6 +577,15 @@ void BonkQuests::OnLevelCleared(Player* player, uint32 classLevel, uint32 accoun
     });
 }
 
+void BonkQuests::OnDungeonCleared(Player* player, uint32 mapId)
+{
+    Track(player, [&](BonkQuest const& q, AccountProgress& progress)
+    {
+        if (q.type == BONK_QUEST_CLEAR_DUNGEON && q.target == mapId)
+            Advance(player, progress, q, 1, false);
+    });
+}
+
 void BonkQuests::OnBossKilled(Player* player, uint32 tierId, uint32 stage, uint32 second)
 {
     Track(player, [&](BonkQuest const& q, AccountProgress& progress)
@@ -662,6 +674,9 @@ void BonkQuests::Complete(Player* player, BonkQuest const& quest)
             break;
         case BONK_REWARD_TITLE:
             bonk->SendTitles();
+            break;
+        case BONK_REWARD_APPEARANCE:
+            BonkTransmog::UnlockAppearance(player, quest.rewardValue);
             break;
         default:
             break;
@@ -779,6 +794,13 @@ std::string BonkQuests::DescribeReward(BonkQuest const& quest, std::string* icon
         case BONK_REWARD_GLYPH_BAN:
             *icon = "INV_Misc_Ticket_Tarot_Stack_01";
             return sBonkLocale.GetString(quest.rewardValue == 1 ? BONK_STRING_REWARD_GLYPH_BAN_ONE : BONK_STRING_REWARD_GLYPH_BANS, locale, { std::to_string(quest.rewardValue) });
+        case BONK_REWARD_APPEARANCE:
+            if (ItemPrototype const* proto = sObjectMgr.GetItemPrototype(quest.rewardValue))
+            {
+                *icon = quest.icon;
+                return sBonkLocale.GetString(BONK_STRING_REWARD_APPEARANCE, locale, { proto->Name1 });
+            }
+            break;
         case BONK_REWARD_TITLE:
         {
             auto const title = m_titles.find(quest.rewardValue);

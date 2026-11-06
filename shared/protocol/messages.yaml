@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 30
+version: 31
 messages:
   - name: aura_value
     id: 0x0002
@@ -429,6 +429,7 @@ messages:
       - { name: other_slot, type: u32 }
       - { name: other_replaced, type: u32 }
       - { name: extra, type: string }
+      - { name: new_look, type: bool }
   - name: gear_close
     id: 0x0042
     direction: server_to_client
@@ -1255,3 +1256,55 @@ messages:
     direction: server_to_client
     fields:
       - { name: key, type: u32 }
+  - name: hardcore_rested
+    id: 0x00AD
+    direction: server_to_client
+    fields: []
+  - name: hardcore_fell
+    id: 0x00AE
+    direction: server_to_client
+    fields:
+      - { name: name, type: string }
+      - { name: class_id, type: u8 }
+      - { name: level, type: u32 }
+      - { name: best_level, type: u32 }
+      - { name: mastery, type: u32 }
+      - { name: played, type: u32 }
+      - { name: runs, type: u32 }
+      - { name: kills, type: u32 }
+      - { name: killer, type: string }
+      - { name: map, type: string }
+      - { name: ironman, type: bool }
+  - name: mog_outfit
+    id: 0x00AF
+    direction: server_to_client
+    fields:
+      - { name: slot, type: u8 }
+      - { name: name, type: string }
+  - name: mog_begin
+    id: 0x00B0
+    direction: server_to_client
+    fields: []
+  - name: mog_slot
+    id: 0x00B1
+    direction: server_to_client
+    fields:
+      - { name: slot, type: u8 }
+      - { name: worn_entry, type: u32 }
+      - { name: look, type: u32 }
+      - { name: group, type: u8 }
+      - { name: catalog_entry, type: u32 }
+      - { name: can_hide, type: bool }
+  - name: mog_look
+    id: 0x00B2
+    direction: server_to_client
+    fields:
+      - { name: group, type: u8 }
+      - { name: entry, type: u32 }
+      - { name: quality, type: u32 }
+      - { name: owned, type: bool }
+      - { name: source, type: string }
+  - name: mog_end
+    id: 0x00B3
+    direction: server_to_client
+    fields: []

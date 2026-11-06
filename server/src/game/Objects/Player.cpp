@@ -83,6 +83,7 @@
 #include "world/scourge_invasion.h"
 #include "world/world_event_wareffort.h"
 #include "Bonk/BonkPlayer.h"
+#include "Bonk/BonkTransmog.h"
 
 #include <climits>
 
@@ -4486,6 +4487,8 @@ void Player::DeleteFromDB(ObjectGuid playerGuid, uint32 accountId, bool updateRe
             CharacterDatabase.PExecute("DELETE FROM `bonk_character_talent` WHERE `guid` = '%u'", lowGuid);
             CharacterDatabase.PExecute("DELETE FROM `bonk_character_upgrade` WHERE `guid` = '%u'", lowGuid);
             BonkPlayer::DeleteIronmanProgress(lowGuid);
+            CharacterDatabase.PExecute("DELETE FROM `bonk_hardcore` WHERE `guid` = '%u'", lowGuid);
+            BonkPlayer::DeleteCharacterProgress(lowGuid);
             CharacterDatabase.CommitTransaction();
             break;
         }
@@ -10191,6 +10194,8 @@ Item* Player::StoreItem(ItemPosCountVec const& dest, Item* pItem, bool update)
 {
     if (!pItem)
         return nullptr;
+    if (IsInWorld())
+        sBonkTransmog.Collect(this, pItem->GetEntry());
 
     Item* lastItem = pItem;
 
@@ -10445,15 +10450,20 @@ void Player::SetVisibleItemSlot(uint8 slot, Item const* pItem)
     {
         SetGuidValue(PLAYER_VISIBLE_ITEM_1_CREATOR + (slot * MAX_VISIBLE_ITEM_OFFSET), pItem->GetGuidValue(ITEM_FIELD_CREATOR));
 
+        if (IsInWorld())
+            sBonkTransmog.Collect(this, pItem->GetEntry());
+        uint32 const shownEntry = sBonkTransmog.GetVisibleEntry(this, slot, pItem);
+        bool const ownLook = shownEntry == pItem->GetEntry();
+
         int VisibleBase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
-        SetUInt32Value(VisibleBase + 0, pItem->GetEntry());
+        SetUInt32Value(VisibleBase + 0, shownEntry);
 
         for (int i = 0; i < MAX_INSPECTED_ENCHANTMENT_SLOT; ++i)
             SetUInt32Value(VisibleBase + 1 + i, pItem->GetEnchantmentId(EnchantmentSlot(i)));
 
         // Use SetInt16Value to prevent set high part to FFFF for negative value
-        SetInt16Value(PLAYER_VISIBLE_ITEM_1_PROPERTIES + (slot * MAX_VISIBLE_ITEM_OFFSET), 0, pItem->GetItemRandomPropertyId());
-        SetUInt32Value(PLAYER_VISIBLE_ITEM_1_PROPERTIES + 1 + (slot * MAX_VISIBLE_ITEM_OFFSET), pItem->GetItemSuffixFactor());
+        SetInt16Value(PLAYER_VISIBLE_ITEM_1_PROPERTIES + (slot * MAX_VISIBLE_ITEM_OFFSET), 0, ownLook ? pItem->GetItemRandomPropertyId() : 0);
+        SetUInt32Value(PLAYER_VISIBLE_ITEM_1_PROPERTIES + 1 + (slot * MAX_VISIBLE_ITEM_OFFSET), ownLook ? pItem->GetItemSuffixFactor() : 0);
     }
     else
     {

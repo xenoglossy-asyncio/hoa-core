@@ -96,7 +96,10 @@ bool BonkRun::Begin(std::string& error)
     m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
     m_player->RemoveAurasDueToSpell(BONK_SPELL_UNHIT_POWER_AURA);
 
-    return m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error);
+    if (!(m_sandbox ? TeleportToSandbox(error) : TeleportToStage(m_map, error)))
+        return false;
+    BeginHardcoreRun();
+    return true;
 }
 
 std::string BonkRun::DescribeForLobby() const

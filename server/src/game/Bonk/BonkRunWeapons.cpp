@@ -171,6 +171,8 @@ void BonkRun::StrikeWith(OwnedWeapon& owned, SpellEntry const* spellInfo, Creatu
         damageShare *= GetShieldSlamMultiplier(owned);
     if (weapon.behavior == BONK_BEHAVIOR_VENGEANCE)
         damageShare *= m_vengeanceShare;
+    if (weapon.behavior == BONK_BEHAVIOR_BLOODTHIRST && IsEnraged())
+        damageShare *= BONK_BLOODTHIRST_ENRAGED;
 
     optional<int32> basePoints[MAX_EFFECT_INDEX];
     GetBasePoints(owned, spellInfo, damageShare, basePoints);
@@ -1454,6 +1456,16 @@ void BonkRun::DespawnVipers()
             if (Creature* viper = map->GetCreature(released.guid))
                 viper->DespawnOrUnsummon();
     m_vipers.clear();
+}
+
+float BonkRun::GetHunterDamageMultiplier(SpellEntry const* spell, Unit const* victim) const
+{
+    if (!spell || !victim)
+        return 1.0f;
+    auto root = m_spellRoots.find(spell->Id);
+    if (root == m_spellRoots.end() || root->second != BONK_WEAPON_EXPLOSIVE_TRAP)
+        return 1.0f;
+    return 1.0f + BONK_TRAP_POISON_BONUS * GetKeywordStacks(victim, BONK_KEYWORD_POISON);
 }
 
 bool BonkRun::GetHunterCloudKind(OwnedWeapon const& owned, KeywordCloudKind& kind) const

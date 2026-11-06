@@ -6061,3 +6061,64 @@
   enUS: Another program changed the game while it was running, so your runs won't count for the leaderboard until you restart the game.
   zhCN: 另一个程序在运行期间修改了游戏，因此在你重启游戏之前，跑团不会计入排行榜。
   zhTW: "另一個程式在執行期間修改了遊戲，因此在你重新啟動遊戲之前，跑團不會計入排行榜。"
+- id: hoa.msg.hardcore_fallen_relog
+  legacy_server_id: 1132
+  enUS: Your character has fallen in Hardcore. Return to character select to play on as a regular character.
+  zhCN: 你的角色已在硬核模式中阵亡。返回角色选择即可作为普通角色继续游玩。
+  zhTW: "你的角色已在硬核模式中陣亡。返回角色選擇即可作為普通角色繼續遊玩。"
+- id: hoa.msg.coop_host_hardcore
+  legacy_server_id: 1133
+  enUS: Your host is playing a Hardcore character. Hardcore characters can't play co-op yet.
+  zhCN: 房主正在使用硬核角色。硬核角色暂时不能参与联机。
+  zhTW: "房主正在使用硬核角色。硬核角色暫時不能參與聯機。"
+- id: hoa.msg.appearance_collected
+  legacy_server_id: 1134
+  enUS: "{1} has been added to your appearance collection."
+  zhCN: "{1}已加入你的外观收藏。"
+  zhTW: "{1}已加入你的外觀收藏。"
+  placeholders:
+  - 1
+- id: hoa.msg.transmog_equip_first
+  legacy_server_id: 1135
+  enUS: Equip an item in that slot first.
+  zhCN: 请先在该栏位装备一件物品。
+  zhTW: "請先在該欄位裝備一件物品。"
+- id: hoa.msg.transmog_not_collected
+  legacy_server_id: 1136
+  enUS: You haven't collected that appearance.
+  zhCN: 你还没有收集那个外观。
+  zhTW: "你還沒有收集那個外觀。"
+- id: hoa.msg.transmog_doesnt_fit
+  legacy_server_id: 1137
+  enUS: That appearance can't be used on the item in that slot.
+  zhCN: 那个外观不能用于该栏位的物品。
+  zhTW: "那個外觀不能用於該欄位的物品。"
+- id: hoa.msg.transmog_only_in_town
+  legacy_server_id: 1139
+  enUS: You can change your appearance only in town.
+  zhCN: 只能在城镇中更改外观。
+  zhTW: "只能在城鎮中更改外觀。"
+- id: hoa.msg.cant_be_refunded
+  legacy_server_id: 1140
+  enUS: "{1} can't be refunded."
+  zhCN: "{1}无法退还。"
+  zhTW: "{1}無法退還。"
+  placeholders:
+  - 1
+- id: hoa.msg.reward_appearance
+  legacy_server_id: 1141
+  enUS: "{1} appearance"
+  zhCN: "{1}外观"
+  zhTW: "{1}外觀"
+  placeholders:
+  - 1
+- id: hoa.msg.hardcore_rest_only_fallen
+  legacy_server_id: 1142
+  enUS: Only a character that just fell in Hardcore can be laid to rest.
+  zhCN: 只有刚在硬核模式中阵亡的角色才能安息。
+  zhTW: "只有剛在硬核模式中陣亡的角色才能安息。"
+- id: hoa.msg.transmog_equip_tabard_first
+  legacy_server_id: 1143
+  enUS: Equip a tabard first. Durgan Ironbelly, the gear vendor, sells a Blank Tabard.
+  zhCN: 请先装备一件战袍。装备商人 Durgan Ironbelly 出售空白战袍。
+  zhTW: "請先裝備一件戰袍。裝備商人 Durgan Ironbelly 出售空白戰袍。"

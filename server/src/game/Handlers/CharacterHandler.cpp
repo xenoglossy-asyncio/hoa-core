@@ -181,7 +181,7 @@ void WorldSession::HandleCharEnumOpcode(NullClientPacket const& /*packet*/)
                                   "FROM `characters` LEFT JOIN `character_pet` ON `characters`.`guid`=`character_pet`.`owner_guid` AND `character_pet`.`slot`='%u' "
                                   "LEFT JOIN `guild_member` ON `characters`.`guid` = `guild_member`.`guid` "
                                   "WHERE `characters`.`account` = '%u' ORDER BY `characters`.`create_time`, `characters`.`guid` "
-                                  "LIMIT 0,10",
+                                  "LIMIT 0,50",
                                   PET_SAVE_AS_CURRENT, GetAccountId());
 }
 
@@ -277,7 +277,15 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CharCreate co
         return;
     }
 
+    if (BonkPlayer::IsHardcoreName(safeName))
+    {
+        BonkPlayer::RequestHardcore(GetAccountId());
+        sendResponse(CHAR_CREATE_SUCCESS);
+        return;
+    }
+
     bool const ironman = BonkPlayer::TakeIronmanRequest(GetAccountId());
+    bool const hardcore = BonkPlayer::TakeHardcoreRequest(GetAccountId());
 
     if (!BonkPlayer::IsPlayableClass(packet.class_))
     {
@@ -344,6 +352,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CharCreate co
         m_charactersCount += 1;
         if (ironman)
             BonkPlayer::MarkIronman(guidLow);
+        if (hardcore)
+            BonkPlayer::MarkHardcore(guidLow);
+        BonkPlayer::AdoptClassProgress(guidLow);
 
         LoginDatabase.PExecute("REPLACE INTO `realmcharacters` (`numchars`, `acctid`, `realmid`) VALUES (%u, %u, %u)", m_charactersCount, GetAccountId(), realmID);
 
@@ -744,6 +755,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder *holder)
         if (pCurrChar->GetDeathState() == CORPSE)
             pCurrChar->KillPlayer();
         BonkCoop::OnReconnected(pCurrChar);
+        pCurrChar->GetBonkPlayer()->OnHardcoreReconnected();
     }
     pCurrChar->RestorePendingTeleport();
 

@@ -634,6 +634,31 @@ bool ChatHandler::HandleBonkGearCommand(char* args)
             SendSysMessage("No Sayge within 10 yards.");
         return true;
     }
+    if (tab.compare(0, 12, "testtabards ") == 0 && GetAccessLevel() >= SEC_GAMEMASTER)
+    {
+        BonkRun* run = m_session->GetPlayer()->GetBonkPlayer()->GetRun();
+        uint32 const rolls = uint32(atoi(tab.c_str() + 12));
+        if (!run)
+            SendSysMessage("You are not in a run.");
+        else
+            for (uint32 roll = 0; roll < rolls; ++roll)
+                run->RollGroupTabardDrops();
+        return true;
+    }
+    if (tab.compare(0, 9, "testbags ") == 0 && GetAccessLevel() >= SEC_GAMEMASTER)
+    {
+        BonkRun* run = m_session->GetPlayer()->GetBonkPlayer()->GetRun();
+        Creature* mob = GetSelectedCreature();
+        if (run && !mob)
+            for (ObjectGuid const& guid : run->GetMobGuids())
+                if ((mob = m_session->GetPlayer()->GetMap()->GetCreature(guid)))
+                    break;
+        if (!run || !mob)
+            SendSysMessage("Target a creature in a run.");
+        else
+            run->DropTestBags(mob, uint32(atoi(tab.c_str() + 9)));
+        return true;
+    }
     if (tab == "testvault" && GetAccessLevel() >= SEC_GAMEMASTER)
     {
         BonkRun* run = m_session->GetPlayer()->GetBonkPlayer()->GetRun();
@@ -861,6 +886,17 @@ bool ChatHandler::HandleBonkCodexCommand(char*)
     return true;
 }
 
+bool ChatHandler::HandleBonkRestCommand(char* /*args*/)
+{
+    Player* player = m_session->GetPlayer();
+    if (!player->GetBonkPlayer()->RequestRest())
+    {
+        SendSysMessage(player->GetBonkPlayer()->GetString(BONK_STRING_HARDCORE_REST_ONLY_FALLEN).c_str());
+        return true;
+    }
+    return true;
+}
+
 bool ChatHandler::HandleBonkHelloCommand(char* args)
 {
     Player* player = m_session->GetPlayer();
@@ -876,6 +912,7 @@ bool ChatHandler::HandleBonkHelloCommand(char* args)
     bonk->SetAddonReady();
     SendAddonData(player);
     bonk->SendUpdateNotices();
+    bonk->SendUnannouncedFall();
     return true;
 }
 
