@@ -159,8 +159,73 @@ do
 	lineSub:SetPoint("TOPRIGHT", lineTitle, "BOTTOMRIGHT", 0, -2);
 	lineSub:SetJustifyH("RIGHT");
 
+	local room = CreateFrame("Frame", "VanillaBonkCoopRoom", UIParent);
+	room:SetWidth(440);
+	room:SetHeight(360);
+	room:SetPoint("CENTER", UIParent, "CENTER", 0, 20);
+	room:SetFrameStrata("DIALOG");
+	room:EnableMouse(true);
+	DarkBackdrop(room);
+	room:Hide();
+	tinsert(UISpecialFrames, "VanillaBonkCoopRoom");
+	room.title = room:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge");
+	room.title:SetPoint("TOP", room, "TOP", 0, -18);
+	room.address = room:CreateFontString(nil, "ARTWORK", "GameFontHighlight");
+	room.address:SetPoint("TOPLEFT", room, "TOPLEFT", 24, -54);
+	room.address:SetWidth(392);
+	room.address:SetJustifyH("LEFT");
+	room.count = room:CreateFontString(nil, "ARTWORK", "GameFontNormal");
+	room.count:SetPoint("TOPLEFT", room, "TOPLEFT", 24, -78);
+	room.members = {};
+	for index = 1, 4 do
+		local row = CreateFrame("Frame", nil, room);
+		row:SetWidth(392);
+		row:SetHeight(26);
+		row:SetPoint("TOPLEFT", room, "TOPLEFT", 24, -(108 + (index - 1) * 34));
+		row.name = row:CreateFontString(nil, "ARTWORK", "GameFontNormal");
+		row.name:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0);
+		row.name:SetJustifyH("LEFT");
+		row.sub = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
+		row.sub:SetPoint("TOPLEFT", row, "TOPLEFT", 0, -14);
+		row.sub:SetJustifyH("LEFT");
+		row:Hide();
+		room.members[index] = row;
+	end
+	local roomClose = CreateFrame("Button", nil, room, "UIPanelButtonTemplate");
+	roomClose:SetWidth(120);
+	roomClose:SetHeight(24);
+	roomClose:SetPoint("BOTTOM", room, "BOTTOM", 0, 18);
+	roomClose:SetText(L["hoa.addon.close"]);
+	roomClose:SetScript("OnClick", function() room:Hide(); end);
+	line:EnableMouse(true);
+	line:SetScript("OnMouseUp", function()
+		if ( room:IsShown() ) then
+			room:Hide();
+		elseif ( Coop.host ) then
+			room:Show();
+		end
+	end);
+
+	local function ShowRoom(host)
+		room.title:SetText(L("hoa.addon.lobby_1", host.name or ""));
+		room.address:SetText("IP: "..(host.address or ""));
+		room.count:SetText(host.members.."/"..(host.max or "4"));
+		for index = 1, 4 do
+			local row = room.members[index];
+			local member = host.memberList and host.memberList[index];
+			if ( member ) then
+				row.name:SetText(member.name or "");
+				row.sub:SetText(L["hoa.addon.mastery_2"].." "..(member.mastery or "0").."  ·  "..Label(CLASS_NAMES[member.class or ""] or member.class or ""));
+				row:Show();
+			else
+				row:Hide();
+			end
+		end
+		room:Show();
+	end
+
 	local function Read(lines)
-		local host = { members = 0, requests = {} };
+		local host = { members = 0, memberList = {}, requests = {} };
 		for _, fields in lines do
 			if ( fields[1] == "state" ) then
 				host.state = fields[2];
@@ -168,8 +233,11 @@ do
 				host.name = fields[2];
 				host.code = fields[3];
 				host.max = fields[4];
+			elseif ( fields[1] == "address" ) then
+				host.address = fields[2];
 			elseif ( fields[1] == "member" ) then
 				host.members = host.members + 1;
+				table.insert(host.memberList, { name = fields[2], class = fields[3], mastery = fields[4] });
 			elseif ( fields[1] == "request" ) then
 				table.insert(host.requests, { ask = fields[2], name = fields[3], class = fields[4], race = fields[5], mastery = tonumber(fields[6]) or 0, best = tonumber(fields[7]) or 0, seconds = tonumber(fields[8]) or 30 });
 			end
@@ -203,22 +271,33 @@ do
 	local function ShowHostState(lines)
 		Coop.pollEvery = lines and Coop.pollQuiet or Coop.pollAway;
 		if ( not lines ) then
+			Coop.host = nil;
 			line:Hide();
+			room:Hide();
+			Coop.roomShown = nil;
 			HidePrompts();
 			return;
 		end
 		local host = Read(lines);
+		Coop.host = host;
 		if ( host.state ~= "hosting" ) then
 			line:Hide();
+			room:Hide();
+			Coop.roomShown = nil;
 			HidePrompts();
 			return;
 		end
 		lineTitle:SetText(L("hoa.addon.lobby_1", host.name or ""));
-		lineSub:SetText(L("hoa.addon.1_2_players_code_3", host.members, host.max or "4", host.code or ""));
+		lineSub:SetText(host.members.."/"..(host.max or "4").."  ·  IP: "..(host.address or ""));
 		if ( GetRealZoneText() == "GM Island" ) then
 			line:Show();
+			if ( not Coop.roomShown ) then
+				Coop.roomShown = 1;
+				ShowRoom(host);
+			end
 		else
 			line:Hide();
+			room:Hide();
 		end
 		local waiting = {};
 		for _, request in host.requests do
@@ -231,7 +310,10 @@ do
 
 	local function Refresh()
 		if ( HoaCoop_GetGate and HoaCoop_GetGate() ) then
+			Coop.host = nil;
 			line:Hide();
+			room:Hide();
+			Coop.roomShown = nil;
 			HidePrompts();
 			return;
 		end
