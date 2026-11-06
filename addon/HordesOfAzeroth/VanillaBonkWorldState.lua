@@ -22,8 +22,8 @@ end
 WorldStateAlwaysUpFrame_Update = HideWorldStateUI
 
 local watcher = CreateFrame("Frame")
+UI.Module("worldState"):OnEnterWorld(HideWorldStateUI)
 UI.Module("worldState"):Listen({
-    PLAYER_ENTERING_WORLD = HideWorldStateUI,
     UPDATE_WORLD_STATES = HideWorldStateUI,
     ZONE_CHANGED_NEW_AREA = HideWorldStateUI,
 })

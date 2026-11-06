@@ -3807,18 +3807,18 @@ function ChatFrame_OnEvent(event)
     OriginalChatFrameOnEvent(event)
 end
 
+UI.Module("enterWorld"):OnEnterWorld(function()
+    VB.lastMoney = GetMoney()
+    if not VB.helloSent then
+        VB.helloSent = true
+        Command("hello " .. UI.Language())
+    end
+end)
 UI.Module("enterWorld"):Listen({
     PLAYER_MONEY = function()
         PlayPurchaseSound()
         if shop:IsShown() then
             RefreshShop()
-        end
-    end,
-    PLAYER_ENTERING_WORLD = function()
-        VB.lastMoney = GetMoney()
-        if not VB.helloSent then
-            VB.helloSent = true
-            Command("hello " .. UI.Language())
         end
     end,
 })

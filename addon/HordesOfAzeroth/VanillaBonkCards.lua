@@ -373,7 +373,6 @@ UI.ListenHoa({
     HOA_CARD_NOW = function(now)
         handlers["cardnow"]({ false, tostring(now.id), now.text })
     end,
-    HOA_RUN_START = Clear,
-    HOA_RUN_END = Clear,
 })
+UI.Module("cards"):OnRunStart(Clear):OnRunEnd(Clear)
 

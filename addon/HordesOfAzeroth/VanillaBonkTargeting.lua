@@ -30,9 +30,8 @@ local function EnterRun()
 end
 
 UI.ListenHoa({
-    HOA_RUN_START = EnterRun,
     HOA_RUN_STATE = EnterRun,
-    HOA_RUN_END = function()
-        inRun = false
-    end,
 })
+UI.Module("targeting"):OnRunStart(EnterRun):OnRunEnd(function()
+    inRun = false
+end)

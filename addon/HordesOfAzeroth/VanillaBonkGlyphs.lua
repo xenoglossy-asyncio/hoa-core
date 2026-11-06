@@ -532,16 +532,15 @@ UI.ListenHoa({
             Fill()
         end
     end,
-    HOA_RUN_START = function()
-        taken = {}
-        counts = {}
-        RefreshSockets()
-    end,
-    HOA_RUN_END = function()
-        frame.side = false
-        Close()
-        frame.alpha = 0
-        frame:Hide()
-    end,
 })
+UI.Module("glyphs"):OnRunStart(function()
+    taken = {}
+    counts = {}
+    RefreshSockets()
+end):OnRunEnd(function()
+    frame.side = false
+    Close()
+    frame.alpha = 0
+    frame:Hide()
+end)
 

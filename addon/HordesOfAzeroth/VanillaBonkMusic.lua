@@ -33,7 +33,4 @@ UI.ListenHoa({
     end,
 })
 
-UI.ListenHoa({
-    HOA_RUN_START = StopBossMusic,
-    HOA_RUN_END = StopBossMusic,
-})
+UI.Module("music"):OnRunStart(StopBossMusic):OnRunEnd(StopBossMusic)

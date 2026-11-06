@@ -11,6 +11,17 @@ The addon is a **presentation layer only**:
 - No longer computes item level, gear stats or other values the server already knows; those come from the content pack or protocol.
 - All text comes from Lua tables generated from `shared/i18n`; the language is the server/client setting, never the installed client language. `VanillaBonkLocaleData.lua` is generated from `shared/i18n/addon/addon.yaml` and holds every language in one file.
 
+## Module system
+
+Each feature is a named module: `UI.Module("bags")` returns the same table for the same name.
+`Module:Listen(handlers, frame)` owns one event frame (or reuses an existing one), and
+`Module:OnEnterWorld`, `:OnLeaveWorld`, `:OnRunStart`, `:OnRunEnd` register lifecycle hooks. One
+dispatcher in `VanillaBonkUI.lua` owns `PLAYER_ENTERING_WORLD`, `PLAYER_LEAVING_WORLD` and the
+typed `HOA_RUN_START`/`HOA_RUN_END` events and calls the hooks in load order, passing the run
+start/end fields. `UI.modules` / `UI.moduleOrder` list the modules for diagnostics, and
+`UI.RunLifecycle(field, ...)` dispatches a lifecycle manually. The core run state in
+`VanillaBonk.lua` still handles the two run messages directly.
+
 ## Planned layout
 
 ```

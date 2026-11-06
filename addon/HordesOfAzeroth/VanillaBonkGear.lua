@@ -466,9 +466,8 @@ UI.ListenHoa({
             Open()
         end
     end,
-    HOA_RUN_START = HideNow,
-    HOA_RUN_END = function()
-        frame.side = false
-        HideNow()
-    end,
 })
+UI.Module("gear"):OnRunStart(HideNow):OnRunEnd(function()
+    frame.side = false
+    HideNow()
+end)

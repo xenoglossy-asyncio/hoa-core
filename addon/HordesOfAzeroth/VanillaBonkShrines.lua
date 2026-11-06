@@ -307,7 +307,6 @@ UI.ListenHoa({
     HOA_HEARTH = function(hearth)
         handlers["hearth"]({ false, hearth.percent, hearth.inside and "1" or "0", hearth.seconds })
     end,
-    HOA_RUN_START = HideAll,
-    HOA_RUN_END = HideAll,
 })
+UI.Module("shrines"):OnRunStart(HideAll):OnRunEnd(HideAll)
 

@@ -11,6 +11,16 @@
 - 不再自己计算物品等级、装备属性等服务器已经算好的数据；这些由内容包或协议下发。
 - 语言文本全部从 `shared/i18n` 生成的 Lua 表读取，语言由服务端/客户端设置决定，不读取客户端安装语言。`VanillaBonkLocaleData.lua` 由 `shared/i18n/addon/addon.yaml` 生成，一个文件承载全部语言。
 
+## 模块系统
+
+每个功能是一个具名模块：同一个名字调用 `UI.Module("bags")` 会返回同一张表。
+`Module:Listen(handlers, frame)` 拥有一个事件帧（也可复用已有帧），
+`Module:OnEnterWorld`、`:OnLeaveWorld`、`:OnRunStart`、`:OnRunEnd` 注册生命周期钩子。
+`VanillaBonkUI.lua` 里只有一个分发帧监听 `PLAYER_ENTERING_WORLD`、`PLAYER_LEAVING_WORLD`
+和类型化的 `HOA_RUN_START`/`HOA_RUN_END`，按加载顺序调用钩子，并把跑团开始/结束字段传进去。
+`UI.modules` / `UI.moduleOrder` 可用于诊断，`UI.RunLifecycle(field, ...)` 可手动分发。
+`VanillaBonk.lua` 的核心跑团状态仍直接处理这两个跑团消息。
+
 ## 计划目录
 
 ```

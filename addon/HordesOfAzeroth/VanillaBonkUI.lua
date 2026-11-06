@@ -324,8 +324,9 @@ function UI.ListenHoa(handlers)
 end
 
 -- Named modules: each owns one event frame and shows up in UI.modules for diagnostics.
--- Registration order is file load order; nothing in the addon depends on it.
+-- Lifecycle hooks run in file load order; one dispatcher frame owns the world and run events.
 UI.modules = {}
+UI.moduleOrder = {}
 local Module = {}
 Module.__index = Module
 
@@ -334,11 +335,57 @@ function Module:Listen(handlers, frame)
     return self.frame
 end
 
-function UI.Module(name)
-    local module = setmetatable({ name = name }, Module)
-    UI.modules[name] = module
+local function AddHook(module, field, hook)
+    module[field] = module[field] or {}
+    tinsert(module[field], hook)
     return module
 end
+
+function Module:OnEnterWorld(hook) return AddHook(self, "enterWorldHooks", hook) end
+function Module:OnLeaveWorld(hook) return AddHook(self, "leaveWorldHooks", hook) end
+function Module:OnRunStart(hook) return AddHook(self, "runStartHooks", hook) end
+function Module:OnRunEnd(hook) return AddHook(self, "runEndHooks", hook) end
+
+function UI.Module(name)
+    local module = UI.modules[name]
+    if module then
+        return module
+    end
+    module = setmetatable({ name = name }, Module)
+    UI.modules[name] = module
+    tinsert(UI.moduleOrder, module)
+    return module
+end
+
+local function Dispatch(field, a, b, c, d)
+    for _, module in ipairs(UI.moduleOrder) do
+        local hooks = module[field]
+        if hooks then
+            for _, hook in ipairs(hooks) do
+                hook(a, b, c, d)
+            end
+        end
+    end
+end
+
+UI.RunLifecycle = Dispatch
+
+local lifecycle = CreateFrame("Frame")
+lifecycle:RegisterEvent("PLAYER_ENTERING_WORLD")
+lifecycle:RegisterEvent("PLAYER_LEAVING_WORLD")
+lifecycle:RegisterEvent("HOA_RUN_START")
+lifecycle:RegisterEvent("HOA_RUN_END")
+lifecycle:SetScript("OnEvent", function()
+    if event == "PLAYER_ENTERING_WORLD" then
+        Dispatch("enterWorldHooks", arg1, arg2, arg3, arg4)
+    elseif event == "PLAYER_LEAVING_WORLD" then
+        Dispatch("leaveWorldHooks", arg1, arg2, arg3, arg4)
+    elseif event == "HOA_RUN_START" then
+        Dispatch("runStartHooks", arg1, arg2, arg3, arg4)
+    elseif event == "HOA_RUN_END" then
+        Dispatch("runEndHooks", arg1, arg2, arg3, arg4)
+    end
+end)
 
 -- Show a tooltip while the pointer is over `frames` (one frame or a list). `show` runs with
 -- `this` set to the hovered frame; the default leave hides the game tooltip.

@@ -360,11 +360,9 @@ end
 AddOtherEffectsVideoRow()
 
 local events = CreateFrame("Frame")
-UI.Listen({
-    PLAYER_ENTERING_WORLD = function()
-        this.giveAt = GetTime() + DEFAULT_KEY_DELAY
-    end,
-}, events)
+UI.Module("settings"):OnEnterWorld(function()
+    events.giveAt = GetTime() + DEFAULT_KEY_DELAY
+end)
 events:SetScript("OnUpdate", function()
     if this.giveAt and GetTime() >= this.giveAt then
         this.giveAt = nil

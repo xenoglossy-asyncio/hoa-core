@@ -166,10 +166,10 @@ local function ScheduleRefresh()
     refresh:Show()
 end
 
+UI.Module("found"):OnEnterWorld(function()
+    inWorld = true
+end)
 UI.Module("found"):Listen({
-    PLAYER_ENTERING_WORLD = function()
-        inWorld = true
-    end,
     BAG_UPDATE = function()
         if inWorld then
             ScheduleRefresh()

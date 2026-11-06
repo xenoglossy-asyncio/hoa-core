@@ -678,12 +678,14 @@ function VanillaBonkUI.ApplyEnemyPlates()
     end
 end
 
-UI.Listen({
-    PLAYER_ENTERING_WORLD = function()
-        VanillaBonkUI.ApplyEnemyPlates()
-        scanner:UnregisterEvent("PLAYER_ENTERING_WORLD")
-    end,
-}, scanner)
+local platesApplied = false
+UI.Module("plates"):OnEnterWorld(function()
+    if platesApplied then
+        return
+    end
+    platesApplied = true
+    VanillaBonkUI.ApplyEnemyPlates()
+end)
 
 local function Split(text, separator)
     local fields = {}

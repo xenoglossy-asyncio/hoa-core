@@ -164,8 +164,8 @@ end
 
 UI.RefreshHearthKey = Refresh
 
+UI.Module("hearth"):OnEnterWorld(Refresh)
 UI.Module("hearth"):Listen({
-    PLAYER_ENTERING_WORLD = Refresh,
     BAG_UPDATE = Refresh,
     UPDATE_BINDINGS = Refresh,
 })

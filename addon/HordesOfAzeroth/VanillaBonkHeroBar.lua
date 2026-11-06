@@ -1071,12 +1071,6 @@ UI.ListenHoa({
             RefreshXp()
         end
     end,
-    HOA_RUN_START = function()
-        run.info = {}
-        run.stats = {}
-        run.xp = nil
-        SetMode(true)
-    end,
     HOA_RUN_STATE = function(state)
         if not inRun then
             SetMode(true)
@@ -1090,13 +1084,18 @@ UI.ListenHoa({
             end
         end
     end,
-    HOA_RUN_END = function()
-        run.xp = nil
-        dash.max = 0
-        RefreshDash()
-        SetMode(false)
-    end,
 })
+UI.Module("heroBar"):OnRunStart(function()
+    run.info = {}
+    run.stats = {}
+    run.xp = nil
+    SetMode(true)
+end):OnRunEnd(function()
+    run.xp = nil
+    dash.max = 0
+    RefreshDash()
+    SetMode(false)
+end)
 
 UI.ListenHoa({
     HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink, available)
@@ -1250,14 +1249,14 @@ handlers["reachring"] = function(f)
 end
 
 
+UI.Module("heroBar"):OnEnterWorld(function()
+    SetMode(inRun)
+    if UIParent_ManageFramePositions then
+        UIParent_ManageFramePositions()
+    end
+    RefreshXp()
+end)
 local events = UI.Listen({
-    PLAYER_ENTERING_WORLD = function()
-        SetMode(inRun)
-        if UIParent_ManageFramePositions then
-            UIParent_ManageFramePositions()
-        end
-        RefreshXp()
-    end,
     PLAYER_XP_UPDATE = function()
         RefreshXp()
     end,

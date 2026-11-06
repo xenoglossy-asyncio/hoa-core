@@ -350,8 +350,8 @@ UI.ListenHoa({
     HOA_OBJECTIVE_PING = function(objective)
         handlers["objectiveping"]({ false, tostring(objective.id) })
     end,
-    HOA_RUN_END = RemoveAll,
 })
+UI.Module("objectives"):OnRunEnd(RemoveAll)
 
 
 UI.objectives = objectives
