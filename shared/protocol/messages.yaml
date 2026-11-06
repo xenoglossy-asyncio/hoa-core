@@ -1,6 +1,6 @@
 # HoA typed protocol between the server, the client and the addon bridge.
 # `tools/protocol/gen.py` emits the C++ writer and the Rust decoder.
-version: 28
+version: 29
 messages:
   - name: aura_value
     id: 0x0002
@@ -53,6 +53,7 @@ messages:
     fields:
       - { name: protocol_version, type: u16 }
       - { name: content_hash, type: string }
+      - { name: content_sections, type: string }
       - { name: language, type: string }
   - name: run_state
     id: 0x0010

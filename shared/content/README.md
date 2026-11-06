@@ -42,7 +42,8 @@ Text lives beside the entry or in separate `i18n` files and is referenced by `*_
 - `client/assets/content/<version>/content.bin`: client content pack
 - `addon/HordesOfAzeroth/generated/content.lua`: addon data tables
 - `shared/i18n/generated/*.json`: text catalogue shared by C++, Rust and Lua
-- `content.hash`: content version hash
+- `content.hash`: the whole-content version hash
+- `content.manifest.json`: the same hash plus one hash and file list per section (`cards`, `spells`, `tables`)
 
 ## Current state
 
@@ -54,7 +55,7 @@ The design-content tables are now sourced here:
 - `tools/content/dump_cards.py` / `dump_tables.py` imported them once from the database.
 - `tools/content/compile.py` emits `server/sql/content/*.sql`; `--check` keeps every generated file in sync in CI, and `tools/content/test_auras.py` checks the source bindings and the usage audit.
 - `tools/content/apply.py --maria <client> --database <world db>` applies those files in order; this is how the test database picks up source changes.
-- The compiler also emits `hoa_content.sql` and `BonkContentHash.h`; the server compares the database hash with the build's hash at startup and logs an error when they differ.
+- The compiler also emits `hoa_content.sql`, `BonkContentHash.h` and `content.manifest.json`. The SQL fills `hoa_content` (the whole hash) and `hoa_content_section` (one row per section); the server compares both with the build at startup and logs which section is stale. The login hello carries the section hashes, so a mismatched client names the changed sections in its warning.
 
 Every generated table was applied to the test database and compared row for row with the old data; all 49 matched. The large generated spawn tables (`bonk_hidden_creature`, `bonk_hidden_gameobject`) deliberately stay in the database, per the project decision, so the source tree stays reviewable.
 

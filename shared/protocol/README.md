@@ -18,9 +18,11 @@ when either output is stale.
 - `string` is a `u16` byte length followed by UTF-8 bytes.
 - Integers are little-endian. There is no padding.
 
-The current `hello` message is sent after the addon's `.bonk hello`: it carries the protocol
-version, this build's content hash and the account language. The client compares the version and
-hash, then fires `HOA_HELLO` into Lua.
+The current `hello` message (protocol version 29) is sent after the addon's `.bonk hello`: it
+carries the protocol version, this build's content hash, the per-section content hashes and the
+account language. The client compares the version and hashes, then fires `HOA_HELLO` into Lua.
+A content mismatch reports the sections that differ (`cards`, `spells`, `tables`) instead of only
+the single whole-content hash.
 
 ## Adding a message
 

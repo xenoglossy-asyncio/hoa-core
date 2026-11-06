@@ -6925,3 +6925,9 @@
   enUS: This game client and the server use different game content. Update the game so both sides match.
   zhCN: 游戏客户端与服务端的游戏内容不一致。请更新游戏，使双方版本一致。
   zhTW: "遊戲客戶端與服務端的遊戲內容不一致。請更新遊戲，使雙方版本一致。"
+- id: hoa.addon.changed_content_1
+  enUS: "Changed content: {1}."
+  zhCN: 变化的内容：{1}。
+  zhTW: "變更的內容：{1}。"
+  placeholders:
+  - 1

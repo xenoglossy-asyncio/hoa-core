@@ -42,7 +42,8 @@ stats: { strength: 12, stamina: 8 }
 - `client/assets/content/<version>/content.bin`：客户端内容包
 - `addon/HordesOfAzeroth/generated/content.lua`：插件数据表
 - `shared/i18n/generated/*.json`：文本目录（供 C++/Rust/Lua 共用）
-- `content.hash`：内容版本哈希
+- `content.hash`：整体内容版本哈希
+- `content.manifest.json`：同样的整体哈希，加上每段（`cards`、`spells`、`tables`）的哈希和源文件清单
 
 ## 当前状态
 
@@ -54,7 +55,7 @@ stats: { strength: 12, stamina: 8 }
 - `tools/content/dump_cards.py` / `dump_tables.py` 从数据库一次性导入。
 - `tools/content/compile.py` 生成 `server/sql/content/*.sql`；`--check` 在 CI 里保证所有生成文件与源同步，`tools/content/test_auras.py` 检查来源绑定和使用审计。
 - `tools/content/apply.py --maria <客户端路径> --database <世界库>` 按顺序应用这些文件；测试库就是这样接收源文件改动的。
-- 编译器还会生成 `hoa_content.sql` 和 `BonkContentHash.h`；服务端启动时对比数据库哈希和构建哈希，不一致就记一条错误日志。
+- 编译器还会生成 `hoa_content.sql`、`BonkContentHash.h` 和 `content.manifest.json`。SQL 写入 `hoa_content`（整体哈希）和 `hoa_content_section`（每段一行）；服务端启动时两者都比对，并指出哪一段过期。登录 hello 会带上分段哈希，版本不一致的客户端能在提示里列出变化的段。
 
 每张生成表都应用到测试库并与旧数据逐行对比，49 张全部一致。大型生成表 `bonk_hidden_creature`、`bonk_hidden_gameobject` 按项目决定保留在数据库里，不进入源文件，避免仓库难以审阅。
 

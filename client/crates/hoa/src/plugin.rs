@@ -12,7 +12,7 @@ use crate::keys::{capture_typing, SharedTyping};
 use crate::lua_api::{scripted_login_from_env, LuaHosts};
 use crate::nameplates::{add_plate_events, track_nameplates, SharedPlates};
 use crate::pad::{log_new_pads, poll_pads, SharedController};
-use crate::protocol_generated::{self, HoaMessage, CONTENT_HASH, PROTOCOL_VERSION};
+use crate::protocol_generated::{self, HoaMessage, CONTENT_HASH, CONTENT_SECTIONS, PROTOCOL_VERSION};
 use crate::server_draw::DrawCommand;
 use crate::snapshot::{capture_snapshot, SharedSnapshot};
 use crate::world_map::SharedMapAreas;
@@ -184,23 +184,55 @@ struct HoaHandshake {
     blocked: bool,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 struct HelloCheck {
     protocol_mismatch: bool,
     content_mismatch: bool,
+    changed_sections: Vec<String>,
 }
 
 impl HelloCheck {
-    fn of(protocol_version: u16, content_hash: &str) -> Self {
+    fn of(protocol_version: u16, content_hash: &str, content_sections: &str) -> Self {
+        let content_mismatch = content_hash != CONTENT_HASH;
         Self {
             protocol_mismatch: protocol_version != PROTOCOL_VERSION,
-            content_mismatch: content_hash != CONTENT_HASH,
+            content_mismatch,
+            changed_sections: if content_mismatch {
+                changed_sections(content_sections)
+            } else {
+                Vec::new()
+            },
         }
     }
 
-    fn compatible(self) -> bool {
+    fn compatible(&self) -> bool {
         !self.protocol_mismatch && !self.content_mismatch
     }
+}
+
+/// The manifest sections whose hash differs from this build's, plus any the server omitted.
+fn changed_sections(server: &str) -> Vec<String> {
+    use std::collections::{BTreeMap, BTreeSet};
+    let expected: BTreeMap<&str, &str> = CONTENT_SECTIONS.iter().copied().collect();
+    let mut changed = Vec::new();
+    let mut seen = BTreeSet::new();
+    for part in server.split(';').filter(|part| !part.is_empty()) {
+        let Some((name, hash)) = part.split_once('=') else {
+            changed.push(part.to_string());
+            continue;
+        };
+        seen.insert(name);
+        if expected.get(name).copied() != Some(hash) {
+            changed.push(name.to_string());
+        }
+    }
+    changed.extend(
+        expected
+            .keys()
+            .filter(|name| !seen.contains(**name))
+            .map(|name| (*name).to_string()),
+    );
+    changed
 }
 
 /// A catalog that arrived before the spell catalog existed, retried each frame.
@@ -259,7 +291,12 @@ fn deliver_hoa_messages(world: &mut World) {
     });
     let mut blocked = world.resource::<HoaHandshake>().blocked;
     if let Some(hello) = &hello {
-        blocked = !HelloCheck::of(hello.protocol_version, &hello.content_hash).compatible();
+        blocked = !HelloCheck::of(
+            hello.protocol_version,
+            &hello.content_hash,
+            &hello.content_sections,
+        )
+        .compatible();
     }
     if !blocked {
         if let Some(hello) = &hello {
@@ -1672,7 +1709,11 @@ fn deliver_hoa_messages(world: &mut World) {
                 HoaMessage::VisualAura(aura) => draws.push(DrawCommand::from(aura)),
                 HoaMessage::VisualAuraRemove(aura) => draws.push(DrawCommand::from(aura)),
                 HoaMessage::Hello(hello) => {
-                    let check = HelloCheck::of(hello.protocol_version, &hello.content_hash);
+                    let check = HelloCheck::of(
+                        hello.protocol_version,
+                        &hello.content_hash,
+                        &hello.content_sections,
+                    );
                     if check.protocol_mismatch {
                         warn!(
                             "hoa protocol: server speaks {}, this build speaks {PROTOCOL_VERSION}",
@@ -1681,8 +1722,9 @@ fn deliver_hoa_messages(world: &mut World) {
                     }
                     if check.content_mismatch {
                         warn!(
-                            "hoa protocol: server content {} does not match this build's {CONTENT_HASH}",
-                            hello.content_hash
+                            "hoa protocol: server content {} does not match this build's {CONTENT_HASH} (changed: {})",
+                            hello.content_hash,
+                            check.changed_sections.join(", ")
                         );
                     }
                     if check.compatible() {
@@ -1695,6 +1737,7 @@ fn deliver_hoa_messages(world: &mut World) {
                             ],
                         );
                     } else {
+                        let changed = check.changed_sections.join(", ");
                         script.fire_event(
                             HOA_INCOMPATIBLE,
                             vec![lua_table(vec![
@@ -1704,18 +1747,21 @@ fn deliver_hoa_messages(world: &mut World) {
                                 ("expected_content", ScriptValue::Str(CONTENT_HASH.to_string())),
                                 ("protocol_mismatch", ScriptValue::Bool(check.protocol_mismatch)),
                                 ("content_mismatch", ScriptValue::Bool(check.content_mismatch)),
+                                ("changed_sections", ScriptValue::Str(changed.clone())),
                             ])],
                         );
                         // The addon's event frame is not always live when hello lands; call its
                         // warning directly so a mismatch can never pass silently.
+                        let changed = changed.replace('\\', "\\\\").replace('\'', "\\'");
                         let warning = format!(
                             "if VanillaBonkUI and VanillaBonkUI.ShowProtocolWarning then \
-                             VanillaBonkUI.ShowProtocolWarning({}, {}, {}, {}) \
+                             VanillaBonkUI.ShowProtocolWarning({}, {}, {}, {}, '{}') \
                              else DEFAULT_CHAT_FRAME:AddMessage('Hordes of Azeroth: the server and this client use different versions. Update the game.') end",
                             hello.protocol_version,
                             PROTOCOL_VERSION,
                             check.protocol_mismatch,
                             check.content_mismatch,
+                            changed,
                         );
                         if let Err(error) = script.run(&warning) {
                             warn!("hoa protocol: could not show the mismatch warning: {error}");
@@ -2000,9 +2046,14 @@ mod tests {
 
     #[test]
     fn the_generated_hello_decoder_reads_the_wire_layout() {
+        let sections = CONTENT_SECTIONS
+            .iter()
+            .map(|(name, hash)| format!("{name}={hash}"))
+            .collect::<Vec<_>>()
+            .join(";");
         let mut body = Vec::new();
         body.extend_from_slice(&PROTOCOL_VERSION.to_le_bytes());
-        for text in [CONTENT_HASH, "zhCN"] {
+        for text in [CONTENT_HASH, sections.as_str(), "zhCN"] {
             body.extend_from_slice(&(text.len() as u16).to_le_bytes());
             body.extend_from_slice(text.as_bytes());
         }
@@ -2011,22 +2062,39 @@ mod tests {
         };
         assert_eq!(hello.protocol_version, PROTOCOL_VERSION);
         assert_eq!(hello.content_hash, CONTENT_HASH);
+        assert_eq!(hello.content_sections, sections);
         assert_eq!(hello.language, "zhCN");
     }
 
     #[test]
     fn the_hello_check_rejects_protocol_and_content_mismatches() {
-        assert!(HelloCheck::of(PROTOCOL_VERSION, CONTENT_HASH).compatible());
+        let sections = CONTENT_SECTIONS
+            .iter()
+            .map(|(name, hash)| format!("{name}={hash}"))
+            .collect::<Vec<_>>()
+            .join(";");
+        assert!(HelloCheck::of(PROTOCOL_VERSION, CONTENT_HASH, &sections).compatible());
 
-        let protocol = HelloCheck::of(PROTOCOL_VERSION + 1, CONTENT_HASH);
+        let protocol = HelloCheck::of(PROTOCOL_VERSION + 1, CONTENT_HASH, &sections);
         assert!(protocol.protocol_mismatch);
         assert!(!protocol.content_mismatch);
         assert!(!protocol.compatible());
 
-        let content = HelloCheck::of(PROTOCOL_VERSION, "sha256:other");
+        let content = HelloCheck::of(PROTOCOL_VERSION, "sha256:other", &sections);
         assert!(!content.protocol_mismatch);
         assert!(content.content_mismatch);
         assert!(!content.compatible());
+        assert!(content.changed_sections.is_empty());
+    }
+
+    #[test]
+    fn a_content_mismatch_names_the_changed_and_missing_sections() {
+        let changed = changed_sections("cards=sha256:old;spells=sha256:old;tables=sha256:old");
+        assert_eq!(changed, ["cards", "spells", "tables"]);
+
+        let missing = changed_sections("");
+        assert_eq!(missing.len(), CONTENT_SECTIONS.len());
+        assert!(changed_sections("cards=sha256:old").contains(&"cards".to_string()));
     }
 
     #[test]

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 28
+#define HOA_PROTOCOL_VERSION 29
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -230,11 +230,12 @@ inline void HoAWriteAuraCatalogEnd(WorldPacket& packet, uint16 const& total)
     packet << uint16(total);
 }
 
-inline void HoAWriteHello(WorldPacket& packet, uint16 const& protocolVersion, std::string const& contentHash, std::string const& language)
+inline void HoAWriteHello(WorldPacket& packet, uint16 const& protocolVersion, std::string const& contentHash, std::string const& contentSections, std::string const& language)
 {
     packet << uint16(HOA_MSG_HELLO);
     packet << uint16(protocolVersion);
     HoAWriteString(packet, contentHash);
+    HoAWriteString(packet, contentSections);
     HoAWriteString(packet, language);
 }
 

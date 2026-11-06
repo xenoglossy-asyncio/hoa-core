@@ -3107,7 +3107,8 @@ void BonkPlayer::SetAddonReady()
 void BonkPlayer::SendProtocolHello() const
 {
     WorldPacket data(SMSG_HOA_MESSAGE);
-    HoAWriteHello(data, uint16(HOA_PROTOCOL_VERSION), HOA_CONTENT_HASH, BonkLocale::Tag(GetLocale()));
+    HoAWriteHello(data, uint16(HOA_PROTOCOL_VERSION), HOA_CONTENT_HASH, HOA_CONTENT_SECTIONS_TEXT,
+        BonkLocale::Tag(GetLocale()));
     m_player->GetSession()->SendPacket(&data);
 }
 

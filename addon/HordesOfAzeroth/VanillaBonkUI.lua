@@ -14,13 +14,16 @@ StaticPopupDialogs["VANILLABONK_INCOMPATIBLE"] = {
 local protocolFrame = CreateFrame("Frame")
 protocolFrame:RegisterEvent("HOA_HELLO")
 protocolFrame:RegisterEvent("HOA_INCOMPATIBLE")
-function UI.ShowProtocolWarning(serverProtocol, expectedProtocol, protocolMismatch, contentMismatch)
+function UI.ShowProtocolWarning(serverProtocol, expectedProtocol, protocolMismatch, contentMismatch, changedSections)
     local lines = {}
     if protocolMismatch then
         tinsert(lines, L("hoa.addon.this_client_and_the_server_use_different_hoa_versions_1_2", expectedProtocol, serverProtocol))
     end
     if contentMismatch then
         tinsert(lines, L["hoa.addon.this_client_and_the_server_use_different_game_content"])
+        if type(changedSections) == "string" and changedSections ~= "" then
+            tinsert(lines, L("hoa.addon.changed_content_1", changedSections))
+        end
     end
     if not lines[1] then
         tinsert(lines, L["hoa.addon.this_client_and_the_server_use_different_game_content"])
@@ -44,7 +47,7 @@ end
 protocolFrame:SetScript("OnEvent", function(self, event, version, contentHash, language)
     if event == "HOA_INCOMPATIBLE" then
         local warning = version or {}
-        UI.ShowProtocolWarning(warning.protocol_version, warning.expected_protocol, warning.protocol_mismatch, warning.content_mismatch)
+        UI.ShowProtocolWarning(warning.protocol_version, warning.expected_protocol, warning.protocol_mismatch, warning.content_mismatch, warning.changed_sections)
         return
     end
     UI.Protocol.version = tonumber(version)

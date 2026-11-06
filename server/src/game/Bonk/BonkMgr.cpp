@@ -24,6 +24,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <map>
 #include <tuple>
 
 INSTANTIATE_SINGLETON_1(BonkMgr);
@@ -278,9 +279,40 @@ void BonkMgr::CheckContentHash()
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR,
             "HoA content: database hash %s does not match this build's %s; apply server/sql/content/*.sql",
             hash.c_str(), HOA_CONTENT_HASH);
+    }
+    else
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> HoA content hash %s", HOA_CONTENT_HASH);
+
+    std::unique_ptr<QueryResult> sections(WorldDatabase.Query("SELECT `name`, `hash` FROM `hoa_content_section`"));
+    if (!sections)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR,
+            "HoA content: table `hoa_content_section` is missing; apply server/sql/content/*.sql");
         return;
     }
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> HoA content hash %s", HOA_CONTENT_HASH);
+    std::map<std::string, std::string> actual;
+    do
+    {
+        Field* fields = sections->Fetch();
+        actual[fields[0].GetCppString()] = fields[1].GetCppString();
+    } while (sections->NextRow());
+    for (HoaContentSection const& expected : HOA_CONTENT_SECTIONS)
+    {
+        auto itr = actual.find(expected.name);
+        if (itr == actual.end())
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "HoA content: section %s is missing from the database", expected.name);
+        else if (itr->second != expected.hash)
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "HoA content: section %s has database hash %s, this build expects %s",
+                expected.name, itr->second.c_str(), expected.hash);
+    }
+    for (auto const& row : actual)
+    {
+        bool known = false;
+        for (HoaContentSection const& expected : HOA_CONTENT_SECTIONS)
+            known = known || row.first == expected.name;
+        if (!known)
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "HoA content: database has unknown section %s", row.first.c_str());
+    }
 }
 
 void BonkMgr::Load()

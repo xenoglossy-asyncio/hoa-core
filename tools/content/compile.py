@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -21,19 +22,47 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "shared" / "content" / "cards" / "cards.yaml"
 TARGET = ROOT / "server" / "sql" / "content" / "bonk_card.sql"
 HASH_TARGET = ROOT / "shared" / "content" / "content.hash"
+MANIFEST_TARGET = ROOT / "shared" / "content" / "content.manifest.json"
 HASH_SQL_TARGET = ROOT / "server" / "sql" / "content" / "hoa_content.sql"
 HASH_HEADER_TARGET = ROOT / "server" / "src" / "game" / "Bonk" / "BonkContentHash.h"
 
+SECTIONS = {
+    "cards": [SOURCE],
+    "spells": [ROOT / "shared" / "content" / "spells" / "spells.yaml"],
+    "tables": sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml")),
+}
 
-def content_hash() -> str:
+
+def digest_of(sources: list[Path]) -> str:
     digest = hashlib.sha256()
-    sources = [SOURCE, *sorted((ROOT / "shared" / "content" / "tables").glob("*.yaml")),
-               ROOT / "shared" / "content" / "spells" / "spells.yaml"]
     for source in sources:
         digest.update(source.relative_to(ROOT).as_posix().encode("utf-8"))
         digest.update(b"\x00")
         digest.update(source.read_bytes().replace(b"\r\n", b"\n"))
     return "sha256:" + digest.hexdigest()
+
+
+def content_hash() -> str:
+    return digest_of([SOURCE, *SECTIONS["tables"], *SECTIONS["spells"]])
+
+
+def section_hashes() -> dict[str, str]:
+    return {name: digest_of(files) for name, files in SECTIONS.items()}
+
+
+def compile_manifest(hash_value: str) -> bytes:
+    manifest = {
+        "schema": 1,
+        "hash": hash_value,
+        "sections": {
+            name: {
+                "hash": digest_of(files),
+                "files": [source.relative_to(ROOT).as_posix() for source in files],
+            }
+            for name, files in sorted(SECTIONS.items())
+        },
+    }
+    return (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
 def compile_hash_sql(hash_value: str) -> bytes:
@@ -49,10 +78,26 @@ def compile_hash_sql(hash_value: str) -> bytes:
         "",
         "REPLACE INTO `hoa_content` (`id`, `hash`) VALUES (1, " + quote(hash_value) + ");",
         "",
+        "CREATE TABLE IF NOT EXISTS `hoa_content_section` (",
+        "  `name` varchar(32) NOT NULL,",
+        "  `hash` varchar(80) NOT NULL,",
+        "  PRIMARY KEY (`name`)",
+        ") ENGINE=MyISAM DEFAULT CHARSET=utf8;",
+        "",
+        "DELETE FROM `hoa_content_section`;",
+        "INSERT INTO `hoa_content_section` (`name`, `hash`) VALUES",
+        ",\n".join("  (" + quote(name) + ", " + quote(section_hashes()[name]) + ")"
+                   for name in sorted(SECTIONS)) + ";",
+        "",
     ]).encode("utf-8")
 
 
 def compile_hash_header(hash_value: str) -> bytes:
+    sections = section_hashes()
+    rows = ",\n".join(
+        f'    {{"{name}", "{sections[name]}"}}' for name in sorted(sections)
+    )
+    text = ";".join(f"{name}={sections[name]}" for name in sorted(sections))
     return "\n".join([
         "#pragma once",
         "",
@@ -60,6 +105,17 @@ def compile_hash_header(hash_value: str) -> bytes:
         "// Do not edit by hand.",
         "",
         f'#define HOA_CONTENT_HASH "{hash_value}"',
+        f'#define HOA_CONTENT_SECTIONS_TEXT "{text}"',
+        "",
+        "struct HoaContentSection",
+        "{",
+        "    char const* name;",
+        "    char const* hash;",
+        "};",
+        "",
+        "static constexpr HoaContentSection HOA_CONTENT_SECTIONS[] =",        "{",
+        rows,
+        "};",
         "",
     ]).encode("utf-8")
 
@@ -149,12 +205,14 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="fail if the generated SQL differs")
     args = parser.parse_args()
     hash_value = content_hash()
+    sections = sorted(section_hashes().items())
     generated = [
         ("cards", TARGET, compile_cards()),
         *spell_outputs(),
-        *protocol_outputs(hash_value),
+        *protocol_outputs(hash_value, sections),
         ("content hash sql", HASH_SQL_TARGET, compile_hash_sql(hash_value)),
         ("content hash header", HASH_HEADER_TARGET, compile_hash_header(hash_value)),
+        ("content manifest", MANIFEST_TARGET, compile_manifest(hash_value)),
     ]
     for path, table_sql in compile_tables():
         generated.append((path.stem, ROOT / "server" / "sql" / "content" / f"{path.stem}.sql", table_sql))
