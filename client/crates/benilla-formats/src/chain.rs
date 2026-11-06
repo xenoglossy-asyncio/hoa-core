@@ -22,6 +22,10 @@ pub struct Chain {
     archives: Vec<Archive>,
     /// The locale the chain's `Wow.ini` names, read once at open as start-up reads it once.
     locale: Locale,
+    /// A loose folder for the account language: `GlobalStrings.lua` and `DBFilesClient/`.
+    language_overlay: Option<std::path::PathBuf>,
+    /// The column those overlay DBCs carry; `locale` stays the install's for resources.
+    language_locale: Option<Locale>,
 }
 
 /// `patch-?.MPQ` as the reference's `FindFirstFileW` glob matches it (template `0x82edbc`, wrapper
@@ -98,15 +102,62 @@ impl Chain {
         let mut chain = Self {
             archives,
             locale: Locale::default(),
+            language_overlay: None,
+            language_locale: None,
         };
         chain.locale = crate::wow_ini::client_locale(&chain);
         Ok(chain)
     }
 
+    /// Point reads at a loose folder for an account language, and select its DBC column when the
+    /// folder carries `DBFilesClient`. `None` restores the install's own chain.
+    pub fn set_language_overlay(
+        &mut self,
+        locale: Option<Locale>,
+        folder: Option<std::path::PathBuf>,
+    ) {
+        self.language_locale = if folder
+            .as_ref()
+            .is_some_and(|f| f.join("DBFilesClient").is_dir())
+        {
+            locale
+        } else {
+            None
+        };
+        self.language_overlay = folder;
+    }
+
     /// The client locale, from the chain's `Wow.ini` (`0x402350`): its index picks the column of
     /// every localized DBC string.
     pub fn locale(&self) -> Locale {
-        self.locale
+        self.language_locale.unwrap_or(self.locale)
+    }
+
+    /// The loose language file for `name`, when the account language has one.
+    fn language_file(&self, name: &str) -> Option<Vec<u8>> {
+        let root = self.language_overlay.as_ref()?;
+        let lower = name.replace('/', "\\").to_ascii_lowercase();
+        let (folder, base) = if lower.starts_with("dbfilesclient\\") {
+            (root.join("DBFilesClient"), name.rsplit(['\\', '/']).next()?)
+        } else if lower == "interface\\framexml\\globalstrings.lua" {
+            (root.to_path_buf(), "GlobalStrings.lua")
+        } else {
+            return None;
+        };
+        let direct = folder.join(base);
+        if direct.is_file() {
+            return std::fs::read(direct).ok();
+        }
+        std::fs::read_dir(folder)
+            .ok()?
+            .flatten()
+            .find(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .eq_ignore_ascii_case(base)
+            })
+            .and_then(|entry| std::fs::read(entry.path()).ok())
     }
 
     /// The same archives read as another locale, for a test of the column a loader reads.
@@ -135,6 +186,9 @@ impl Chain {
 
     /// Read a file by internal path (`/` or `\`) from its winning archive.
     pub fn read(&self, name: &str) -> Result<Vec<u8>> {
+        if let Some(bytes) = self.language_file(name) {
+            return Ok(bytes);
+        }
         let archive = self.archive_for(name)?;
         archive
             .read_file(name)

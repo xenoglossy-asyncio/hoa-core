@@ -14,6 +14,8 @@ use bevy::prelude::*;
 use include_dir::{include_dir, Dir};
 use serde::Deserialize;
 
+use benilla_assets::LockRecover;
+
 use crate::cvars::{hoa_language, Cvars};
 
 static PACKS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/assets/i18n");
@@ -199,6 +201,31 @@ pub(crate) fn language_for(world: &World) -> String {
     crate::ui_script::client_locale().name().to_string()
 }
 
+/// Point the patch chain at `benilla-config/locale/<language>/` when a stock pack is installed:
+/// its `GlobalStrings.lua` and `DBFilesClient` then replace the install's, and DBC columns read
+/// the pack's language.
+pub(crate) fn apply_language_assets(world: &mut World) {
+    let code = language_for(world);
+    let folder = crate::config_dir()
+        .map(|dir| dir.join("locale").join(&code))
+        .filter(|dir| dir.is_dir());
+    if let Some(dir) = &folder {
+        info!(
+            "client_language: stock language data {code} at {}",
+            dir.display()
+        );
+    }
+    let locale = locale_for_code(&code);
+    let Some(assets) = world.get_resource::<benilla_assets::WorldAssets>() else {
+        return;
+    };
+    let overlay_locale = folder.as_ref().map(|_| locale);
+    assets
+        .chain
+        .lock_recover()
+        .set_language_overlay(overlay_locale, folder);
+}
+
 /// Put the selected pack into one VM: the text tables, the generated globals, and
 /// `HOA_UI_TEXT(idOrEnglish, ...)`.
 pub(crate) fn install_for_script(script: &UiScript) {
@@ -355,6 +382,7 @@ pub fn set_hoa_account_language(world: &mut World, code: &str) -> bool {
     {
         world.resource_mut::<crate::ui_script::ReloadUiPending>().0 = true;
     }
+    apply_language_assets(world);
     true
 }
 

@@ -370,6 +370,10 @@ impl Plugin for UiScriptPlugin {
                 Startup,
                 (
                     crate::client_language::load_ui_language.after(crate::cvars::CvarLoad),
+                    crate::client_language::apply_language_assets
+                        .in_set(benilla_assets::AssetSet::Open)
+                        .after(benilla_world::assets::open_world_assets)
+                        .after(crate::client_language::load_ui_language),
                     // After the CVars load: the glue screens read the agreements as they come up. After
                     // the glyph cache, which measures the text their first show sizes frames by. After
                     // the word lists, which every VM is seated with as it is made.

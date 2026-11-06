@@ -16,6 +16,7 @@ use crate::ui_script::addons;
 /// The startup's glue: built, then put up on the screen the `movie` CVar picks
 /// ([`super::glue::startup_screen`]).
 pub(crate) fn setup_script(world: &mut World) {
+    crate::client_language::apply_language_assets(world);
     if !install_glue_vm(world, None) {
         error!("ui_script: the glue VM did not come up with its character select screen");
     }

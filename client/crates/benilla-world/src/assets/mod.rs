@@ -45,7 +45,7 @@ fn scope_world_art(mut scope: ArtScope, assets: Option<ResMut<WorldAssets>>) {
 
 /// Opens the patch chain found by [`benilla_formats::wow_data`] and inserts [`WorldAssets`] and
 /// [`RenderConfig`]; with no install, `WorldAssets` is absent and startup falls back to free-fly.
-fn open_world_assets(mut commands: Commands, device: Res<RenderDevice>) {
+pub fn open_world_assets(mut commands: Commands, device: Res<RenderDevice>) {
     // Inserted before the install lookup so no early return skips it: even with no install,
     // `particles::model::update_model_particles` takes it as a hard `Res<SharedLightBuffer>`.
     let shared_light = crate::lighting::new_shared_light_buffer(&device);
