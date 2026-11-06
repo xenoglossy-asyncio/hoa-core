@@ -377,6 +377,10 @@ function BonkCoop_Apply()
 		BonkCoopModeFrame:Hide();
 		BonkCoopBar:Hide();
 		BonkCoopStatus:Hide();
+		BonkCoop_HideRoom();
+		if ( BonkCoopRoomButton ) then
+			BonkCoopRoomButton:Hide();
+		end
 		BonkHeroPlayButton:Show();
 		return;
 	end
@@ -395,6 +399,10 @@ function BonkCoop_Apply()
 		BonkHeroWipeButton:Hide();
 		BonkCoopStatusText:SetText(L["hoa.ui.glue.you_re_in_a_co_op_party"]);
 		BonkCoopStatusButton:SetText(L["hoa.ui.glue.leave_party"]);
+		if ( BonkCoopRoomButton ) then
+			BonkCoopRoomButton:Hide();
+		end
+		BonkCoop_HideRoom();
 		BonkCoopStatus:Show();
 		return;
 	end
@@ -403,10 +411,19 @@ function BonkCoop_Apply()
 		BonkHeroPlayButton:Show();
 		BonkCoopStatusText:SetText(BonkCoop_HostLine());
 		BonkCoopStatusButton:SetText(L["hoa.ui.glue.close_lobby"]);
+		if ( BonkCoopRoomButton ) then
+			BonkCoopRoomButton:SetText(L["hoa.ui.glue.host_game"]);
+			BonkCoopRoomButton:Show();
+		end
+		BonkCoop_UpdateRoom();
 		BonkCoopStatus:Show();
 		return;
 	end
 	BonkCoopStatus:Hide();
+	if ( BonkCoopRoomButton ) then
+		BonkCoopRoomButton:Hide();
+	end
+	BonkCoop_HideRoom();
 	if ( BonkCoop.mode ) then
 		local hero = BonkCoop_Hero();
 		BonkHeroPlayButton:Hide();
@@ -432,6 +449,127 @@ function BonkCoop_HostLine()
 		return L["hoa.ui.glue.opening_lobby"];
 	end
 	return L("hoa.ui.glue.host_1_2_3_players_address_4", host.name or "", table.getn(host.members or {}), host.max or "4", host.address or "");
+end
+
+BONK_COOP_ROOM_MEMBERS = 4;
+
+function BonkCoop_RoomFrame()
+	if ( BonkCoop.room ) then
+		return BonkCoop.room;
+	end
+	local room = CreateFrame("Frame", "BonkCoopRoom", BonkHeroFrame, "BonkCoopPanelTemplate");
+	room:SetWidth(560);
+	room:SetHeight(430);
+	room:SetPoint("CENTER", BonkHeroFrame, "CENTER", 0, -10);
+	room:Hide();
+
+	room.title = room:CreateFontString("BonkCoopRoomTitle", "ARTWORK", "GlueFontNormalLarge");
+	room.title:SetPoint("TOP", room, "TOP", 0, -16);
+	room.title:SetTextColor(1, 0.82, 0);
+	room.title:SetText(L["hoa.ui.glue.host_game"]);
+
+	room.name = room:CreateFontString("BonkCoopRoomName", "ARTWORK", "GlueFontNormalSmall");
+	room.name:SetPoint("TOP", room.title, "BOTTOM", 0, -4);
+	room.name:SetTextColor(0.75, 0.72, 0.66);
+
+	room.info = room:CreateFontString("BonkCoopRoomInfo", "ARTWORK", "GlueFontNormal");
+	room.info:SetPoint("TOPLEFT", room, "TOPLEFT", 24, -74);
+	room.info:SetWidth(512);
+	room.info:SetJustifyH("LEFT");
+	room.info:SetTextColor(1, 0.82, 0);
+
+	room.address = room:CreateFontString("BonkCoopRoomAddress", "ARTWORK", "GlueFontNormal");
+	room.address:SetPoint("TOPLEFT", room.info, "BOTTOMLEFT", 0, -8);
+	room.address:SetWidth(512);
+	room.address:SetJustifyH("LEFT");
+	room.address:SetTextColor(1, 1, 1);
+
+	room.membersLabel = room:CreateFontString("BonkCoopRoomMembersLabel", "ARTWORK", "GlueFontNormalSmall");
+	room.membersLabel:SetPoint("TOPLEFT", room.address, "BOTTOMLEFT", 0, -14);
+	room.membersLabel:SetTextColor(0.62, 0.6, 0.55);
+	room.membersLabel:SetText(L["hoa.ui.glue.players"]);
+
+	room.members = {};
+	for index = 1, BONK_COOP_ROOM_MEMBERS do
+		local row = CreateFrame("Frame", "BonkCoopRoomMember"..index, room, "BonkCoopMemberTemplate");
+		row:SetPoint("TOPLEFT", room, "TOPLEFT", 24, -(138 + (index - 1) * 36));
+		row:Hide();
+		room.members[index] = row;
+	end
+
+	room.close = CreateFrame("Button", nil, room, "GlueButtonSmallTemplate");
+	room.close:SetWidth(120);
+	room.close:SetHeight(24);
+	room.close:SetPoint("BOTTOMLEFT", room, "BOTTOMLEFT", 24, 20);
+	room.close:SetText(L["hoa.ui.glue.close"]);
+	room.close:SetScript("OnClick", function()
+		room:Hide();
+	end);
+
+	room.stop = CreateFrame("Button", nil, room, "GlueButtonSmallTemplate");
+	room.stop:SetWidth(150);
+	room.stop:SetHeight(24);
+	room.stop:SetPoint("BOTTOMRIGHT", room, "BOTTOMRIGHT", -24, 20);
+	room.stop:SetText(L["hoa.ui.glue.close_lobby"]);
+	room.stop:SetScript("OnClick", function()
+		BonkCoop_StatusButton();
+		room:Hide();
+	end);
+
+	BonkCoop.room = room;
+	return room;
+end
+
+function BonkCoop_UpdateRoom()
+	local room = BonkCoop_RoomFrame();
+	local host = BonkCoop.host;
+	if ( not host or (host.state ~= "hosting" and host.state ~= "starting") ) then
+		room:Hide();
+		BonkCoop.roomShown = nil;
+		return;
+	end
+
+	local members = host.members or {};
+	local count = table.getn(members);
+	local max = tonumber(host.max) or 4;
+	room.name:SetText(host.name or "");
+	room.info:SetText(L["hoa.ui.glue.players"]..": "..count.."/"..max.."  ·  "..(host.difficulty or ""));
+	room.address:SetText(host.address or L["hoa.ui.glue.opening_lobby"]);
+
+	for index = 1, BONK_COOP_ROOM_MEMBERS do
+		local row = room.members[index];
+		local member = members[index];
+		local name = row:GetName();
+		if ( member ) then
+			getglobal(name.."Name"):SetText(member.name or "");
+			getglobal(name.."Sub"):SetText(L("hoa.ui.glue.mastery_1_2", member.mastery or 0, BonkCoop_ClassName(member.class)));
+			BonkCoop_SetClassIcon(getglobal(name.."Icon"), member.class);
+			row:Show();
+		else
+			row:Hide();
+		end
+	end
+
+	if ( host.state == "hosting" and not BonkCoop.roomShown ) then
+		BonkCoop.roomShown = 1;
+		room:Show();
+	end
+end
+
+function BonkCoop_ShowRoom()
+	local room = BonkCoop_RoomFrame();
+	if ( not BonkCoop.host or (BonkCoop.host.state ~= "hosting" and BonkCoop.host.state ~= "starting") ) then
+		return;
+	end
+	BonkCoop_UpdateRoom();
+	room:Show();
+end
+
+function BonkCoop_HideRoom()
+	if ( BonkCoop.room ) then
+		BonkCoop.room:Hide();
+	end
+	BonkCoop.roomShown = nil;
 end
 
 local OriginalUpdateControls = BonkHero_UpdateControls;
@@ -1199,6 +1337,7 @@ function BonkCoop_StatusButton()
 	end
 	BonkCoop_Call("POST", "/host/stop");
 	BonkCoop.host = nil;
+	BonkCoop_HideRoom();
 	BonkCoop_Apply();
 end
 

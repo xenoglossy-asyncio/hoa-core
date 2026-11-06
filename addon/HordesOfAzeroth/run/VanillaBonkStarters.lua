@@ -279,6 +279,8 @@ RefreshArena = function()
     end
 end
 
+VB.RefreshArena = RefreshArena
+
 StaticPopupDialogs["VANILLABONK_LEAVE_RUN"] = {
     text = L["hoa.addon.end_this_run_it_counts_as_a_defeat_you_keep_the_gold_and_dar"],
     button1 = YES,

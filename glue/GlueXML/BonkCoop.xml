@@ -379,6 +379,23 @@
 			</Layer>
 		</Layers>
 		<Frames>
+			<Button name="BonkCoopRoomButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_HOST_GAME" hidden="true">
+				<Size>
+					<AbsDimension x="120" y="24"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="CENTER">
+						<Offset>
+							<AbsDimension x="-170" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						BonkCoop_ShowRoom();
+					</OnClick>
+				</Scripts>
+			</Button>
 			<Button name="BonkCoopStatusButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_CLOSE_LOBBY">
 				<Size>
 					<AbsDimension x="150" y="24"/>

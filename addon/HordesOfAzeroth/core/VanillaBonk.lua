@@ -273,13 +273,13 @@ handlers["tierend"] = function()
     VB.tiers = VB.pendingTiers
     VB.pendingTiers = {}
     if VB.arenaNpc then
-        Gossip.ReplaceNext(arena, VB.arenaNpc, RefreshArena)
+        Gossip.ReplaceNext(arena, VB.arenaNpc, VB.RefreshArena)
         VB.arenaNpc = nil
     elseif arena:IsShown() then
-        RefreshArena()
+        VB.RefreshArena()
     elseif VB.arenaRequested then
         VB.arenaRequested = nil
-        RefreshArena()
+        VB.RefreshArena()
         arena:Show()
     end
 end
