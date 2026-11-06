@@ -56,7 +56,12 @@
         { "from": "release/build/server-install/realmd.conf.dist", "to": "server/run/realmd.conf.dist" },
         { "from": "release/build/server-install/msvcp140.dll", "to": "server/run/msvcp140.dll" },
         { "from": "release/build/server-install/vcruntime140.dll", "to": "server/run/vcruntime140.dll" },
-        { "from": "release/build/server-install/vcruntime140_1.dll", "to": "server/run/vcruntime140_1.dll" }
+        { "from": "release/build/server-install/vcruntime140_1.dll", "to": "server/run/vcruntime140_1.dll" },
+        { "from": "LICENSE", "to": "server/run/LICENSE" },
+        { "from": "LICENSE-NOTICE.md", "to": "server/run/LICENSE-NOTICE.md" },
+        { "from": "THIRD-PARTY-NOTICES.md", "to": "server/run/THIRD-PARTY-NOTICES.md" },
+        { "from": "LICENSES/*.txt", "to": "server/run/LICENSES" },
+        { "from": "server/dep/windows/licenses/*.txt", "to": "server/run/LICENSES" }
       ]
     },
     {
@@ -80,7 +85,12 @@
         { "from": "release/build/linux/server/bin/libmariadb.so.3", "to": "server/run/libmariadb.so.3" },
         { "from": "release/build/linux/server/bin/libcrypto.so.3", "to": "server/run/libcrypto.so.3" },
         { "from": "release/build/linux/server/etc/mangosd.conf.dist", "to": "server/run/mangosd.conf.dist" },
-        { "from": "release/build/linux/server/etc/realmd.conf.dist", "to": "server/run/realmd.conf.dist" }
+        { "from": "release/build/linux/server/etc/realmd.conf.dist", "to": "server/run/realmd.conf.dist" },
+        { "from": "LICENSE", "to": "server/run/LICENSE" },
+        { "from": "LICENSE-NOTICE.md", "to": "server/run/LICENSE-NOTICE.md" },
+        { "from": "THIRD-PARTY-NOTICES.md", "to": "server/run/THIRD-PARTY-NOTICES.md" },
+        { "from": "LICENSES/*.txt", "to": "server/run/LICENSES" },
+        { "from": "server/dep/windows/licenses/*.txt", "to": "server/run/LICENSES" }
       ]
     },
     {
