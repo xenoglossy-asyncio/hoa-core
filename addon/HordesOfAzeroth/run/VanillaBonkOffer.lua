@@ -431,32 +431,34 @@ function Offer:ShowKeywordTooltip(id, owner)
     GameTooltip:Show()
 end
 
-function Offer:HighlightCard(card)
-    if VB.IsBanishTarget(card) then
-        card.line:SetBackdropBorderColor(1, 0.1, 0.05, 1)
+local OfferCard = {}
+
+function OfferCard:Highlight()
+    if VB.IsBanishTarget(self) then
+        self.line:SetBackdropBorderColor(1, 0.1, 0.05, 1)
     else
-        card.line:SetBackdropBorderColor(1, 0.82, 0, 1)
+        self.line:SetBackdropBorderColor(1, 0.82, 0, 1)
     end
 end
 
-function Offer:UnhighlightCard(card)
-    if VB.IsBanishTarget(card) then
-        card.line:SetBackdropBorderColor(BANISH_RED[1], BANISH_RED[2], BANISH_RED[3], 1)
+function OfferCard:Unhighlight()
+    if VB.IsBanishTarget(self) then
+        self.line:SetBackdropBorderColor(BANISH_RED[1], BANISH_RED[2], BANISH_RED[3], 1)
         return
     end
-    local color = card.lineColor
-    card.line:SetBackdropBorderColor(color[1], color[2], color[3], color[4])
+    local color = self.lineColor
+    self.line:SetBackdropBorderColor(color[1], color[2], color[3], color[4])
 end
 
-function Offer:ClickCard(card, button)
+function OfferCard:Click(button)
     if button == "RightButton" then
         if Offer.banishing then
             Offer:SetBanishMode(false)
         end
     elseif Offer.banishing then
-        Offer:Banish(card.index)
+        Offer:Banish(self.index)
     else
-        Offer:Pick(card.index)
+        Offer:Pick(self.index)
     end
 end
 
@@ -506,53 +508,53 @@ function Offer:KeywordSpans(html)
     return spans
 end
 
-function Offer:CreateKeywordHover(card, index, parent)
-    local hover = CreateFrame("Button", nil, parent or card)
-    hover:SetFrameLevel(card.description:GetFrameLevel() + 2)
+function OfferCard:CreateKeywordHover(index, parent)
+    local hover = CreateFrame("Button", nil, parent or self)
+    hover:SetFrameLevel(self.description:GetFrameLevel() + 2)
     hover:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    hover.card = card
+    hover.card = self
     hover:SetScript("OnEnter", function()
-        Offer:HighlightCard(this.card)
+        this.card:Highlight()
         Offer:ShowKeywordTooltip(this.keyword, this)
     end)
     hover:SetScript("OnLeave", function()
         GameTooltip:Hide()
         if not MouseIsOver(this.card) then
-            Offer:UnhighlightCard(this.card)
+            this.card:Unhighlight()
         end
     end)
     hover:SetScript("OnClick", function()
-        Offer:ClickCard(this.card, arg1)
+        this.card:Click(arg1)
     end)
     if index then
-        card.hovers[index] = hover
+        self.hovers[index] = hover
     end
     return hover
 end
 
-function Offer:PlaceKeywordHovers(card, spans)
-    local html = card.description
+function OfferCard:PlaceKeywordHovers(spans)
+    local html = self.description
     for index, span in ipairs(spans) do
-        local hover = card.hovers[index] or Offer:CreateKeywordHover(card, index)
+        local hover = self.hovers[index] or self:CreateKeywordHover(index)
         hover:ClearAllPoints()
         hover:SetPoint("TOPLEFT", html, "TOPLEFT", span:GetLeft() - html:GetLeft(), span:GetTop() - html:GetTop())
         hover:SetWidth(span:GetWidth())
         hover:SetHeight(span:GetHeight())
-        hover.keyword = card.descriptionLinks and card.descriptionLinks[index]
+        hover.keyword = self.descriptionLinks and self.descriptionLinks[index]
         Offer:UnderlineKeyword(hover, span:GetWidth())
         hover:Show()
     end
-    for index = table.getn(spans) + 1, table.getn(card.hovers) do
-        card.hovers[index]:Hide()
+    for index = table.getn(spans) + 1, table.getn(self.hovers) do
+        self.hovers[index]:Hide()
     end
 end
 
-function Offer:SetKeywordText(card)
-    for _, hover in ipairs(card.hovers) do
+function OfferCard:SetKeywordText()
+    for _, hover in ipairs(self.hovers) do
         hover:Hide()
     end
-    card.description:SetText(card.descriptionHtml or "")
-    card.description.hoverFrames = 0
+    self.description:SetText(self.descriptionHtml or "")
+    self.description.hoverFrames = 0
 end
 
 function Offer:UpdateKeywordHovers(html)
@@ -568,15 +570,15 @@ function Offer:UpdateKeywordHovers(html)
     local spans = Offer:KeywordSpans(html)
     if table.getn(spans) >= links then
         html.hoverFrames = nil
-        Offer:PlaceKeywordHovers(html.card, spans)
+        html.card:PlaceKeywordHovers(spans)
     elseif html.hoverFrames >= KEYWORD_HOVER_MAX_FRAMES then
         html.hoverFrames = nil
     end
 end
 
-function Offer:RebuildKeywordLinks(card)
-    if card.descriptionHtml then
-        Offer:SetKeywordText(card)
+function OfferCard:RebuildKeywordLinks()
+    if self.descriptionHtml then
+        self:SetKeywordText()
     end
 end
 
@@ -697,13 +699,13 @@ for index = 1, MAX_CARDS do
     card.highlight:SetAllPoints(card.art)
 
     card:SetScript("OnClick", function()
-        Offer:ClickCard(this, arg1)
+        card:Click(arg1)
     end)
     card:SetScript("OnEnter", function()
-        Offer:HighlightCard(this)
+        card:Highlight()
     end)
     card:SetScript("OnLeave", function()
-        Offer:UnhighlightCard(this)
+        card:Unhighlight()
     end)
 
     card.lock = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, card, "UIPanelButtonTemplate"))
@@ -749,18 +751,18 @@ offerFrame.SIDE_SCALE = 0.5
 offerFrame.SIDE_BOTTOM = 140
 offerFrame.SIDE_BUTTON_STEP = 28
 
-function Offer:PlaceCard(card, scale, alpha, rise)
-    card:SetAlpha(alpha)
-    card.alphaNow = alpha
-    card:ClearAllPoints()
+function OfferCard:Place(scale, alpha, rise)
+    self:SetAlpha(alpha)
+    self.alphaNow = alpha
+    self:ClearAllPoints()
     if offerFrame.side then
         local sideScale = scale * offerFrame.SIDE_SCALE
-        card:SetScale(sideScale)
-        card:SetPoint("BOTTOM", UIParent, "BOTTOM", card.x * offerFrame.SIDE_SCALE / sideScale, (offerFrame.SIDE_BOTTOM + rise * offerFrame.SIDE_SCALE) / sideScale)
+        self:SetScale(sideScale)
+        self:SetPoint("BOTTOM", UIParent, "BOTTOM", self.x * offerFrame.SIDE_SCALE / sideScale, (offerFrame.SIDE_BOTTOM + rise * offerFrame.SIDE_SCALE) / sideScale)
         return
     end
-    card:SetScale(scale)
-    card:SetPoint("CENTER", offerFrame, "CENTER", card.x / scale, (16 - offerFrame.cardDrop + rise) / scale)
+    self:SetScale(scale)
+    self:SetPoint("CENTER", offerFrame, "CENTER", self.x / scale, (16 - offerFrame.cardDrop + rise) / scale)
 end
 
 function Offer:ApplySideChrome()
@@ -856,8 +858,8 @@ UI.Module("choiceKeys"):Listen({
 })
 
 local CARD_TEXT_WIDTH = 220
-function Offer:LayoutDamageRow(card, option, hasLock)
-    local row = card.damage
+function OfferCard:LayoutDamageRow(option, hasLock)
+    local row = self.damage
     local after = option and option.damageAfter or ""
     if after == "" then
         row:Hide()
@@ -876,14 +878,14 @@ function Offer:LayoutDamageRow(card, option, hasLock)
     local beforeWidth = changed and row.before:GetStringWidth() or 0
     local arrowWidth = changed and DAMAGE_ARROW_SIZE + 2 * DAMAGE_ROW_GAP or 0
     local total = labelWidth + beforeWidth + arrowWidth + row.after:GetStringWidth()
-    if labelWidth > 0 and total > card:GetWidth() - 16 then
+    if labelWidth > 0 and total > self:GetWidth() - 16 then
         row.label:SetText("")
         total = total - labelWidth
         labelWidth = 0
     end
     row:SetWidth(total)
     row:ClearAllPoints()
-    row:SetPoint("BOTTOM", card, "BOTTOM", 0, hasLock and 46 or 18)
+    row:SetPoint("BOTTOM", self, "BOTTOM", 0, hasLock and 46 or 18)
     row.label:ClearAllPoints()
     row.label:SetPoint("LEFT", row, "LEFT", 0, 0)
     row.before:ClearAllPoints()
@@ -906,45 +908,45 @@ function Offer:LayoutDamageRow(card, option, hasLock)
     return DAMAGE_ROW_HEIGHT + DAMAGE_ROW_GAP
 end
 
-function Offer:FitCardText(card, width, darkmoon, hasLock, damageRoom)
+function OfferCard:FitCardText(width, darkmoon, hasLock, damageRoom)
     local scale = min(1, width / CARD_TEXT_WIDTH)
-    card.name:SetFont(FONT, max(12, floor(17 * scale + 0.5)))
-    card.name:SetWidth(width - 28)
-    card.level:SetFont(FONT, max(9, floor(11 * scale + 0.5)))
-    card.level:SetWidth(width - 20)
-    card.count:SetFont(FONT, max(9, floor(11 * scale + 0.5)))
-    card.description:SetWidth(width - 36)
-    card.measure:SetWidth(width - 36)
-    card.measure:SetText(card.descriptionText or "")
+    self.name:SetFont(FONT, max(12, floor(17 * scale + 0.5)))
+    self.name:SetWidth(width - 28)
+    self.level:SetFont(FONT, max(9, floor(11 * scale + 0.5)))
+    self.level:SetWidth(width - 20)
+    self.count:SetFont(FONT, max(9, floor(11 * scale + 0.5)))
+    self.description:SetWidth(width - 36)
+    self.measure:SetWidth(width - 36)
+    self.measure:SetText(self.descriptionText or "")
 
     local top = darkmoon and 158 or 104
-    local used = top + card.name:GetHeight() + 4 + card.level:GetHeight() + 11 + 1 + 10
+    local used = top + self.name:GetHeight() + 4 + self.level:GetHeight() + 11 + 1 + 10
     local room = offerFrame.cardHeight - used - (hasLock and 46 or 18) - (damageRoom or 0)
     local size = max(10, floor(13 * scale + 0.5))
     while size > 9 do
-        card.measure:SetFont(FONT, size)
-        local needed = card.measure:GetHeight()
+        self.measure:SetFont(FONT, size)
+        local needed = self.measure:GetHeight()
         if not needed or needed == 0 or needed <= room then
             break
         end
         size = size - 1
     end
-    card.measure:SetFont(FONT, size)
-    card.overflow = max(0, (card.measure:GetHeight() or 0) - room)
-    card.description:SetFont("P", FONT, size, "")
-    card.description:SetHeight(max(room, 12))
-    card.descriptionHtml, card.descriptionLinks = Offer:KeywordHtml(card.descriptionText or "")
-    Offer:SetKeywordText(card)
+    self.measure:SetFont(FONT, size)
+    self.overflow = max(0, (self.measure:GetHeight() or 0) - room)
+    self.description:SetFont("P", FONT, size, "")
+    self.description:SetHeight(max(room, 12))
+    self.descriptionHtml, self.descriptionLinks = Offer:KeywordHtml(self.descriptionText or "")
+    self:SetKeywordText()
     return room
 end
 
-function Offer:GetStatBlock(card, index)
-    card.stats = card.stats or {}
-    local block = card.stats[index]
+function OfferCard:GetStatBlock(index)
+    self.stats = self.stats or {}
+    local block = self.stats[index]
     if block then
         return block
     end
-    block = CreateFrame("Frame", nil, card)
+    block = CreateFrame("Frame", nil, self)
     block.label = VanillaBonkUI.Text(block, STAT_BLOCK.labelSize)
     block.label:SetTextColor(0.65, 0.65, 0.65)
     block.label:SetJustifyH("CENTER")
@@ -959,17 +961,17 @@ function Offer:GetStatBlock(card, index)
     block.measure:SetTextColor(0, 0, 0, 0)
     block.measure:SetShadowColor(0, 0, 0, 0)
     block.measure:SetPoint("TOPLEFT", block, "TOPLEFT", 0, 0)
-    block.hover = Offer:CreateKeywordHover(card, nil, block)
-    card.stats[index] = block
+    block.hover = self:CreateKeywordHover(nil, block)
+    self.stats[index] = block
     return block
 end
 
-function Offer:HideStats(card, from)
-    if not card.stats then
+function OfferCard:HideStats(from)
+    if not self.stats then
         return
     end
-    for index = from, getn(card.stats) do
-        card.stats[index]:Hide()
+    for index = from, getn(self.stats) do
+        self.stats[index]:Hide()
     end
 end
 
@@ -994,7 +996,7 @@ function Offer:PlaceStatKeyword(block, label, size)
     hover:Show()
 end
 
-function Offer:LayoutStats(card, stats, width, room)
+function OfferCard:LayoutStats(stats, width, room)
     local scale = min(1, width / CARD_TEXT_WIDTH)
     local count = getn(stats)
     local labelSize = max(8, floor(STAT_BLOCK.labelSize * scale + 0.5))
@@ -1002,11 +1004,11 @@ function Offer:LayoutStats(card, stats, width, room)
     local valueSize = max(10, min(floor(STAT_BLOCK.valueSize * scale + 0.5), step - labelSize - 8))
     local arrowSize = floor(valueSize * 0.8 + 0.5)
     for index, stat in ipairs(stats) do
-        local block = Offer:GetStatBlock(card, index)
+        local block = self:GetStatBlock(index)
         block:SetWidth(width - 20)
         block:SetHeight(step)
         block:ClearAllPoints()
-        block:SetPoint("TOP", card.divider, "BOTTOMRIGHT", 0, -8 - (index - 1) * step)
+        block:SetPoint("TOP", self.divider, "BOTTOMRIGHT", 0, -8 - (index - 1) * step)
         block.label:SetFont(FONT, labelSize)
         block.label:SetWidth(width - 24)
         block.label:SetText(Offer:ColorKeywords(stat.label))
@@ -1033,23 +1035,27 @@ function Offer:LayoutStats(card, stats, width, room)
         block.after:SetPoint("LEFT", block.arrow, "RIGHT", STAT_BLOCK.arrowGap, 0)
         block:Show()
     end
-    Offer:HideStats(card, count + 1)
+    self:HideStats(count + 1)
 end
 
-function Offer:FitCard(card, option, width, hasLock)
+function OfferCard:FitCard(option, width, hasLock)
     local darkmoon = option.kind == "c"
     if not darkmoon then
-        VanillaBonkUI.TalentArtCoords(card.art, width - 18, offerFrame.cardHeight - 18)
+        VanillaBonkUI.TalentArtCoords(self.art, width - 18, offerFrame.cardHeight - 18)
     end
     if option.stats and getn(option.stats) > 0 then
-        card.descriptionText = ""
-        card.damage:Hide()
-        Offer:LayoutStats(card, option.stats, width, Offer:FitCardText(card, width, darkmoon, hasLock, 0))
+        self.descriptionText = ""
+        self.damage:Hide()
+        self:LayoutStats(option.stats, width, self:FitCardText(width, darkmoon, hasLock, 0))
     else
-        Offer:HideStats(card, 1)
-        card.descriptionText = option.description
-        Offer:FitCardText(card, width, darkmoon, hasLock, Offer:LayoutDamageRow(card, option, hasLock))
+        self:HideStats(1)
+        self.descriptionText = option.description
+        self:FitCardText(width, darkmoon, hasLock, self:LayoutDamageRow(option, hasLock))
     end
+end
+
+for _, card in ipairs(Offer.cards) do
+    UI.Mixin(card, { OfferCard })
 end
 
 function Offer:GrowCardsToFit(width, hasLock)
@@ -1066,14 +1072,14 @@ function Offer:GrowCardsToFit(width, hasLock)
             local option = VB.offer[index]
             if option then
                 card:SetHeight(offerFrame.cardHeight)
-                Offer:FitCard(card, option, width, hasLock)
+                card:FitCard(option, width, hasLock)
             end
         end
     end
     offerFrame.cardDrop = grow / 2
     for index, card in ipairs(Offer.cards) do
         if VB.offer[index] and not card.pop then
-            Offer:PlaceCard(card, 1, 1, 0)
+            card:Place(1, 1, 0)
         end
     end
     offerFrame.hint:SetPoint("CENTER", offerFrame, "CENTER", 0, -206 - grow)
@@ -1137,12 +1143,12 @@ function Offer:ShowOffer(level)
             local look = option.name .. option.icon .. option.newLevel .. (option.rarity or "")
             if fresh then
                 card.pop = 0.08 + (index - 1) * OFFER_STAGGER
-                Offer:PlaceCard(card, 0.8, 0, -24)
+                card:Place(0.8, 0, -24)
             elseif card.look ~= look or not card:IsShown() then
                 card.pop = Offer.anim.t
-                Offer:PlaceCard(card, 0.8, 0, -24)
+                card:Place(0.8, 0, -24)
             elseif not card.pop then
-                Offer:PlaceCard(card, 1, 1, 0)
+                card:Place(1, 1, 0)
             end
             card.look = look
             card.divider:SetWidth((width - 48) / 2)
@@ -1211,7 +1217,7 @@ function Offer:ShowOffer(level)
             card.line:SetBackdropBorderColor(card.lineColor[1], card.lineColor[2], card.lineColor[3], card.lineColor[4])
             card.borderColor = color and { color.r, color.g, color.b } or { 1, 1, 1 }
             card:SetBackdropBorderColor(card.borderColor[1], card.borderColor[2], card.borderColor[3])
-            Offer:FitCard(card, option, width, hasLock)
+            card:FitCard(option, width, hasLock)
             if hasLock then
                 card.lock:SetText(option.locked and L["hoa.addon.locked"] or L["hoa.addon.lock"])
                 card.lock:Show()
@@ -1294,9 +1300,9 @@ function Offer:AnimateOffer(frame, elapsed)
         for _, card in ipairs(self.cards) do
             if card:IsShown() then
                 if card.index == VB.pickedIndex then
-                    Offer:PlaceCard(card, 1 + 0.08 * EaseOut(e), card.closeFrom * (1 - e), 6 * e)
+                    card:Place(1 + 0.08 * EaseOut(e), card.closeFrom * (1 - e), 6 * e)
                 else
-                    Offer:PlaceCard(card, 1 - 0.06 * e, card.closeFrom * max(0, 1 - e * 1.5), -12 * e)
+                    card:Place(1 - 0.06 * e, card.closeFrom * max(0, 1 - e * 1.5), -12 * e)
                 end
             end
         end
@@ -1325,10 +1331,10 @@ function Offer:AnimateOffer(frame, elapsed)
     for _, card in ipairs(self.cards) do
         if card.pop then
             local p = Progress(t, card.pop, OFFER_POP)
-            Offer:PlaceCard(card, 0.8 + 0.2 * EaseBack(p), min(1, p * 2), -24 * (1 - EaseOut(p)))
+            card:Place(0.8 + 0.2 * EaseBack(p), min(1, p * 2), -24 * (1 - EaseOut(p)))
             if p >= 1 then
                 card.pop = nil
-                Offer:RebuildKeywordLinks(card)
+                card:RebuildKeywordLinks()
             else
                 busy = true
             end
@@ -1351,7 +1357,7 @@ offerFrame:SetScript("OnShow", function()
     end
     for _, card in ipairs(Offer.cards) do
         if card:IsShown() and not card.pop then
-            Offer:RebuildKeywordLinks(card)
+            card:RebuildKeywordLinks()
         end
     end
 end)
