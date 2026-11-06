@@ -4,7 +4,7 @@
 
 | 路径 | 许可证 | 版权/来源 |
 | --- | --- | --- |
-| `server/` | GNU GPL v2.0 | VMaNGOS 及其贡献者；hordes-of-azeroth-server 的改动 |
+| `server/` | GNU GPL v2.0（源码头多为 v2-or-later；Windows 的 MySQL/OpenSSL 依赖见下） | VMaNGOS 及其贡献者；hordes-of-azeroth-server 的改动 |
 | `client/` | MIT 或 Apache License 2.0，任选其一 | benilla 及其贡献者；hordes-of-azeroth-client 的改动 |
 | `addon/`、`glue/`、`launcher/`、`config/`、`localization/` | GNU GPL v3.0 | Hordes of Azeroth 及其贡献者 |
 | `tools/` 中从上游导入的部分 | GNU GPL v3.0 | Hordes of Azeroth 及其贡献者 |
@@ -12,7 +12,7 @@
 
 ## 为什么这样分
 
-- VMaNGOS 是 GPL-2.0-only，不能整体升级到 GPL-3.0。
+- VMaNGOS 的源码头多数是 GPL-2.0-or-later，但 `server/dep/windows` 里的 MySQL 客户端头是 GPL-2.0-only，随附的 OpenSSL 1.0.2 使用与 GPL 不兼容的 OpenSSL/SSLeay 许可证；因此服务端实际按 GPL-2.0 单独分发，不能整体改成 GPL-3.0，除非替换这些依赖。完整盘点和 submodule 方案见 [docs/licensing](docs/licensing/README_zh.md)。
 - benilla 是 MIT / Apache-2.0，可以放进 GPL 项目，但保留原许可证更清楚。
 - Hordes of Azeroth 主仓库是 GPL-3.0。
 - `shared/` 和 `tools/` 会被服务端（GPL-2.0）和插件（GPL-3.0）同时使用，所以采用 GPL-2.0-or-later：两边都能用。
