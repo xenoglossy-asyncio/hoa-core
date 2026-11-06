@@ -301,8 +301,9 @@ function UI.Text(parent, size, font, flags, layer)
     return text
 end
 
--- Typed HoA messages the Rust client decoded; the handler gets the fields as event arguments.
-function UI.ListenHoa(handlers)
+-- One event frame for a table of handlers: handlers[event](arg1..arg8). Client events and the
+-- Rust client's typed HoA messages dispatch the same way.
+function UI.Listen(handlers)
     local frame = CreateFrame("Frame")
     for name in pairs(handlers) do
         frame:RegisterEvent(name)
@@ -314,6 +315,61 @@ function UI.ListenHoa(handlers)
         end
     end)
     return frame
+end
+
+-- Typed HoA messages the Rust client decoded; the handler gets the fields as event arguments.
+function UI.ListenHoa(handlers)
+    return UI.Listen(handlers)
+end
+
+-- Show a tooltip while the pointer is over `frames` (one frame or a list). `show` runs with
+-- `this` set to the hovered frame; the default leave hides the game tooltip.
+function UI.Hover(frames, show, hide)
+    if frames.SetScript then
+        frames = { frames }
+    end
+    hide = hide or function() GameTooltip:Hide() end
+    for _, frame in ipairs(frames) do
+        frame:EnableMouse(true)
+        frame:SetScript("OnEnter", show)
+        frame:SetScript("OnLeave", hide)
+    end
+    return frames
+end
+
+-- A row with a cropped icon, a label beside it and an optional right-aligned value.
+-- opts: width, height, iconSize, iconX, labelSize, labelGap, valueSize.
+function UI.IconRow(parent, opts)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetWidth(opts.width)
+    row:SetHeight(opts.height)
+    row.icon = row:CreateTexture(nil, "ARTWORK")
+    row.icon:SetWidth(opts.iconSize or 13)
+    row.icon:SetHeight(opts.iconSize or 13)
+    row.icon:SetPoint("LEFT", row, "LEFT", opts.iconX or 0, 0)
+    UI.CropIcon(row.icon)
+    row.label = UI.Text(row, opts.labelSize or 11)
+    row.label:SetPoint("LEFT", row.icon, "RIGHT", opts.labelGap or 7, 0)
+    if opts.valueSize then
+        row.value = UI.Text(row, opts.valueSize, UI.NUMBER_FONT)
+        row.value:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        row.value:SetJustifyH("RIGHT")
+    end
+    return row
+end
+
+-- A square icon button: the cropped icon fills the frame; no border or background.
+function UI.IconButton(parent, size, onClick)
+    local button = CreateFrame("Button", nil, parent)
+    button:SetWidth(size)
+    button:SetHeight(size)
+    button.icon = button:CreateTexture(nil, "ARTWORK")
+    button.icon:SetAllPoints(button)
+    UI.CropIcon(button.icon)
+    if onClick then
+        button:SetScript("OnClick", onClick)
+    end
+    return button
 end
 
 local GENERAL = "Interface\\PaperDollInfoFrame\\UI-Character-General-"
