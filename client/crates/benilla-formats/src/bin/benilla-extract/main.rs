@@ -12,6 +12,7 @@ mod chaincensus;
 mod charatlas;
 mod charprocs;
 mod kitanim;
+mod locale_pack;
 mod m2dump;
 mod scan;
 mod shakecensus;
@@ -43,6 +44,18 @@ enum Command {
         internal_path: String,
         /// Output file to write the extracted bytes to.
         output: PathBuf,
+    },
+    /// Write a stock language pack — `GlobalStrings.lua` and every `DBFilesClient` table — for the
+    /// client's account-language overlay at `benilla-config/locale/<language>/`.
+    LocalePack {
+        /// Language code the pack is for (`enUS`, `zhCN`, `zhTW`); the install's `Wow.ini` must
+        /// name the same one unless `--force`.
+        language: String,
+        /// Folder to write the pack into; the client reads it under `locale/<language>/`.
+        output: PathBuf,
+        /// Write the pack even when the install's `Wow.ini` names another language.
+        #[arg(long)]
+        force: bool,
     },
     /// Decode a BLP texture from the archive and write it as a PNG.
     Blp {
@@ -631,6 +644,17 @@ fn main() -> Result<()> {
                 ),
                 None => eprintln!("wrote {} bytes to {}", data.len(), output.display()),
             }
+        }
+        Command::LocalePack {
+            language,
+            output,
+            force,
+        } => {
+            locale_pack::locale_pack(&chain, &language, &output, force)?;
+            eprintln!(
+                "wrote the {language} stock language pack to {}",
+                output.display()
+            );
         }
         Command::Blp {
             internal_path,
