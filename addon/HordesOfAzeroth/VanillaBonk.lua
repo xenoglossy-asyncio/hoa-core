@@ -1607,13 +1607,12 @@ arena.pauseCheck:SetScript("OnClick", function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     UI.SetOption("pauseOnChoices", this:GetChecked() and true or false)
 end)
-arena.pauseCheck:SetScript("OnEnter", function()
+UI.Hover(arena.pauseCheck, function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
     GameTooltip:SetText(L["hoa.addon.pause_on_rewards"], 1, 1, 1)
     GameTooltip:AddLine(L["hoa.addon.when_disabled_rewards_appear_at_the_bottom_of_the_screen_and"], 1, 0.82, 0, 1)
     GameTooltip:Show()
 end)
-arena.pauseCheck:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 VB.starters = {}
 VB.pendingStarters = {}
@@ -1686,8 +1685,7 @@ local function StarterSlot(index)
         UI.CropIcon(slot.icon)
         slot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
         slot:SetScript("OnClick", function() ChooseStarter(this.option) end)
-        slot:SetScript("OnEnter", function() ShowStarterTooltip(this, this.option) end)
-        slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        UI.Hover(slot, function() ShowStarterTooltip(this, this.option) end)
         slot.glow = slot:CreateTexture(nil, "OVERLAY")
         slot.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
         slot.glow:SetBlendMode("ADD")
@@ -1913,14 +1911,13 @@ shop.respec:SetScript("OnClick", function()
     VB.shopBusy = GetTime()
     Command("respec")
 end)
-shop.respec:SetScript("OnEnter", function()
+UI.Hover(shop.respec, function()
     local refund = SHOP_REFUNDS[shop.kind] or SHOP_REFUNDS[MASTERY_SHOP]
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     GameTooltip:AddLine(refund.label, 1, 1, 1)
     GameTooltip:AddLine(refund.text, 1, 0.82, 0, 1)
     GameTooltip:Show()
 end)
-shop.respec:SetScript("OnLeave", function() GameTooltip:Hide() end)
 shop.respec:Hide()
 
 do
@@ -1956,13 +1953,12 @@ do
             button:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 0, 0)
         end
         button:SetText(label)
-        button:SetScript("OnLeave", function() GameTooltip:Hide() end)
         return button
     end
 
     bar.activate = AddButton(84, L["hoa.addon.activate"])
     bar.activate:SetScript("OnClick", SendPreset)
-    bar.activate:SetScript("OnEnter", function()
+    UI.Hover(bar.activate, function()
         ShowTip(L["hoa.addon.activate"], L["hoa.addon.switches_to_this_preset_s_talents_your_current_talents_stay_"])
     end)
 
@@ -1976,7 +1972,7 @@ do
             shop.presetSlot = this.slot
             shop.Refresh()
         end)
-        button:SetScript("OnEnter", function()
+        UI.Hover(button, function()
             local points = shop.presets and shop.presets.points[this.slot] or 0
             local text = points > 0 and (points == 1 and L["hoa.addon.1_talent_point"] or L("hoa.addon.1_talent_points_2", points)) or L["hoa.addon.empty_2"]
             if shop.presets and shop.presets.active == this.slot then
@@ -2335,8 +2331,7 @@ local function CreateNodeButton(panel, index)
     button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
     VanillaBonkTalents.StyleButton(button)
 
-    button:SetScript("OnEnter", function() ShowNodeTooltip(this) end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(button, function() ShowNodeTooltip(this) end)
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     button:SetScript("OnClick", ShopNode_OnClick)
 
@@ -3611,7 +3606,7 @@ local function CreateStatLine(column, row)
     line.value = line:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     line.value:SetPoint("RIGHT", line, "RIGHT", 0, 0)
 
-    line:SetScript("OnEnter", function()
+    UI.Hover(line, function()
         GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
         GameTooltip:SetText(this.title or "", 1, 1, 1)
         for _, text in ipairs(this.lines or {}) do
@@ -3619,7 +3614,6 @@ local function CreateStatLine(column, row)
         end
         GameTooltip:Show()
     end)
-    line:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return line
 end
 

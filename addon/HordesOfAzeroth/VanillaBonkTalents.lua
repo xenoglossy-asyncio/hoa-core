@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 VanillaBonkTalents = {}
 
 local T = VanillaBonkTalents
@@ -274,14 +275,13 @@ for index = 1, 2 do
         picker:Hide()
         Command("learn " .. this.node.id)
     end)
-    slot:SetScript("OnEnter", function()
+    UI.Hover(slot, function()
         GameTooltip:SetOwner(this, "ANCHOR_TOP")
         GameTooltip:AddLine(this.node.name, 1, 1, 1)
         GameTooltip:AddLine(this.node.description, 1, 0.82, 0, 1)
         VanillaBonkUI.AddGlossary(GameTooltip, { this.node.description })
         GameTooltip:Show()
     end)
-    slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
     picker.slots[index] = slot
 end
 
@@ -364,8 +364,7 @@ local function CreateNode(panel)
     button.rank:SetFont(RANK_FONT, 11)
     button.rank:SetShadowColor(0, 0, 0, 1)
     button.rank:SetShadowOffset(1, -1)
-    button:SetScript("OnEnter", function() ShowTooltip(this) end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(button, function() ShowTooltip(this) end)
     button:SetScript("OnClick", OnClick)
     return button
 end

@@ -160,8 +160,7 @@ local function CreateBar()
     bar.shown, bar.trailShown, bar.target = 1, 1, 1
 
     bar:EnableMouse(true)
-    bar:SetScript("OnEnter", ShowEntryTooltip)
-    bar:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(bar, ShowEntryTooltip)
     bar:SetScript("OnUpdate", Smooth)
     bar:Hide()
     return bar

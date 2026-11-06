@@ -64,11 +64,10 @@ window.fill:SetScript("OnClick", function()
     PlaySound(this:GetChecked() and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff")
     UI.ChangeSetting(UI.REACH_RING_FILL_SETTING, this:GetChecked() and true or false)
 end)
-window.fill:SetScript("OnEnter", function()
+UI.Hover(window.fill, function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
     GameTooltip:SetText(UI.REACH_RING_FILL_SETTING.tooltip, 1, 1, 1, 1, 1)
 end)
-window.fill:SetScript("OnLeave", function() GameTooltip:Hide() end)
 Place(window.fill, 0, 30)
 
 local opacity = UI.REACH_RING_OPACITY_SETTING
@@ -91,11 +90,10 @@ window.opacity:SetScript("OnMouseUp", function()
         UI.ChangeSetting(opacity, value)
     end
 end)
-window.opacity:SetScript("OnEnter", function()
+UI.Hover(window.opacity, function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
     GameTooltip:SetText(opacity.tooltip, 1, 1, 1, 1, 1)
 end)
-window.opacity:SetScript("OnLeave", function() GameTooltip:Hide() end)
 cursor = cursor + 16
 Place(window.opacity, 8, 40)
 
@@ -103,11 +101,10 @@ window.preview = UI.Button(window, 110, L["hoa.addon.preview"], function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     UI.PreviewReachRing()
 end)
-window.preview:SetScript("OnEnter", function()
+UI.Hover(window.preview, function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
     GameTooltip:SetText(L("hoa.addon.shows_the_ring_around_you_for_1_seconds", UI.REACH_RING_PREVIEW_SECONDS), 1, 1, 1, 1, 1)
 end)
-window.preview:SetScript("OnLeave", function() GameTooltip:Hide() end)
 window.done = UI.Button(window, 100, L["hoa.addon.done"], function() window:Hide() end)
 
 local footerTop = 84 + window.intro:GetHeight() + cursor + 10

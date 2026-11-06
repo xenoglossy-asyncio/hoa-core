@@ -423,13 +423,12 @@ local function MakeSockets()
         socket.count:SetPoint("BOTTOMRIGHT", socket, "BOTTOMRIGHT", 2, -2)
         socket.index = index
         socket:EnableMouse(true)
-        socket:SetScript("OnEnter", function()
+        UI.Hover(socket, function()
             local glyph = info[taken[this.index]]
             if glyph then
                 GlyphTooltip(this, glyph)
             end
         end)
-        socket:SetScript("OnLeave", function() GameTooltip:Hide() end)
         sockets[index] = socket
     end
 end
