@@ -53,10 +53,16 @@ local OUTFITS = 5
 local OUTFIT_ROW = 26
 local OUTFIT_SAVE_WIDTH = 56
 local OUTFIT_DELETE_WIDTH = 28
-local state = { slots = {}, looks = {}, outfits = {}, selected = 0, page = 1 }
-local incoming
+
+local Transmog = UI.Module("transmog")
+Transmog.state = { slots = {}, looks = {}, outfits = {}, selected = 0, page = 1 }
+Transmog.incoming = nil
+Transmog.retries = 0
+Transmog.slotButtons = {}
+Transmog.lookButtons = {}
 
 local window = UI.Window("VanillaBonkTransmog", WIDTH, HEIGHT)
+Transmog.window = window
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
 window.title:SetText(UI.TRANSMOGRIFIER_NAME)
 
@@ -80,14 +86,12 @@ end
 window.scan = CreateFrame("GameTooltip", "VanillaBonkTransmogScan", UIParent, "GameTooltipTemplate")
 window.scan:Hide()
 
-local function ResetModel()
-    window.model:SetUnit("player")
+function Transmog:ResetModel()
+    self.window.model:SetUnit("player")
 end
 
-local slotButtons = {}
-
-local function SlotEntry(slot)
-    return state.slots[slot] or {}
+function Transmog:SlotEntry(slot)
+    return self.state.slots[slot] or {}
 end
 
 local function LookTexture(entry)
@@ -95,10 +99,10 @@ local function LookTexture(entry)
     return texture
 end
 
-local function SlotButton(info, x, y)
-    local button = UI.Slot(window, SLOT_SIZE)
+function Transmog:SlotButton(info, x, y)
+    local button = UI.Slot(self.window, SLOT_SIZE)
     button.info = info
-    button:SetPoint("TOPLEFT", window, "TOPLEFT", x, -y)
+    button:SetPoint("TOPLEFT", self.window, "TOPLEFT", x, -y)
     button.glow = button:CreateTexture(nil, "OVERLAY")
     button.glow:SetTexture("Interface\\Buttons\\CheckButtonHilight")
     button.glow:SetBlendMode("ADD")
@@ -114,13 +118,13 @@ local function SlotButton(info, x, y)
     button.changed:Hide()
     button:SetScript("OnClick", function()
         PlaySound("igMainMenuOptionCheckBoxOn")
-        state.selected = this.info.slot
-        state.page = 1
-        window.Refresh()
+        Transmog.state.selected = this.info.slot
+        Transmog.state.page = 1
+        Transmog:Refresh()
     end)
     UI.Hover(button, function()
         GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-        local current = SlotEntry(this.info.slot)
+        local current = Transmog:SlotEntry(this.info.slot)
         if current.worn and current.worn > 0 then
             GameTooltip:SetHyperlink(ItemString(current.look > 0 and current.look or current.worn))
         else
@@ -128,19 +132,19 @@ local function SlotButton(info, x, y)
         end
         GameTooltip:Show()
     end)
-    tinsert(slotButtons, button)
+    tinsert(self.slotButtons, button)
 end
 
 for index, info in ipairs(LEFT_SLOTS) do
-    SlotButton(info, LEFT, modelTop + (index - 1) * (SLOT_SIZE + SLOT_GAP))
+    Transmog:SlotButton(info, LEFT, modelTop + (index - 1) * (SLOT_SIZE + SLOT_GAP))
 end
 for index, info in ipairs(RIGHT_SLOTS) do
-    SlotButton(info, LEFT + SLOT_SIZE + SLOT_GAP * 3 + MODEL_WIDTH, modelTop + (index - 1) * (SLOT_SIZE + SLOT_GAP))
+    Transmog:SlotButton(info, LEFT + SLOT_SIZE + SLOT_GAP * 3 + MODEL_WIDTH, modelTop + (index - 1) * (SLOT_SIZE + SLOT_GAP))
 end
 for index, info in ipairs(BOTTOM_SLOTS) do
     local rowWidth = table.getn(BOTTOM_SLOTS) * SLOT_SIZE + (table.getn(BOTTOM_SLOTS) - 1) * SLOT_GAP
     local first = LEFT + SLOT_SIZE + SLOT_GAP * 2 + (MODEL_WIDTH - rowWidth) / 2
-    SlotButton(info, first + (index - 1) * (SLOT_SIZE + SLOT_GAP), modelTop + MODEL_HEIGHT + 4)
+    Transmog:SlotButton(info, first + (index - 1) * (SLOT_SIZE + SLOT_GAP), modelTop + MODEL_HEIGHT + 4)
 end
 
 local gridLeft = LEFT + SLOT_SIZE * 2 + SLOT_GAP * 4 + MODEL_WIDTH + 24
@@ -155,8 +159,6 @@ window.empty:SetWidth(gridWidth)
 window.empty:SetJustifyH("LEFT")
 window.empty:SetTextColor(0.78, 0.75, 0.69)
 window.empty:SetPoint("TOPLEFT", window.slotName, "BOTTOMLEFT", 0, -12)
-
-local lookButtons = {}
 
 local DUNGEON_NAMES = {
     moltencore = L["hoa.addon.molten_core"],
@@ -241,11 +243,11 @@ local function PreviewLook(entry)
     DressUpItemLink(link or ItemString(entry))
 end
 
-local function LookButton(index)
-    local button = UI.Slot(window, LOOK_SIZE)
+function Transmog:LookButton(index)
+    local button = UI.Slot(self.window, LOOK_SIZE)
     local column = math.mod(index - 1, LOOK_COLUMNS)
     local row = floor((index - 1) / LOOK_COLUMNS)
-    button:SetPoint("TOPLEFT", window, "TOPLEFT", gridLeft + column * (LOOK_SIZE + LOOK_GAP), -(modelTop + 26 + row * (LOOK_SIZE + LOOK_GAP)))
+    button:SetPoint("TOPLEFT", self.window, "TOPLEFT", gridLeft + column * (LOOK_SIZE + LOOK_GAP), -(modelTop + 26 + row * (LOOK_SIZE + LOOK_GAP)))
     button.border = button:CreateTexture(nil, "OVERLAY")
     button.border:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
     button.border:SetBlendMode("ADD")
@@ -268,38 +270,39 @@ local function LookButton(index)
         end
         PlaySound("igMainMenuOptionCheckBoxOn")
         if this.look.collected then
-            SendChatMessage(".bonk mog set " .. state.selected .. " " .. this.look.entry, "SAY")
+            SendChatMessage(".bonk mog set " .. Transmog.state.selected .. " " .. this.look.entry, "SAY")
         else
             PreviewLook(this.look.entry)
         end
     end)
-    lookButtons[index] = button
+    self.lookButtons[index] = button
     return button
 end
 
 for index = 1, PER_PAGE do
-    LookButton(index)
+    Transmog:LookButton(index)
 end
 
-local function ShowPage(page)
-    state.page = page
+function Transmog:ShowPage(page)
+    self.state.page = page
     PlaySound("igMainMenuOptionCheckBoxOn")
-    window.Refresh()
+    self:Refresh()
 end
 
 local pagerTop = modelTop + 26 + LOOK_ROWS * (LOOK_SIZE + LOOK_GAP) + 4
 window.pager = CreateFrame("Frame", nil, window)
 window.pager:SetHeight(22)
 window.pager:SetPoint("TOP", window, "TOPLEFT", gridLeft + gridWidth / 2, -pagerTop)
-window.prev = UI.Button(window.pager, PAGE_ARROW_WIDTH, "<", function() ShowPage(state.page - 1) end)
-window.next = UI.Button(window.pager, PAGE_ARROW_WIDTH, ">", function() ShowPage(state.page + 1) end)
+window.prev = UI.Button(window.pager, PAGE_ARROW_WIDTH, "<", function() Transmog:ShowPage(Transmog.state.page - 1) end)
+window.next = UI.Button(window.pager, PAGE_ARROW_WIDTH, ">", function() Transmog:ShowPage(Transmog.state.page + 1) end)
 window.pageTabs = {}
 for index = 1, PAGE_TABS do
-    local tab = UI.Button(window.pager, PAGE_TAB_WIDTH, "", function() ShowPage(this.page) end)
+    local tab = UI.Button(window.pager, PAGE_TAB_WIDTH, "", function() Transmog:ShowPage(this.page) end)
     window.pageTabs[index] = tab
 end
 
-local function LayOutPager(pages)
+function Transmog:LayOutPager(pages)
+    local window = self.window
     if pages <= 1 then
         window.pager:Hide()
         return
@@ -307,7 +310,7 @@ local function LayOutPager(pages)
     window.pager:Show()
     local shown = min(pages, PAGE_TABS)
     local arrows = pages > PAGE_TABS
-    local first = max(1, min(state.page - floor(PAGE_TABS / 2), pages - shown + 1))
+    local first = max(1, min(self.state.page - floor(PAGE_TABS / 2), pages - shown + 1))
     local width = shown * PAGE_TAB_WIDTH + (shown - 1) * PAGE_TAB_GAP
     if arrows then
         width = width + 2 * (PAGE_ARROW_WIDTH + PAGE_TAB_GAP)
@@ -318,7 +321,7 @@ local function LayOutPager(pages)
         window.prev:ClearAllPoints()
         window.prev:SetPoint("LEFT", window.pager, "LEFT", 0, 0)
         window.prev:Show()
-        if state.page > 1 then window.prev:Enable() else window.prev:Disable() end
+        if self.state.page > 1 then window.prev:Enable() else window.prev:Disable() end
         x = PAGE_ARROW_WIDTH + PAGE_TAB_GAP
     else
         window.prev:Hide()
@@ -330,7 +333,7 @@ local function LayOutPager(pages)
             tab:ClearAllPoints()
             tab:SetPoint("LEFT", window.pager, "LEFT", x, 0)
             x = x + PAGE_TAB_WIDTH + PAGE_TAB_GAP
-            if tab.page == state.page then
+            if tab.page == self.state.page then
                 tab:Disable()
             else
                 tab:Enable()
@@ -344,7 +347,7 @@ local function LayOutPager(pages)
         window.next:ClearAllPoints()
         window.next:SetPoint("LEFT", window.pager, "LEFT", x, 0)
         window.next:Show()
-        if state.page < pages then window.next:Enable() else window.next:Disable() end
+        if self.state.page < pages then window.next:Enable() else window.next:Disable() end
     else
         window.next:Hide()
     end
@@ -352,16 +355,21 @@ end
 
 window.restore = UI.Button(window, gridWidth, L["hoa.addon.show_equipped_look"], function()
     PlaySound("igMainMenuOptionCheckBoxOn")
-    SendChatMessage(".bonk mog clear " .. state.selected, "SAY")
+    SendChatMessage(".bonk mog clear " .. Transmog.state.selected, "SAY")
 end)
 window.restore:SetPoint("TOPLEFT", window, "TOPLEFT", gridLeft, -(pagerTop + 34))
 
-function window.PadPage(step)
+function Transmog:PadPage(step)
+    local window = self.window
     local pages = window.padPages or 1
-    local page = max(1, min(pages, state.page + step))
-    if page ~= state.page then
-        ShowPage(page)
+    local page = max(1, min(pages, self.state.page + step))
+    if page ~= self.state.page then
+        self:ShowPage(page)
     end
+end
+
+function window.PadPage(step)
+    Transmog:PadPage(step)
 end
 
 window.outfitLabel = UI.Text(window, 13)
@@ -378,7 +386,7 @@ StaticPopupDialogs["VANILLABONK_OUTFIT_NAME"] = {
     maxLetters = 24,
     OnShow = function()
         local box = getglobal(this:GetName() .. "EditBox")
-        box:SetText(state.outfits[StaticPopupDialogs["VANILLABONK_OUTFIT_NAME"].outfit] or L("hoa.addon.outfit_1", StaticPopupDialogs["VANILLABONK_OUTFIT_NAME"].outfit))
+        box:SetText(Transmog.state.outfits[StaticPopupDialogs["VANILLABONK_OUTFIT_NAME"].outfit] or L("hoa.addon.outfit_1", StaticPopupDialogs["VANILLABONK_OUTFIT_NAME"].outfit))
         box:HighlightText()
         box:SetFocus()
     end,
@@ -414,7 +422,7 @@ for outfit = 1, OUTFITS do
     local nameWidth = gridWidth - OUTFIT_SAVE_WIDTH - OUTFIT_DELETE_WIDTH - 8
     row.apply = UI.Button(window, nameWidth, "", function()
         PlaySound("igMainMenuOptionCheckBoxOn")
-        if state.outfits[this.outfit] then
+        if Transmog.state.outfits[this.outfit] then
             SendChatMessage(".bonk mog outfit apply " .. this.outfit, "SAY")
         else
             SaveOutfit(this.outfit)
@@ -438,7 +446,7 @@ for outfit = 1, OUTFITS do
                 GameTooltip:SetText(L["hoa.addon.saves_your_current_looks_as_this_outfit"], 1, 1, 1, 1, 1)
             elseif this == window.outfitRows[this.outfit].delete then
                 GameTooltip:SetText(L["hoa.addon.deletes_this_outfit"], 1, 1, 1, 1, 1)
-            elseif state.outfits[this.outfit] then
+            elseif Transmog.state.outfits[this.outfit] then
                 GameTooltip:SetText(L["hoa.addon.click_to_wear_this_outfit"], 1, 1, 1, 1, 1)
             else
                 GameTooltip:SetText(L["hoa.addon.click_to_save_your_current_looks_as_an_outfit"], 1, 1, 1, 1, 1)
@@ -449,9 +457,9 @@ for outfit = 1, OUTFITS do
     window.outfitRows[outfit] = row
 end
 
-function window.RefreshOutfits()
-    for outfit, row in ipairs(window.outfitRows) do
-        local name = state.outfits[outfit]
+function Transmog:RefreshOutfits()
+    for outfit, row in ipairs(self.window.outfitRows) do
+        local name = self.state.outfits[outfit]
         row.apply:SetText(name or L["hoa.addon.empty_2"])
         if name then
             row.delete:Enable()
@@ -459,6 +467,10 @@ function window.RefreshOutfits()
             row.delete:Disable()
         end
     end
+end
+
+function window.RefreshOutfits()
+    Transmog:RefreshOutfits()
 end
 
 local function SlotInfo(slot)
@@ -471,12 +483,12 @@ local function SlotInfo(slot)
     end
 end
 
-local function LooksFor(group, canHide)
+function Transmog:LooksFor(group, canHide)
     local looks = {}
     if canHide then
         tinsert(looks, { entry = HIDDEN_LOOK, hidden = true, collected = true, quality = 1 })
     end
-    for _, look in ipairs(state.looks) do
+    for _, look in ipairs(self.state.looks) do
         if look.group == group then
             tinsert(looks, look)
         end
@@ -484,21 +496,20 @@ local function LooksFor(group, canHide)
     return looks
 end
 
-local retries = 0
-
-function window.Refresh()
+function Transmog:Refresh()
+    local window = self.window
     if not window:IsShown() then
         return
     end
     local missingIcon = false
-    for _, button in ipairs(slotButtons) do
-        local current = SlotEntry(button.info.slot)
+    for _, button in ipairs(self.slotButtons) do
+        local current = self:SlotEntry(button.info.slot)
         local texture = current.worn and current.worn > 0 and (current.look > 0 and LookTexture(current.look) or GetInventoryItemTexture("player", button.info.slot + 1))
         button.icon:SetTexture(texture or (SLOT_ART .. button.info.art))
         if current.worn and current.worn > 0 and not texture then
             missingIcon = true
         end
-        if button.info.slot == state.selected then
+        if button.info.slot == self.state.selected then
             button.glow:Show()
         else
             button.glow:Hide()
@@ -510,13 +521,13 @@ function window.Refresh()
         end
     end
 
-    local info = SlotInfo(state.selected) or LEFT_SLOTS[1]
-    local current = SlotEntry(info.slot)
+    local info = SlotInfo(self.state.selected) or LEFT_SLOTS[1]
+    local current = self:SlotEntry(info.slot)
     window.slotName:SetText(info.name)
-    local looks = current.group and current.group > 0 and LooksFor(current.group, current.canHide) or {}
+    local looks = current.group and current.group > 0 and self:LooksFor(current.group, current.canHide) or {}
     local pages = max(1, ceil(table.getn(looks) / PER_PAGE))
-    state.page = max(1, min(state.page, pages))
-    local first = (state.page - 1) * PER_PAGE
+    self.state.page = max(1, min(self.state.page, pages))
+    local first = (self.state.page - 1) * PER_PAGE
 
     if not current.worn or current.worn == 0 then
         if info.slot == TABARD_SLOT then
@@ -533,7 +544,7 @@ function window.Refresh()
     end
 
     local shown = current.shown
-    for index, button in ipairs(lookButtons) do
+    for index, button in ipairs(self.lookButtons) do
         local look = looks[first + index]
         button.look = look
         if look then
@@ -564,32 +575,36 @@ function window.Refresh()
         end
     end
 
-    LayOutPager(pages)
+    self:LayOutPager(pages)
     window.padPages = pages
-    window.RefreshOutfits()
+    self:RefreshOutfits()
     if current.look and current.look > 0 then window.restore:Enable() else window.restore:Disable() end
 
-    if missingIcon and retries < ICON_RETRIES then
+    if missingIcon and self.retries < ICON_RETRIES then
         window.retryAt = GetTime() + ICON_RETRY
     else
         window.retryAt = nil
     end
 end
 
+function window.Refresh()
+    Transmog:Refresh()
+end
+
 window:SetScript("OnUpdate", function()
     if this.retryAt and GetTime() >= this.retryAt then
         this.retryAt = nil
-        retries = retries + 1
-        this.Refresh()
+        Transmog.retries = Transmog.retries + 1
+        Transmog:Refresh()
     end
 end)
 
 window:SetScript("OnShow", function()
     PlaySound("igCharacterInfoOpen")
     UI.SetPortrait(this)
-    retries = 0
-    ResetModel()
-    this.Refresh()
+    Transmog.retries = 0
+    Transmog:ResetModel()
+    Transmog:Refresh()
 end)
 
 window:SetScript("OnHide", function()
@@ -616,60 +631,58 @@ function GossipFrame_OnEvent()
     PreviousGossipOnEvent()
 end
 
-local handlers = {}
-
-handlers["mogbegin"] = function(f)
-    incoming = { slots = {}, looks = {}, outfits = {} }
+function Transmog:HandleBegin()
+    self.incoming = { slots = {}, looks = {}, outfits = {} }
 end
 
-handlers["mogslot"] = function(f)
+function Transmog:HandleSlot(f)
     local slot = tonumber(f[2] or "")
-    if incoming and slot then
-        incoming.slots[slot] = { worn = tonumber(f[3] or "") or 0, look = tonumber(f[4] or "") or 0, group = tonumber(f[5] or "") or 0,
+    if self.incoming and slot then
+        self.incoming.slots[slot] = { worn = tonumber(f[3] or "") or 0, look = tonumber(f[4] or "") or 0, group = tonumber(f[5] or "") or 0,
             shown = tonumber(f[6] or "") or 0, canHide = f[7] == "1" }
     end
 end
 
-handlers["moglook"] = function(f)
+function Transmog:HandleLook(f)
     local group = tonumber(f[2] or "")
     local entry = tonumber(f[3] or "")
-    if incoming and group and entry then
-        tinsert(incoming.looks, { group = group, entry = entry, quality = tonumber(f[4] or "") or 1, collected = f[5] == "1", source = f[6] })
+    if self.incoming and group and entry then
+        tinsert(self.incoming.looks, { group = group, entry = entry, quality = tonumber(f[4] or "") or 1, collected = f[5] == "1", source = f[6] })
     end
 end
 
-handlers["mogoutfit"] = function(f)
+function Transmog:HandleOutfit(f)
     local outfit = tonumber(f[2] or "")
-    if incoming and outfit then
-        incoming.outfits[outfit] = f[3]
+    if self.incoming and outfit then
+        self.incoming.outfits[outfit] = f[3]
     end
 end
 
-handlers["mogend"] = function()
-    if not incoming then
+function Transmog:HandleEnd()
+    if not self.incoming then
         return
     end
-    state.slots = incoming.slots
-    state.looks = incoming.looks
-    state.outfits = incoming.outfits
-    incoming = nil
-    retries = 0
-    if window:IsShown() then
-        ResetModel()
-        window.Refresh()
+    self.state.slots = self.incoming.slots
+    self.state.looks = self.incoming.looks
+    self.state.outfits = self.incoming.outfits
+    self.incoming = nil
+    self.retries = 0
+    if self.window:IsShown() then
+        self:ResetModel()
+        self:Refresh()
     else
-        window:Show()
+        self.window:Show()
     end
 end
 
 UI.ListenHoa({
-    HOA_MOG_BEGIN = function() handlers["mogbegin"]({ false }) end,
+    HOA_MOG_BEGIN = function() Transmog:HandleBegin() end,
     HOA_MOG_SLOT = function(slot)
-        handlers["mogslot"]({ false, slot.slot, slot.worn_entry, slot.look, slot.group, slot.catalog_entry, slot.can_hide and "1" or "0" })
+        Transmog:HandleSlot({ false, slot.slot, slot.worn_entry, slot.look, slot.group, slot.catalog_entry, slot.can_hide and "1" or "0" })
     end,
     HOA_MOG_LOOK = function(look)
-        handlers["moglook"]({ false, look.group, look.entry, look.quality, look.owned and "1" or "0", look.source })
+        Transmog:HandleLook({ false, look.group, look.entry, look.quality, look.owned and "1" or "0", look.source })
     end,
-    HOA_MOG_OUTFIT = function(outfit) handlers["mogoutfit"]({ false, outfit.slot, outfit.name }) end,
-    HOA_MOG_END = function() handlers["mogend"]({ false }) end,
+    HOA_MOG_OUTFIT = function(outfit) Transmog:HandleOutfit({ false, outfit.slot, outfit.name }) end,
+    HOA_MOG_END = function() Transmog:HandleEnd() end,
 })

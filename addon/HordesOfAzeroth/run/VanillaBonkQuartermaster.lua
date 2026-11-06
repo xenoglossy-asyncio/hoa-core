@@ -91,9 +91,25 @@ function UI.GearTier(id)
     return 0
 end
 
-local qm = { pending = nil, tier = 0, category = CATEGORIES[1], group = nil, page = 1, items = {}, scrap = 0, upgrades = {} }
+local QM = UI.Module("quartermaster")
+QM.pending = nil
+QM.tier = 0
+QM.category = CATEGORIES[1]
+QM.group = nil
+QM.page = 1
+QM.items = {}
+QM.scrap = 0
+QM.upgrades = {}
+QM.missingInfo = nil
+QM.rerollGuid = nil
+QM.rerollPick = nil
+QM.showSelected = nil
+QM.open = nil
+QM.incomingUpgrades = nil
+local qm = QM
 
 local frame = UI.GoldWindow("VanillaBonkQuartermasterFrame", WIDTH, HEIGHT)
+QM.window = frame
 frame:SetPoint("CENTER", UIParent, "CENTER", -BAGS_ROOM / 2, 0)
 frame:SetFrameLevel(4)
 frame:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -186,14 +202,14 @@ panel.nextPage:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -8, -6)
 panel.nextPage:SetScript("OnClick", function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     qm.page = qm.page + 1
-    Refresh()
+    QM:Refresh()
 end)
 panel.prevPage = PageButton("Prev")
 panel.prevPage:SetPoint("RIGHT", panel.nextPage, "LEFT", -2, 0)
 panel.prevPage:SetScript("OnClick", function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     qm.page = qm.page - 1
-    Refresh()
+    QM:Refresh()
 end)
 panel.pageText = UI.Text(panel, 10)
 panel.pageText:SetPoint("RIGHT", panel.prevPage, "LEFT", -4, 0)
@@ -331,19 +347,19 @@ local function KeepRerolledStat()
     end
 end
 
-local function SelectedRerollPiece()
-    if qm.category ~= "upgrade" or not qm.rerollGuid then
+function QM:SelectedRerollPiece()
+    if self.category ~= "upgrade" or not self.rerollGuid then
         return nil
     end
-    for _, piece in ipairs(qm.upgrades) do
-        if piece.guid == qm.rerollGuid and piece.found then
+    for _, piece in ipairs(self.upgrades) do
+        if piece.guid == self.rerollGuid and piece.found then
             return piece
         end
     end
     return nil
 end
 
-local function ShowItemBar(piece, aboveBox)
+function QM:ShowItemBar(piece, aboveBox)
     local name, _, quality, _, _, _, _, _, texture = GetItemInfo(piece.entry)
     local r, g, b = GetItemQualityColor(quality or 4)
     itemBar.slot.icon:SetTexture(texture)
@@ -359,15 +375,15 @@ local function ShowItemBar(piece, aboveBox)
     itemBar:Show()
 end
 
-local function DetailHeight()
+function QM:DetailHeight()
     if not itemBar:IsShown() then
         return 0
     end
     return ITEM_BAR_HEIGHT + ITEM_BAR_GAP + (reroll:IsShown() and reroll:GetHeight() or 0)
 end
 
-local function LayoutReroll()
-    local piece = SelectedRerollPiece()
+function QM:LayoutReroll()
+    local piece = self:SelectedRerollPiece()
     reroll.piece = piece
     if not piece then
         reroll:Hide()
@@ -384,7 +400,7 @@ local function LayoutReroll()
         reroll.upgrade:SetText(piece.can and L("hoa.addon.upgrade_to_item_level_1_2_scrap", nextLevel, piece.cost) or L("hoa.addon.upgrade_to_item_level_1", nextLevel))
     end
     reroll.upgrade:SetWidth(max(200, reroll.upgrade:GetFontString():GetStringWidth() + 24))
-    if piece.can and qm.scrap >= piece.cost then
+    if piece.can and self.scrap >= piece.cost then
         reroll.upgrade:Enable()
     else
         reroll.upgrade:Disable()
@@ -393,7 +409,7 @@ local function LayoutReroll()
     reroll.hint:Hide()
     if table.getn(lines) == 0 then
         reroll:Hide()
-        ShowItemBar(piece, false)
+        self:ShowItemBar(piece, false)
         return
     end
     if piece.offers then
@@ -410,21 +426,21 @@ local function LayoutReroll()
         ShowRerollRow(1, lines[piece.rerollStat], nil, true, nil)
         reroll.stat = piece.rerollStat
     else
-        if not qm.rerollPick or not lines[qm.rerollPick] then
-            qm.rerollPick = table.getn(lines) == 1 and 1 or nil
+        if not self.rerollPick or not lines[self.rerollPick] then
+            self.rerollPick = table.getn(lines) == 1 and 1 or nil
         end
         reroll.heading:SetText(L["hoa.addon.choose_a_stat_to_reroll"])
         for index, statLine in ipairs(lines) do
             local stat = index
-            ShowRerollRow(index, statLine, nil, qm.rerollPick == index, function()
-                qm.rerollPick = stat
-                LayoutReroll()
+            ShowRerollRow(index, statLine, nil, self.rerollPick == index, function()
+                self.rerollPick = stat
+                self:LayoutReroll()
             end)
         end
         if table.getn(lines) > 1 then
             reroll.hint:Show()
         end
-        reroll.stat = qm.rerollPick
+        reroll.stat = self.rerollPick
     end
     SetRerollPrice(piece.rerollCost)
     if reroll.stat and GetMoney() >= piece.rerollCost then
@@ -435,19 +451,19 @@ local function LayoutReroll()
         reroll.price:SetTextColor(0.5, 0.5, 0.5)
     end
     reroll:Show()
-    ShowItemBar(piece, true)
+    self:ShowItemBar(piece, true)
 end
 
-local function SelectRerollPiece(item)
-    if not item.found or item.guid == qm.rerollGuid then
+function QM:SelectRerollPiece(item)
+    if not item.found or item.guid == self.rerollGuid then
         return
     end
     KeepRerolledStat()
     PlaySound("igMainMenuOptionCheckBoxOn")
-    qm.rerollGuid = item.guid
-    qm.rerollPick = nil
-    qm.showSelected = true
-    Refresh()
+    self.rerollGuid = item.guid
+    self.rerollPick = nil
+    self.showSelected = true
+    self:Refresh()
 end
 
 local function ItemId(link)
@@ -470,65 +486,65 @@ local function ClassifyBySlot(id)
     return place[1], place[2]
 end
 
-local function CollectBuyback()
+function QM:CollectBuyback()
     if not GetNumBuybackItems then
         return
     end
     for index = 1, GetNumBuybackItems() do
         local name, texture, price = GetBuybackItemInfo(index)
         if name then
-            tinsert(qm.items, { index = index, link = GetBuybackItemLink and GetBuybackItemLink(index), name = name, texture = texture,
+            tinsert(self.items, { index = index, link = GetBuybackItemLink and GetBuybackItemLink(index), name = name, texture = texture,
                 price = price, usable = true, category = "buyback", buyback = true })
         end
     end
 end
 
-local function CollectUpgrades()
-    for _, piece in ipairs(qm.upgrades) do
+function QM:CollectUpgrades()
+    for _, piece in ipairs(self.upgrades) do
         local name, link, quality, _, _, _, _, _, texture = GetItemInfo(piece.entry)
         if not name then
-            qm.missingInfo = true
+            self.missingInfo = true
         else
             local _, _, _, hex = GetItemQualityColor(quality or 4)
-            local affordable = qm.scrap >= piece.cost
-            tinsert(qm.items, { upgrade = true, guid = piece.guid, entry = piece.entry, tier = piece.tier, cost = piece.cost, can = piece.can,
+            local affordable = self.scrap >= piece.cost
+            tinsert(self.items, { upgrade = true, guid = piece.guid, entry = piece.entry, tier = piece.tier, cost = piece.cost, can = piece.can,
                 found = piece.found, link = (hex or "|cffa335ee") .. "|H" .. link .. "|h[" .. name .. "]|h|r", name = name,
                 texture = texture, usable = piece.can and affordable, category = "upgrade", group = piece.worn and "worn" or "bags" })
         end
     end
 end
 
-local function CollectItems()
-    qm.items = {}
-    qm.missingInfo = nil
+function QM:CollectItems()
+    self.items = {}
+    self.missingInfo = nil
     for index = 1, GetMerchantNumItems() do
         local link = GetMerchantItemLink(index)
         local name, texture, price, _, _, usable = GetMerchantItemInfo(index)
         local category, group, missing = ClassifyBySlot(ItemId(link))
         if missing or not name then
-            qm.missingInfo = true
+            self.missingInfo = true
         elseif category then
-            tinsert(qm.items, { index = index, link = link, name = name, texture = texture, price = price, usable = usable,
+            tinsert(self.items, { index = index, link = link, name = name, texture = texture, price = price, usable = usable,
                 category = category, group = group })
         end
     end
-    CollectUpgrades()
-    CollectBuyback()
+    self:CollectUpgrades()
+    self:CollectBuyback()
 end
 
-local function Shown()
+function QM:Shown()
     local shown = {}
-    for _, item in ipairs(qm.items) do
-        if item.category == qm.category and (not qm.group or item.group == qm.group) then
+    for _, item in ipairs(self.items) do
+        if item.category == self.category and (not self.group or item.group == self.group) then
             tinsert(shown, item)
         end
     end
     return shown
 end
 
-local function CountIn(category, group)
+function QM:CountIn(category, group)
     local count = 0
-    for _, item in ipairs(qm.items) do
+    for _, item in ipairs(self.items) do
         if item.category == category and (not group or item.group == group) then
             count = count + 1
         end
@@ -573,7 +589,7 @@ local function CategoryButton(index)
         qm.category = this.key
         qm.group = nil
         qm.page = 1
-        Refresh()
+        QM:Refresh()
     end)
     categoryButtons[index] = button
     return button
@@ -589,7 +605,7 @@ local function GroupButton(index)
         PlaySound("igCharacterInfoTab")
         qm.group = qm.group ~= this.key and this.key or nil
         qm.page = 1
-        Refresh()
+        QM:Refresh()
     end)
     groupButtons[index] = button
     return button
@@ -670,7 +686,7 @@ local function Card(index)
                 DressUpFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, -104)
             end
         elseif item.upgrade then
-            SelectRerollPiece(item)
+            QM:SelectRerollPiece(item)
         end
     end)
     card:SetScript("OnEnter", function()
@@ -728,7 +744,7 @@ local function Section(index)
     return section
 end
 
-local function LayoutSide()
+function QM:LayoutSide()
     local y = LIST_TOP
     local groupIndex = 0
     for index, key in ipairs(CATEGORIES) do
@@ -739,18 +755,18 @@ local function LayoutSide()
         button.label:SetText(art.name)
         button:ClearAllPoints()
         button:SetPoint("TOPLEFT", frame, "TOPLEFT", SIDE_X, -y)
-        button.count:SetText(CountIn(key))
-        UI.SetStripHighlight(button.strip, key == qm.category)
-        if key == qm.category then
+        button.count:SetText(self:CountIn(key))
+        UI.SetStripHighlight(button.strip, key == self.category)
+        if key == self.category then
             button.label:SetTextColor(1, 1, 1)
         else
             button.label:SetTextColor(1, 0.82, 0)
         end
         button:Show()
         y = y + CATEGORY_HEIGHT + 4
-        if art.groups and key == qm.category then
+        if art.groups and key == self.category then
             for _, group in ipairs(art.groups) do
-                local count = CountIn(key, group.key)
+                local count = self:CountIn(key, group.key)
                 if count > 0 then
                     groupIndex = groupIndex + 1
                     local sub = GroupButton(groupIndex)
@@ -759,8 +775,8 @@ local function LayoutSide()
                     sub.count:SetText(count)
                     sub:ClearAllPoints()
                     sub:SetPoint("TOPLEFT", frame, "TOPLEFT", SIDE_X + 10, -y)
-                    UI.SetStripHighlight(sub.strip, qm.group == group.key)
-                    if qm.group == group.key then
+                    UI.SetStripHighlight(sub.strip, self.group == group.key)
+                    if self.group == group.key then
                         sub.label:SetTextColor(1, 1, 1)
                     else
                         sub.label:SetTextColor(1, 0.82, 0)
@@ -779,13 +795,13 @@ local function LayoutSide()
     end
 end
 
-local function HeadingText()
-    local art = CATEGORY_ART[qm.category]
+function QM:HeadingText()
+    local art = CATEGORY_ART[self.category]
     if not art then
         return ""
     end
     for _, group in ipairs(art.groups or {}) do
-        if group.key == qm.group then
+        if group.key == self.group then
             return group.name
         end
     end
@@ -800,9 +816,9 @@ local function JoinNames(names)
     return L("hoa.addon.1_and_2", table.concat(names, L["hoa.addon.empty"], 1, count - 1), names[count])
 end
 
-local function Sections(shown)
-    local art = CATEGORY_ART[qm.category]
-    if qm.group or not art or not art.groups then
+function QM:Sections(shown)
+    local art = CATEGORY_ART[self.category]
+    if self.group or not art or not art.groups then
         return { { items = shown } }
     end
     local list = {}
@@ -832,9 +848,9 @@ local function Sections(shown)
     return list
 end
 
-local function Paginate(sectionList)
+function QM:Paginate(sectionList)
     local pages, page, y = {}, {}, 0
-    local room = listHeight - CONTENT_TOP - CONTENT_BOTTOM - (itemBar:IsShown() and DetailHeight() + CARD_GAP or 0)
+    local room = listHeight - CONTENT_TOP - CONTENT_BOTTOM - (itemBar:IsShown() and self:DetailHeight() + CARD_GAP or 0)
     for _, section in ipairs(sectionList) do
         local header = section.title and SECTION_HEIGHT or 0
         local count = table.getn(section.items)
@@ -907,21 +923,21 @@ local function ShowCard(card, item, x, y)
     card:Show()
 end
 
-local function PlaceRows(shown)
-    local pages = Paginate(Sections(shown))
-    if qm.showSelected then
+function QM:PlaceRows(shown)
+    local pages = self:Paginate(self:Sections(shown))
+    if self.showSelected then
         for index, page in ipairs(pages) do
             for _, entry in ipairs(page) do
-                if entry.item and entry.item.upgrade and entry.item.guid == qm.rerollGuid then
-                    qm.page = index
-                    qm.showSelected = nil
+                if entry.item and entry.item.upgrade and entry.item.guid == self.rerollGuid then
+                    self.page = index
+                    self.showSelected = nil
                 end
             end
         end
     end
-    qm.page = math.max(1, math.min(qm.page, table.getn(pages)))
+    self.page = math.max(1, math.min(self.page, table.getn(pages)))
     local cardCount, sectionCount = 0, 0
-    for _, entry in ipairs(pages[qm.page]) do
+    for _, entry in ipairs(pages[self.page]) do
         if entry.item then
             cardCount = cardCount + 1
             ShowCard(Card(cardCount), entry.item, entry.x, entry.y)
@@ -944,12 +960,12 @@ local function PlaceRows(shown)
     end
     local count = table.getn(pages)
     if count > 1 then
-        panel.pageText:SetText(L("hoa.addon.page_1_of_2", qm.page, count))
+        panel.pageText:SetText(L("hoa.addon.page_1_of_2", self.page, count))
         panel.pageText:Show()
         panel.prevPage:Show()
         panel.nextPage:Show()
-        if qm.page > 1 then panel.prevPage:Enable() else panel.prevPage:Disable() end
-        if qm.page < count then panel.nextPage:Enable() else panel.nextPage:Disable() end
+        if self.page > 1 then panel.prevPage:Enable() else panel.prevPage:Disable() end
+        if self.page < count then panel.nextPage:Enable() else panel.nextPage:Disable() end
     else
         panel.pageText:Hide()
         panel.prevPage:Hide()
@@ -957,21 +973,21 @@ local function PlaceRows(shown)
     end
 end
 
-local function StockText()
-    if qm.category == "upgrade" then
+function QM:StockText()
+    if self.category == "upgrade" then
         return L["hoa.addon.gear_vendor_cff8a8478_r_upgrades_cff33ff33up_to_your_highest"]
     end
-    return L("hoa.addon.gear_vendor_cff8a8478_r_stock_cffffd100_1_r_cff8a8478_2_leve", UI.ItemLevelRange(qm.tier, 1, 3))
+    return L("hoa.addon.gear_vendor_cff8a8478_r_stock_cffffd100_1_r_cff8a8478_2_leve", UI.ItemLevelRange(self.tier, 1, 3))
 end
 
-local function HeadingNote()
-    if qm.category == "upgrade" then
-        return L("hoa.addon.1_scrap", qm.scrap)
+function QM:HeadingNote()
+    if self.category == "upgrade" then
+        return L("hoa.addon.1_scrap", self.scrap)
     end
-    if qm.category == "buyback" then
+    if self.category == "buyback" then
         return ""
     end
-    return UI.ItemLevelRange(qm.tier, 1, 3)
+    return UI.ItemLevelRange(self.tier, 1, 3)
 end
 
 local retry = CreateFrame("Frame")
@@ -983,29 +999,29 @@ retry:SetScript("OnUpdate", function()
     end
     this.tries = this.tries - 1
     this:Hide()
-    Refresh()
+    QM:Refresh()
 end)
 
-local function RetryMissingInfo()
-    if qm.missingInfo and retry.tries and retry.tries > 0 then
+function QM:RetryMissingInfo()
+    if self.missingInfo and retry.tries and retry.tries > 0 then
         retry.wait = INFO_RETRY_SECONDS
         retry:Show()
     end
 end
 
-Refresh = function()
+function QM:Refresh()
     if not frame:IsShown() then
         return
     end
-    CollectItems()
-    LayoutSide()
+    self:CollectItems()
+    self:LayoutSide()
     frame.title:SetText(L["hoa.addon.gear_vendor"])
-    frame.stock:SetText(StockText())
+    frame.stock:SetText(self:StockText())
     frame.tierNote:SetText(L["hoa.addon.each_level_drops_gear_of_its_own_tier_spend_scrap_to_upgrade"])
-    panel.heading:SetText(HeadingText())
-    panel.headingNote:SetText(HeadingNote())
-    local upgrading = qm.category == "upgrade"
-    local noneExtracted = upgrading and CountIn("upgrade") == 0
+    panel.heading:SetText(self:HeadingText())
+    panel.headingNote:SetText(self:HeadingNote())
+    local upgrading = self.category == "upgrade"
+    local noneExtracted = upgrading and self:CountIn("upgrade") == 0
     if noneExtracted then
         panel.empty:Show()
     else
@@ -1016,9 +1032,9 @@ Refresh = function()
     else
         panel.hint:SetText(L["hoa.addon.right_click_an_item_to_buy_it_ctrl_click_to_preview_it_right"])
     end
-    LayoutReroll()
-    PlaceRows(Shown())
-    RetryMissingInfo()
+    self:LayoutReroll()
+    self:PlaceRows(self:Shown())
+    self:RetryMissingInfo()
 end
 
 local function HideMerchantFrame()
@@ -1036,20 +1052,20 @@ local function RestoreMerchantFrame()
     end
 end
 
-local function ApplyPending()
-    local pending = qm.pending
-    qm.pending = nil
-    qm.tier = pending.tier
-    qm.scrap = pending.scrap
+function QM:ApplyPending()
+    local pending = self.pending
+    self.pending = nil
+    self.tier = pending.tier
+    self.scrap = pending.scrap
     retry.tries = INFO_RETRIES
 end
 
-local function OpenWindow()
-    ApplyPending()
-    qm.open = true
+function QM:OpenWindow()
+    self:ApplyPending()
+    self.open = true
     HideMerchantFrame()
     if frame:IsShown() then
-        Refresh()
+        self:Refresh()
     else
         frame:Show()
     end
@@ -1060,85 +1076,81 @@ frame:SetScript("OnShow", function()
         SetPortraitTexture(frame.portrait, "npc")
         frame.npcName:SetText(UnitName("npc"))
     end
-    Refresh()
+    QM:Refresh()
 end)
 
 frame:SetScript("OnHide", function()
     GameTooltip:Hide()
     KeepRerolledStat()
-    qm.rerollGuid = nil
-    qm.rerollPick = nil
+    QM.rerollGuid = nil
+    QM.rerollPick = nil
     retry:Hide()
-    if qm.open then
-        qm.open = nil
+    if QM.open then
+        QM.open = nil
         RestoreMerchantFrame()
         CloseMerchant()
     end
 end)
 
-UI.Module("quartermaster"):Listen({
+QM:Listen({
     MERCHANT_SHOW = function()
-        if qm.pending then
-            OpenWindow()
-        elseif qm.open then
+        if QM.pending then
+            QM:OpenWindow()
+        elseif QM.open then
             HideMerchantFrame()
-            Refresh()
+            QM:Refresh()
         end
     end,
     MERCHANT_CLOSED = function()
-        qm.pending = nil
-        if qm.open then
-            qm.open = nil
+        QM.pending = nil
+        if QM.open then
+            QM.open = nil
             RestoreMerchantFrame()
-            frame:Hide()
+            QM.window:Hide()
         end
     end,
     MERCHANT_UPDATE = function()
-        if frame:IsShown() then
-            Refresh()
+        if QM.window:IsShown() then
+            QM:Refresh()
         end
     end,
 })
-UI.Module("quartermaster"):OnMoney(function()
-    if frame:IsShown() then
-        Refresh()
+QM:OnMoney(function()
+    if QM.window:IsShown() then
+        QM:Refresh()
     end
 end)
-UI.Module("quartermaster"):OnInventory(function()
-    if frame:IsShown() then
-        Refresh()
+QM:OnInventory(function()
+    if QM.window:IsShown() then
+        QM:Refresh()
     end
 end)
 
-local function Receive(pending)
-    qm.pending = pending
+function QM:Receive(pending)
+    self.pending = pending
     if MerchantFrame:IsShown() then
-        OpenWindow()
+        self:OpenWindow()
     end
 end
 
-local handlers = {}
-
-handlers["quartermaster"] = function(f)
-    Receive({ tier = tonumber(f[2]) or 0, scrap = tonumber(f[3] or "") or 0 })
+function QM:HandleQuartermaster(f)
+    self:Receive({ tier = tonumber(f[2]) or 0, scrap = tonumber(f[3] or "") or 0 })
 end
 
-local incomingUpgrades
-
-handlers["qmupselect"] = function(f)
-    if qm.rerollGuid == f[2] and f[3] then
-        qm.rerollGuid = f[3]
-        qm.showSelected = true
+function QM:HandleUpgradeSelect(f)
+    if self.rerollGuid == f[2] and f[3] then
+        self.rerollGuid = f[3]
+        self.showSelected = true
     end
 end
 
-handlers["qmupclear"] = function()
-    incomingUpgrades = {}
+function QM:HandleUpgradeClear()
+    self.incomingUpgrades = {}
 end
 
-handlers["qmup"] = function(f)
+function QM:HandleUpgrade(f)
     local entry = tonumber(f[3] or "")
-    if not incomingUpgrades or not entry then
+    if not self.incomingUpgrades or not entry then
         return
     end
     local rerollStat = tonumber(f[11] or "") or NO_STAT
@@ -1152,23 +1164,23 @@ handlers["qmup"] = function(f)
             ranges[stat] = { low = tonumber(parts[2] or "") or 0, high = tonumber(parts[3] or "") or 0 }
         end
     end
-    tinsert(incomingUpgrades, { guid = f[2], entry = entry, tier = tonumber(f[4] or "") or 0, cost = tonumber(f[5] or "") or 0, can = f[6] == "1",
+    tinsert(self.incomingUpgrades, { guid = f[2], entry = entry, tier = tonumber(f[4] or "") or 0, cost = tonumber(f[5] or "") or 0, can = f[6] == "1",
         worn = f[7] == "1", found = UI.ParseFound(f[4], f[8], f[9]), rerollCost = tonumber(f[10] or "") or 0,
         rerollStat = rerollStat ~= NO_STAT and rerollStat + 1 or nil, offerStat = offerStat and offerStat + 1,
         offers = offers and table.getn(offers) > 0 and offers or nil, ranges = ranges, left = tonumber(f[15] or "") or 0 })
 end
 
-handlers["qmupend"] = function(f)
-    if incomingUpgrades then
-        qm.upgrades = incomingUpgrades
-        incomingUpgrades = nil
+function QM:HandleUpgradeEnd(f)
+    if self.incomingUpgrades then
+        self.upgrades = self.incomingUpgrades
+        self.incomingUpgrades = nil
     end
-    qm.scrap = tonumber(f[2] or "") or qm.scrap
+    self.scrap = tonumber(f[2] or "") or self.scrap
     retry.tries = INFO_RETRIES
-    Refresh()
+    self:Refresh()
 end
 
-handlers["trinkettip"] = function(f)
+function QM:HandleTrinketTip(f)
     local first, count, text = tonumber(f[2]), tonumber(f[3]), f[4]
     if not first or not count or not text then
         return
@@ -1179,24 +1191,24 @@ handlers["trinkettip"] = function(f)
 end
 
 UI.ListenHoa({
-    HOA_QUARTERMASTER = function(qm)
-        handlers["quartermaster"]({ false, qm.tier, qm.scrap })
+    HOA_QUARTERMASTER = function(state)
+        QM:HandleQuartermaster({ false, state.tier, state.scrap })
     end,
     HOA_QUARTERMASTER_UPGRADE_CLEAR = function()
-        handlers["qmupclear"]()
+        QM:HandleUpgradeClear()
     end,
     HOA_QUARTERMASTER_UPGRADE = function(upgrade)
-        handlers["qmup"]({
+        QM:HandleUpgrade({
             false, tostring(upgrade.guid), upgrade.entry, upgrade.tier, upgrade.cost, upgrade.can and "1" or "0",
             upgrade.worn and "1" or "0", upgrade.lines, upgrade.extra, upgrade.reroll_cost, upgrade.reroll_line,
             upgrade.offer_line, upgrade.offers, upgrade.ranges, upgrade.left,
         })
     end,
     HOA_QUARTERMASTER_UPGRADE_END = function(finish)
-        handlers["qmupend"]({ false, finish.scrap })
+        QM:HandleUpgradeEnd({ false, finish.scrap })
     end,
     HOA_TRINKET_TIP = function(tip)
-        handlers["trinkettip"]({ false, tip.entry, tip.count, tip.text })
+        QM:HandleTrinketTip({ false, tip.entry, tip.count, tip.text })
     end,
 })
 

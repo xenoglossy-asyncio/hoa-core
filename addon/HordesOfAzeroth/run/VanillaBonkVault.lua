@@ -24,8 +24,11 @@ local STONE_BORDER = { edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
 local ARROW_UP = "Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up"
 local ARROW_DOWN = "Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up"
 
-local vault = { slots = 1, chosen = {}, order = {}, finds = {}, hearth = false, page = 1 }
-local incoming
+local Vault = UI.Module("vault")
+Vault.state = { slots = 1, chosen = {}, order = {}, finds = {}, hearth = false, page = 1 }
+Vault.incoming = nil
+Vault.retries = 0
+Vault.openedAt = nil
 
 local function Command(text)
     SendChatMessage(".bonk vault " .. text, "SAY")
@@ -37,6 +40,7 @@ local function QualityColor(quality)
 end
 
 local frame = CreateFrame("Frame", "VanillaBonkVault", UIParent)
+Vault.window = frame
 frame:SetAllPoints(UIParent)
 frame:SetFrameStrata("DIALOG")
 frame:Hide()
@@ -291,7 +295,7 @@ local function LeftOutText(gold, scrap, rest)
     return L("hoa.addon.sells_for_1_if_you_leave_it_out_of_the_vault", UI.FormatGold(gold))
 end
 
-local function ShowItemTooltip(owner, find, line)
+function Vault:ShowItemTooltip(owner, find, line)
     AnchorBeside(owner)
     UI.nextFound = find.found
     GameTooltip:SetHyperlink("item:" .. find.entry .. ":0:0:0")
@@ -302,7 +306,7 @@ local function ShowItemTooltip(owner, find, line)
     elseif find.tier > 0 and find.best > 0 then
         GameTooltip:AddLine(L("hoa.addon.your_best_in_this_slot_tier_1", find.best), 0.7, 0.7, 0.7, 1)
     end
-    if not vault.hearth then
+    if not self.state.hearth then
         GameTooltip:AddLine(LeftOutText(find.sell, find.scrap), 0.7, 0.7, 0.7, 1)
     end
     if getn(find.saved) == 0 then
@@ -313,19 +317,19 @@ local function ShowItemTooltip(owner, find, line)
     ShowSaved(find, owner)
 end
 
-local function VaultSlot(index)
-    local slot = frame.box.slots[index]
+function Vault:VaultSlot(index)
+    local slot = self.window.box.slots[index]
     if slot then
         return slot
     end
-    slot = UI.Slot(frame.box, SLOT_SIZE)
+    slot = UI.Slot(self.window.box, SLOT_SIZE)
     slot.glow = slot:CreateTexture(nil, "OVERLAY")
     slot.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
     slot.glow:SetBlendMode("ADD")
     slot.glow:SetWidth(SLOT_SIZE * 96 / 56)
     slot.glow:SetHeight(SLOT_SIZE * 96 / 56)
     slot.glow:SetPoint("CENTER", slot, "CENTER", 0, 0)
-    slot.caption = UI.Text(frame.box, 10)
+    slot.caption = UI.Text(self.window.box, 10)
     slot.caption:SetPoint("TOP", slot, "BOTTOM", 0, -6)
     slot.caption:SetWidth(130)
     slot:SetScript("OnClick", function()
@@ -336,7 +340,7 @@ local function VaultSlot(index)
     end)
     UI.Hover(slot, function()
         if this.find then
-            ShowItemTooltip(this, this.find, L["hoa.addon.click_to_take_it_out_of_the_vault"])
+            Vault:ShowItemTooltip(this, this.find, L["hoa.addon.click_to_take_it_out_of_the_vault"])
         else
             GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
             GameTooltip:AddLine(L["hoa.addon.empty_2"], 1, 1, 1)
@@ -344,7 +348,7 @@ local function VaultSlot(index)
             GameTooltip:Show()
         end
     end)
-    frame.box.slots[index] = slot
+    self.window.box.slots[index] = slot
     return slot
 end
 
@@ -389,8 +393,8 @@ VanillaBonkHearthSentSliderLow:SetText("")
 VanillaBonkHearthSentSliderHigh:SetText("")
 frame.sent.slider:Hide()
 
-local function ScrollSentTo(offset)
-    local sent = frame.sent
+function Vault:ScrollSentTo(offset)
+    local sent = self.window.sent
     offset = max(0, min(sent.maxOffset, offset))
     sent.offset = offset
     sent.view:SetHorizontalScroll(-offset)
@@ -401,7 +405,7 @@ end
 
 frame.sent.slider:SetScript("OnValueChanged", function()
     if abs(this:GetValue() - frame.sent.offset) >= 1 then
-        ScrollSentTo(this:GetValue())
+        Vault:ScrollSentTo(this:GetValue())
     end
 end)
 
@@ -410,48 +414,48 @@ local function CursorX()
     return x / frame.sent:GetEffectiveScale()
 end
 
-local function StartSentDrag()
-    if arg1 == "LeftButton" and frame.sent.maxOffset > 0 then
-        frame.sent.dragX = CursorX()
-        frame.sent.dragOffset = frame.sent.offset
+function Vault:StartSentDrag()
+    if arg1 == "LeftButton" and self.window.sent.maxOffset > 0 then
+        self.window.sent.dragX = CursorX()
+        self.window.sent.dragOffset = self.window.sent.offset
     end
 end
 
-local function StopSentDrag()
-    frame.sent.dragX = nil
+function Vault:StopSentDrag()
+    self.window.sent.dragX = nil
 end
 
-local function ScrollSentByWheel()
-    ScrollSentTo(frame.sent.offset - arg1 * SENT_SPACING)
+function Vault:ScrollSentByWheel()
+    self:ScrollSentTo(self.window.sent.offset - arg1 * SENT_SPACING)
 end
 
 frame.sent.view:EnableMouse(true)
 frame.sent.view:EnableMouseWheel(true)
-frame.sent.view:SetScript("OnMouseDown", StartSentDrag)
-frame.sent.view:SetScript("OnMouseUp", StopSentDrag)
-frame.sent.view:SetScript("OnMouseWheel", ScrollSentByWheel)
-frame.sent.view:SetScript("OnHide", StopSentDrag)
+frame.sent.view:SetScript("OnMouseDown", function() Vault:StartSentDrag() end)
+frame.sent.view:SetScript("OnMouseUp", function() Vault:StopSentDrag() end)
+frame.sent.view:SetScript("OnMouseWheel", function() Vault:ScrollSentByWheel() end)
+frame.sent.view:SetScript("OnHide", function() Vault:StopSentDrag() end)
 frame.sent.view:SetScript("OnUpdate", function()
     local sent = frame.sent
     if sent.dragX then
-        ScrollSentTo(sent.dragOffset - (CursorX() - sent.dragX))
+        Vault:ScrollSentTo(sent.dragOffset - (CursorX() - sent.dragX))
     end
 end)
 
-local function SentSlot(index)
-    local slot = frame.sent.slots[index]
+function Vault:SentSlot(index)
+    local slot = self.window.sent.slots[index]
     if slot then
         return slot
     end
-    slot = UI.Slot(frame.sent.strip, SENT_SLOT_SIZE)
-    slot:SetPoint("TOPLEFT", frame.sent.strip, "TOPLEFT", (index - 1) * SENT_SPACING + (SENT_SPACING - SENT_SLOT_SIZE) / 2, -4)
-    slot.caption = UI.Text(frame.sent.strip, 10)
+    slot = UI.Slot(self.window.sent.strip, SENT_SLOT_SIZE)
+    slot:SetPoint("TOPLEFT", self.window.sent.strip, "TOPLEFT", (index - 1) * SENT_SPACING + (SENT_SPACING - SENT_SLOT_SIZE) / 2, -4)
+    slot.caption = UI.Text(self.window.sent.strip, 10)
     slot.caption:SetPoint("TOP", slot, "BOTTOM", 0, -5)
     slot.caption:SetTextColor(0.8, 0.8, 0.8)
     slot:EnableMouseWheel(true)
-    slot:SetScript("OnMouseDown", StartSentDrag)
-    slot:SetScript("OnMouseUp", StopSentDrag)
-    slot:SetScript("OnMouseWheel", ScrollSentByWheel)
+    slot:SetScript("OnMouseDown", function() Vault:StartSentDrag() end)
+    slot:SetScript("OnMouseUp", function() Vault:StopSentDrag() end)
+    slot:SetScript("OnMouseWheel", function() Vault:ScrollSentByWheel() end)
     UI.Hover(slot, function()
         if this.piece then
             GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
@@ -461,13 +465,13 @@ local function SentSlot(index)
             GameTooltip:Show()
         end
     end)
-    frame.sent.slots[index] = slot
+    self.window.sent.slots[index] = slot
     return slot
 end
 
-local function ShowSent()
-    local sent = frame.sent
-    local pieces = vault.sent or {}
+function Vault:ShowSent()
+    local sent = self.window.sent
+    local pieces = self.state.sent or {}
     local count = getn(pieces)
     local viewWidth = max(1, min(count, SENT_SHOWN)) * SENT_SPACING
     sent:SetWidth(max(300, 40 + viewWidth))
@@ -480,7 +484,7 @@ local function ShowSent()
         sent.empty:Hide()
     end
     for index = 1, max(count, getn(sent.slots)) do
-        local slot = SentSlot(index)
+        local slot = self:SentSlot(index)
         local piece = pieces[index]
         slot.piece = piece
         if piece then
@@ -504,18 +508,18 @@ local function ShowSent()
     end
     sent.view:UpdateScrollChildRect()
     sent:Show()
-    ScrollSentTo(sent.maxOffset)
+    self:ScrollSentTo(sent.maxOffset)
 end
 
 frame.cards = CreateFrame("Frame", nil, frame)
 frame.cards.list = {}
 
-local function Card(index)
-    local card = frame.cards.list[index]
+function Vault:Card(index)
+    local card = self.window.cards.list[index]
     if card then
         return card
     end
-    card = CreateFrame("Button", nil, frame.cards)
+    card = CreateFrame("Button", nil, self.window.cards)
     card:SetWidth(CARD_WIDTH)
     card:SetHeight(CARD_HEIGHT)
     card:SetBackdrop(STONE_BORDER)
@@ -581,10 +585,10 @@ local function Card(index)
         if not find then
             return
         end
-        if vault.hearth then
+        if Vault.state.hearth then
             PlaySound("igMainMenuOptionCheckBoxOn")
             Command("send " .. find.guid)
-        elseif vault.chosen[find.guid] then
+        elseif Vault.state.chosen[find.guid] then
             PlaySound("igMainMenuOptionCheckBoxOff")
             Command("take " .. find.guid)
         else
@@ -595,11 +599,11 @@ local function Card(index)
     UI.Hover(card, function()
         local find = this.find
         if find then
-            local line = vault.chosen[find.guid] and L["hoa.addon.click_to_take_it_out_of_the_vault"] or L["hoa.addon.click_to_put_it_in_the_vault"]
-            ShowItemTooltip(this, find, vault.hearth and L["hoa.addon.click_to_send_it_home_now"] or line)
+            local line = Vault.state.chosen[find.guid] and L["hoa.addon.click_to_take_it_out_of_the_vault"] or L["hoa.addon.click_to_put_it_in_the_vault"]
+            Vault:ShowItemTooltip(this, find, Vault.state.hearth and L["hoa.addon.click_to_send_it_home_now"] or line)
         end
     end)
-    frame.cards.list[index] = card
+    self.window.cards.list[index] = card
     return card
 end
 
@@ -628,7 +632,7 @@ local function SavedText(find)
     return L("hoa.addon.cff9d9d9dyours_r_1", table.concat(names, ", ")), true
 end
 
-local function FillCard(card, find)
+function Vault:FillCard(card, find)
     local name, _, _, _, _, _, _, _, texture = GetItemInfo(find.entry)
     local r, g, b = QualityColor(find.quality)
     card.find = find
@@ -638,7 +642,7 @@ local function FillCard(card, find)
     card.where:SetText(find.worn and L["hoa.addon.equipped"] or L["hoa.addon.in_bags"])
     local saved, savedKnown = SavedText(find)
     card.saved:SetText(saved)
-    card.price:SetText(vault.hearth and "" or WorthText(find))
+    card.price:SetText(self.state.hearth and "" or WorthText(find))
     if find.tier > 0 then
         local lines = find.found and table.getn(find.found.lines) or 0
         local _, _, itemQuality = GetItemInfo(find.entry)
@@ -662,7 +666,7 @@ local function FillCard(card, find)
     end
     card:SetBackdropBorderColor(r, g, b)
     card.line:SetBackdropBorderColor(r, g, b, 0.8)
-    if vault.chosen[find.guid] then
+    if self.state.chosen[find.guid] then
         card:SetAlpha(0.45)
         card.ribbon:Show()
         card.ribbonText:Show()
@@ -674,9 +678,9 @@ local function FillCard(card, find)
     return name ~= nil and savedKnown
 end
 
-local function ShownOrder()
+function Vault:ShownOrder()
     local shown = {}
-    for _, find in ipairs(vault.finds) do
+    for _, find in ipairs(self.state.finds) do
         tinsert(shown, find)
     end
     table.sort(shown, function(a, b)
@@ -694,24 +698,23 @@ local function ShownOrder()
     return shown
 end
 
-local Refresh
-
-local function TurnPage(step)
-    vault.page = vault.page + step
+function Vault:TurnPage(step)
+    self.state.page = self.state.page + step
     PlaySound("igMainMenuOptionCheckBoxOn")
-    Refresh()
+    self:Refresh()
 end
 
-frame.prev = UI.Button(frame, 90, L["hoa.addon.previous"], function() TurnPage(-1) end)
-frame.next = UI.Button(frame, 90, L["hoa.addon.page_next"], function() TurnPage(1) end)
+frame.prev = UI.Button(frame, 90, L["hoa.addon.previous"], function() Vault:TurnPage(-1) end)
+frame.next = UI.Button(frame, 90, L["hoa.addon.page_next"], function() Vault:TurnPage(1) end)
 
-function Refresh()
-    local slots = max(1, vault.slots)
-    frame.title:SetText(vault.hearth and L["hoa.addon.hearthstone"] or L["hoa.addon.extraction_vault"])
-    if vault.hearth then
+function Vault:Refresh()
+    local frame = self.window
+    local slots = max(1, self.state.slots)
+    frame.title:SetText(self.state.hearth and L["hoa.addon.hearthstone"] or L["hoa.addon.extraction_vault"])
+    if self.state.hearth then
         frame.subtitle:SetText(L["hoa.addon.sends_1_piece_home_now_you_lose_it_for_the_rest_of_the_run"])
         frame.box:Hide()
-        ShowSent()
+        self:ShowSent()
     else
         frame.sent:Hide()
         frame.subtitle:SetText(slots == 1 and L["hoa.addon.1_piece_comes_home_with_you"] or L("hoa.addon.1_pieces_come_home_with_you", slots))
@@ -719,18 +722,18 @@ function Refresh()
     end
 
     local byGuid = {}
-    for _, find in ipairs(vault.finds) do
+    for _, find in ipairs(self.state.finds) do
         byGuid[find.guid] = find
     end
     local inVault = {}
-    for _, guid in ipairs(vault.order) do
+    for _, guid in ipairs(self.state.order) do
         if byGuid[guid] then
             tinsert(inVault, byGuid[guid])
         end
     end
     frame.box:SetWidth(max(VAULT_BOX_MIN_WIDTH, slots * VAULT_SLOT_SPACING + VAULT_BOX_MARGIN))
     for index = 1, max(slots, getn(frame.box.slots)) do
-        local slot = VaultSlot(index)
+        local slot = self:VaultSlot(index)
         if index > slots then
             slot:Hide()
             slot.caption:Hide()
@@ -760,11 +763,11 @@ function Refresh()
         end
     end
 
-    local shown = ShownOrder()
+    local shown = self:ShownOrder()
     local total = getn(shown)
     local pages = max(1, ceil(total / PER_PAGE))
-    vault.page = max(1, min(vault.page, pages))
-    local first = (vault.page - 1) * PER_PAGE
+    self.state.page = max(1, min(self.state.page, pages))
+    local first = (self.state.page - 1) * PER_PAGE
     local count = max(0, min(PER_PAGE, total - first))
     local perRow = max(1, min(count, PER_ROW))
     local rows = max(1, ceil(count / perRow))
@@ -778,23 +781,23 @@ function Refresh()
     frame.cards:SetPoint("TOP", frame, "CENTER", 0, CARDS_TOP / scale)
     local missing = false
     local rest, restScrap = 0, 0
-    for _, find in ipairs(vault.finds) do
-        if not vault.chosen[find.guid] then
+    for _, find in ipairs(self.state.finds) do
+        if not self.state.chosen[find.guid] then
             rest = rest + find.sell
             restScrap = restScrap + find.scrap
         end
     end
-    restScrap = floor(restScrap * (1 + (vault.scrapBonus or 0) / 100) + 0.5)
+    restScrap = floor(restScrap * (1 + (self.state.scrapBonus or 0) / 100) + 0.5)
     for index = 1, count do
         local find = shown[first + index]
-        local card = Card(index)
+        local card = self:Card(index)
         local row = floor((index - 1) / perRow)
         local column = mod(index - 1, perRow)
         local inRow = min(perRow, count - row * perRow)
         local x = (column - (inRow - 1) / 2) * (CARD_WIDTH + CARD_GAP)
         card:ClearAllPoints()
         card:SetPoint("TOP", frame.cards, "TOP", x, -row * (CARD_HEIGHT + CARD_GAP))
-        if not FillCard(card, find) then
+        if not self:FillCard(card, find) then
             missing = true
         end
         card:Show()
@@ -805,15 +808,15 @@ function Refresh()
 
     local anchor = frame.cards
     if pages > 1 then
-        frame.pageText:SetText(L("hoa.addon.page_1_of_2_3_items", vault.page, pages, total))
+        frame.pageText:SetText(L("hoa.addon.page_1_of_2_3_items", self.state.page, pages, total))
         frame.pageText:ClearAllPoints()
         frame.pageText:SetPoint("TOP", frame.cards, "BOTTOM", 0, -12)
         frame.prev:ClearAllPoints()
         frame.prev:SetPoint("RIGHT", frame.pageText, "LEFT", -14, 0)
         frame.next:ClearAllPoints()
         frame.next:SetPoint("LEFT", frame.pageText, "RIGHT", 14, 0)
-        if vault.page > 1 then frame.prev:Enable() else frame.prev:Disable() end
-        if vault.page < pages then frame.next:Enable() else frame.next:Disable() end
+        if self.state.page > 1 then frame.prev:Enable() else frame.prev:Disable() end
+        if self.state.page < pages then frame.next:Enable() else frame.next:Disable() end
         frame.pageText:Show()
         frame.prev:Show()
         frame.next:Show()
@@ -828,7 +831,7 @@ function Refresh()
     frame.rest:SetPoint("TOP", anchor, "BOTTOM", 0, -14)
     if count == 0 then
         frame.rest:SetText(L["hoa.addon.cff9d9d9dnothing_found_this_run_yet_r"])
-    elseif vault.hearth then
+    elseif self.state.hearth then
         frame.rest:SetText(L["hoa.addon.the_hearthstone_can_send_1_piece"])
     else
         frame.rest:SetText(LeftOutText(rest, restScrap, true))
@@ -837,7 +840,7 @@ function Refresh()
     frame.done:ClearAllPoints()
     frame.hint:ClearAllPoints()
     frame.hint:SetPoint("TOP", frame.rest, "BOTTOM", 0, -8)
-    if vault.hearth then
+    if self.state.hearth then
         frame.hint:SetText(L["hoa.addon.click_an_item_to_send_it_home_now_you_lose_it_for_the_rest_o"])
     else
         frame.hint:SetText(L["hoa.addon.gear_in_the_vault_goes_home_when_the_run_ends_even_if_you_di"])
@@ -846,11 +849,15 @@ function Refresh()
     frame.done:SetPoint("TOP", frame.hint, "BOTTOM", 0, -12)
 
     if missing then
-        frame.retries = frame.retries or RETRIES
-        frame.retryIn = RETRY
+        self.retries = self.retries or RETRIES
+        self.retryIn = RETRY
     else
-        frame.retries = nil
+        self.retries = nil
     end
+end
+
+function Refresh()
+    Vault:Refresh()
 end
 
 local function HeroSpot()
@@ -862,19 +869,19 @@ local function HeroSpot()
 end
 
 frame:SetScript("OnUpdate", function()
-    if this.retries and this.retries > 0 then
-        this.retryIn = this.retryIn - arg1
-        if this.retryIn <= 0 then
-            this.retries = this.retries - 1
-            Refresh()
+    if Vault.retries and Vault.retries > 0 then
+        Vault.retryIn = Vault.retryIn - arg1
+        if Vault.retryIn <= 0 then
+            Vault.retries = Vault.retries - 1
+            Vault:Refresh()
         end
     end
-    if this.openedAt then
+    if Vault.openedAt then
         local x, y = HeroSpot()
         if x then
-            local dx, dy = x - this.openedAt[1], y - this.openedAt[2]
+            local dx, dy = x - Vault.openedAt[1], y - Vault.openedAt[2]
             if dx * dx + dy * dy > WALK_AWAY * WALK_AWAY then
-                this:Hide()
+                frame:Hide()
             end
         end
     end
@@ -885,17 +892,11 @@ frame:SetScript("OnShow", function()
 end)
 frame:SetScript("OnHide", function()
     Command("close")
-    this.openedAt = nil
-    this.retries = nil
+    Vault.openedAt = nil
+    Vault.retries = nil
     GameTooltip:Hide()
     PlaySound("igMainMenuClose")
 end)
-
-local handlers = {}
-
-handlers["vaultclear"] = function()
-    incoming = {}
-end
 
 local function SavedEntries(field)
     local entries = {}
@@ -909,25 +910,29 @@ local function SavedEntries(field)
     return entries
 end
 
-handlers["vaultsent"] = function()
-    vault.sent = {}
+function Vault:HandleClear()
+    self.incoming = {}
 end
 
-handlers["vaultsentitem"] = function(f)
+function Vault:HandleSent()
+    self.state.sent = {}
+end
+
+function Vault:HandleSentItem(f)
     local entry = tonumber(f[2] or "")
     if not entry then
         return
     end
-    vault.sent = vault.sent or {}
-    tinsert(vault.sent, { entry = entry, stage = tonumber(f[3] or "") or 0, found = UI.ParseFound(f[4], f[5], f[6]) })
+    self.state.sent = self.state.sent or {}
+    tinsert(self.state.sent, { entry = entry, stage = tonumber(f[3] or "") or 0, found = UI.ParseFound(f[4], f[5], f[6]) })
 end
 
-handlers["vaultitem"] = function(f)
+function Vault:HandleItem(f)
     local guid, entry = f[2], tonumber(f[3] or "")
-    if not incoming or not guid or guid == "" or not entry then
+    if not self.incoming or not guid or guid == "" or not entry then
         return
     end
-    tinsert(incoming, {
+    tinsert(self.incoming, {
         guid = guid,
         entry = entry,
         quality = tonumber(f[4] or "") or 2,
@@ -942,61 +947,66 @@ handlers["vaultitem"] = function(f)
     })
 end
 
-handlers["vaultopen"] = function(f)
-    vault.slots = tonumber(f[2] or "") or 1
-    vault.hearth = f[4] == "hearth"
-    vault.scrapBonus = tonumber(f[5] or "") or 0
-    vault.chosen, vault.order = {}, {}
+function Vault:HandleOpen(f)
+    local frame = self.window
+    self.state.slots = tonumber(f[2] or "") or 1
+    self.state.hearth = f[4] == "hearth"
+    self.state.scrapBonus = tonumber(f[5] or "") or 0
+    self.state.chosen, self.state.order = {}, {}
     for _, guid in ipairs(UI.Split(f[3] or "", ",")) do
         if guid ~= "" then
-            vault.chosen[guid] = true
-            tinsert(vault.order, guid)
+            self.state.chosen[guid] = true
+            tinsert(self.state.order, guid)
         end
     end
-    if incoming then
-        vault.finds = incoming
-        incoming = nil
+    if self.incoming then
+        self.state.finds = self.incoming
+        self.incoming = nil
     end
-    frame.retries = nil
-    Refresh()
+    self.retries = nil
+    self:Refresh()
     if not frame:IsShown() then
         local x, y = HeroSpot()
-        frame.openedAt = x and { x, y } or nil
-        vault.page = 1
+        self.openedAt = x and { x, y } or nil
+        self.state.page = 1
         frame:Show()
     end
 end
 
-handlers["vaultclose"] = function()
-    frame:Hide()
+function Vault:HandleClose()
+    self.window:Hide()
 end
 
-UI.Module("vault"):OnRunEnd(function()
-    frame:Hide()
-    vault.finds, vault.chosen, vault.order = {}, {}, {}
+function Vault:ClearRun()
+    self.window:Hide()
+    self.state.finds, self.state.chosen, self.state.order = {}, {}, {}
+end
+
+Vault:OnRunEnd(function()
+    Vault:ClearRun()
 end)
 
 UI.ListenHoa({
     HOA_VAULT_CLEAR = function()
-        handlers["vaultclear"]()
+        Vault:HandleClear()
     end,
     HOA_VAULT_SENT = function()
-        handlers["vaultsent"]()
+        Vault:HandleSent()
     end,
     HOA_VAULT_SENT_ITEM = function(item)
-        handlers["vaultsentitem"]({ false, item.entry, item.stage, item.tier, item.lines, item.extra })
+        Vault:HandleSentItem({ false, item.entry, item.stage, item.tier, item.lines, item.extra })
     end,
     HOA_VAULT_ITEM = function(item)
-        handlers["vaultitem"]({
+        Vault:HandleItem({
             false, tostring(item.guid), item.entry, item.quality, item.worn and "1" or "0", item.sell_copper, item.saved,
             item.tier, item.best, item.owned and "1" or "0", item.scrap, item.lines, item.extra,
         })
     end,
     HOA_VAULT_OPEN = function(open)
-        handlers["vaultopen"]({ false, open.slots, open.chosen, open.mode, open.scrap_bonus })
+        Vault:HandleOpen({ false, open.slots, open.chosen, open.mode, open.scrap_bonus })
     end,
     HOA_VAULT_CLOSE = function()
-        handlers["vaultclose"]()
+        Vault:HandleClose()
     end,
 })
 
