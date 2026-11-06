@@ -42,6 +42,13 @@ set (game_SRCS
     Bonk/BonkPlayerStarter.cpp
     Bonk/BonkQuests.cpp
     Bonk/BonkRun.cpp
+    Bonk/BonkRunLifecycle.cpp
+    Bonk/BonkRunUpdate.cpp
+    Bonk/BonkRunSpawn.cpp
+    Bonk/BonkRunCombat.cpp
+    Bonk/BonkRunLoot.cpp
+    Bonk/BonkRunStage.cpp
+    Bonk/BonkRunWeapons.cpp
     Bonk/BonkRunCards.cpp
     Bonk/BonkRunTrinkets.cpp
     Bonk/BonkRunEnchant.cpp
