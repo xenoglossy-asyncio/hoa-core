@@ -1273,3 +1273,7 @@
   enUS: Your party already has this class. Join with a character of another class.
   zhCN: 你的队伍中已有这个职业。请换用其他职业的角色加入。
   zhTW: "你的隊伍中已有這個職業。請換用其他職業的角色加入。"
+- id: hoa.launcher.windows_didn_t_let_the_launcher_restart_itself
+  enUS: Windows didn't let the launcher restart itself. Close the launcher and open it again to finish the update.
+  zhCN: Windows 不允许启动器自行重启。请关闭启动器后重新打开，以完成更新。
+  zhTW: "Windows 不允許啟動器自行重新啟動。請關閉啟動器後重新開啟，以完成更新。"

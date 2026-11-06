@@ -551,6 +551,8 @@ handlers["boardchoice"] = function(f)
     board.choice = tonumber(f[2]) or -1
     UI.boardChoice = board.choice
     UI.boardClimb = tonumber(f[3] or "") or 0
+    UI.boardGameMaster = f[4] == "1"
+    UI.boardModified = f[5] == "1"
     if window:IsShown() then
         window.Refresh()
     end
@@ -592,7 +594,7 @@ UI.ListenHoa({
         handlers["boardpage"]({ false, page.view, page.class_id, page.offset, page.total })
     end,
     HOA_BOARD_CHOICE = function(choice)
-        handlers["boardchoice"]({ false, choice.choice, choice.climb })
+        handlers["boardchoice"]({ false, choice.choice, choice.climb, choice.game_master and "1" or "0", choice.server_modified and "1" or "0" })
     end,
     HOA_BOARD_END = function()
         handlers["boardend"]()

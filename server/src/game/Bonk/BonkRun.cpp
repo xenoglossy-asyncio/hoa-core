@@ -1,4 +1,5 @@
 #include "BonkRunInternal.h"
+#include "BonkIntegrity.h"
 
 namespace BonkRunShared
 {
@@ -524,9 +525,10 @@ std::string BonkRun::DescribeBoardEntry() const
     BonkPlayer const* bonk = m_player->GetBonkPlayer();
     bool const coop = BonkCoop::IsInCoopGroup(m_player);
     char text[96];
-    snprintf(text, sizeof(text), "coop %u, gm %u, board %d, gear %u", coop ? 1u : 0u, m_player->GetSession()->GetSecurity() > SEC_PLAYER ? 1u : 0u,
+    snprintf(text, sizeof(text), "coop %u, gm %u, board %d, gear %u", coop ? 1u : 0u, bonk->IsBoardGameMaster() ? 1u : 0u,
         bonk->GetBoardChoice(), bonk->HasBoardGear(m_difficultyLevel) ? 1u : 0u);
-    return coop ? std::string(text) + ", party " + DescribeBoardParty() : std::string(text);
+    std::string const entry = std::string(text) + (BonkIntegrity::IsServerModified() ? ", modified 1" : "");
+    return coop ? entry + ", party " + DescribeBoardParty() : entry;
 }
 
 std::string BonkRun::DescribeBoardParty() const
@@ -538,7 +540,7 @@ std::string BonkRun::DescribeBoardParty() const
         bool const shown = bonk->GetBoardChoice() == 1;
         party += (party.empty() ? "" : ";") + std::to_string(member->GetGUIDLow()) + ":" + (shown ? std::string(member->GetName()) : "-") + ":" +
             std::to_string(uint32(member->GetClass())) + ":" + (shown ? "1" : "0") + ":" + (bonk->HasBoardGear(m_difficultyLevel) ? "1" : "0") + ":" +
-            (member->GetSession()->GetSecurity() > SEC_PLAYER ? "1" : "0");
+            (bonk->IsBoardGameMaster() ? "1" : "0");
     }
     return party;
 }
@@ -549,6 +551,63 @@ void BonkRun::LogLevelClear() const
         "Bonk clear: %s clears level %u at run minute %.2f in %u ms (stage %u, %s, %s, class %u): %s",
         m_player->GetName(), m_difficultyLevel, GetRunMinutes(), m_totalMs, m_stage, m_map.key.c_str(), m_tier.key.c_str(),
         uint32(m_player->GetClass()), DescribeBoardEntry().c_str());
+}
+
+void BonkRun::NotifyBoardMiss() const
+{
+    if (m_sandbox || !IsMythic())
+        return;
+    BonkPlayer const* bonk = m_player->GetBonkPlayer();
+    bool const coop = BonkCoop::IsInCoopGroup(m_player);
+    if (!coop && bonk->GetBoardChoice() != 1)
+        return;
+    if (bonk->IsBoardGameMaster())
+    {
+        bonk->Notify(BONK_STRING_BOARD_MISS_GAME_MASTER);
+        return;
+    }
+    if (BonkIntegrity::IsServerModified())
+    {
+        bonk->Notify(BONK_STRING_BOARD_MISS_MODIFIED_SERVER);
+        return;
+    }
+    BonkPlayer::OffBoardGear const gear = bonk->FindOffBoardGear(m_difficultyLevel);
+    if (gear.item)
+    {
+        std::string const name = bonk->GetItemName(gear.item->GetProto());
+        if (gear.legacy)
+            bonk->Notify(BONK_STRING_BOARD_MISS_LEGACY_GEAR, { name });
+        else
+            bonk->Notify(BONK_STRING_BOARD_MISS_GEAR_ABOVE_LEVEL, { name, bonk->GetLevelName(m_difficultyLevel) });
+        return;
+    }
+    if (coop && NotifyBoardMissInParty())
+        return;
+    uint32 const climb = bonk->GetBoardClimb();
+    if (climb && m_difficultyLevel > climb + 1)
+        bonk->Notify(BONK_STRING_BOARD_MISS_CLIMB, { bonk->GetLevelName(climb + 1) });
+}
+
+bool BonkRun::NotifyBoardMissInParty() const
+{
+    BonkPlayer const* bonk = m_player->GetBonkPlayer();
+    for (Player* member : BonkCoop::RunGroupOf(m_player))
+    {
+        if (member == m_player)
+            continue;
+        BonkPlayer const* other = member->GetBonkPlayer();
+        if (other->IsBoardGameMaster())
+        {
+            bonk->Notify(BONK_STRING_BOARD_MISS_PARTY_GAME_MASTER, { member->GetName() });
+            return true;
+        }
+        if (!other->HasBoardGear(m_difficultyLevel))
+        {
+            bonk->Notify(BONK_STRING_BOARD_MISS_PARTY_GEAR, { member->GetName() });
+            return true;
+        }
+    }
+    return false;
 }
 
 void BonkRun::LogFinale(float minutes, uint32 score) const

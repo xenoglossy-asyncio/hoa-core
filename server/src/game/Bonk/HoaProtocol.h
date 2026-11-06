@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define HOA_PROTOCOL_VERSION 29
+#define HOA_PROTOCOL_VERSION 30
 #define HOA_MSG_AURA_VALUE 0x0002
 #define HOA_MSG_DASH 0x0003
 #define HOA_MSG_AURA_PERCENT 0x0004
@@ -1085,11 +1085,13 @@ inline void HoAWriteBoardPage(WorldPacket& packet, uint32 const& view, uint32 co
     packet << uint32(total);
 }
 
-inline void HoAWriteBoardChoice(WorldPacket& packet, int32 const& choice, uint32 const& climb)
+inline void HoAWriteBoardChoice(WorldPacket& packet, int32 const& choice, uint32 const& climb, bool const& gameMaster, bool const& serverModified)
 {
     packet << uint16(HOA_MSG_BOARD_CHOICE);
     packet << int32(choice);
     packet << uint32(climb);
+    packet << bool(gameMaster);
+    packet << bool(serverModified);
 }
 
 inline void HoAWriteBoardEnd(WorldPacket& packet)

@@ -29,6 +29,7 @@ set (game_SRCS
     Bonk/BonkCrowd.cpp
     Bonk/BonkEnchant.cpp
     Bonk/BonkFoundGear.cpp
+    Bonk/BonkIntegrity.cpp
     Bonk/BonkKeywords.cpp
     Bonk/BonkLeaderboard.cpp
     Bonk/BonkLocale.cpp
@@ -315,6 +316,7 @@ set (game_SRCS
     AuraRemovalMgr.h
     AutoBroadCastMgr.h
     Bonk/BonkCodex.h
+    Bonk/BonkIntegrity.h
     Bonk/BonkLeaderboard.h
     Bonk/BonkLocale.h
     Bonk/BonkMastery.h

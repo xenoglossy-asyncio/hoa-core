@@ -6010,3 +6010,54 @@
   enUS: Unknown request.
   zhCN: 未知请求。
   zhTW: "未知請求。"
+- id: hoa.msg.board_miss_game_master
+  legacy_server_id: 1124
+  enUS: Game Master characters don't appear on the leaderboard, so this clear won't be listed.
+  zhCN: 游戏主持人角色不会出现在排行榜上，因此这次通关不会被记录。
+  zhTW: "遊戲主持人角色不會出現在排行榜上，因此這次通關不會被記錄。"
+- id: hoa.msg.board_miss_legacy_gear
+  legacy_server_id: 1125
+  enUS: This clear won't be listed on the leaderboard because {1} is legacy gear.
+  zhCN: 本次通关不会计入排行榜，因为{1}是传承装备。
+  zhTW: "本次通關不會計入排行榜，因為{1}是傳承裝備。"
+  placeholders:
+  - 1
+- id: hoa.msg.board_miss_gear_above_level
+  legacy_server_id: 1126
+  enUS: This clear won't be listed on the leaderboard because {1} is above {2}.
+  zhCN: 本次通关不会计入排行榜，因为{1}高于{2}。
+  zhTW: "本次通關不會計入排行榜，因為{1}高於{2}。"
+  placeholders:
+  - 1
+  - 2
+- id: hoa.msg.board_miss_party_game_master
+  legacy_server_id: 1127
+  enUS: This group clear won't be listed on the leaderboard because {1} is a Game Master.
+  zhCN: 本次团队通关不会计入排行榜，因为{1}是游戏主持人。
+  zhTW: "本次團隊通關不會計入排行榜，因為{1}是遊戲主持人。"
+  placeholders:
+  - 1
+- id: hoa.msg.board_miss_party_gear
+  legacy_server_id: 1128
+  enUS: This group clear won't be listed on the leaderboard because {1} wears legacy gear or gear above this level.
+  zhCN: 本次团队通关不会计入排行榜，因为{1}穿着传承装备或高于当前等级的装备。
+  zhTW: "本次團隊通關不會計入排行榜，因為{1}穿著傳承裝備或高於當前等級的裝備。"
+  placeholders:
+  - 1
+- id: hoa.msg.board_miss_climb
+  legacy_server_id: 1129
+  enUS: This clear will appear on the leaderboard once you clear {1} this season.
+  zhCN: 本赛季通关{1}后，本次通关就会出现在排行榜上。
+  zhTW: "本賽季通關{1}後，本次通關就會出現在排行榜上。"
+  placeholders:
+  - 1
+- id: hoa.msg.board_miss_modified_server
+  legacy_server_id: 1130
+  enUS: This clear won't be listed on the leaderboard because another program changed the game while it was running.
+  zhCN: 本次通关不会计入排行榜，因为另一个程序在运行期间修改了游戏。
+  zhTW: "本次通關不會計入排行榜，因為另一個程式在執行期間修改了遊戲。"
+- id: hoa.msg.server_code_modified
+  legacy_server_id: 1131
+  enUS: Another program changed the game while it was running, so your runs won't count for the leaderboard until you restart the game.
+  zhCN: 另一个程序在运行期间修改了游戏，因此在你重启游戏之前，跑团不会计入排行榜。
+  zhTW: "另一個程式在執行期間修改了遊戲，因此在你重新啟動遊戲之前，跑團不會計入排行榜。"

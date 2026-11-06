@@ -150,6 +150,7 @@ void BonkRun::RewardLevelClear()
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     uint8 const trainingCap = bonk->GetTrainingRankCap();
     LogLevelClear();
+    NotifyBoardMiss();
     if (!m_sandbox)
     {
         BonkPlayer::LevelRun run;

@@ -55,6 +55,7 @@ namespace HordesOfAzeroth.Launcher
         List<ReleaseNote> m_notes = new List<ReleaseNote>();
         int m_notePage;
         bool m_quitting;
+        bool m_closed;
         bool m_askingToClose;
         bool m_shuttingDown;
         CancellationTokenSource m_installCancel;
@@ -81,6 +82,7 @@ namespace HordesOfAzeroth.Launcher
             WatchMenuClosing(AccountMenu, LanguageMenu, OptionsMenu);
             Opened += OnOpened;
             Closing += OnClosing;
+            Closed += (s, e) => m_closed = true;
             Program.ShowRequested += () => Dispatcher.UIThread.Post(ShowFromTray);
         }
 
@@ -243,7 +245,7 @@ namespace HordesOfAzeroth.Launcher
 
         public void ShowFromTray()
         {
-            if (m_shuttingDown)
+            if (m_shuttingDown || m_closed)
                 return;
             Show();
             if (WindowState == WindowState.Minimized)
@@ -838,10 +840,19 @@ namespace HordesOfAzeroth.Launcher
                 restart.ArgumentList.Add("--source");
                 restart.ArgumentList.Add(UpdateCheck.LocalSource);
             }
+            try
+            {
+                Process.Start(restart)?.Dispose();
+            }
+            catch (System.ComponentModel.Win32Exception error)
+            {
+                LauncherLog.Write(m_folder, "Restart: " + error.Message);
+                _ = Dialog.TellAsync(this, Loc.T("hoa.launcher.windows_didn_t_let_the_launcher_restart_itself"));
+                return;
+            }
             m_quitting = true;
             if (m_tray != null)
                 m_tray.IsVisible = false;
-            Process.Start(restart);
             Shutdown();
         }
 
@@ -1603,7 +1614,14 @@ namespace HordesOfAzeroth.Launcher
             {
                 failure = e.Message;
             }
-            await m_server.StopAsync();
+            try
+            {
+                await m_server.StopAsync();
+            }
+            catch (Exception error) when (error is ObjectDisposedException || error is IOException || error is System.ComponentModel.Win32Exception)
+            {
+                LauncherLog.Write(m_folder, "Stopping the server: " + error.Message);
+            }
             m_busyButton = null;
             m_state = LauncherState.Ready;
             RefreshState();

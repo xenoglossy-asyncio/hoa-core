@@ -1356,6 +1356,12 @@ local function BoardNote()
         return "", nil
     end
     local level = tier.firstLevel + ChosenLevel() - 1
+    if UI.boardGameMaster then
+        return L["hoa.addon.game_master_characters_don_t_appear_on_the_leaderboard"], "bad"
+    end
+    if UI.boardModified then
+        return L["hoa.addon.another_program_changed_the_game_while_it_was_running_restart"], "bad"
+    end
     for slot = 1, 19 do
         local piece = UI.FoundAt("inv", slot)
         if piece and piece.legacy then

@@ -776,6 +776,8 @@ fn deliver_hoa_messages(world: &mut World) {
                         vec![lua_table(vec![
                             ("choice", ScriptValue::Int(i64::from(choice.choice))),
                             ("climb", ScriptValue::Int(i64::from(choice.climb))),
+                            ("game_master", ScriptValue::Bool(choice.game_master)),
+                            ("server_modified", ScriptValue::Bool(choice.server_modified)),
                         ])],
                     );
                 }

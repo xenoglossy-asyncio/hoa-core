@@ -1,4 +1,5 @@
 #include "BonkRunInternal.h"
+#include "BonkIntegrity.h"
 
 BonkRun::BonkRun(Player* player, BonkTier const& tier, BonkRunChoice const& choice) : m_player(player), m_tier(tier),
     m_bonuses(player->GetBonkPlayer()->GetRunBonuses()), m_mastery(player->GetBonkPlayer()->GetMasteryBonuses())
@@ -688,5 +689,7 @@ void BonkRun::StartStage()
     std::string const bossIn = !minutes ? secondText : !seconds ? minuteText : GetString(BONK_STRING_DURATION_MINUTES_AND_SECONDS, { minuteText, secondText });
     m_player->GetBonkPlayer()->Notify(BONK_STRING_STAGE_BEGINS, { m_player->GetBonkPlayer()->GetLevelName(m_difficultyLevel), std::to_string(m_stage),
         std::to_string(m_tier.stages), Localize(BONK_FIELD_MAP_NAME, m_map.id, m_map.name), bossIn });
+    if (m_stage == 1 && IsMythic() && !m_sandbox && BonkIntegrity::IsServerModified())
+        m_player->GetBonkPlayer()->Notify(BONK_STRING_SERVER_CODE_MODIFIED);
 }
 

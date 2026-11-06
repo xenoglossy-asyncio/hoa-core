@@ -6931,3 +6931,11 @@
   zhTW: "變更的內容：{1}。"
   placeholders:
   - 1
+- id: hoa.addon.game_master_characters_don_t_appear_on_the_leaderboard
+  enUS: Game Master characters don't appear on the leaderboard, so this run won't be listed.
+  zhCN: 游戏主持人角色不会出现在排行榜上，因此本次跑团不会被记录。
+  zhTW: "遊戲主持人角色不會出現在排行榜上，因此本次跑團不會被記錄。"
+- id: hoa.addon.another_program_changed_the_game_while_it_was_running_restart
+  enUS: Another program changed the game while it was running. Restart the game for runs to count for the leaderboard.
+  zhCN: 另一个程序在运行期间修改了游戏。重启游戏后跑团才会计入排行榜。
+  zhTW: "另一個程式在執行期間修改了遊戲。重新啟動遊戲後跑團才會計入排行榜。"

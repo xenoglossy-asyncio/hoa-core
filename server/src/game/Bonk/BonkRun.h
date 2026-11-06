@@ -1448,6 +1448,8 @@ class BonkRun
         void LogBuild() const;
         void LogRunEnd(bool wentHome, std::string const& build) const;
         void LogLevelClear() const;
+        void NotifyBoardMiss() const;
+        bool NotifyBoardMissInParty() const;
         void LogFinale(float minutes, uint32 score) const;
         std::string DescribeBoardEntry() const;
         std::string DescribeBoardParty() const;
