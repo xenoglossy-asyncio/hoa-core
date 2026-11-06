@@ -10,6 +10,7 @@ local content = VB.content
 local ARENA_WIDTH, ARENA_HEIGHT = VB.ARENA_WIDTH, VB.ARENA_HEIGHT
 local STARTER_SIZE, STARTER_STEP = 28, 34
 local LOADOUT_X, LOADOUT_TOP, LOADOUT_WIDTH = 22, 252, 214
+local Starters = UI.Module("starters")
 
 local LOADOUT_GREY = { 0.51, 0.49, 0.44 }
 
@@ -62,7 +63,7 @@ end)
 VB.starters = {}
 VB.pendingStarters = {}
 
-local function ChosenStarter()
+function Starters:Chosen()
     for _, option in ipairs(VB.starters) do
         if option.chosen then
             return option
@@ -70,7 +71,7 @@ local function ChosenStarter()
     end
 end
 
-local function ShowStarterTooltip(owner, option)
+function Starters:ShowTooltip(owner, option)
     if not option then
         return
     end
@@ -91,7 +92,7 @@ local function ShowStarterTooltip(owner, option)
     GameTooltip:Show()
 end
 
-local function ChooseStarter(option)
+function Starters:Choose(option)
     if not option or option.chosen or not option.unlocked or VB.inRun then
         return
     end
@@ -99,7 +100,7 @@ local function ChooseStarter(option)
     Command("starter " .. option.id)
 end
 
-local function SetStarterIcon(texture, option)
+function Starters:SetIcon(texture, option)
     texture:SetTexture(ICON_PATH .. (option and option.icon ~= "" and option.icon or "INV_Misc_QuestionMark"))
     SetDesaturation(texture, option and not option.unlocked)
 end
@@ -116,7 +117,7 @@ starterBox.name = UI.Text(starterBox, 11)
 starterBox.name:SetJustifyH("LEFT")
 starterBox.slots = {}
 
-local function StarterSlot(index)
+function Starters:StarterSlot(index)
     local slot = starterBox.slots[index]
     if not slot then
         slot = CreateFrame("Button", nil, starterBox)
@@ -129,8 +130,8 @@ local function StarterSlot(index)
         slot.icon:SetPoint("BOTTOMRIGHT", slot, "BOTTOMRIGHT", -1, 1)
         UI.CropIcon(slot.icon)
         slot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
-        slot:SetScript("OnClick", function() ChooseStarter(this.option) end)
-        UI.Hover(slot, function() ShowStarterTooltip(this, this.option) end)
+        slot:SetScript("OnClick", function() Starters:Choose(this.option) end)
+        UI.Hover(slot, function() Starters:ShowTooltip(this, this.option) end)
         slot.glow = slot:CreateTexture(nil, "OVERLAY")
         slot.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
         slot.glow:SetBlendMode("ADD")
@@ -143,7 +144,7 @@ local function StarterSlot(index)
     return slot
 end
 
-local function RefreshStarters()
+function Starters:Refresh()
     if getn(VB.starters) == 0 then
         starterBox:Hide()
         return
@@ -151,12 +152,12 @@ local function RefreshStarters()
     for _, slot in ipairs(starterBox.slots) do
         slot:Hide()
     end
-    local chosen = ChosenStarter()
+    local chosen = Starters:Chosen()
     local last
     for index, option in ipairs(VB.starters) do
-        local slot = StarterSlot(index)
+        local slot = Starters:StarterSlot(index)
         slot.option = option
-        SetStarterIcon(slot.icon, option)
+        Starters:SetIcon(slot.icon, option)
         if option.chosen then
             slot.icon:SetVertexColor(1, 1, 1)
             slot:SetBackdropBorderColor(1, 0.82, 0, 1)
@@ -212,7 +213,7 @@ local ShowArenaDetail
 
 ShowArenaDetail = function(tier)
     arena.tier = tier
-    RefreshStarters()
+    Starters:Refresh()
     if GetNumPartyMembers() > 0 then
         arena.pauseCheck:Hide()
     else
@@ -304,4 +305,4 @@ SlashCmdList["VANILLABONK"] = function(message)
 end
 
 
-VB.RefreshStarters = RefreshStarters
+VB.RefreshStarters = function() Starters:Refresh() end
