@@ -46,11 +46,15 @@ local RIGHT_LABELS = {
 local PROMPT_CHOICES = { { "auto", L["hoa.addon.automatic"] }, { "xbox", "Xbox" }, { "ps", "PlayStation" }, { "deck", "Steam Deck" } }
 
 local panel = UI.Window("VanillaBonkControllerPanel", PANEL_WIDTH, PANEL_HEIGHT)
+Controller.panel = panel
+panel.controller = Controller
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 10)
 panel.title:SetText(L["hoa.addon.controller"])
 panel.ART = ART
-panel.controls = {}
-panel.labels = {}
+Controller.panelControls = {}
+Controller.panelLabels = {}
+panel.controls = Controller.panelControls
+panel.labels = Controller.panelLabels
 
 panel.status = UI.Text(panel, 12)
 panel.status:SetPoint("TOP", panel, "TOP", 0, -44)
@@ -96,7 +100,7 @@ local function MakeLabel(rightSide, rebindable)
         label:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
         label:GetHighlightTexture():SetBlendMode("ADD")
         label:SetScript("OnClick", function()
-            panel:Listen(this)
+            Controller:ListenPanel(this)
         end)
     end
     return label
@@ -194,7 +198,7 @@ local function SliderRow(x, y, key, title, help, low, high, step, lowText, highT
     slider.shown = shown
     slider:SetScript("OnValueChanged", function()
         this.value:SetText(this.shown(this:GetValue()))
-        if not panel.loading then
+        if not Controller.panelLoading then
             Controller.SetSetting(this.key, this:GetValue())
         end
     end)
@@ -235,7 +239,7 @@ local function ChoiceRow(x, y, key, title, help, choices)
         button.value = choice[1]
         button:SetScript("OnClick", function()
             Controller.SetSetting(key, this.value)
-            panel:Refresh()
+            Controller:RefreshPanel()
         end)
         table.insert(row.buttons, button)
         left = left + CHOICE_WIDTH + CHOICE_GAP
@@ -279,12 +283,12 @@ local function CardButton(x, y, action, title)
     button:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
     button:GetHighlightTexture():SetBlendMode("ADD")
     button:SetScript("OnClick", function()
-        panel:ListenCard(this)
+        Controller:ListenPanelCard(this)
     end)
     button.Load = function(self)
         Controller.SetGlyph(self.glyph, Controller.CardButtonFor(self.action))
         self.title:SetText(self.text)
-        if panel.listeningTo == self then
+        if Controller.panelListeningTo == self then
             self.title:SetTextColor(1, 1, 1)
             self:LockHighlight()
             panel.cardHint:SetText(L("hoa.addon.press_a_button_for_1", self.text) .. " " .. CARD_CANCEL_TEXT)
@@ -316,9 +320,9 @@ rightY = rightY - CheckRow(COLUMN_RIGHT, rightY, "interactPrompts", L["hoa.addon
 CardRow(COLUMN_RIGHT, rightY)
 
 panel.reset = UI.Button(panel, 150, L["hoa.addon.defaults"], function()
-    panel:StopListening()
+    Controller:StopPanelListening()
     Controller.ResetSettings()
-    panel:Refresh()
+    Controller:RefreshPanel()
 end)
 panel.reset:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", COLUMN_LEFT, 22)
 panel.done = UI.Button(panel, 120, L["hoa.addon.done"], function()
@@ -335,33 +339,34 @@ local function StatusText()
     return text
 end
 
-function panel:Refresh()
+function Controller:RefreshPanel()
+    local panel = self.panel
     local style = Controller.Style()
-    self.loading = true
-    for _, control in ipairs(self.controls) do
+    self.panelLoading = true
+    for _, control in ipairs(self.panelControls) do
         control:Load()
     end
-    self.loading = nil
-    self.art:SetTexture(ART[style].file)
-    self.art:SetTexCoord(0, 1, 0, ART[style].height / 512)
-    self.art:SetHeight(ArtHeight(style))
+    self.panelLoading = nil
+    panel.art:SetTexture(ART[style].file)
+    panel.art:SetTexCoord(0, 1, 0, ART[style].height / 512)
+    panel.art:SetHeight(ArtHeight(style))
     PlaceLabels(style)
-    for _, label in pairs(self.labels) do
+    for _, label in pairs(self.panelLabels) do
         FillLabel(label, label.entry)
         Controller.SetGlyph(label.glyph, label.action and Controller.ButtonFor(label.action) or label.button)
     end
-    self.status:SetText(StatusText())
-    self.style = style
-    self:ShowListening()
+    panel.status:SetText(StatusText())
+    self.panelStyle = style
+    self:ShowPanelListening()
 end
 
-function panel:StopListening()
+function Controller:StopPanelListening()
     Controller.listening = nil
-    self.listeningTo = nil
+    self.panelListeningTo = nil
 end
 
-function panel:ShowListening()
-    local label = self.listeningTo
+function Controller:ShowPanelListening()
+    local label = self.panelListeningTo
     if not label or not label.entry then
         return
     end
@@ -370,11 +375,11 @@ function panel:ShowListening()
     label.entry = entry
 end
 
-function panel:Listen(label)
-    self:StopListening()
-    self:Refresh()
-    self.listeningTo = label
-    self:ShowListening()
+function Controller:ListenPanel(label)
+    self:StopPanelListening()
+    self:RefreshPanel()
+    self.panelListeningTo = label
+    self:ShowPanelListening()
     Controller.listening = function(name)
         if name ~= "b" and not Controller.REBINDABLE[name] then
             return
@@ -383,15 +388,15 @@ function panel:Listen(label)
             Controller.BindButton(label.action, name)
             PlaySound("igMainMenuOptionCheckBoxOn")
         end
-        panel:StopListening()
-        panel:Refresh()
+        Controller:StopPanelListening()
+        Controller:RefreshPanel()
     end
 end
 
-function panel:ListenCard(button)
-    self:StopListening()
-    self.listeningTo = button
-    self:Refresh()
+function Controller:ListenPanelCard(button)
+    self:StopPanelListening()
+    self.panelListeningTo = button
+    self:RefreshPanel()
     Controller.listening = function(name)
         if name ~= "menu" and not Controller.CARD_REBINDABLE[name] then
             return
@@ -400,33 +405,53 @@ function panel:ListenCard(button)
             Controller.BindCardButton(button.action, name)
             PlaySound("igMainMenuOptionCheckBoxOn")
         end
-        panel:StopListening()
-        panel:Refresh()
+        Controller:StopPanelListening()
+        Controller:RefreshPanel()
     end
+end
+
+function panel:Refresh()
+    return Controller:RefreshPanel()
+end
+
+function panel:StopListening()
+    return Controller:StopPanelListening()
+end
+
+function panel:ShowListening()
+    return Controller:ShowPanelListening()
+end
+
+function panel:Listen(label)
+    return Controller:ListenPanel(label)
+end
+
+function panel:ListenCard(button)
+    return Controller:ListenPanelCard(button)
 end
 
 panel:SetScript("OnShow", function()
     SetPortraitTexture(this.portrait, "player")
-    this:Refresh()
-    this.statusAt = 0
+    Controller:RefreshPanel()
+    Controller.panelStatusAt = 0
 end)
 panel:SetScript("OnUpdate", function()
-    this.statusAt = (this.statusAt or 0) + arg1
-    if this.statusAt < STATUS_INTERVAL then
+    Controller.panelStatusAt = (Controller.panelStatusAt or 0) + arg1
+    if Controller.panelStatusAt < STATUS_INTERVAL then
         return
     end
-    this.statusAt = 0
-    if Controller.Style() ~= this.style then
-        this:Refresh()
+    Controller.panelStatusAt = 0
+    if Controller.Style() ~= Controller.panelStyle then
+        Controller:RefreshPanel()
     else
-        this.status:SetText(StatusText())
+        panel.status:SetText(StatusText())
     end
 end)
 
 local BasePanelHide = panel:GetScript("OnHide")
 panel:SetScript("OnHide", function()
-    this:StopListening()
-    this.asBindings = nil
+    Controller:StopPanelListening()
+    Controller.panelAsBindings = nil
     if BasePanelHide then
         BasePanelHide()
     end

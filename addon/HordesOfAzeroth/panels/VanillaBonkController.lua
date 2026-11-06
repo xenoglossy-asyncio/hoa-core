@@ -1,7 +1,10 @@
 local L = VanillaBonkL
-VanillaBonkController = { kind = nil, focus = 1, window = nil }
-
-local Controller = VanillaBonkController
+local UI = VanillaBonkUI
+local Controller = UI.Module("controller")
+Controller.kind = nil
+Controller.focus = 1
+Controller.window = nil
+VanillaBonkController = Controller
 local DEFAULTS = { yawSpeed = 1, pitchSpeed = 1, invertPitch = false, deadzone = 0.24, cursorSpeed = 1, prompts = "auto", interactPrompts = true }
 local DLL_OPTIONS = { yawSpeed = true, pitchSpeed = true, invertPitch = true, deadzone = true, cursorSpeed = true }
 local OBJECT_REACH = { [900031] = 8 }
