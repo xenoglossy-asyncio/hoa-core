@@ -5,7 +5,8 @@ param(
     [string]$ServerSource,
     [string]$Out,
     [switch]$Docker,
-    [string]$Image = 'hoa-linux-builder:22.04'
+    [string]$Image = 'hoa-linux-builder:22.04',
+    [int]$Jobs = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -37,12 +38,16 @@ if ($Docker -or $installed -notcontains $distro) {
     $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path -replace '\\', '/'
     $outFull = [System.IO.Path]::GetFullPath($Out) -replace '\\', '/'
     $ErrorActionPreference = 'Continue'
-    docker run --rm -v "${repo}:/src" -v "${outFull}:/out" $Image bash /src/tools/linux/build.sh $Part /src/client /src/server /out
+    $jobArgs = @()
+    if ($Jobs -gt 0) { $jobArgs = @($Jobs) }
+    docker run --rm -v "${repo}:/src" -v "${outFull}:/out" $Image bash /src/tools/linux/build.sh $Part /src/client /src/server /out @jobArgs
     if ($LASTEXITCODE -ne 0) { throw "Linux build failed with exit code $LASTEXITCODE." }
     return
 }
 
 $ErrorActionPreference = 'Continue'
+$jobArgs = @()
+if ($Jobs -gt 0) { $jobArgs = @($Jobs) }
 wsl -d $distro -u root -- bash (ConvertTo-WslPath (Join-Path $PSScriptRoot 'linux\build.sh')) $Part `
-    (ConvertTo-WslPath $ClientSource) (ConvertTo-WslPath $ServerSource) (ConvertTo-WslPath $Out)
+    (ConvertTo-WslPath $ClientSource) (ConvertTo-WslPath $ServerSource) (ConvertTo-WslPath $Out) @jobArgs
 if ($LASTEXITCODE -ne 0) { throw "Linux build failed with exit code $LASTEXITCODE." }

@@ -6,6 +6,8 @@ part="${1:-all}"
 client_source="$2"
 server_source="$3"
 out="$4"
+jobs="${5:-0}"
+if [ "$jobs" -le 0 ]; then jobs="$(nproc)"; fi
 work=/root/hoa-build
 packages="build-essential cmake git curl ca-certificates pkg-config patchelf rsync \
     libmariadb-dev libmariadb-dev-compat libssl-dev zlib1g-dev \
@@ -29,7 +31,7 @@ build_server() {
     sync_source "$server_source" "$work/src/server"
     cmake -S "$work/src/server" -B "$work/cache/server" -DCMAKE_BUILD_TYPE=Release -DBUILD_EXTRACTORS=1 -DBUILD_FOR_HOST_CPU=OFF \
         -DCMAKE_INSTALL_PREFIX="$work/install/server" >/dev/null
-    if ! cmake --build "$work/cache/server" -j"$(nproc)" -- -k > "$work/server-build.log" 2>&1; then
+    if ! cmake --build "$work/cache/server" -j"$jobs" -- -k > "$work/server-build.log" 2>&1; then
         grep -E ': error:|undefined reference' "$work/server-build.log" | sort -u
         echo 'Linux server build failed' >&2
         exit 1
@@ -56,7 +58,7 @@ build_client() {
     sync_source "$client_source" "$work/src/client"
     cd "$work/src/client"
     rustup toolchain install --profile minimal >/dev/null 2>&1
-    if ! CARGO_TARGET_DIR="$work/cache/client" cargo build --profile ship --locked -p hoa --no-default-features > "$work/client-build.log" 2>&1; then
+    if ! CARGO_TARGET_DIR="$work/cache/client" cargo build -j "$jobs" --profile ship --locked -p hoa --no-default-features > "$work/client-build.log" 2>&1; then
         grep -E -A5 '^error' "$work/client-build.log"
         echo 'Linux client build failed' >&2
         exit 1

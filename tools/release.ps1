@@ -11,7 +11,8 @@ param(
     [int]$Hotfix = 0,
     [switch]$WindowsOnly,
     [switch]$SkipNavTiles,
-    [switch]$SkipWorldDump
+    [switch]$SkipWorldDump,
+    [int]$Jobs = 0
 )
 . "$PSScriptRoot\common.ps1"
 Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
@@ -247,7 +248,8 @@ function Invoke-ServerBuild {
         '-DCMAKE_CXX_FLAGS_RELEASE=/MD /O2 /Ob2 /DNDEBUG /Zi', '-DCMAKE_C_FLAGS_RELEASE=/MD /O2 /Ob2 /DNDEBUG /Zi',
         '-DCMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF'
     )
-    Invoke-Native 'Server build' $cmake.Exe @('--build', $serverBuild, '--config', 'Release', '--', '/m', '/v:minimal')
+    $serverJobs = if ($Jobs -gt 0) { "/m:$Jobs" } else { '/m' }
+    Invoke-Native 'Server build' $cmake.Exe @('--build', $serverBuild, '--config', 'Release', '--', $serverJobs, '/v:minimal')
     if (Test-Path $serverInstall) { Remove-Item $serverInstall -Recurse -Force }
     Invoke-Native 'Server install' $cmake.Exe @('--install', $serverBuild, '--config', 'Release')
     Copy-Runtime $cmake.Instance @($serverInstall, (Join-Path $serverInstall 'Extractors'))
@@ -296,7 +298,7 @@ function Invoke-LinuxBuild([string]$Part) {
     $clientDone = (Test-Path $clientStamp) -and ((Get-Content $clientStamp -Raw).Trim() -eq $commit)
     if (($Part -eq 'server' -and $serverDone) -or ($Part -eq 'client' -and $clientDone)) { return }
     Write-Host "Building the Linux server and client from commit $($commit.Substring(0, 9)) in Docker..."
-    & (Join-Path $PSScriptRoot 'build-linux.ps1') -Part all -ClientSource (Join-Path $RepoRoot 'client') -ServerSource (Join-Path $RepoRoot 'server') -Out $linuxOut
+    & (Join-Path $PSScriptRoot 'build-linux.ps1') -Part all -ClientSource (Join-Path $RepoRoot 'client') -ServerSource (Join-Path $RepoRoot 'server') -Out $linuxOut -Jobs $Jobs
     [System.IO.File]::WriteAllText($serverStamp, $commit)
     [System.IO.File]::WriteAllText($clientStamp, $commit)
 }
