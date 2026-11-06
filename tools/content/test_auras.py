@@ -18,10 +18,10 @@ class AuraRegistryTests(unittest.TestCase):
 
     def test_keeps_the_expected_aura_set(self) -> None:
         self.assertEqual(len(self.spells), 104)
-        self.assertEqual(len([spell for spell in self.spells.values() if not spell["native"]]), 52)
+        self.assertEqual(len([spell for spell in self.spells.values() if not spell["native"]]), 53)
         for spell_id in (
             17, 339, 594, 1833, 2070, 5116, 5277, 7922, 8122, 8233, 8921, 9484, 12485, 12654,
-            12721, 13496, 14868, 15258, 17364, 17498, 18148, 18798, 18951, 19255, 19448, 19502,
+            12721, 13496, 14868, 15258, 17364, 17498, 18148, 18798, 19255, 19448, 19502,
             19574, 20368, 20374, 21183, 22518, 22576, 22577, 22578, 22579, 22580, 22581, 22959,
             23414, 26388, 27991, 28126, 28419, 31309, 33461, 33462, 33463, 33464, 33465, 33466,
             33467, 33468,
