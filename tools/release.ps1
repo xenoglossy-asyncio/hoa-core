@@ -226,6 +226,7 @@ function Save-ServerSymbols([string]$Commit) {
     $symbols = Join-Path $releaseRoot "symbols\$($Commit.Substring(0, 9))"
     New-Item -ItemType Directory -Force $symbols | Out-Null
     $pdb = Get-ChildItem $serverBuild -Recurse -Filter 'mangosd.pdb' -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -like '*Release*' } | Select-Object -First 1
+    if (-not $pdb) { $pdb = Get-Item (Join-Path $serverInstall 'mangosd.pdb') -ErrorAction SilentlyContinue }
     if (-not $pdb) { throw 'mangosd.pdb was not built; crash dumps from this release could not be read.' }
     Copy-Item $pdb.FullName $symbols -Force
     Copy-Item (Join-Path $serverInstall 'mangosd.exe') $symbols -Force
