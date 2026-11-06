@@ -104,6 +104,7 @@ local function Refresh()
     end
     rewards:Layout()
 end
+trackerPanel.OnRefresh = Refresh
 
 tracker:SetScript("OnUpdate", function()
     this.elapsed = (this.elapsed or 0) + arg1
