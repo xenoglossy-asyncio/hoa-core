@@ -3,11 +3,12 @@
 #include "BonkPlayer.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "Player.h"
+#include "WorldSession.h"
 
 #include <algorithm>
-#include <cstdio>
 #include <cstring>
 
 namespace
@@ -38,13 +39,6 @@ namespace
     bool PingsWhileFollowed(BonkObjectiveKind kind)
     {
         return kind == BONK_OBJECTIVE_EVENT;
-    }
-
-    std::string FormatCoordinate(float value)
-    {
-        char text[32];
-        std::snprintf(text, sizeof(text), "%.1f", value);
-        return text;
     }
 }
 
@@ -113,7 +107,12 @@ void BonkObjectives::Remove(Player* hero, uint32 id)
         return;
 
     Despawn(hero, *itr);
-    hero->GetBonkPlayer()->SendAddon("objectiveclear~" + std::to_string(id));
+    if (hero->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteObjectiveClear(data, id);
+        hero->GetSession()->SendPacket(&data);
+    }
     m_objectives.erase(itr);
 }
 
@@ -129,7 +128,12 @@ void BonkObjectives::Clear(Player* hero)
     for (BonkObjective const& objective : m_objectives)
         Despawn(hero, objective);
     m_objectives.clear();
-    hero->GetBonkPlayer()->SendAddon("objectiveclear");
+    if (hero->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteObjectiveClear(data, 0);
+        hero->GetSession()->SendPacket(&data);
+    }
 }
 
 std::vector<BonkObjective> BonkObjectives::Update(Player* hero, uint32 diff)
@@ -196,7 +200,12 @@ std::vector<BonkObjective> BonkObjectives::Update(Player* hero, uint32 diff)
 
 void BonkObjectives::Resend(Player* hero) const
 {
-    hero->GetBonkPlayer()->SendAddon("objectiveclear");
+    if (hero->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteObjectiveClear(data, 0);
+        hero->GetSession()->SendPacket(&data);
+    }
     for (BonkObjective const& objective : m_objectives)
         Send(hero, objective);
 }
@@ -218,15 +227,22 @@ BonkObjective const* BonkObjectives::Get(uint32 id) const
 
 void BonkObjectives::Send(Player* hero, BonkObjective const& objective) const
 {
+    if (!hero->GetBonkPlayer()->IsAddonReady())
+        return;
     uint32 const seconds = (objective.leftMs + IN_MILLISECONDS - 1) / IN_MILLISECONDS;
-    hero->GetBonkPlayer()->SendAddon("objective~" + std::to_string(objective.id) + "~" + GetBonkObjectiveKindName(objective.kind) + "~" +
-        FormatCoordinate(objective.x) + "~" + FormatCoordinate(objective.y) + "~" + std::to_string(hero->GetMapId()) + "~" +
-        objective.label + "~" + std::to_string(seconds) + "~" + objective.icon + "~" + objective.description);
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteObjective(data, objective.id, GetBonkObjectiveKindName(objective.kind), objective.x, objective.y, hero->GetMapId(),
+        objective.label, seconds, objective.icon, objective.description);
+    hero->GetSession()->SendPacket(&data);
 }
 
 void BonkObjectives::Ping(Player* hero, BonkObjective const& objective) const
 {
-    hero->GetBonkPlayer()->SendAddon("objectiveping~" + std::to_string(objective.id));
+    if (!hero->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteObjectivePing(data, objective.id);
+    hero->GetSession()->SendPacket(&data);
 }
 
 void BonkObjectives::RaisePillar(Player* hero, BonkObjective& objective) const

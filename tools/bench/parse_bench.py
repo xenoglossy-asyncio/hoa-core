@@ -38,7 +38,13 @@ def read_log(path, since):
         marker = MARKER.match(text)
         if marker:
             windows.append((seconds, marker.group(1)))
-        elif text.startswith(BENCH_NOTICE):
+            continue
+        # BenchTest mirrors typed events into whispers to the player, so the
+        # line arrives as "To <name>: BONK~state~...".
+        whisper = re.match(r"^To \S+: (.*)$", text)
+        if whisper:
+            text = whisper.group(1)
+        if text.startswith(BENCH_NOTICE):
             bench = True
         elif text.startswith("BONK~state~"):
             parts = text.split("~")

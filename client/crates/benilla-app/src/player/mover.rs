@@ -1628,6 +1628,7 @@ mod tests {
                             None,
                             Some(SURFACE),
                             AIR_NUDGE_SPEED,
+                            false,
                         );
                     }
                     player.pos.y
@@ -1696,6 +1697,7 @@ mod tests {
                             None,
                             Some(SURFACE),
                             AIR_NUDGE_SPEED,
+                            false,
                         );
                     }
                     player.pos.y
@@ -1765,6 +1767,7 @@ mod tests {
                             None,
                             Some(SURFACE),
                             AIR_NUDGE_SPEED,
+                            false,
                         );
                     }
                     player.pos
@@ -1836,6 +1839,7 @@ mod tests {
                         None,
                         None,
                         AIR_NUDGE_SPEED,
+                        false,
                     );
                     (out.jumped, player.launch_vz)
                 })
@@ -1884,6 +1888,7 @@ mod tests {
                         None,
                         None,
                         AIR_NUDGE_SPEED,
+                        false,
                     );
                     (out.jumped, player.launch_vz)
                 };
@@ -1997,6 +2002,7 @@ mod tests {
                     Some(STRAIGHT_UP),
                     None,
                     AIR_NUDGE_SPEED,
+                    false,
                 );
                 assert!(out.knocked && out.jumped, "the toss opened an arc");
                 assert_eq!(player.horiz_vel, Vec3::ZERO, "and it is purely vertical");
@@ -2016,6 +2022,7 @@ mod tests {
                         None,
                         None,
                         AIR_NUDGE_SPEED,
+                        false,
                     );
                     nudged |= out.air_nudged;
                 }
@@ -2057,6 +2064,7 @@ mod tests {
                         None,
                         None,
                         nudge,
+                        false,
                     );
                     let out = step(
                         &mut player,
@@ -2071,6 +2079,7 @@ mod tests {
                         None,
                         None,
                         nudge,
+                        false,
                     );
                     // A second press finds the nibble set and changes nothing.
                     step(
@@ -2086,6 +2095,7 @@ mod tests {
                         None,
                         None,
                         nudge,
+                        false,
                     );
                     (out.air_nudged, player.horiz_vel)
                 })
@@ -2146,6 +2156,7 @@ mod tests {
                         Some(PUSH),
                         None,
                         AIR_NUDGE_SPEED,
+                        false,
                     );
                     (out.jumped, out.knocked, player.launch_vz, player.horiz_vel)
                 };
@@ -2247,6 +2258,7 @@ mod tests {
                         None,
                         Some(SURFACE),
                         AIR_NUDGE_SPEED,
+                        false,
                     );
                     (player.pos.y, player.vel_y)
                 };
@@ -2310,6 +2322,7 @@ mod tests {
                             None,
                             Some(SURFACE),
                             AIR_NUDGE_SPEED,
+                            false,
                         );
                         low = low.min(player.pos.y);
                     }
@@ -2503,6 +2516,7 @@ mod tests {
             None,
             None,
             AIR_NUDGE_SPEED,
+            false,
         )
     }
 

@@ -6,9 +6,9 @@ local ROW = 26
 
 local check = CreateFrame("CheckButton", "VanillaBonkXpSoundsCheck", SoundOptionsFrame, "OptionsCheckButtonTemplate")
 check:SetPoint("TOP", SoundOptionsFrameCheckButton8, "BOTTOM", 0, 6)
-getglobal(check:GetName() .. "Text"):SetText(L["Experience Pickup Sounds"])
+getglobal(check:GetName() .. "Text"):SetText(L["hoa.addon.experience_pickup_sounds"])
 getglobal(check:GetName() .. "Text"):SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
-check.tooltipText = L["Plays a coin sound when you collect experience."]
+check.tooltipText = L["hoa.addon.plays_a_coin_sound_when_you_collect_experience"]
 SoundOptionsFrame:SetHeight(SoundOptionsFrame:GetHeight() + ROW)
 
 check:SetScript("OnClick", function()

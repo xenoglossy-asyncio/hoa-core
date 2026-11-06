@@ -14,7 +14,7 @@ local STAGGER = 0.05
 local CLOSE = 0.18
 local WAIT = 1.5
 
-local shop = { slots = {}, valor = 0, rerollCost = 0, restocks = 0, seconds = 0, name = L["Zixil"], waitUntil = 0 }
+local shop = { slots = {}, valor = 0, rerollCost = 0, restocks = 0, seconds = 0, name = L["hoa.addon.zixil"], waitUntil = 0 }
 
 local function Command(text)
     SendChatMessage(".bonk vendor " .. text, "SAY")
@@ -88,15 +88,15 @@ end
 
 local Leave
 
-frame.reroll = UI.Button(frame.chrome, 160, L["Restock"], function()
+frame.reroll = UI.Button(frame.chrome, 160, L["hoa.addon.restock"], function()
     if shop.restocks > 0 and shop.valor >= shop.rerollCost then
         Send("reroll")
     end
 end)
 frame.reroll:SetHeight(24)
-ButtonTooltip(frame.reroll, L["Restock"], L["Replaces all unlocked cards. Each restock costs 50% more this visit."])
+ButtonTooltip(frame.reroll, L["hoa.addon.restock"], L["hoa.addon.replaces_all_unlocked_cards_each_restock_costs_50_more_this_"])
 
-frame.close = UI.Button(frame.chrome, 120, L["Close"], function()
+frame.close = UI.Button(frame.chrome, 120, L["hoa.addon.close"], function()
     Leave()
 end)
 frame.close:SetHeight(24)
@@ -183,13 +183,13 @@ for index = 1, SLOTS do
     card.coin:SetHeight(16)
     card.coin:SetPoint("RIGHT", card.price, "LEFT", -4, 0)
 
-    card.lock = UI.Button(card, 70, L["Lock"], function()
+    card.lock = UI.Button(card, 70, L["hoa.addon.lock"], function()
         Send("lock " .. this:GetParent().index)
     end)
     card.lock:SetPoint("BOTTOMLEFT", card, "BOTTOMLEFT", 16, 18)
-    ButtonTooltip(card.lock, L["Lock"], L["Locked cards stay through restocks and return at the same price next visit."])
+    ButtonTooltip(card.lock, L["hoa.addon.lock"], L["hoa.addon.locked_cards_stay_through_restocks_and_return_at_the_same_pr"])
 
-    card.buy = UI.Button(card, 100, L["Buy"], function()
+    card.buy = UI.Button(card, 100, L["hoa.addon.buy"], function()
         local slot = shop.slots[this:GetParent().index]
         if slot and slot.state == 0 and shop.valor >= slot.price then
             Send("buy " .. this:GetParent().index)
@@ -206,7 +206,7 @@ end
 frame.special = UI.Text(frame.chrome, 18, UI.TITLE_FONT, "OUTLINE")
 frame.special:SetPoint("BOTTOM", frame.cards[SLOTS], "TOP", 0, 2)
 frame.special:SetTextColor(1, 0.82, 0)
-frame.special:SetText(L["Special"])
+frame.special:SetText(L["hoa.addon.special"])
 
 local function EaseOut(t)
     t = 1 - t
@@ -336,17 +336,17 @@ local function LevelText(slot)
     local rarity = slot.rarity and UI.RARITY[slot.rarity]
     local rarityName = rarity and UI.RarityText(slot.rarity, rarity.name)
     if slot.kind == "c" then
-        return L["For level-ups and chests"]
+        return L["hoa.addon.for_level_ups_and_chests"]
     elseif slot.kind == "d" then
-        return rarityName and L("{1} Darkmoon Card", rarityName) or L["Darkmoon Card"]
+        return rarityName and L("hoa.addon.1_darkmoon_card", rarityName) or L["hoa.addon.darkmoon_card_2"]
     elseif slot.kind == "e" then
-        return L("{1} Evolution", UI.RarityText(4, L["Legendary"]))
+        return L("hoa.addon.1_evolution", UI.RarityText(4, L["hoa.addon.legendary"]))
     elseif slot.rank <= 1 then
-        return slot.kind == "p" and L["|cff20ff20New passive|r"] or L["|cff20ff20New spell|r"]
+        return slot.kind == "p" and L["hoa.addon.cff20ff20new_passive_r"] or L["hoa.addon.cff20ff20new_spell_r"]
     elseif slot.kind == "p" then
-        return rarityName and L("{1} Passive", rarityName) or L["Passive"]
+        return rarityName and L("hoa.addon.1_passive", rarityName) or L["hoa.addon.passive"]
     end
-    return rarityName and L("{1} Spell", rarityName) or L["Spell"]
+    return rarityName and L("hoa.addon.1_spell", rarityName) or L["hoa.addon.spell"]
 end
 
 local function CountText(slot)
@@ -354,14 +354,14 @@ local function CountText(slot)
         return ""
     elseif slot.kind == "d" then
         if slot.maxRank > 1 then
-            return L("{1}/{2} copies", slot.rank, slot.maxRank)
+            return L("hoa.addon.1_2_copies", slot.rank, slot.maxRank)
         elseif slot.rank > 1 then
-            return L("{1} copies", slot.rank)
+            return L("hoa.addon.1_copies", slot.rank)
         end
     elseif slot.maxRank > 1 then
-        return L("Rank {1}/{2}", slot.rank, slot.maxRank)
+        return L("hoa.addon.rank_1_2_2", slot.rank, slot.maxRank)
     elseif slot.rank > 1 then
-        return L("Rank {1}", slot.rank)
+        return L("hoa.addon.rank_1", slot.rank)
     end
     return ""
 end
@@ -458,7 +458,7 @@ local function FillCard(card, slot, width)
             card.coin:SetVertexColor(0.45, 0.45, 0.45)
             card.buy:Disable()
         end
-        card.lock:SetText(slot.locked and L["Locked"] or L["Lock"])
+        card.lock:SetText(slot.locked and L["hoa.addon.locked"] or L["hoa.addon.lock"])
         card.price:Show()
         card.coin:Show()
         card.lock:Show()
@@ -473,9 +473,9 @@ local function FillCard(card, slot, width)
         card.description:SetTextColor(0.55, 0.55, 0.55)
         card.glow:Hide()
         if slot.state == 1 then
-            card.status:SetText(L["|cff20ff20Bought|r"])
+            card.status:SetText(L["hoa.addon.cff20ff20bought_r"])
         else
-            card.status:SetText(L["|cff9d9d9dNo longer fits your build|r"])
+            card.status:SetText(L["hoa.addon.cff9d9d9dno_longer_fits_your_build_r"])
         end
         card.price:Hide()
         card.coin:Hide()
@@ -492,7 +492,7 @@ local function ShowShelf()
     end
 
     frame.title:SetText(shop.name)
-    frame.subtitle:SetText(L("Wandering vendor  |cff9d9d9d·|r  You have {1}{2} Valor|r", VALOR_COLOR, shop.valor))
+    frame.subtitle:SetText(L("hoa.addon.wandering_vendor_cff9d9d9d_r_you_have_1_2_valor_r", VALOR_COLOR, shop.valor))
 
     local gap, apart = 12, 36
     local width = min(200, floor((UIParent:GetWidth() - 40 - 2 * gap - apart) / SLOTS))
@@ -535,9 +535,9 @@ local function ShowShelf()
     end
 
     if shop.restocks > 0 then
-        frame.reroll:SetText(L("Restock ({1}{2} Valor|r)", shop.valor >= shop.rerollCost and VALOR_COLOR or "", shop.rerollCost))
+        frame.reroll:SetText(L("hoa.addon.restock_1_2_valor_r", shop.valor >= shop.rerollCost and VALOR_COLOR or "", shop.rerollCost))
     else
-        frame.reroll:SetText(L["No restocks"])
+        frame.reroll:SetText(L["hoa.addon.no_restocks"])
     end
     if shop.restocks > 0 and shop.valor >= shop.rerollCost then
         frame.reroll:Enable()
@@ -572,7 +572,7 @@ handlers["vendor"] = function(f)
     shop.valor = tonumber(f[2] or "") or 0
     shop.rerollCost = tonumber(f[3] or "") or 0
     shop.seconds = tonumber(f[4] or "") or 0
-    shop.name = (f[5] and f[5] ~= "") and f[5] or L["Zixil"]
+    shop.name = (f[5] and f[5] ~= "") and f[5] or L["hoa.addon.zixil"]
     shop.restocks = tonumber(f[6] or "") or 0
     shop.incoming = {}
 end
@@ -614,7 +614,26 @@ handlers["vendorclose"] = function()
     shop.slots = {}
 end
 
-handlers["start"] = HideNow
-handlers["end"] = HideNow
+UI.ListenHoa({
+    HOA_RUN_START = HideNow,
+    HOA_RUN_END = HideNow,
+})
 
-UI.Listen(handlers)
+UI.ListenHoa({
+    HOA_VENDOR_OPEN = function(open)
+        handlers["vendor"]({ false, open.coins, open.reroll_cost, open.seconds, open.name, open.restocks })
+    end,
+    HOA_VENDOR_SLOT = function(slot)
+        handlers["vslot"]({
+            false, slot.index, slot.kind, slot.rank, slot.max_rank, slot.name, slot.icon, slot.description,
+            slot.rarity, slot.locked and "1" or "0", slot.price, slot.state,
+        })
+    end,
+    HOA_VENDOR_END = function()
+        handlers["vendorend"]()
+    end,
+    HOA_VENDOR_CLOSE = function()
+        handlers["vendorclose"]()
+    end,
+})
+

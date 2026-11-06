@@ -7,7 +7,7 @@ local openAll = CreateFrame("Button", "VanillaBonkOpenAll", InboxFrame, "UIPanel
 openAll:SetWidth(90)
 openAll:SetHeight(22)
 openAll:SetPoint("CENTER", InboxFrame, "BOTTOMLEFT", 167, 100)
-openAll:SetText(L["Open All"])
+openAll:SetText(L["hoa.addon.open_all"])
 
 local function NextMailAction()
     for index = 1, GetInboxNumItems() do

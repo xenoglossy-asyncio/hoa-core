@@ -12,6 +12,7 @@ pub enum ScriptValue {
     Int(i64),
     Number(f64),
     Str(String),
+    Table(Vec<(String, ScriptValue)>),
 }
 
 impl ScriptValue {
@@ -22,6 +23,13 @@ impl ScriptValue {
             ScriptValue::Int(i) => Value::Integer(i),
             ScriptValue::Number(n) => Value::Number(n),
             ScriptValue::Str(s) => Value::String(lua.create_string(&s)?),
+            ScriptValue::Table(fields) => {
+                let table = lua.create_table()?;
+                for (key, value) in fields {
+                    table.set(key, value.into_lua(lua)?)?;
+                }
+                Value::Table(table)
+            }
         })
     }
 }
@@ -833,4 +841,23 @@ pub struct LineMeasureRequest {
     pub text: String,
     /// Cache key; pass it back verbatim.
     pub key: u64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_table_value_becomes_a_lua_table() {
+        let lua = Lua::new();
+        let value = ScriptValue::Table(vec![
+            ("elapsed_s".to_string(), ScriptValue::Int(12)),
+            ("boss_spawned".to_string(), ScriptValue::Bool(true)),
+        ])
+        .into_lua(&lua)
+        .unwrap();
+        let table = value.as_table().unwrap();
+        assert_eq!(table.get::<i64>("elapsed_s").unwrap(), 12);
+        assert!(table.get::<bool>("boss_spawned").unwrap());
+    }
 }

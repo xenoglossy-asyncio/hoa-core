@@ -21,11 +21,6 @@ namespace HordesOfAzeroth.Launcher
         const int DefaultGatePort = 3725;
         const int RequestLimit = 16 * 1024;
         static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(2);
-        static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(30);
-        static readonly TimeSpan ListMaxAge = TimeSpan.FromSeconds(3);
-        static readonly TimeSpan LobbyTimeout = TimeSpan.FromSeconds(8);
-        static readonly string LobbyUrl = ResolveLobbyUrl();
-        static readonly HttpClient LobbyClient = CreateLobbyClient();
 
         readonly GameFolder m_folder;
         readonly CoopAccounts m_accounts;
@@ -38,21 +33,16 @@ namespace HordesOfAzeroth.Launcher
         static readonly TimeSpan FinalPullWait = TimeSpan.FromSeconds(30);
         static readonly TimeSpan DrainCap = TimeSpan.FromSeconds(30);
         static readonly TimeSpan AskGrace = TimeSpan.FromSeconds(30);
-        static readonly TimeSpan LobbyQuietLimit = TimeSpan.FromSeconds(60);
         static readonly TimeSpan SpoolRetry = TimeSpan.FromSeconds(15);
         const int RefusalsBeforeEnd = 5;
         const int CoopProtocol = 2;
-        static readonly TimeSpan VpnPingWait = TimeSpan.FromSeconds(3);
         readonly CancellationTokenSource m_stop = new CancellationTokenSource();
         readonly ConcurrentDictionary<string, JoinState> m_joins = new ConcurrentDictionary<string, JoinState>();
+        readonly ConcurrentDictionary<string, DirectAsk> m_direct = new ConcurrentDictionary<string, DirectAsk>();
         readonly object m_lock = new object();
         TcpListener m_listener;
         Task m_closing = Task.CompletedTask;
         HostState m_host;
-        List<Dictionary<string, string>> m_list = new List<Dictionary<string, string>>();
-        DateTime m_listAt = DateTime.MinValue;
-        string m_listError = "";
-        bool m_listing;
 
         sealed class Member
         {
@@ -76,6 +66,19 @@ namespace HordesOfAzeroth.Launcher
             public string Best;
             public string Seconds;
             public string Punch;
+            public string Version;
+            public string Protocol;
+            public bool Direct;
+        }
+
+        sealed class DirectAsk
+        {
+            public string State = "waiting";
+            public string Reason = "";
+            public string Token = "";
+            public string User = "";
+            public string Password = "";
+            public DateTime AskedAt = DateTime.UtcNow;
         }
 
         sealed class HostState
@@ -350,7 +353,6 @@ namespace HordesOfAzeroth.Launcher
             string who = query.GetValueOrDefault("who", "");
             return (method, path) switch
             {
-                ("GET", "/lobbies") => Task.FromResult(Lobbies()),
                 ("POST", "/ask") => AskAsync(who, form),
                 ("GET", "/join") => Task.FromResult(JoinStatus(who)),
                 ("POST", "/join/cancel") => Task.FromResult(CancelAsk(who)),
@@ -367,52 +369,6 @@ namespace HordesOfAzeroth.Launcher
             };
         }
 
-        void RequireLobby()
-        {
-            if (LobbyUrl.Length == 0)
-                throw new CoopError("Co-op isn't available in this build.");
-        }
-
-        async Task<JsonNode> LobbyAsync(HttpMethod method, string path, JsonObject body = null)
-        {
-            RequireLobby();
-            using CancellationTokenSource timeout = new CancellationTokenSource(LobbyTimeout);
-            using HttpRequestMessage request = new HttpRequestMessage(method, LobbyUrl + path);
-            if (body != null)
-                request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
-            HttpResponseMessage response;
-            try
-            {
-                response = await LobbyClient.SendAsync(request, timeout.Token);
-            }
-            catch (Exception)
-            {
-                throw new CoopError("Can't connect to the co-op service. Try again later.");
-            }
-            using (response)
-            {
-                string text = await response.Content.ReadAsStringAsync();
-                JsonNode node;
-                try
-                {
-                    node = JsonNode.Parse(text);
-                }
-                catch (Exception)
-                {
-                    throw new CoopError("The co-op service sent an invalid response.");
-                }
-                if (!response.IsSuccessStatusCode)
-                    throw new LobbyRefusal((int)response.StatusCode, node?["error"]?.GetValue<string>() ?? "The co-op service refused the request.", node);
-                return node;
-            }
-        }
-
-        static HttpClient CreateLobbyClient()
-        {
-            HttpClient client = new HttpClient(new SocketsHttpHandler { ConnectCallback = ConnectPreferringIPv4Async }) { Timeout = Timeout.InfiniteTimeSpan };
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("HordesOfAzerothLauncher");
-            return client;
-        }
 
         internal static async ValueTask<Stream> ConnectPreferringIPv4Async(SocketsHttpConnectionContext context, CancellationToken cancel)
         {
@@ -435,189 +391,6 @@ namespace HordesOfAzeroth.Launcher
                 }
             }
             throw last;
-        }
-
-        async Task<CoopPunch> StartPunchAsync()
-        {
-            try
-            {
-                JsonNode answer = await LobbyAsync(HttpMethod.Get, "/punch");
-                return await CoopPunch.StartAsync(answer["address"]?.ToString());
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        static readonly string[] VpnAdapterWords = { "Radmin", "Hamachi", "ZeroTier", "Tailscale", "WireGuard", "OpenVPN", "TAP-Windows", "Wintun" };
-
-        static bool IsVpnRange(IPAddress address)
-        {
-            byte[] bytes = address.GetAddressBytes();
-            return bytes[0] == 25 || bytes[0] == 26 || (bytes[0] == 100 && (bytes[1] & 0xC0) == 64);
-        }
-
-        static List<string> VpnAddresses()
-        {
-            List<string> found = new List<string>();
-            try
-            {
-                foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
-                {
-                    if (adapter.OperationalStatus != OperationalStatus.Up)
-                        continue;
-                    bool named = VpnAdapterWords.Any(word => adapter.Description.Contains(word, StringComparison.OrdinalIgnoreCase) ||
-                        adapter.Name.Contains(word, StringComparison.OrdinalIgnoreCase));
-                    foreach (UnicastIPAddressInformation info in adapter.GetIPProperties().UnicastAddresses)
-                        if (info.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(info.Address) && (named || IsVpnRange(info.Address)))
-                            found.Add(info.Address.ToString());
-                }
-            }
-            catch (NetworkInformationException)
-            {
-            }
-            return found.Distinct().Take(4).ToList();
-        }
-
-        static async Task<string> FirstVpnGateAsync(JsonNode details)
-        {
-            if (details?["vpn"] is not JsonArray addresses || addresses.Count == 0 || VpnAddresses().Count == 0)
-                return null;
-            int port = int.TryParse(details?["vpn_port"]?.ToString(), out int value) ? value : 0;
-            if (port <= 0)
-                return null;
-            List<Task<string>> tries = addresses.Select(node => node?.ToString()).Where(text => IPAddress.TryParse(text, out _))
-                .Select(text => PingGateAsync(text, port)).ToList();
-            while (tries.Count > 0)
-            {
-                Task<string> done = await Task.WhenAny(tries);
-                tries.Remove(done);
-                if (done.Result != null)
-                    return done.Result;
-            }
-            return null;
-        }
-
-        static async Task<string> PingGateAsync(string address, int port)
-        {
-            try
-            {
-                using TcpClient client = new TcpClient(AddressFamily.InterNetwork);
-                using CancellationTokenSource timeout = new CancellationTokenSource(VpnPingWait);
-                await client.ConnectAsync(address, port, timeout.Token);
-                NetworkStream stream = client.GetStream();
-                await stream.WriteAsync(Encoding.ASCII.GetBytes("HOA1 PING\n"), timeout.Token);
-                return await CoopGate.ReadLineAsync(stream, VpnPingWait) == "HOA1 PONG" ? address + ":" + port : null;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        static string LocalAddress()
-        {
-            try
-            {
-                using Socket probe = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                probe.Connect("1.1.1.1", 53);
-                return ((IPEndPoint)probe.LocalEndPoint).Address.ToString();
-            }
-            catch (SocketException)
-            {
-                return "";
-            }
-        }
-
-        sealed class LobbyRefusal : Exception
-        {
-            public int Status { get; }
-            public JsonNode Body { get; }
-
-            public LobbyRefusal(int status, string message, JsonNode body) : base(message)
-            {
-                Status = status;
-                Body = body;
-            }
-        }
-
-        string Lobbies()
-        {
-            bool refresh;
-            lock (m_lock)
-            {
-                refresh = !m_listing && DateTime.UtcNow - m_listAt > ListMaxAge;
-                if (refresh)
-                    m_listing = true;
-            }
-            if (refresh)
-                _ = RefreshListAsync();
-            StringBuilder text = new StringBuilder();
-            lock (m_lock)
-            {
-                if (m_listAt == DateTime.MinValue && m_listError.Length == 0)
-                    text.Append(Line("loading"));
-                if (m_listError.Length > 0)
-                    text.Append(Line("error", m_listError));
-                foreach (Dictionary<string, string> lobby in m_list)
-                    text.Append(Line("lobby", lobby["id"], lobby["name"], lobby["host"], lobby["host_class"], lobby["classes"], lobby["difficulty"],
-                        lobby["players"], lobby["max"], lobby["locked"], lobby["mastery_limit"], lobby["members"], lobby["same_class"], lobby["min_mythic"], lobby["pause"], lobby["xp"], lobby["playing"], lobby["lan"]));
-            }
-            return text.ToString();
-        }
-
-        async Task RefreshListAsync()
-        {
-            try
-            {
-                JsonNode answer = await LobbyAsync(HttpMethod.Get, "/lobbies?version=" + Uri.EscapeDataString(Version));
-                List<Dictionary<string, string>> list = new List<Dictionary<string, string>>();
-                foreach (JsonNode lobby in answer["lobbies"]?.AsArray() ?? new JsonArray())
-                {
-                    string members = string.Join(";", (lobby["members"]?.AsArray() ?? new JsonArray())
-                        .Select(m => $"{m?["name"]}:{m?["class"]}:{m?["mastery"]}"));
-                    list.Add(new Dictionary<string, string>
-                    {
-                        ["id"] = lobby["id"]?.ToString() ?? "",
-                        ["name"] = lobby["name"]?.ToString() ?? "",
-                        ["host"] = lobby["host"]?.ToString() ?? "",
-                        ["host_class"] = lobby["host_class"]?.ToString() ?? "",
-                        ["classes"] = string.Join(",", (lobby["classes"]?.AsArray() ?? new JsonArray()).Select(c => c?.ToString())),
-                        ["difficulty"] = lobby["difficulty"]?.ToString() ?? "",
-                        ["players"] = lobby["players"]?.ToString() ?? "1",
-                        ["max"] = lobby["max"]?.ToString() ?? "4",
-                        ["locked"] = lobby["locked"]?.GetValue<bool>() == true ? "1" : "0",
-                        ["mastery_limit"] = lobby["mastery_limit"]?.ToString() ?? "0",
-                        ["members"] = members,
-                        ["same_class"] = lobby["same_class"]?.GetValue<bool>() == true ? "1" : "0",
-                        ["min_mythic"] = lobby["min_mythic"]?.ToString() ?? "0",
-                        ["pause"] = lobby["pause"]?.GetValue<bool>() == false ? "0" : "1",
-                        ["xp"] = lobby["xp"]?.GetValue<bool>() == false ? "0" : "1",
-                        ["playing"] = lobby["playing"]?.ToString() ?? "",
-                        ["lan"] = lobby["lan"]?.GetValue<bool>() == true ? "1" : "0",
-                    });
-                }
-                lock (m_lock)
-                {
-                    m_list = list;
-                    m_listError = "";
-                    m_listAt = DateTime.UtcNow;
-                }
-            }
-            catch (Exception error)
-            {
-                lock (m_lock)
-                {
-                    m_listError = error.Message;
-                    m_listAt = DateTime.UtcNow;
-                }
-            }
-            finally
-            {
-                lock (m_lock)
-                    m_listing = false;
-            }
         }
 
         async Task RequireRegularAccountAsync(Dictionary<string, string> form, string doing)
@@ -646,11 +419,20 @@ namespace HordesOfAzeroth.Launcher
 
         async Task SendAskAsync(JoinState join, Dictionary<string, string> form)
         {
+            string input = form.GetValueOrDefault("address", "").Trim();
+            string[] parts = input.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            string address = parts.Length > 0 ? NormalizeAddress(parts[0]) : "";
+            if (address.Length == 0)
+            {
+                FailJoin(join, "Enter the host's address as ip:port.");
+                return;
+            }
+            string password = form.GetValueOrDefault("password", "");
+            if (parts.Length > 1)
+                password = parts[1];
             JsonObject body = new JsonObject
             {
-                ["id"] = form.GetValueOrDefault("id", ""),
-                ["code"] = form.GetValueOrDefault("code", ""),
-                ["password"] = form.GetValueOrDefault("password", ""),
+                ["password"] = password,
                 ["name"] = form.GetValueOrDefault("name", ""),
                 ["class"] = form.GetValueOrDefault("class", ""),
                 ["race"] = form.GetValueOrDefault("race", ""),
@@ -662,27 +444,29 @@ namespace HordesOfAzeroth.Launcher
             try
             {
                 await RequireRegularAccountAsync(form, "Joining a co-op game");
-                CoopPunch punch = await StartPunchAsync();
-                if (join.Cancelled)
+                string encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(body.ToJsonString()));
+                string answer = await DirectCallAsync(address, "ASK " + encoded, TimeSpan.FromSeconds(10));
+                if (answer.StartsWith("HOA1 WAIT ", StringComparison.Ordinal))
                 {
-                    punch?.Dispose();
+                    join.Address = address;
+                    join.Direct = true;
+                    join.Lobby = address;
+                    join.Ask = answer.Substring("HOA1 WAIT ".Length).Trim();
+                    join.Seconds = "30";
+                    join.AskedAt = DateTime.UtcNow;
+                    join.State = "waiting";
+                    if (join.Cancelled)
+                    {
+                        await CancelDirectAsync(join);
+                        return;
+                    }
+                    _ = PollDirectAsync(join);
                     return;
                 }
-                join.Punch = punch;
-                body["punch"] = punch?.PublicEndPoint?.ToString() ?? "";
-                JsonNode answer = await LobbyAsync(HttpMethod.Post, "/ask", body);
-                join.Ask = answer["ask"]?.ToString();
-                if (join.Cancelled)
-                {
-                    join.EndNetwork();
-                    await CancelAtLobbyAsync(join);
-                    return;
-                }
-                join.Seconds = answer["seconds"]?.ToString() ?? "30";
-                join.Lobby = answer["lobby"]?["name"]?.ToString() ?? "";
-                join.AskedAt = DateTime.UtcNow;
-                join.State = "waiting";
-                _ = PollAskAsync(join);
+                string reason = answer.StartsWith("HOA1 DECLINE ", StringComparison.Ordinal)
+                    ? answer.Substring("HOA1 DECLINE ".Length)
+                    : "The host did not answer.";
+                FailJoin(join, reason, "declined");
             }
             catch (Exception error)
             {
@@ -690,13 +474,53 @@ namespace HordesOfAzeroth.Launcher
             }
         }
 
-        async Task CancelAtLobbyAsync(JoinState join)
+        static string NormalizeAddress(string text)
         {
-            if (join.Ask == null)
+            text = (text ?? "").Trim();
+            if (text.StartsWith("hoa://", StringComparison.OrdinalIgnoreCase))
+                text = text.Substring("hoa://".Length);
+            if (text.Length == 0)
+                return "";
+            return text.Contains(':') ? text : text + ":" + DefaultGatePort;
+        }
+
+        static async Task<string> DirectCallAsync(string address, string command, TimeSpan wait)
+        {
+            int split = address.LastIndexOf(':');
+            if (split <= 0 || !int.TryParse(address.Substring(split + 1), out int port) || port <= 0 || port > 65535)
+                throw new CoopError("Enter the host's address as ip:port.");
+            string host = address.Substring(0, split).Trim('[', ']');
+            using TcpClient client = new TcpClient(host.Contains(':') ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork);
+            using CancellationTokenSource timeout = new CancellationTokenSource(wait);
+            try
+            {
+                await client.ConnectAsync(host, port, timeout.Token);
+                NetworkStream stream = client.GetStream();
+                await stream.WriteAsync(Encoding.ASCII.GetBytes("HOA1 " + command + "\n"), timeout.Token);
+                StringBuilder line = new StringBuilder();
+                byte[] one = new byte[1];
+                while (line.Length < 2048)
+                {
+                    int read = await stream.ReadAsync(one, timeout.Token);
+                    if (read == 0 || one[0] == (byte)'\n')
+                        break;
+                    line.Append((char)one[0]);
+                }
+                return line.ToString().TrimEnd('\r');
+            }
+            catch (OperationCanceledException)
+            {
+                throw new CoopError("The host did not answer.");
+            }
+        }
+
+        async Task CancelDirectAsync(JoinState join)
+        {
+            if (string.IsNullOrEmpty(join.Ask) || string.IsNullOrEmpty(join.Address))
                 return;
             try
             {
-                await LobbyAsync(HttpMethod.Post, "/ask/cancel", new JsonObject { ["ask"] = join.Ask });
+                await DirectCallAsync(join.Address, "CANCEL " + join.Ask, TimeSpan.FromSeconds(5));
             }
             catch (Exception)
             {
@@ -720,120 +544,50 @@ namespace HordesOfAzeroth.Launcher
             join.State = state;
         }
 
-        async Task PollAskAsync(JoinState join)
+        async Task PollDirectAsync(JoinState join)
         {
-            DateTime lastHeard = DateTime.UtcNow;
-            TimeSpan answerWait = TimeSpan.FromSeconds(int.TryParse(join.Seconds, out int seconds) ? seconds : 30) + AskGrace;
+            DateTime until = DateTime.UtcNow + TimeSpan.FromSeconds(30) + AskGrace;
             while (join.State == "waiting" && !join.Cancelled && !m_stop.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1.5));
                 if (join.State != "waiting" || join.Cancelled)
                     return;
-                if (DateTime.UtcNow - lastHeard > LobbyQuietLimit)
-                {
-                    FailJoin(join, "Can't connect to the co-op service. Try again later.");
-                    return;
-                }
-                if (DateTime.UtcNow - join.AskedAt > answerWait)
+                if (DateTime.UtcNow > until)
                 {
                     FailJoin(join, "The host didn't respond.", "ended");
-                    _ = CancelAtLobbyAsync(join);
+                    _ = CancelDirectAsync(join);
                     return;
                 }
-                JsonNode answer;
+                string answer;
                 try
                 {
-                    answer = await LobbyAsync(HttpMethod.Post, "/ask/state", new JsonObject { ["ask"] = join.Ask });
-                    lastHeard = DateTime.UtcNow;
-                }
-                catch (LobbyRefusal refusal) when (refusal.Status == 404)
-                {
-                    FailJoin(join, "The join request expired. Ask again.", "ended");
-                    return;
+                    answer = await DirectCallAsync(join.Address, "POLL " + join.Ask, TimeSpan.FromSeconds(8));
                 }
                 catch (Exception)
                 {
                     continue;
                 }
-                string state = answer["state"]?.ToString() ?? "gone";
-                if (state == "accepted")
+                if (answer.StartsWith("HOA1 ACCEPT ", StringComparison.Ordinal))
                 {
-                    await AcceptedAsync(join, answer["join"]);
-                    return;
-                }
-                if (state != "waiting")
-                {
-                    FailJoin(join, state switch
+                    string[] parts = answer.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 5)
                     {
-                        "declined" => answer["reason"]?.ToString() ?? "",
-                        "expired" => "The host didn't respond.",
-                        "gone" => "The host closed the lobby.",
-                        _ => "",
-                    }, state == "declined" ? "declined" : "ended");
+                        FailJoin(join, "The host's answer could not be read.");
+                        return;
+                    }
+                    join.Token = parts[2];
+                    join.User = parts[3];
+                    join.Password = string.Join(' ', parts.Skip(4));
+                    join.State = "transferring";
+                    await BringCharacterAsync(join);
+                    return;
+                }
+                if (answer.StartsWith("HOA1 DECLINE ", StringComparison.Ordinal))
+                {
+                    FailJoin(join, answer.Substring("HOA1 DECLINE ".Length), "declined");
                     return;
                 }
             }
-        }
-
-        async Task AcceptedAsync(JoinState join, JsonNode details)
-        {
-            if (join.Cancelled)
-            {
-                join.EndNetwork();
-                return;
-            }
-            try
-            {
-                string address = details?["address"]?.ToString() ?? "";
-                if (address.Contains(':'))
-                    address = "[" + address + "]";
-                join.Address = address + ":" + details?["port"];
-                join.Token = details?["token"]?.ToString() ?? "";
-                join.User = details?["user"]?.ToString() ?? "";
-                join.Password = details?["password"]?.ToString() ?? "";
-                join.State = "transferring";
-                string vpnGate = await FirstVpnGateAsync(details);
-                if (vpnGate != null)
-                {
-                    join.Address = vpnGate;
-                    join.EndNetwork();
-                }
-                else if (details?["vpn_only"]?.ToString() == "true")
-                {
-                    FailJoin(join, "Couldn't connect to the host: they can only be reached over their VPN. Join the same VPN network as the host, such as Radmin VPN, ZeroTier or Hamachi, and try again.");
-                    return;
-                }
-                else if (!await OpenTunnelAsync(join, details))
-                {
-                    FailJoin(join, HostUnreachable);
-                    return;
-                }
-                await BringCharacterAsync(join);
-            }
-            catch (Exception error)
-            {
-                FailJoin(join, JoinFailureText(error));
-            }
-        }
-
-        static async Task<bool> OpenTunnelAsync(JoinState join, JsonNode details)
-        {
-            string session = details?["session"]?.ToString() ?? "";
-            if (join.Punch == null || !CoopPunch.TryParseEndPoint(details?["punch"]?.ToString(), out IPEndPoint host) ||
-                !ulong.TryParse(session, System.Globalization.NumberStyles.HexNumber, null, out ulong id))
-            {
-                join.EndNetwork();
-                return true;
-            }
-            CoopLink link = join.Punch.Open(id, host);
-            if (await Task.WhenAny(link.Connected, Task.Delay(TimeSpan.FromSeconds(15))) != link.Connected || !link.Connected.Result)
-            {
-                link.Close();
-                return false;
-            }
-            join.Tunnel = new CoopTunnel(link);
-            join.Address = join.Tunnel.Address;
-            return true;
         }
 
         string JoinStatus(string who)
@@ -866,7 +620,7 @@ namespace HordesOfAzeroth.Launcher
             if (join.State == "waiting")
             {
                 join.State = "cancelled";
-                _ = CancelAtLobbyAsync(join);
+                _ = CancelDirectAsync(join);
             }
             return Line("state", "none");
         }
@@ -1259,7 +1013,6 @@ namespace HordesOfAzeroth.Launcher
             m_transfer.ForgetJoining(member.GuestUser);
             await m_transfer.LogOutGuestAsync(member.GuestUser);
             host.Gate.CutLinks(token);
-            _ = HeartbeatQuietlyAsync(host);
         }
 
         void DismissGuest(HostState host, Member member, string reason)
@@ -1459,14 +1212,12 @@ namespace HordesOfAzeroth.Launcher
                 lock (m_lock)
                     host.Members.Remove(member);
                 DismissGuest(host, member, "failed");
-                _ = HeartbeatQuietlyAsync(host);
                 throw;
             }
         }
 
         string StartHosting(Dictionary<string, string> form)
         {
-            RequireLobby();
             HostState host = new HostState { Settings = form };
             host.Members.Add(new Member { Name = form.GetValueOrDefault("host_name", ""), Class = form.GetValueOrDefault("host_class", ""), Mastery = form.GetValueOrDefault("mastery", "0") });
             Task closing;
@@ -1529,6 +1280,9 @@ namespace HordesOfAzeroth.Launcher
                     Answers = m_transfer.AppendAnswers,
                     Leave = token => GuestLeftAsync(host, token),
                     IsOffline = user => !m_transfer.IsGuestOnline(user),
+                    DirectAsk = body => DirectAskAsync(host, body),
+                    DirectPoll = id => DirectPoll(id),
+                    DirectCancel = id => DirectCancel(host, id),
                 };
                 host.Gate.Start(port);
             }
@@ -1542,76 +1296,10 @@ namespace HordesOfAzeroth.Launcher
                 host.Ports = new CoopPorts();
                 await host.Ports.OpenAsync(port);
             }
-            host.Punch = await StartPunchAsync();
             if (host.Stop.IsCancellationRequested)
                 return;
-            try
-            {
-                await RegisterAsync(host);
-                if (host.Stop.IsCancellationRequested)
-                    return;
-                host.State = "hosting";
-                await HeartbeatAsync(host);
-                _ = HostLoopAsync(host);
-            }
-            catch (LobbyRefusal refusal) when (refusal.Status == 409 && refusal.Message == "unreachable")
-            {
-                Fail(host, $"Other players can't reach you on TCP port {port}. Forward that port on your router to this PC and allow the launcher through Windows Firewall, then host again. If your internet provider shares your address, hosting won't work. You can still join other games.");
-            }
-            catch (Exception error)
-            {
-                Fail(host, error.Message);
-            }
-        }
-
-        async Task RegisterAsync(HostState host)
-        {
-            Dictionary<string, string> s = host.Settings;
-            int port = host.Gate.Port;
-            JsonObject body = new JsonObject
-            {
-                ["port"] = port,
-                ["address"] = s.GetValueOrDefault("address", "").Trim(),
-                ["local"] = LocalAddress(),
-                ["vpn"] = new JsonArray(VpnAddresses().Select(address => (JsonNode)address).ToArray()),
-                ["punch"] = host.Punch?.PublicEndPoint?.ToString() ?? "",
-                ["name"] = s.GetValueOrDefault("name", ""),
-                ["host_name"] = s.GetValueOrDefault("host_name", ""),
-                ["host_class"] = s.GetValueOrDefault("host_class", ""),
-                ["password"] = s.GetValueOrDefault("password", ""),
-                ["listed"] = s.GetValueOrDefault("listed", "1") == "1",
-                ["difficulty"] = s.GetValueOrDefault("difficulty", "Normal"),
-                ["max"] = int.TryParse(s.GetValueOrDefault("max"), out int max) ? max : 4,
-                ["mastery_limit"] = int.TryParse(s.GetValueOrDefault("mastery_limit"), out int limit) ? limit : 0,
-                ["same_class"] = s.GetValueOrDefault("same_class", "0") == "1",
-                ["pause"] = s.GetValueOrDefault("pause", "1") != "0",
-                ["xp"] = s.GetValueOrDefault("xp", "1") != "0",
-                ["min_mythic"] = int.TryParse(s.GetValueOrDefault("min_mythic"), out int minMythic) ? minMythic : 0,
-                ["version"] = Version,
-                ["protocol"] = CoopProtocol,
-            };
-            if (host.Id != null)
-            {
-                body["resume_id"] = host.Id;
-                body["resume_secret"] = host.Secret;
-                body["resume_code"] = host.Code;
-            }
-            JsonNode answer = await LobbyAsync(HttpMethod.Post, "/host", body);
-            host.Id = answer["id"]?.ToString();
-            host.Secret = answer["secret"]?.ToString();
-            host.Code = answer["code"]?.ToString() ?? "";
-            host.Mode = answer["mode"]?.ToString() ?? "";
-            if (host.Mode != "punch" && host.State != "hosting")
-            {
-                host.Punch?.Dispose();
-                host.Punch = null;
-            }
-            host.Message = host.Mode switch
-            {
-                "lan" => $"Only players on your own network can join. To let others join, forward TCP port {port} on your router to this PC, or enter a public address when you host.",
-                "vpn" => $"Only players on your VPN can join. To let others join, forward TCP port {port} on your router to this PC.",
-                _ => "",
-            };
+            host.State = "hosting";
+            _ = HostLoopAsync(host);
         }
 
         void Fail(HostState host, string message)
@@ -1626,8 +1314,6 @@ namespace HordesOfAzeroth.Launcher
 
         async Task HostLoopAsync(HostState host)
         {
-            DateTime lastBeat = DateTime.UtcNow;
-            DateTime lastHeard = DateTime.UtcNow;
             while (!host.Stop.IsCancellationRequested && !m_stop.IsCancellationRequested)
             {
                 try
@@ -1638,89 +1324,110 @@ namespace HordesOfAzeroth.Launcher
                 {
                     return;
                 }
-                bool changed = DropSilentGuests(host) | DropRemovedGuests(host);
-                try
+                DropSilentGuests(host);
+                DropRemovedGuests(host);
+                ExpireDirectAsks(host);
+                if (host.Settings.GetValueOrDefault("auto") == "1")
                 {
-                    JsonNode answer = await LobbyAsync(HttpMethod.Post, "/requests", new JsonObject { ["id"] = host.Id, ["secret"] = host.Secret });
-                    lastHeard = DateTime.UtcNow;
-                    host.Warning = "";
-                    List<Request> requests = (answer["requests"]?.AsArray() ?? new JsonArray()).Select(r => new Request
-                    {
-                        Ask = r?["ask"]?.ToString(),
-                        Name = r?["name"]?.ToString(),
-                        Class = r?["class"]?.ToString(),
-                        Race = r?["race"]?.ToString(),
-                        Mastery = r?["mastery"]?.ToString(),
-                        Best = r?["best"]?.ToString(),
-                        Seconds = r?["seconds"]?.ToString(),
-                        Punch = r?["punch"]?.ToString() ?? "",
-                    }).Where(r => !host.Answered.Contains(r.Ask)).ToList();
+                    List<Request> requests;
                     lock (m_lock)
-                        host.Requests = requests;
-                    if (host.Settings.GetValueOrDefault("auto") == "1")
-                        foreach (Request request in requests)
+                        requests = host.Requests.Where(request => request.Direct).ToList();
+                    foreach (Request request in requests)
+                    {
+                        try
+                        {
                             Answer(request.Ask, true);
-                    if (changed || DateTime.UtcNow - lastBeat > HeartbeatInterval || SettingsText() != host.SentSettings)
-                    {
-                        await HeartbeatAsync(host);
-                        lastBeat = DateTime.UtcNow;
+                        }
+                        catch (CoopError)
+                        {
+                        }
                     }
                 }
-                catch (LobbyRefusal refusal) when (refusal.Status == 404)
-                {
-                    try
-                    {
-                        await RegisterAsync(host);
-                        await HeartbeatAsync(host);
-                        lastBeat = lastHeard = DateTime.UtcNow;
-                        host.Warning = "";
-                        Log("Co-op: the lobby forgot this game; listed it again");
-                    }
-                    catch (Exception error)
-                    {
-                        Log("Co-op: listing the game again failed: " + error.Message);
-                    }
-                }
-                catch (Exception)
-                {
-                }
-                if (DateTime.UtcNow - lastHeard > LobbyQuietLimit)
-                    host.Warning = "Can't reach the co-op service. Players in your game keep playing, but new players can't find or join it until it's back.";
             }
         }
 
-        string SettingsText() => string.Join("|", m_transfer.ReadHostSettings().OrderBy(pair => pair.Key).Select(pair => pair.Key + "=" + pair.Value));
-
-        async Task HeartbeatQuietlyAsync(HostState host)
+        void ExpireDirectAsks(HostState host)
         {
+            DateTime now = DateTime.UtcNow;
+            foreach (KeyValuePair<string, DirectAsk> pair in m_direct)
+            {
+                if (pair.Value.State == "waiting" && now - pair.Value.AskedAt > AdmissionLimit)
+                {
+                    pair.Value.State = "declined";
+                    pair.Value.Reason = "The host didn't respond.";
+                    lock (m_lock)
+                        host.Requests.RemoveAll(request => request.Ask == pair.Key);
+                }
+                else if (pair.Value.State != "waiting" && now - pair.Value.AskedAt > CoopGate.CollectWindow)
+                    m_direct.TryRemove(pair.Key, out _);
+            }
+        }
+
+        async Task<string> DirectAskAsync(HostState host, string encoded)
+        {
+            JsonNode body;
             try
             {
-                await HeartbeatAsync(host);
+                body = JsonNode.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(encoded)));
             }
             catch (Exception)
             {
+                return "HOA1 DECLINE The join request could not be read.";
             }
+            if (host.State != "hosting" || host.Stop.IsCancellationRequested)
+                return "HOA1 DECLINE The host is not accepting requests.";
+            string version = body?["version"]?.ToString() ?? "";
+            string protocol = body?["protocol"]?.ToString() ?? "";
+            if (version != Version || protocol != CoopProtocol.ToString())
+                return "HOA1 DECLINE Version mismatch: that game runs a different version of Hordes of Azeroth.";
+            string password = body?["password"]?.ToString() ?? "";
+            if (host.Settings.GetValueOrDefault("password", "") != password)
+                return "HOA1 DECLINE Wrong password.";
+            int max = int.TryParse(host.Settings.GetValueOrDefault("max"), out int limit) ? limit : 4;
+            int members;
+            lock (m_lock)
+                members = host.Members.Count;
+            if (members >= max)
+                return "HOA1 DECLINE That party is full.";
+            string ask = Convert.ToHexString(RandomNumberGenerator.GetBytes(8)).ToLowerInvariant();
+            m_direct[ask] = new DirectAsk();
+            Request request = new Request
+            {
+                Ask = ask,
+                Name = body?["name"]?.ToString() ?? "",
+                Class = body?["class"]?.ToString() ?? "",
+                Race = body?["race"]?.ToString() ?? "",
+                Mastery = body?["mastery"]?.ToString() ?? "0",
+                Best = body?["best"]?.ToString() ?? "0",
+                Seconds = "30",
+                Version = version,
+                Protocol = protocol,
+                Direct = true,
+            };
+            lock (m_lock)
+                host.Requests.Add(request);
+            return "HOA1 WAIT " + ask;
         }
 
-        Task HeartbeatAsync(HostState host)
+        string DirectPoll(string ask)
         {
-            JsonArray members = new JsonArray();
-            lock (m_lock)
-                foreach (Member member in host.Members)
-                    members.Add(new JsonObject { ["name"] = member.Name, ["class"] = member.Class, ["mastery"] = int.TryParse(member.Mastery, out int m) ? m : 0 });
-            Dictionary<string, string> settings = m_transfer.ReadHostSettings();
-            host.SentSettings = SettingsText();
-            return LobbyAsync(HttpMethod.Post, "/heartbeat", new JsonObject
+            if (!m_direct.TryGetValue(ask, out DirectAsk direct))
+                return "HOA1 DECLINE The join request expired.";
+            return direct.State switch
             {
-                ["id"] = host.Id,
-                ["secret"] = host.Secret,
-                ["members"] = members,
-                ["pause"] = settings.GetValueOrDefault("pause", "1") != "0",
-                ["xp"] = settings.GetValueOrDefault("xp", "1") != "0",
-                ["playing"] = settings.GetValueOrDefault("playing", ""),
-                ["punch"] = host.Punch?.PublicEndPoint?.ToString() ?? "",
-            });
+                "accepted" => $"HOA1 ACCEPT {direct.Token} {direct.User} {direct.Password}",
+                "declined" => "HOA1 DECLINE " + direct.Reason,
+                _ => "HOA1 WAIT 30",
+            };
         }
+
+        void DirectCancel(HostState host, string ask)
+        {
+            m_direct.TryRemove(ask, out _);
+            lock (m_lock)
+                host.Requests.RemoveAll(request => request.Ask == ask);
+        }
+
 
         string Answer(string ask, bool accept)
         {
@@ -1754,46 +1461,94 @@ namespace HordesOfAzeroth.Launcher
 
         async Task AnswerAsync(HostState host, Request request, bool accept)
         {
-            JsonObject body = new JsonObject { ["id"] = host.Id, ["secret"] = host.Secret, ["ask"] = request.Ask, ["accept"] = accept };
+            if (!m_direct.TryGetValue(request.Ask, out DirectAsk ask))
+                return;
+            if (!accept)
+            {
+                ask.State = "declined";
+                ask.Reason = "The host declined your request.";
+                return;
+            }
             Member member = null;
-            if (accept)
+            try
             {
                 CoopLogin login = await m_accounts.CreateAsync();
                 string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
                 host.Gate.Allow(token, login.User);
-                body["token"] = token;
-                body["user"] = login.User;
-                body["password"] = login.Password;
-                if (host.Punch != null && CoopPunch.TryParseEndPoint(request.Punch, out IPEndPoint guest))
-                {
-                    ulong session = CoopPunch.NewSession();
-                    CoopLink link = host.Punch.Open(session, guest);
-                    int gatePort = host.Gate.Port;
-                    link.StreamOpened = id => CoopLinkStream.ToGate(link, id, gatePort);
-                    body["session"] = session.ToString("X16");
-                }
                 member = new Member { Name = request.Name, Class = request.Class, Mastery = request.Mastery, Token = token, GuestUser = login.User };
                 lock (m_lock)
                     host.Members.Add(member);
                 m_transfer.NoteJoining(login.User, request.Name);
+                ask.Token = token;
+                ask.User = login.User;
+                ask.Password = login.Password;
+                ask.State = "accepted";
             }
-            try
+            catch (Exception)
             {
-                await LobbyAsync(HttpMethod.Post, "/answer", body);
-            }
-            catch (Exception) when (member != null)
-            {
-                lock (m_lock)
-                    host.Members.Remove(member);
-                DismissGuest(host, member, "failed");
+                if (member != null)
+                {
+                    lock (m_lock)
+                        host.Members.Remove(member);
+                    DismissGuest(host, member, "failed");
+                }
+                ask.State = "declined";
+                ask.Reason = "The host couldn't create a guest account.";
                 throw;
             }
-            if (accept)
-                await HeartbeatQuietlyAsync(host);
         }
 
-        string HostStatus()
+        /// Every usable IPv4 address, LAN addresses first, so the host can show more than one
+        /// choice when a VPN or proxy owns the default route.
+        static List<string> LocalAddresses()
         {
+            List<string> privateFirst = new List<string>();
+            List<string> others = new List<string>();
+            try
+            {
+                foreach (NetworkInterface network in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (network.OperationalStatus != OperationalStatus.Up ||
+                        network.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                        continue;
+                    foreach (UnicastIPAddressInformation unicast in network.GetIPProperties().UnicastAddresses)
+                    {
+                        IPAddress address = unicast.Address;
+                        if (address.AddressFamily != AddressFamily.InterNetwork)
+                            continue;
+                        byte[] bytes = address.GetAddressBytes();
+                        // 198.18.0.0/15 is the proxy/benchmark range, never a LAN peer.
+                        if (bytes[0] == 198 && (bytes[1] == 18 || bytes[1] == 19))
+                            continue;
+                        if (address.ToString().StartsWith("169.254.", StringComparison.Ordinal))
+                            continue;
+                        bool isPrivate = bytes[0] == 10 ||
+                            (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
+                            (bytes[0] == 192 && bytes[1] == 168);
+                        (isPrivate ? privateFirst : others).Add(address.ToString());
+                    }
+                }
+            }
+            catch (NetworkInformationException)
+            {
+            }
+            List<string> result = privateFirst.Concat(others).Distinct().ToList();
+            if (result.Count == 0)
+            {
+                try
+                {
+                    using Socket probe = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    probe.Connect("1.1.1.1", 53);
+                    result.Add(((IPEndPoint)probe.LocalEndPoint).Address.ToString());
+                }
+                catch (SocketException)
+                {
+                }
+            }
+            return result;
+        }
+
+        string HostStatus()        {
             lock (m_lock)
             {
                 if (m_host == null)
@@ -1803,6 +1558,19 @@ namespace HordesOfAzeroth.Launcher
                 text.Append(Line("state", m_host.State, CoopText.Localize(message)));
                 text.Append(Line("game", m_host.Settings.GetValueOrDefault("name", ""), m_host.Code, m_host.Settings.GetValueOrDefault("max", "4"),
                     m_host.Settings.GetValueOrDefault("difficulty", "Normal")));
+                if (m_host.Gate != null)
+                {
+                    string address = m_host.Settings.GetValueOrDefault("address", "").Trim();
+                    if (address.Length == 0)
+                    {
+                        List<string> addresses = LocalAddresses();
+                        address = string.Join(", ", addresses.Select(item => item + ":" + m_host.Gate.Port));
+                    }
+                    else if (!address.Contains(':'))
+                        address += ":" + m_host.Gate.Port;
+                    if (address.Length > 0)
+                        text.Append(Line("address", address));
+                }
                 foreach (Member member in m_host.Members)
                     text.Append(Line("member", member.Name, member.Class, member.Mastery));
                 foreach (Request request in m_host.Requests)
@@ -1827,6 +1595,8 @@ namespace HordesOfAzeroth.Launcher
             catch (Exception)
             {
             }
+            host.Answered.Clear();
+            m_direct.Clear();
             m_transfer.NoteSameClass(false);
             m_transfer.ClearHostSettings();
             try
@@ -1846,16 +1616,6 @@ namespace HordesOfAzeroth.Launcher
             }
             catch (Exception)
             {
-            }
-            if (host.Id != null)
-            {
-                try
-                {
-                    await LobbyAsync(HttpMethod.Post, "/close", new JsonObject { ["id"] = host.Id, ["secret"] = host.Secret });
-                }
-                catch (Exception)
-                {
-                }
             }
         }
     }

@@ -53,11 +53,11 @@ end
 holder.label = UI.Text(holder, 11)
 holder.label:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, 0)
 holder.label:SetTextColor(1, 0.82, 0)
-holder.label:SetText(L["Darkmoon Cards"])
+holder.label:SetText(L["hoa.addon.darkmoon_cards"])
 
 holder.leyLabel = UI.Text(holder, 11)
 holder.leyLabel:SetTextColor(1, 0.82, 0)
-holder.leyLabel:SetText(L["Ley Lines"])
+holder.leyLabel:SetText(L["hoa.addon.ley_lines"])
 
 local buttons = {}
 local leyButtons = {}
@@ -70,14 +70,14 @@ local function CardTooltip(owner, index, anchor)
     local tip = tips[card.id] or {}
     local color = UI.RARITY[card.rarity] or UI.RARITY[0]
     GameTooltip:SetOwner(owner, anchor or "ANCHOR_BOTTOMRIGHT")
-    GameTooltip:AddLine(tip.name or L["Darkmoon Card"], color.r, color.g, color.b)
+    GameTooltip:AddLine(tip.name or L["hoa.addon.darkmoon_card_2"], color.r, color.g, color.b)
     local copies = ""
     if card.maxCopies > 1 then
-        copies = L("{1}/{2} copies", card.copies, card.maxCopies)
+        copies = L("hoa.addon.1_2_copies", card.copies, card.maxCopies)
     elseif card.copies > 1 then
         copies = "x" .. card.copies
     end
-    GameTooltip:AddDoubleLine(L("{1} Darkmoon Card", color.name), copies, 0.6, 0.6, 0.6, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L("hoa.addon.1_darkmoon_card", color.name), copies, 0.6, 0.6, 0.6, 1, 1, 1)
     if tip.description and tip.description ~= "" then
         GameTooltip:AddLine(tip.description, 1, 0.82, 0, 1)
     end
@@ -171,7 +171,7 @@ local function LeyTooltip(button)
     end
     GameTooltip:SetOwner(button, "ANCHOR_BOTTOMRIGHT")
     GameTooltip:AddLine(ley.name, 1, 1, 1)
-    GameTooltip:AddLine(L["Ley Line blessing"], 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L["hoa.addon.ley_line_blessing"], 0.6, 0.6, 0.6)
     GameTooltip:AddLine(ley.text, 1, 0.82, 0, 1)
     GameTooltip:Show()
 end
@@ -352,7 +352,29 @@ local function Clear()
     leys = {}
     Refresh()
 end
-handlers["start"] = Clear
-handlers["end"] = Clear
+UI.ListenHoa({
+    HOA_LEY_BLESSINGS = function()
+        handlers["leyblessings"]()
+    end,
+    HOA_LEY_BLESS = function(bless)
+        handlers["leybless"]({ false, bless.name, bless.icon, bless.text })
+    end,
+    HOA_LEY_BLESS_END = function()
+        handlers["leyblessend"]()
+    end,
+    HOA_CARDS = function(cards)
+        handlers["cards"]({ false, cards.entries })
+    end,
+    HOA_CARD_TIP = function(tip)
+        handlers["cardtip"]({ false, tostring(tip.id), tip.name, tip.description })
+    end,
+    HOA_CARD_COOLDOWN = function(cooldown)
+        handlers["cardcd"]({ false, tostring(cooldown.id), cooldown.left_ms, cooldown.total_ms })
+    end,
+    HOA_CARD_NOW = function(now)
+        handlers["cardnow"]({ false, tostring(now.id), now.text })
+    end,
+    HOA_RUN_START = Clear,
+    HOA_RUN_END = Clear,
+})
 
-UI.Listen(handlers)

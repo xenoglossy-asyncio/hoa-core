@@ -21,16 +21,16 @@ local state = { stacks = 0, percent = "0" }
 
 frame:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_BOTTOMLEFT")
-    GameTooltip:SetText(L["Determination"], 1, 1, 1)
-    GameTooltip:AddLine(L("+{1}% damage and {1}% less damage taken.", state.percent), 1, 0.82, 0, 1)
-    GameTooltip:AddLine(L["Grows each time you die. Ends when you clear Normal."], 0.6, 0.6, 0.6, 1)
+    GameTooltip:SetText(L["hoa.addon.determination"], 1, 1, 1)
+    GameTooltip:AddLine(L("hoa.addon.1_damage_and_1_less_damage_taken", state.percent), 1, 0.82, 0, 1)
+    GameTooltip:AddLine(L["hoa.addon.grows_each_time_you_die_ends_when_you_clear_normal"], 0.6, 0.6, 0.6, 1)
     GameTooltip:Show()
 end)
 frame:SetScript("OnLeave", function()
     GameTooltip:Hide()
 end)
 
-local DETERMINATION_SPELL = 60001
+local DETERMINATION_SPELL = HOA_AURA_IDS.determination
 
 local function Refresh()
     local stacks = UI.AuraStacks(DETERMINATION_SPELL, "HELPFUL")
@@ -50,14 +50,6 @@ aura:SetScript("OnEvent", function()
         Refresh()
     end
 end)
-
-local handlers = {}
-handlers["determinationpct"] = function(f)
-    state.percent = f[2] or "0"
-    Refresh()
-end
-
-UI.Listen(handlers)
 
 UI.ListenHoa({
     HOA_AURA_PERCENT = function(spellId, percent)

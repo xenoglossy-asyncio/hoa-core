@@ -6,7 +6,9 @@
 #include "BonkPlayer.h"
 #include "BonkQuests.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Item.h"
+#include "Log.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
@@ -159,7 +161,7 @@ float BonkRun::GetCardPower(Unit const* victim) const
     float power = 0.0f;
 
     if (BonkCard const* brooch = m_cardByEffect[BONK_CARD_KILL_POWER])
-        power += std::min(brooch->values[1], brooch->values[0] * GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA)) *
+        power += std::min(brooch->values[1], brooch->values[0] * m_killPowerKills) *
             GetCopySum(m_cardCopies[BONK_CARD_KILL_POWER]);
 
     if (HasCard(BONK_CARD_UNHIT_POWER))
@@ -374,7 +376,6 @@ void BonkRun::AddCard(BonkCard const& card)
     {
         case BONK_CARD_SOULSTONE:
             ++m_soulstones;
-            RefreshSoulstoneAura();
             break;
         case BONK_CARD_THORNS:
             RefreshThornsAura();
@@ -491,6 +492,7 @@ void BonkRun::UpdateCards(uint32 diff)
                 holder->SetAuraMaxDuration(duration);
                 holder->UpdateAuraDuration();
             }
+            SendCardAuraText(BONK_SPELL_CARD_SWIFT, *potion);
             StartCardCooldown(BONK_CARD_SWIFTNESS, GetCardCooldown(BONK_CARD_SWIFTNESS));
         }
         bool const swift = m_player->HasAura(BONK_SPELL_CARD_SWIFT);
@@ -510,6 +512,12 @@ void BonkRun::UpdateCards(uint32 diff)
                 holder->SetAuraDuration(duration);
                 holder->SetAuraMaxDuration(duration);
                 holder->UpdateAuraDuration();
+                holder->SetStackAmount(GetCardCopies(charm->id));
+                m_player->ForceValuesUpdateAtIndex(UNIT_FIELD_AURA + holder->GetAuraSlot());
+                m_player->ForceValuesUpdateAtIndex(UNIT_FIELD_AURAFLAGS + (holder->GetAuraSlot() >> 3));
+                m_player->ExecuteDelayedActions();
+                m_player->SendForcedObjectUpdate();
+                SendCardAuraText(BONK_SPELL_DARKMOON_SURGE, *charm);
             }
             StartCardCooldown(BONK_CARD_POWER_SURGE, charm->cooldownMs);
             m_player->GetBonkPlayer()->Notify(BONK_STRING_POWER_SURGE, { Localize(BONK_FIELD_CARD_NAME, charm->id, charm->name), FormatBonkNumber(GetCardTotal(BONK_CARD_POWER_SURGE, 0)),
@@ -543,7 +551,9 @@ void BonkRun::UpdateCards(uint32 diff)
         bool const ready = !m_hurt || m_totalMs - m_lastHurtMs >= uint32(bandage->values[1] * IN_MILLISECONDS);
         if (ready)
             healFromCard(BONK_CARD_BANDAGE, GetCardTotal(BONK_CARD_BANDAGE, 0));
-        SyncStackAura(BONK_SPELL_BANDAGE_AURA, ready ? 1 : 0);
+        bool const changed = SyncStackAura(BONK_SPELL_BANDAGE_AURA, ready ? GetCardCopies(bandage->id) : 0);
+        if (ready && changed)
+            SendCardAuraText(BONK_SPELL_BANDAGE_AURA, *bandage);
     }
     else
         SyncStackAura(BONK_SPELL_BANDAGE_AURA, 0);
@@ -552,7 +562,9 @@ void BonkRun::UpdateCards(uint32 diff)
         bool const ready = m_totalMs - m_stillSinceMs >= uint32(campfire->values[1] * IN_MILLISECONDS);
         if (ready)
             healFromCard(BONK_CARD_CAMPFIRE, GetCardTotal(BONK_CARD_CAMPFIRE, 0));
-        SyncStackAura(BONK_SPELL_CAMPFIRE_AURA, ready ? 1 : 0);
+        bool const changed = SyncStackAura(BONK_SPELL_CAMPFIRE_AURA, ready ? GetCardCopies(campfire->id) : 0);
+        if (ready && changed)
+            SendCardAuraText(BONK_SPELL_CAMPFIRE_AURA, *campfire);
     }
     else
         SyncStackAura(BONK_SPELL_CAMPFIRE_AURA, 0);
@@ -585,7 +597,7 @@ std::string BonkRun::DescribeCardNow(BonkCard const& card) const
     {
         case BONK_CARD_KILL_POWER:
         {
-            float const power = std::min(card.values[1], card.values[0] * GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA)) *
+            float const power = std::min(card.values[1], card.values[0] * m_killPowerKills) *
                 GetCopySum(GetCardCopies(card.id));
             return GetString(BONK_STRING_CARD_NOW_POWER, { percent(power) });
         }
@@ -632,7 +644,12 @@ void BonkRun::SendCardStatus(bool force) const
         if (!force && (sent != m_cardNowSent.end() ? sent->second == text : text.empty()))
             continue;
         m_cardNowSent[owned.card->id] = text;
-        bonk->SendAddon("cardnow~" + std::to_string(owned.card->id) + "~" + text);
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCardNow(data, owned.card->id, text);
+            m_player->GetSession()->SendPacket(&data);
+        }
     }
 }
 
@@ -682,6 +699,7 @@ void BonkRun::OnCardHitTaken()
                 holder->SetAuraMaxDuration(duration);
                 holder->UpdateAuraDuration();
             }
+            SendCardAuraText(BONK_SPELL_CARD_IMMUNE, *insignia);
             StartCardCooldown(BONK_CARD_HIT_IMMUNE, GetCardCooldown(BONK_CARD_HIT_IMMUNE));
         }
 }
@@ -762,7 +780,9 @@ void BonkRun::RollCastCharges(OwnedWeapon& owned)
                 holder->SetAuraDuration(duration);
                 holder->SetAuraMaxDuration(duration);
                 holder->UpdateAuraDuration();
+                holder->SetStackAmount(GetCardCopies(dragon->id));
             }
+            SendCardAuraText(BONK_SPELL_CARD_HASTE, *dragon);
             StartCardCooldown(BONK_CARD_HASTE_BURST, dragon->cooldownMs);
         }
 }
@@ -805,17 +825,6 @@ float BonkRun::GetChampionDamageTaken(BonkSpawnKind kind) const
     return 1.0f - std::min(BONK_CHAMPION_MAX_REDUCTION, GetCardTotal(BONK_CARD_BIG_GAME, 1)) / 100.0f;
 }
 
-void BonkRun::RefreshSoulstoneAura() const
-{
-    if (!m_soulstones)
-    {
-        m_player->RemoveAurasDueToSpell(BONK_SPELL_SOULSTONE);
-        return;
-    }
-    if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_SOULSTONE, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
-        holder->SetStackAmount(m_soulstones);
-}
-
 uint32 BonkRun::GetCardAuraStacks(uint32 spellId) const
 {
     SpellAuraHolder const* holder = m_player->GetSpellAuraHolder(spellId);
@@ -824,7 +833,9 @@ uint32 BonkRun::GetCardAuraStacks(uint32 spellId) const
 
 void BonkRun::RefreshKillPowerAura() const
 {
-    uint32 const stacks = GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA);
+    if (!HasCard(BONK_CARD_KILL_POWER))
+        m_killPowerKills = 0;
+    uint32 const stacks = std::min<uint32>(255, m_killPowerKills);
     if (!HasCard(BONK_CARD_KILL_POWER) || !stacks)
     {
         m_player->RemoveAurasDueToSpell(BONK_SPELL_KILL_POWER_AURA);
@@ -832,15 +843,20 @@ void BonkRun::RefreshKillPowerAura() const
     }
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_KILL_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(stacks);
+    if (BonkCard const* card = m_cardByEffect[BONK_CARD_KILL_POWER])
+        SendCardAuraText(BONK_SPELL_KILL_POWER_AURA, *card);
 }
 
 void BonkRun::AddKillPowerStack() const
 {
     if (!HasCard(BONK_CARD_KILL_POWER))
         return;
-    uint32 const stacks = std::min<uint32>(255, GetCardAuraStacks(BONK_SPELL_KILL_POWER_AURA) + 1);
+    ++m_killPowerKills;
+    uint32 const stacks = std::min<uint32>(255, m_killPowerKills);
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_KILL_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(stacks);
+    if (BonkCard const* card = m_cardByEffect[BONK_CARD_KILL_POWER])
+        SendCardAuraText(BONK_SPELL_KILL_POWER_AURA, *card);
 }
 
 void BonkRun::RefreshUnhitPowerAura() const
@@ -849,7 +865,11 @@ void BonkRun::RefreshUnhitPowerAura() const
     if (HasCard(BONK_CARD_UNHIT_POWER))
     {
         float const seconds = float(m_totalMs - (m_hurt ? m_lastHurtMs : 0)) / IN_MILLISECONDS;
-        stacks = std::min<uint32>(255, uint32(std::floor(seconds)));
+        float const perSecond = GetCardTotal(BONK_CARD_UNHIT_POWER, 0);
+        float const cap = GetCardTotal(BONK_CARD_UNHIT_POWER, 1);
+        // One stack is one second, but stacks past the card's cap do no work.
+        uint32 const shown = perSecond > 0.0f ? uint32(std::floor(cap / perSecond)) : 255;
+        stacks = std::min<uint32>(std::min<uint32>(255, shown), uint32(std::floor(seconds)));
     }
     if (!stacks)
     {
@@ -858,6 +878,8 @@ void BonkRun::RefreshUnhitPowerAura() const
     }
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_UNHIT_POWER_AURA, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(stacks);
+    if (BonkCard const* card = m_cardByEffect[BONK_CARD_UNHIT_POWER])
+        SendCardAuraText(BONK_SPELL_UNHIT_POWER_AURA, *card);
 }
 
 void BonkRun::RefreshThornsAura() const
@@ -870,6 +892,8 @@ void BonkRun::RefreshThornsAura() const
     }
     if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_CARD_THORNS, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT))
         holder->SetStackAmount(copies);
+    if (BonkCard const* card = m_cardByEffect[BONK_CARD_THORNS])
+        SendCardAuraText(BONK_SPELL_CARD_THORNS, *card);
 }
 
 bool BonkRun::IsCardImmune() const
@@ -984,19 +1008,34 @@ std::string BonkRun::DescribeHeldCard(BonkCard const& card, uint32 copies, Local
     return description + BONK_LINE_BREAK + sBonkLocale.GetString(BONK_STRING_CURRENT_TOTAL, locale, { total });
 }
 
+void BonkRun::SendCardAuraText(uint32 spellId, BonkCard const& card) const
+{
+    m_player->GetBonkPlayer()->SendAuraText(spellId, DescribeHeldCard(card, GetCardCopies(card.id), GetLocale()));
+}
+
 void BonkRun::SendCards() const
 {
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    std::string line = "cards~";
+    if (!bonk->IsAddonReady())
+        return;
+    std::string entries;
     for (OwnedCard const& owned : m_cards)
         if (!m_glyphCardIds.count(owned.card->id))
-            line += std::to_string(owned.card->id) + ":" + std::to_string(owned.copies) + ":" + std::to_string(owned.card->rarity) + ":" +
+            entries += std::to_string(owned.card->id) + ":" + std::to_string(owned.copies) + ":" + std::to_string(owned.card->rarity) + ":" +
                 owned.card->icon + ":" + std::to_string(owned.card->maxCopies) + ",";
-    bonk->SendAddon(line);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCards(data, entries);
+        m_player->GetSession()->SendPacket(&data);
+    }
     for (OwnedCard const& owned : m_cards)
         if (!m_glyphCardIds.count(owned.card->id))
-            bonk->SendAddon("cardtip~" + std::to_string(owned.card->id) + "~" + Localize(BONK_FIELD_CARD_NAME, owned.card->id, owned.card->name) + "~" +
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCardTip(data, owned.card->id, Localize(BONK_FIELD_CARD_NAME, owned.card->id, owned.card->name),
                 DescribeHeldCard(*owned.card, owned.copies, GetLocale()));
+            m_player->GetSession()->SendPacket(&data);
+        }
     SendCardCooldowns();
     SendCardStatus(true);
 }
@@ -1013,8 +1052,11 @@ void BonkRun::SendCardCooldown(BonkCardEffect effect) const
     BonkCard const* card = m_cardByEffect[effect];
     if (!card)
         return;
-    m_player->GetBonkPlayer()->SendAddon("cardcd~" + std::to_string(card->id) + "~" + std::to_string(std::max(0, m_cardCooldowns[effect])) + "~" +
-        std::to_string(m_cardCooldownTotals[effect]));
+    if (!m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteCardCooldown(data, card->id, std::max(0, m_cardCooldowns[effect]), m_cardCooldownTotals[effect]);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkRun::SendCardCooldowns() const

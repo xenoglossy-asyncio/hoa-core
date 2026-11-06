@@ -11,7 +11,7 @@ local ARROW_SIZE = 40
 local BOB_SPEED = 6
 local BOB_HEIGHT = 7
 local TIP_WIDTH = 340
-BINDING_NAME_VANILLABONK_HEARTH = L["Use Hearthstone"]
+BINDING_NAME_VANILLABONK_HEARTH = L["hoa.addon.use_hearthstone"]
 
 local function FindHearthstone()
     for bag = 0, 4 do
@@ -56,15 +56,15 @@ button:SetScript("OnEnter", function()
     local bag, slot = FindHearthstone()
     GameTooltip:SetOwner(this, "ANCHOR_TOPLEFT")
     if not bag then
-        GameTooltip:AddDoubleLine(L["Hearthstone"], L["Not found yet"], 1, 1, 1, 0.5, 0.5, 0.5)
-        GameTooltip:AddLine(L["Sometimes dropped by mini-bosses on a run's last stage. Sends one piece of gear found this run home without ending the run."], 1, 0.82, 0, 1)
+        GameTooltip:AddDoubleLine(L["hoa.addon.hearthstone"], L["hoa.addon.not_found_yet"], 1, 1, 1, 0.5, 0.5, 0.5)
+        GameTooltip:AddLine(L["hoa.addon.sometimes_dropped_by_mini_bosses_on_a_run_s_last_stage_sends"], 1, 0.82, 0, 1)
         GameTooltip:Show()
         return
     end
     GameTooltip:SetBagItem(bag, slot)
     local key = UI.BindingText(HEARTH)
     if key ~= "" then
-        GameTooltip:AddLine(L("Press {1} to use it.", key), 0.6, 0.6, 0.6)
+        GameTooltip:AddLine(L("hoa.addon.press_1_to_use_it", key), 0.6, 0.6, 0.6)
     end
     GameTooltip:Show()
 end)
@@ -86,7 +86,7 @@ tip:SetBackdrop({
 tip.title = UI.Text(tip, 15)
 tip.title:SetTextColor(1, 0.82, 0)
 tip.title:SetPoint("TOP", tip, "TOP", 0, -22)
-tip.title:SetText(L["You found a Hearthstone!"])
+tip.title:SetText(L["hoa.addon.you_found_a_hearthstone"])
 tip.body = UI.Text(tip, 12)
 tip.body:SetWidth(TIP_WIDTH - 52)
 tip.body:SetJustifyH("CENTER")
@@ -98,7 +98,7 @@ tip.key:SetPoint("TOP", tip.body, "BOTTOM", 0, -10)
 tip.close = CreateFrame("Button", nil, tip, "UIPanelCloseButton")
 tip.close:SetPoint("TOPRIGHT", tip, "TOPRIGHT", -6, -6)
 tip.close:SetScript("OnClick", function() tip:Hide() end)
-tip.done = UI.Button(tip, 96, L["Got it"], function() tip:Hide() end)
+tip.done = UI.Button(tip, 96, L["hoa.addon.got_it"], function() tip:Hide() end)
 tip.done:SetPoint("BOTTOM", tip, "BOTTOM", 0, 18)
 UI.NavPrompt(tip, tip.done)
 tip:SetPoint("BOTTOMRIGHT", button, "TOPRIGHT", 12, ARROW_SIZE + BOB_HEIGHT + 6)
@@ -116,14 +116,14 @@ tip.arrow.texture:SetTexCoord(1, 1, 1, 0, 0, 1, 0, 0)
 local function KeyLine()
     local key = UI.BindingText(HEARTH)
     if key == "" then
-        return L["Bind a key to Use Hearthstone in Key Bindings."]
+        return L["hoa.addon.bind_a_key_to_use_hearthstone_in_key_bindings"]
     end
-    return L("Press {1} or click the Hearthstone to use it. You can change the key in Key Bindings.", key)
+    return L("hoa.addon.press_1_or_click_the_hearthstone_to_use_it_you_can_change_th", key)
 end
 
 tip:SetScript("OnShow", function()
-    this.body:SetText(L["It opens a ring at your feet with a vault beside it. Stay inside until the ring fills, then open the vault and choose one piece of gear to send home. "] ..
-        L["The run goes on. If you're outside the ring when it fills, the Hearthstone fades."])
+    this.body:SetText(L["hoa.addon.it_opens_a_ring_at_your_feet_with_a_vault_beside_it_stay_ins"] ..
+        L["hoa.addon.the_run_goes_on_if_you_re_outside_the_ring_when_it_fills_the"])
     this.key:SetText(KeyLine())
     this:SetHeight(22 + this.title:GetHeight() + 10 + this.body:GetHeight() + 10 + this.key:GetHeight() + 22 + 30)
     SendChatMessage(".bonk menu 1", "SAY")

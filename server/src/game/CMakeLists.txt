@@ -20,6 +20,7 @@ set (game_SRCS
     AuraRemovalMgr.cpp
     AutoBroadCastMgr.cpp
     Bonk/BonkCodex.cpp
+    Bonk/BonkAura.cpp
     Bonk/BonkCoop.cpp
     Bonk/BonkCoopLedger.cpp
     Bonk/BonkCoopRun.cpp
@@ -28,6 +29,9 @@ set (game_SRCS
     Bonk/BonkCrowd.cpp
     Bonk/BonkEnchant.cpp
     Bonk/BonkFoundGear.cpp
+    Bonk/BonkHardcore.cpp
+    Bonk/BonkCharacterProgress.cpp
+    Bonk/BonkIntegrity.cpp
     Bonk/BonkKeywords.cpp
     Bonk/BonkLeaderboard.cpp
     Bonk/BonkLocale.cpp
@@ -41,6 +45,13 @@ set (game_SRCS
     Bonk/BonkPlayerStarter.cpp
     Bonk/BonkQuests.cpp
     Bonk/BonkRun.cpp
+    Bonk/BonkRunLifecycle.cpp
+    Bonk/BonkRunUpdate.cpp
+    Bonk/BonkRunSpawn.cpp
+    Bonk/BonkRunCombat.cpp
+    Bonk/BonkRunLoot.cpp
+    Bonk/BonkRunStage.cpp
+    Bonk/BonkRunWeapons.cpp
     Bonk/BonkRunCards.cpp
     Bonk/BonkRunTrinkets.cpp
     Bonk/BonkRunEnchant.cpp
@@ -73,6 +84,7 @@ set (game_SRCS
     Bonk/BonkSpawnPoints.cpp
     Bonk/BonkStrings.cpp
     Bonk/BonkTelegraph.cpp
+    Bonk/BonkTransmog.cpp
     Camera.cpp
     Conditions.cpp
     CreatureGroups.cpp
@@ -307,6 +319,9 @@ set (game_SRCS
     AuraRemovalMgr.h
     AutoBroadCastMgr.h
     Bonk/BonkCodex.h
+    Bonk/BonkHardcore.h
+    Bonk/BonkCharacterProgress.h
+    Bonk/BonkIntegrity.h
     Bonk/BonkLeaderboard.h
     Bonk/BonkLocale.h
     Bonk/BonkMastery.h
@@ -321,6 +336,7 @@ set (game_SRCS
     Bonk/BonkSpawnPoints.h
     Bonk/BonkStrings.h
     Bonk/BonkTelegraph.h
+    Bonk/BonkTransmog.h
     Camera.h
     ClientDefines.h
     Conditions.h

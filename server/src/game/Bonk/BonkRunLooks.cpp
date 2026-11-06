@@ -154,11 +154,6 @@ void BonkRun::ShowHeroLook(BonkHeroLook look, bool shown)
         m_player->CastSpell(m_player, spellId, true);
 }
 
-uint32 BonkRun::GetRingSpell(BonkHeroRing ring, float reach) const
-{
-    return BONK_HERO_RING_FIRST_SPELLS[size_t(ring)] + GetBonkStandInSizeIndex(reach);
-}
-
 BonkTelegraphStyle BonkRun::GetRingStyle(BonkHeroRing ring)
 {
     switch (ring)

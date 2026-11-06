@@ -112,6 +112,7 @@ pub(super) fn load_ui_no_warnings(s: &UiScript, entry: &str) -> usize {
 }
 
 fn load_entry(s: &UiScript, entry: &str, strict_templates: bool, no_warnings: bool) -> usize {
+    crate::client_language::install_for_script(s);
     follow_production_order(s, entry);
     // The app registers its CVars before any file loads: stock `UIOptionsFrame.xml` reads two
     // camera CVars at `OnLoad` and raises on a nil. A value a test already set stands.

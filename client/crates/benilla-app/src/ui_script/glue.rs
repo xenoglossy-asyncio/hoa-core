@@ -125,6 +125,8 @@ impl GlueScreen {
 pub(super) fn load_glue(script: &mut UiScript) -> Vec<String> {
     // The builder's sweep before the checks and the toc (`0x46a8eb`).
     super::addons::sweep_loose_interface();
+    // The glue VM may be built by a test or a rebuild that skipped `new_vm`'s injection.
+    crate::client_language::install_for_script(script);
     let mut failures = match reference_ui::glue() {
         Some(glue) => {
             let mut toc = benilla_ui::status::Status::default();
@@ -491,6 +493,35 @@ mod tests {
         assert!(!s.movie_playing());
         assert!(!s.frame_visible("MovieFrame"));
         assert_eq!(s.glue_screen(), "login");
+    }
+
+    /// The login screen's static text and the `BonkGlueL` table read the client language pack,
+    /// not the retired `BonkGlueLocale<locale>.lua` tables.
+    #[test]
+    fn the_glue_screens_read_the_language_pack() {
+        let _ = benilla_formats::wow_data_or_skip!();
+        let mut s = UiScript::new_glue().unwrap();
+        s.set_screen_size(1024.0, 768.0);
+        s.set_ui_locale(Some(
+            crate::client_language::locale_for_code("zhCN").index(),
+        ));
+        let _ = load_glue(&mut s);
+        set_glue_screen(&mut s, GlueScreen::Login);
+        s.resolve();
+        assert_eq!(
+            s.eval::<String>("return BonkLoginTitle:GetText()").unwrap(),
+            "艾泽拉斯之潮"
+        );
+        assert_eq!(
+            s.eval::<String>("return BonkLoginConnectButton:GetText()")
+                .unwrap(),
+            "连接"
+        );
+        assert_eq!(
+            s.eval::<String>("return GetLocale()").unwrap(),
+            "zhCN",
+            "the account language, not the install locale"
+        );
     }
 
     /// The name a "nil value" call error names, in either of Lua's two spellings of it.

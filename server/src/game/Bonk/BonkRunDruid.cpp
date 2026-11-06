@@ -3,11 +3,13 @@
 #include "BonkPlayer.h"
 #include "BonkRunStats.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Utilities/Random.h"
+#include "WorldSession.h"
 
 #include <algorithm>
 #include <set>
@@ -131,6 +133,8 @@ namespace
     int32 const BONK_HURRICANE_PULSE_MS       = 1000;
     size_t const BONK_HURRICANE_ALIVE         = 2;
     size_t const BONK_SWIPE_LOOKS             = 4;
+    float const BONK_SWIPE_PER_BLEED          = 0.1f;
+    float const BONK_SWIPE_MAX_BLEEDS         = 10.0f;
     float const BONK_DRUID_AWARE_RANGE        = 30.0f;
     int32 const BONK_DRUID_POLL_MS            = 250;
     uint32 const BONK_DRUID_IDLE_MS           = 1000;
@@ -248,8 +252,12 @@ void BonkRun::ResetDruidState()
     m_tranquilityPulse = 0;
     m_formCycleMs = m_formCycleAtMs = 0;
     ResetDruidEvolutions();
-    if (IsDruidHero())
-        m_player->GetBonkPlayer()->SendAddon("druidform~caster");
+    if (IsDruidHero() && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteDruidForm(data, "caster");
+        m_player->GetSession()->SendPacket(&data);
+    }
     if (IsDruidHero() && m_player->GetDisplayId() != m_player->GetNativeDisplayId())
         m_player->SetDisplayId(m_player->GetNativeDisplayId());
 }
@@ -763,9 +771,15 @@ void BonkRun::SwipeAround(OwnedWeapon& owned, SpellEntry const* spellInfo)
     {
         if (shown++ < BONK_SWIPE_LOOKS)
             ShowDruidStrike(spellInfo, mob);
-        DealShamanHit(spellInfo, owned.weapon.spellId, mob, damage);
+        DealShamanHit(spellInfo, owned.weapon.spellId, mob, damage * GetSwipeBleedScale(mob));
     }
     OnSwipe(owned, mobs);
+}
+
+float BonkRun::GetSwipeBleedScale(Creature* mob) const
+{
+    float const bleeds = std::min(float(GetKeywordStacks(mob, BONK_KEYWORD_BLEED)), BONK_SWIPE_MAX_BLEEDS);
+    return 1.0f + BONK_SWIPE_PER_BLEED * bleeds;
 }
 
 float BonkRun::GetFrenziedRegenerationHeal(OwnedWeapon const& owned) const
@@ -944,17 +958,28 @@ void BonkRun::UpdateDruidForm()
         m_druidForm = BonkDruidForm::None;
     else if (m_druidForm == BonkDruidForm::None)
         m_druidForm = BonkDruidForm::Moonkin;
-    std::string const sent = std::string("druidform~") + GetFormAttack(m_druidForm).name;
+    std::string const form = GetFormAttack(m_druidForm).name;
+    std::string const sent = std::string("druidform~") + form;
     if (sent != m_sentDruidForm)
     {
         m_sentDruidForm = sent;
-        m_player->GetBonkPlayer()->SendAddon(sent);
+        if (m_player->GetBonkPlayer()->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteDruidForm(data, form);
+            m_player->GetSession()->SendPacket(&data);
+        }
     }
     std::string const slots = DescribeDruidSlots();
     if (slots != m_sentDruidSlots)
     {
         m_sentDruidSlots = slots;
-        m_player->GetBonkPlayer()->SendAddon(slots);
+        if (m_player->GetBonkPlayer()->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteDruidSlots(data, slots.size() > 11 ? slots.substr(11) : "");
+            m_player->GetSession()->SendPacket(&data);
+        }
     }
     uint32 const display = GetDruidFormDisplay(m_druidForm);
     if (m_player->GetDisplayId() != display)

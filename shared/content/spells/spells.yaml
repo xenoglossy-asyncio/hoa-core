@@ -1,418 +1,1232 @@
-# Custom spells HoA adds to the 1.12.1 client. Ids 60001-60099 are reserved for HoA.
-# The compiler emits spell_template SQL, the server's C++ ids and the client's display table.
+# Custom auras HoA adds to the 1.12.1 client. Ids 60001-60099 are reserved for HoA.
+#
+# Every aura names its origin under `source`:
+#   card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | keyword:<id> | behavior:<enum> | none
+# A sourced aura inherits the source row's name, icon and description. Fields under `display`
+# override the source and MUST explain why. `none` and `behavior` have no single row, so they
+# must spell out the full display and explain it.
+#
+# `stacks.source` says where the live count comes from: aura (server-set), copies (card copies),
+# kills (card kill counter), seconds (card seconds), wounds (boss wound stacks), none. `max`
+# is optional for copies/kills/seconds (the compiler derives it) and required for aura.
+# `permanent` maps to durationIndex 0; otherwise the aura is timed.
+#
+# `dynamic` picks the runtime tooltip text the server sends in the account language:
+#   none | shield_absorb | wounds_heal_cut | stack_percent | card_total
+# absorb/cut/percent need enUS/zhCN templates with {1} placeholders; card_total uses the card
+# description plus its current total.
+#
+# The compiler emits spell_template SQL, the server ids and hoa_aura/hoa_aura_locale rows; the
+# client receives the localized display rows from the server at addon-ready.
+- id: 12485
+  key: keyword_chill
+  native: true
+  source: keyword:1
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 18798
+  key: keyword_frozen
+  native: true
+  source: keyword:2
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 12654
+  key: keyword_burning
+  native: true
+  source: keyword:3
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 12721
+  key: keyword_bleed
+  native: true
+  source: keyword:4
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 19448
+  key: keyword_poison
+  native: true
+  source: keyword:5
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 22959
+  key: keyword_fire_vulnerability
+  native: true
+  source: keyword:6
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 27991
+  key: keyword_sunder_armor
+  native: true
+  source: keyword:7
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 15258
+  key: keyword_shadow_vulnerability
+  native: true
+  source: keyword:8
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 20374
+  key: keyword_hunters_mark
+  native: true
+  source: keyword:9
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 13496
+  key: keyword_dazed
+  native: true
+  source: keyword:10
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 18148
+  key: keyword_static
+  native: true
+  source: keyword:11
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 17364
+  key: keyword_nature_vulnerability
+  native: true
+  source: keyword:12
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 594
+  key: keyword_decay
+  native: true
+  source: keyword:13
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 14868
+  key: keyword_agony
+  native: true
+  source: keyword:14
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+- id: 8921
+  key: keyword_moonfire
+  native: true
+  source: keyword:15
+  stacks:
+    source: aura
+  permanent: false
+  dynamic:
+    kind: none
+# Native `bonk_look_*` rows that HoA reskins: the server catalog overrides their installed DBC
+# display, but they are not custom spell ids and are not cloned into spell_template.
+- id: 17
+  key: shielded_state
+  native: true
+  source: none
+  reason: The native Power Word Shield aura also marks the priest's shielded state for Body and Soul; several shield sources set it.
+  display:
+    name: Shielded
+    name_zhCN: 护盾状态
+    description: You move 10% faster while shielded.
+    description_zhCN: 有护盾时移动速度提高10%。
+    reason: Native PW:S aura reused as a state marker, not the priest's PW:S tooltip.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 5277
+  key: evasion_window
+  native: true
+  source: weapon:611
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 8233
+  key: doom_winds_window
+  native: true
+  source: weapon:721
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33461
+  key: souls_state
+  native: true
+  source: none
+  reason: Warlock soul resource state from Drain Soul kills; the aura is the soul counter, not a skill.
+  display:
+    name: Souls
+    name_zhCN: 灵魂
+    description: You deal 5% more damage for each soul.
+    description_zhCN: 每个灵魂使你的伤害提高5%。
+    reason: Native souls look aura; the DBC row has no HoA wording.
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
+- id: 60056
+  key: necrotic_state
+  cpp: BONK_SPELL_NECROTIC
+  source: none
+  reason: Mythic boss mechanic stacks; no weapon, mastery, card or glyph owns the debuff.
+  display:
+    name: Necrotic
+    name_zhCN: 死疽
+    icon: Interface\Icons\Spell_Shadow_AbominationExplosion
+    description: Healing received reduced by 5% per stack.
+    description_zhCN: 每层使受到的治疗降低5%。
+    reason: The native DBC description is stale; the HoA stack value is the source.
+  stacks:
+    source: aura
+    max: 15
+  permanent: false
+  dynamic:
+    kind: wounds_heal_cut
+    enUS: Healing received reduced by {1}.
+    zhCN: 受到的治疗降低 {1}。
+- id: 339
+  key: rooted_state
+  native: true
+  source: none
+  reason: Shared root state from Spirit Forms and treant pets; several sources apply it.
+  display:
+    name: Rooted
+    name_zhCN: 定身
+    description: Rooted for 2 sec.
+    description_zhCN: 定身2秒。
+    reason: Native root aura with a HoA-specific duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 1833
+  key: cheap_shot_state
+  native: true
+  source: weapon:630
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 2070
+  key: sapped_state
+  native: true
+  source: none
+  reason: Applied by the Vanish opener; the native Sap aura carries the vanilla duration and wording.
+  display:
+    name: Sapped
+    name_zhCN: 闷棍
+    description: Incapacitated for 2 sec.
+    description_zhCN: 瘫痪2秒。
+    reason: Native Sap aura reskinned to the HoA opener's duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 5116
+  key: slowed_state
+  native: true
+  source: none
+  reason: Shared by every mastery slow node and Wake of Ashes; no single row owns it.
+  display:
+    name: Slowed
+    name_zhCN: 减速
+    description: Movement speed reduced for 2 sec.
+    description_zhCN: 移动速度降低2秒。
+    reason: Native slow aura with a HoA-specific duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 7922
+  key: stunned_state
+  native: true
+  source: none
+  reason: Shared by mastery stun nodes and priest talents; no single row owns it.
+  display:
+    name: Stunned
+    name_zhCN: 昏迷
+    description: Stunned for 1 sec.
+    description_zhCN: 昏迷1秒。
+    reason: Native stun aura with a HoA-specific duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 8122
+  key: feared_state
+  native: true
+  source: none
+  reason: Shared by Psychic Horror and Shadow Terror; no single row owns it.
+  display:
+    name: Feared
+    name_zhCN: 恐惧
+    description: Flees in fear for 2 sec.
+    description_zhCN: 恐惧逃跑2秒。
+    reason: Native fear aura with a HoA-specific duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 9484
+  key: shackled_state
+  native: true
+  source: none
+  reason: Shared by Shackle, Chains of Light and Mass Shackle; no single row owns it.
+  display:
+    name: Shackled
+    name_zhCN: 禁锢
+    description: Cannot act for 2 sec.
+    description_zhCN: 无法行动2秒。
+    reason: Native shackle aura with a HoA-specific duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 17498
+  key: movement_speed_state
+  native: true
+  source: none
+  reason: Shared by Aspect of the Cheetah, gear and shrines; no single row owns the stat aura.
+  display:
+    name: Movement Speed
+    name_zhCN: 移动速度
+    description: Movement speed increased.
+    description_zhCN: 移动速度提高。
+    reason: Native stat aura; the DBC name is the vanilla "Speed".
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 19255
+  key: maximum_health_state
+  native: true
+  source: none
+  reason: "Shared by Power Word: Fortitude, armor overflow, gear and shrines; no single row owns the stat aura."
+  display:
+    name: Maximum Health
+    name_zhCN: 最大生命值
+    description: Maximum health increased.
+    description_zhCN: 最大生命值提高。
+    reason: Native stat aura; the DBC name is the vanilla "Health".
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 20368
+  key: raging_state
+  native: true
+  source: none
+  reason: Mob affix Raging self-buff; no player content row owns it.
+  display:
+    name: Raging
+    name_zhCN: 狂暴
+    description: Damage increased.
+    description_zhCN: 伤害提高。
+    reason: Native affix aura; the DBC wording describes the vanilla spell.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 21183
+  key: judged_state
+  native: true
+  source: weapon:818
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 23414
+  key: void_tendrils_state
+  native: true
+  source: weapon:535
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 19502
+  key: pet_plague
+  native: true
+  source: weapon:229
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 19574
+  key: pet_bestial_wrath
+  native: true
+  source: mastery:30110
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 28419
+  key: pet_screech
+  native: true
+  source: none
+  reason: Pet state from the Wyvern summoned by weapon 230; the weapon row names the summon skill, not the screech.
+  display:
+    name: Screech
+    name_zhCN: 尖啸
+    description: The Wyvern's screech strengthens your pets.
+    description_zhCN: 翼龙的尖啸强化你的宠物。
+    reason: The native Screech aura is the pet-side state of the Wyvern summon.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22518
+  key: affix_sanguine
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Sanguine
+    name_zhCN: 血色
+    description: Leaves healing blood pools on death.
+    description_zhCN: 死亡时留下治疗血池。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22577
+  key: affix_necrotic
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Necrotic
+    name_zhCN: 死疽
+    description: Attacks apply Necrotic.
+    description_zhCN: 攻击会施加死疽。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22578
+  key: affix_vampiric
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Vampiric
+    name_zhCN: 吸血
+    description: Heals for a share of damage dealt.
+    description_zhCN: 造成伤害时恢复生命。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22579
+  key: affix_explosive
+  native: true
+  source: none
+  reason: Shared by the Explosive and Volcanic affix glows; no content row owns the visual state.
+  display:
+    name: Explosive
+    name_zhCN: 爆炸
+    description: Explodes when killed.
+    description_zhCN: 死亡时爆炸。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22580
+  key: affix_swift
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Swift
+    name_zhCN: 迅捷
+    description: Moves faster.
+    description_zhCN: 移动速度提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22581
+  key: affix_bolstering
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Bolstering
+    name_zhCN: 激励
+    description: Strengthens nearby allies when it dies.
+    description_zhCN: 死亡时强化附近盟友。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 22576
+  key: affix_fortified
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Fortified
+    name_zhCN: 坚定
+    description: Has more health.
+    description_zhCN: 生命值提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 26388
+  key: affix_bulwark
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Bulwark
+    name_zhCN: 壁垒
+    description: Raises a damage shield.
+    description_zhCN: 获得伤害护盾。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 28126
+  key: affix_frenzied
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Frenzied
+    name_zhCN: 狂乱
+    description: Attacks faster.
+    description_zhCN: 攻击速度提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 31309
+  key: affix_raging
+  native: true
+  source: none
+  reason: Mob affix glow; no content row owns the visual state.
+  display:
+    name: Raging
+    name_zhCN: 狂怒
+    description: Deals more damage.
+    description_zhCN: 伤害提高。
+    reason: Native affix glow with the vanilla spell wording.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 60055
+  key: weapon_orb
+  cpp: BONK_SPELL_WEAPON_ORB
+  source: none
+  reason: A summoned weapon orb carries this visual aura; no skill or content row owns it.
+  display:
+    name: Weapon Orb
+    name_zhCN: 武器宝珠
+    icon: Interface\Icons\Spell_Nature_Lightning
+    description: A weapon orb circles you.
+    description_zhCN: 一颗武器宝珠环绕着你。
+    reason: The visual aura on the summoned orb, split from the Fortified affix glow.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
+- id: 33462
+  key: enrage_window
+  native: true
+  source: none
+  reason: Shared Enrage proc from several warrior weapons; no single weapon row owns the state.
+  display:
+    name: Enrage
+    name_zhCN: 狂怒
+    description: Haste increased by 25% for 4 sec.
+    description_zhCN: 急速提高25%，持续4秒。
+    reason: The native look row only says "Haste increased"; the HoA proc has a fixed value and duration.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33467
+  key: deterrence_window
+  native: true
+  source: none
+  reason: Hunter class passive triggered below 35% health; no weapon, mastery or glyph row owns it.
+  display:
+    name: Deterrence
+    name_zhCN: 威慑
+    description: Dodge chance increased by 50%.
+    description_zhCN: 闪避几率提高50%。
+    reason: Native look aura for the HoA low-health defensive state.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33468
+  key: revived_window
+  native: true
+  source: none
+  reason: Revive shield state applied by the run's revive flow; no skill row owns it.
+  display:
+    name: Revived
+    name_zhCN: 复苏
+    description: Immune to physical damage.
+    description_zhCN: 免疫物理伤害。
+    reason: Native look aura for the HoA revive window.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33463
+  key: divine_shield_window
+  native: true
+  source: weapon:809
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33464
+  key: renew_window
+  native: true
+  source: weapon:501
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33465
+  key: lightning_shield_window
+  native: true
+  source: weapon:711
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
+- id: 33466
+  key: blade_flurry_window
+  native: true
+  source: weapon:601
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60001
   key: determination
   cpp: BONK_SPELL_DETERMINATION
-  name: Determination
-  name_zhCN: 决心
-  icon: Interface\Icons\Spell_Holy_DevotionAura
-  description: Each stack increases your damage and reduces the damage you take.
-  description_zhCN: 每层提高你的伤害并降低你受到的伤害。
+  source: none
+  reason: Account-wide difficulty catch-up state; no weapon, mastery, card or glyph owns it.
+  display:
+    name: Determination
+    name_zhCN: 决心
+    icon: Interface\Icons\Spell_Holy_DevotionAura
+    description: Each stack increases your Power and reduces the damage you take.
+    description_zhCN: 每层提高你的力量并降低你受到的伤害。
+  stacks:
+    source: aura
+    max: 5
+  permanent: true
+  dynamic:
+    kind: stack_percent
+    enUS: '+{1} Power and {1}% less damage taken.'
+    zhCN: 力量提高 {1}%，受到的伤害降低 {1}%。
 - id: 60003
   key: wounds
   cpp: BONK_SPELL_WOUNDS
-  name: Wounded
-  name_zhCN: 受伤
-  icon: Interface\Icons\Ability_Creature_Poison_02
-  description: Reduces the healing you receive.
-  description_zhCN: 降低你受到的治疗效果。
+  source: none
+  reason: Mythic boss mechanic driven by the wound tuning values; no content row owns the state.
+  display:
+    name: Boss Wounds
+    name_zhCN: 首领创伤
+    icon: Interface\Icons\Ability_Warrior_SavageBlow
+    description: Reduces the healing you receive.
+    description_zhCN: 降低你受到的治疗效果。
+  stacks:
+    source: wounds
+    max: 4
+  permanent: false
+  dynamic:
+    kind: wounds_heal_cut
+    enUS: Healing received reduced by {1}.
+    zhCN: 受到的治疗降低 {1}。
 - id: 60004
   key: darkmoon_surge
   cpp: BONK_SPELL_DARKMOON_SURGE
-  name: Darkmoon Surge
-  name_zhCN: 暗月涌动
-  icon: Interface\Icons\INV_Misc_Ticket_Darkmoon_01
-  description: A Darkmoon card grants a burst of power.
-  description_zhCN: 暗月卡牌赋予你一股爆发力量。
+  source: card:21
+  stacks:
+    source: copies
+  permanent: false
+  dynamic:
+    kind: card_total
 - id: 60005
   key: shield
   cpp: BONK_SPELL_PLAYER_SHIELD
-  name: Shield
-  name_zhCN: 护盾
-  icon: Interface\Icons\Spell_Holy_PowerWordShield
-  description: Absorbs incoming damage.
-  description_zhCN: 吸收受到的伤害。
+  source: none
+  reason: Shared absorb pool fed by several sources; the aura is the pool itself, not a skill.
+  display:
+    name: Shield
+    name_zhCN: 护盾
+    icon: Interface\Icons\Spell_Holy_PowerWordShield
+    description: Absorbs incoming damage.
+    description_zhCN: 吸收受到的伤害。
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: shield_absorb
+    enUS: Absorbs {1} damage.
+    zhCN: 吸收 {1} 点伤害。
 - id: 60006
   key: card_haste
   cpp: BONK_SPELL_CARD_HASTE
-  name: Haste Burst
-  name_zhCN: 急速爆发
-  icon: Interface\Icons\Spell_Nature_Slow
-  description: A Darkmoon card grants a burst of haste.
-  description_zhCN: 暗月卡牌赋予你一股急速。
+  source: card:35
+  stacks:
+    source: copies
+  permanent: false
+  dynamic:
+    kind: card_total
 - id: 60007
   key: card_swift
   cpp: BONK_SPELL_CARD_SWIFT
-  name: Swiftness
-  name_zhCN: 迅捷
-  icon: Interface\Icons\Ability_Rogue_Sprint
-  description: A Darkmoon card grants movement speed at low health.
-  description_zhCN: 暗月卡牌在你生命值较低时提高移动速度。
+  source: card:14
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: card_total
 - id: 60008
   key: card_immune
   cpp: BONK_SPELL_CARD_IMMUNE
-  name: Immune
-  name_zhCN: 免疫
-  icon: Interface\Icons\Spell_Holy_DivineIntervention
-  description: A Darkmoon card briefly makes you immune to damage.
-  description_zhCN: 暗月卡牌使你短暂免疫伤害。
-- id: 60009
-  key: soulstone
-  cpp: BONK_SPELL_SOULSTONE
-  name: Soulstone
-  name_zhCN: 灵魂石
-  icon: Interface\Icons\INV_Misc_Orb_03
-  description: A Darkmoon card saves you from death.
-  description_zhCN: 暗月卡牌在致死时救你一命。
+  source: card:13
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: card_total
 - id: 60010
   key: card_thorns
   cpp: BONK_SPELL_CARD_THORNS
-  name: Thorns
-  name_zhCN: 荆棘
-  icon: Interface\Icons\Spell_Nature_Thorns
-  description: A Darkmoon card reflects damage back at attackers.
-  description_zhCN: 暗月卡牌将伤害反弹给攻击者。
+  source: card:12
+  stacks:
+    source: copies
+  permanent: true
+  dynamic:
+    kind: card_total
 - id: 60012
   key: tigers_fury
   cpp: BONK_SPELL_TIGERS_FURY_AURA
-  name: "Tiger's Fury"
-  name_zhCN: 猛虎之怒
-  icon: Interface\Icons\Ability_Druid_TigersRoar
-  description: Your attacks are faster for a short time.
-  description_zhCN: 短时间内你的攻击速度提高。
+  source: weapon:1021
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60013
   key: arcane_power
   cpp: BONK_SPELL_ARCANE_POWER_AURA
-  name: Arcane Power
-  name_zhCN: 奥术强化
-  icon: Interface\Icons\Spell_Nature_StarFall
-  description: Your spells deal more damage for a short time.
-  description_zhCN: 短时间内你的法术伤害提高。
+  source: weapon:430
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60014
   key: shadow_dance
   cpp: BONK_SPELL_SHADOW_DANCE_AURA
-  name: Shadow Dance
-  name_zhCN: 暗影之舞
-  icon: Interface\Icons\Spell_Shadow_Shadowform
-  description: Your stealth abilities are usable for a short time.
-  description_zhCN: 短时间内你可以使用潜行技能。
+  source: weapon:610
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60015
   key: envenom
   cpp: BONK_SPELL_ENVENOM_AURA
-  name: Envenom
-  name_zhCN: 毒伤
-  icon: Interface\Icons\Ability_Rogue_Eviscerate
-  description: Your poisons strike harder for a short time.
-  description_zhCN: 短时间内你的毒药效果更强。
+  source: weapon:607
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60016
   key: dark_pact
   cpp: BONK_SPELL_DARK_PACT_AURA
-  name: Dark Pact
-  name_zhCN: 黑暗契约
-  icon: Interface\Icons\Spell_Shadow_ShadowBolt
-  description: Your demons deal more damage for a short time.
-  description_zhCN: 短时间内你的恶魔伤害提高。
+  source: weapon:924
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60017
   key: soul_harvest
   cpp: BONK_SPELL_SOUL_HARVEST_AURA
-  name: Soul Harvest
-  name_zhCN: 灵魂收割
-  icon: Interface\Icons\Spell_Shadow_SoulGem
-  description: Your hits deal more damage for a short time.
-  description_zhCN: 短时间内你的攻击伤害提高。
+  source: glyph:12
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60018
   key: glyph_haste
   cpp: BONK_SPELL_GLYPH_HASTE_AURA
-  name: Bloodlust
-  name_zhCN: 嗜血
-  icon: Interface\Icons\Spell_Nature_BloodLust
-  description: A glyph grants a burst of haste.
-  description_zhCN: 符文赋予你一股急速。
+  source: glyph:8
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60019
   key: ice_block
   cpp: BONK_SPELL_ICE_BLOCK_AURA
-  name: Ice Block
-  name_zhCN: 寒冰屏障
-  icon: Interface\Icons\Spell_Frost_FrostNova
-  description: You are protected from damage for a short time.
-  description_zhCN: 短时间内你免受伤害。
+  source: mastery:80307
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60020
   key: nomad
   cpp: BONK_SPELL_NOMAD_AURA
-  name: Nomad
-  name_zhCN: 游牧
-  icon: Interface\Icons\Spell_Nature_Slow
-  description: "The Nomad glyph's drawback: less power for a short time."
-  description_zhCN: 游牧符文的代价：短时间内力量降低。
+  source: glyph:27
+  source_field: drawback
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60021
   key: kill_power
   cpp: BONK_SPELL_KILL_POWER_AURA
-  name: Kill Power
-  name_zhCN: 击杀之力
-  icon: Interface\Icons\Ability_Warrior_BattleShout
-  description: Each kill grants power.
-  description_zhCN: 每次击杀都会赋予力量。
+  source: card:20
+  stacks:
+    source: kills
+  permanent: true
+  dynamic:
+    kind: card_total
 - id: 60022
   key: unhit_power
   cpp: BONK_SPELL_UNHIT_POWER_AURA
-  name: Unhit Power
-  name_zhCN: 无伤之力
-  icon: Interface\Icons\Spell_Holy_HolyProtection
-  description: Staying unhurt builds power.
-  description_zhCN: 保持不受伤会积累力量。
+  source: card:37
+  stacks:
+    source: seconds
+  permanent: true
+  dynamic:
+    kind: card_total
 - id: 60023
   key: rapid_fire
   cpp: BONK_SPELL_RAPID_FIRE
-  name: Rapid Fire
-  name_zhCN: 急速射击
-  icon: Interface\Icons\Ability_Hunter_RapidFire
-  description: Your ranged attacks are faster for a short time.
-  description_zhCN: 短时间内你的远程攻击速度提高。
+  source: mastery:30229
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60024
   key: slice_and_dice
   cpp: BONK_SPELL_SLICE_AND_DICE
-  name: Slice and Dice
-  name_zhCN: 切割
-  icon: Interface\Icons\Ability_Rogue_SliceDice
-  description: Your attacks are faster for a short time.
-  description_zhCN: 短时间内你的攻击速度提高。
+  source: mastery:40228
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60025
   key: borrowed_time
   cpp: BONK_SPELL_BORROWED_TIME
-  name: Borrowed Time
-  name_zhCN: 借来的时间
-  icon: Interface\Icons\Spell_Holy_PowerWordShield
-  description: Your spell haste is increased for a short time.
-  description_zhCN: 短时间内你的施法急速提高。
+  source: mastery:50127
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60026
   key: flurry
   cpp: BONK_SPELL_FLURRY
-  name: Flurry
-  name_zhCN: 乱舞
-  icon: Interface\Icons\Ability_Warrior_BattleShout
-  description: Your attack speed is increased for a short time.
-  description_zhCN: 短时间内你的攻击速度提高。
+  source: mastery:70204
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60027
   key: lifebloom
   cpp: BONK_SPELL_LIFEBLOOM_HASTE
-  name: Lifebloom
-  name_zhCN: 生命绽放
-  icon: Interface\Icons\Spell_Nature_Regeneration
-  description: Your spells are faster for a short time.
-  description_zhCN: 短时间内你的施法速度提高。
+  source: weapon:1028
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60028
   key: bloodsurge
   cpp: BONK_SPELL_BLOODSURGE
-  name: Bloodsurge
-  name_zhCN: 鲜血涌动
-  icon: Interface\Icons\Ability_Warrior_BattleShout
-  description: Each stack increases your damage.
-  description_zhCN: 每层提高你的伤害。
+  source: mastery:10128
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60029
   key: forceful_winds
   cpp: BONK_SPELL_FORCEFUL_WINDS
-  name: Forceful Winds
-  name_zhCN: 强风
-  icon: Interface\Icons\Spell_Nature_Cyclone
-  description: Each stack increases your damage.
-  description_zhCN: 每层提高你的伤害。
+  source: mastery:70229
+  stacks:
+    source: aura
+    max: 5
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60030
   key: danse_macabre
   cpp: BONK_SPELL_DANSE_MACABRE
-  name: Danse Macabre
-  name_zhCN: 死亡之舞
-  icon: Interface\Icons\Spell_Shadow_Shadowform
-  description: Each stack increases your damage.
-  description_zhCN: 每层提高你的伤害。
+  source: mastery:40328
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60031
   key: avenging_wrath
   cpp: BONK_SPELL_AVENGING_WRATH
-  name: Avenging Wrath
-  name_zhCN: 复仇之怒
-  icon: Interface\Icons\Spell_Holy_HolyProtection
-  description: Each Holy spell grants a stack of haste.
-  description_zhCN: 每次施放神圣法术都会获得一层急速。
+  source: mastery:20131
+  stacks:
+    source: aura
+    max: 5
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60032
   key: zealotry
   cpp: BONK_SPELL_ZEALOTRY
-  name: Zealotry
-  name_zhCN: 狂热
-  icon: Interface\Icons\Spell_Holy_SealOfMight
-  description: Each Retribution spell grants a stack of haste.
-  description_zhCN: 每次施放惩戒法术都会获得一层急速。
+  source: mastery:20330
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60033
   key: arcane_tempo
   cpp: BONK_SPELL_ARCANE_TEMPO
-  name: Arcane Tempo
-  name_zhCN: 奥术节奏
-  icon: Interface\Icons\Spell_Nature_StarFall
-  description: Each Arcane spell grants a stack of haste.
-  description_zhCN: 每次施放奥术法术都会获得一层急速。
+  source: mastery:80128
+  stacks:
+    source: aura
+    max: 5
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60034
   key: starlord
   cpp: BONK_SPELL_STARLORD
-  name: Starlord
-  name_zhCN: 星辰领主
-  icon: Interface\Icons\Spell_Nature_StarFall
-  description: Each stack increases your haste.
-  description_zhCN: 每层提高你的急速。
+  source: mastery:110128
+  stacks:
+    source: aura
+    max: 3
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60035
   key: soul_of_the_forest
   cpp: BONK_SPELL_SOUL_OF_THE_FOREST
-  name: Soul of the Forest
-  name_zhCN: 森林之魂
-  icon: Interface\Icons\Spell_Nature_Regeneration
-  description: Each stack increases your haste.
-  description_zhCN: 每层提高你的急速。
+  source: mastery:110330
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60036
   key: harvester_of_souls
   cpp: BONK_SPELL_HARVESTER_OF_SOULS
-  name: Harvester of Souls
-  name_zhCN: 灵魂收割者
-  icon: Interface\Icons\Spell_Shadow_SoulGem
-  description: Each stack increases your haste.
-  description_zhCN: 每层提高你的急速。
+  source: mastery:90131
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60037
   key: unrelenting_storm
   cpp: BONK_SPELL_UNRELENTING_STORM
-  name: Unrelenting Storm
-  name_zhCN: 无情风暴
-  icon: Interface\Icons\Spell_Nature_Lightning
-  description: Each stack increases your haste.
-  description_zhCN: 每层提高你的急速。
+  source: mastery:70132
+  stacks:
+    source: aura
+    max: 10
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60038
   key: mongoose_fury
   cpp: BONK_SPELL_MONGOOSE_FURY
-  name: Mongoose Fury
-  name_zhCN: 獴之狂怒
-  icon: Interface\Icons\Ability_Hunter_SwiftStrike
-  description: Each poisoned enemy grants a stack of haste.
-  description_zhCN: 每个中毒的敌人提供一层急速。
+  source: mastery:30332
+  stacks:
+    source: aura
+    max: 10
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60039
   key: bulwark
   cpp: BONK_SPELL_BULWARK
-  name: Bulwark
-  name_zhCN: 壁垒
-  icon: Interface\Icons\Spell_Holy_DevotionAura
-  description: Each nearby enemy grants a stack, increasing your damage.
-  description_zhCN: 附近每个敌人提供一层，提高你的伤害。
+  source: mastery:20228
+  stacks:
+    source: aura
+    max: 10
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60040
   key: ancient_madness
   cpp: BONK_SPELL_ANCIENT_MADNESS
-  name: Ancient Madness
-  name_zhCN: 远古疯狂
-  icon: Interface\Icons\Spell_Shadow_Shadowform
-  description: Each nearby decaying enemy grants a stack, increasing your damage.
-  description_zhCN: 附近每个带有腐蚀的敌人提供一层，提高你的伤害。
+  source: mastery:50331
+  stacks:
+    source: aura
+    max: 10
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60041
   key: bloodtalons
   cpp: BONK_SPELL_BLOODTALONS
-  name: Bloodtalons
-  name_zhCN: 血爪
-  icon: Interface\Icons\Ability_Druid_Rake
-  description: Each nearby bleeding enemy grants a stack, increasing your damage.
-  description_zhCN: 附近每个流血的敌人提供一层，提高你的伤害。
+  source: mastery:110231
+  stacks:
+    source: aura
+    max: 10
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60042
   key: howl_frenzy
   cpp: BONK_SPELL_HOWL_FRENZY
-  name: Howl Frenzy
-  name_zhCN: 狂啸
-  icon: Interface\Icons\Ability_Hunter_BeastCall
-  description: Your pets deal more damage for a short time.
-  description_zhCN: 短时间内你的宠物伤害提高。
+  source: behavior:21
+  reason: Shared by three pet weapons through behavior 21; the aura names the howl state, not one weapon.
+  display:
+    name: Howl Frenzy
+    name_zhCN: 狂啸
+    icon: Interface\Icons\Ability_Hunter_BeastCall
+    description: Your pets deal double damage to enemies in front for 6 sec.
+    description_zhCN: 你的宠物在前方敌人面前造成双倍伤害，持续6秒。
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60043
   key: demoralizing_roar
   cpp: BONK_SPELL_DEMORALIZING_ROAR
-  name: Demoralizing Roar
-  name_zhCN: 挫志咆哮
-  icon: Interface\Icons\Ability_Druid_DemoralizingRoar
-  description: This enemy deals less damage for a short time.
-  description_zhCN: 短时间内该敌人造成的伤害降低。
+  source: none
+  reason: Bear Form's periodic roar state; the Shapeshift weapon row describes all four forms and cannot supply a state display.
+  display:
+    name: Demoralizing Roar
+    name_zhCN: 挫志咆哮
+    icon: Interface\Icons\Ability_Druid_DemoralizingRoar
+    description: This enemy deals less damage for a short time.
+    description_zhCN: 短时间内该敌人造成的伤害降低。
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60044
   key: strangling_vines
   cpp: BONK_SPELL_STRANGLING_VINES
-  name: Strangling Vines
-  name_zhCN: 缠绕藤蔓
-  icon: Interface\Icons\Spell_Nature_StrangleVines
-  description: This enemy is rooted and taking damage.
-  description_zhCN: 该敌人被定身并持续受到伤害。
+  source: weapon:1033
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60045
   key: seduced
   cpp: BONK_SPELL_SEDUCED
-  name: Seduced
-  name_zhCN: 魅惑
-  icon: Interface\Icons\Spell_Shadow_Charm
-  description: This enemy takes more damage for a short time.
-  description_zhCN: 短时间内该敌人受到的伤害提高。
+  source: weapon:916
+  display:
+    name: Seduced
+    name_zhCN: 魅惑
+    description: This enemy takes double damage for a short time.
+    description_zhCN: 短时间内该敌人受到的伤害翻倍。
+    reason: Enemy debuff state applied by Seduction; the skill row describes the whole succubus.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60046
   key: schism
   cpp: BONK_SPELL_SCHISM
-  name: Schism
-  name_zhCN: 裂隙
-  icon: Interface\Icons\Spell_Shadow_ShadowWordPain
-  description: This enemy takes more damage from you for a short time.
-  description_zhCN: 短时间内该敌人受到的伤害提高。
+  source: mastery:50129
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60047
   key: hammer_exposed
   cpp: BONK_SPELL_HAMMER_EXPOSED
-  name: Exposed
-  name_zhCN: 破绽
-  icon: Interface\Icons\Spell_Holy_HammerOfWrath
-  description: This enemy takes more damage from you for a short time.
-  description_zhCN: 短时间内该敌人受到的伤害提高。
+  source: mastery:20127
+  display:
+    name: Exposed
+    name_zhCN: 破绽
+    icon: Interface\Icons\Spell_Holy_HammerOfWrath
+    description: This enemy takes more damage from you for a short time.
+    description_zhCN: 短时间内该敌人受到的伤害提高。
+    reason: Enemy debuff state applied by Glimmer of Light; the mastery row names the player skill, not the state.
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: none
 - id: 60048
   key: clearcasting
   cpp: BONK_SPELL_CLEARCASTING
-  name: Clearcasting
-  name_zhCN: 节能施法
-  icon: Interface\Icons\Spell_Shadow_ManaBurn
-  description: Your next spell deals more damage.
-  description_zhCN: 你的下一个法术造成更高伤害。
+  source: mastery:80123
+  stacks:
+    source: aura
+    max: 1
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60049
   key: fingers_of_frost
   cpp: BONK_SPELL_FINGERS_OF_FROST
-  name: Fingers of Frost
-  name_zhCN: 寒冰指
-  icon: Interface\Icons\Spell_Frost_FrostNova
-  description: Your next Frostbolt treats its target as frozen.
-  description_zhCN: 你的下一个寒冰箭将目标视为被冻结。
+  source: mastery:80328
+  stacks:
+    source: aura
+    max: 1
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60050
   key: arcane_potency
   cpp: BONK_SPELL_ARCANE_POTENCY
-  name: Arcane Potency
-  name_zhCN: 奥术潜能
-  icon: Interface\Icons\Spell_Nature_StarFall
-  description: Your next spells have increased critical chance.
-  description_zhCN: 你接下来的法术暴击率提高。
+  source: mastery:80124
+  display:
+    description: After each Blink, your next 3 spells have 10% more critical strike chance (5 with Improved Arcane Potency).
+    description_zhCN: 每次闪现后，你接下来的3个法术的致命一击几率提高10%（强化奥术潜能改为5个）。
+    reason: Improved Arcane Potency raises the granted casts from 3 to 5; the aura shows the live count.
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60051
   key: aegis
   cpp: BONK_SPELL_AEGIS
-  name: Aegis
-  name_zhCN: 神盾
-  icon: Interface\Icons\Spell_Holy_DevotionAura
-  description: Your next absorbed hit triggers Aegis.
-  description_zhCN: 下一次被吸收的攻击会触发神盾。
+  source: weapon:325
+  stacks:
+    source: aura
+    max: 1
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60052
   key: vanish_crit
   cpp: BONK_SPELL_VANISH_CRIT
-  name: Vanish
-  name_zhCN: 消失
-  icon: Interface\Icons\Ability_Stealth
-  description: Your next attack from stealth is a critical strike.
-  description_zhCN: 你潜行后的下一次攻击必定暴击。
+  source: glyph:30
+  stacks:
+    source: aura
+    max: 1
+  permanent: true
+  dynamic:
+    kind: none
 - id: 60053
   key: heavy_runecloth_bandage
   cpp: BONK_SPELL_BANDAGE_AURA
-  name: Heavy Runecloth Bandage
-  name_zhCN: 厚符文布绷带
-  icon: Interface\Icons\INV_Misc_Bandage_12
-  description: Regenerating health while you have not been hit recently.
-  description_zhCN: 近期未受到攻击时持续恢复生命值。
+  source: card:5
+  stacks:
+    source: copies
+  permanent: true
+  dynamic:
+    kind: card_total
 - id: 60054
   key: basic_campfire
   cpp: BONK_SPELL_CAMPFIRE_AURA
-  name: Basic Campfire
-  name_zhCN: 基础营火
-  icon: Interface\Icons\Spell_Fire_Fire
-  description: Regenerating health while you stand still.
-  description_zhCN: 原地站立时持续恢复生命值。
+  source: card:6
+  stacks:
+    source: copies
+  permanent: true
+  dynamic:
+    kind: card_total

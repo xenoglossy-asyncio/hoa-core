@@ -6,19 +6,22 @@ namespace HordesOfAzeroth.Launcher
 {
     static class CoopText
     {
-        static readonly string[] Templates =
+                static readonly string[] TemplateIds =
         {
-            "Port {0} is already in use, so you can't host.",
-            "The host declined your request. You can ask again in {0} seconds.",
-            "Requires Mythic {0} cleared.",
-            "Requires Mastery {0} or lower.",
-            "{0} only works on a regular account. This account is a game master account.",
-            "Database error: {0}",
-            "Other players can't reach you on TCP port {0}. Forward that port on your router to this PC and allow the launcher through Windows Firewall, then host again. If your internet provider shares your address, hosting won't work. You can still join other games.",
-            "Only players on your own network can join. To let others join, forward TCP port {0} on your router to this PC, or enter a public address when you host.",
-            "Only players on your VPN can join. To let others join, forward TCP port {0} on your router to this PC.",
-            "Other players can't reach {0}:{1}. Check that it forwards TCP to port {2} on this PC.",
+            "hoa.launcher.port_0_is_already_in_use_so_you_can_t_host",
+            "hoa.launcher.the_host_declined_your_request_you_can_ask_again_in_0_second",
+            "hoa.launcher.requires_mythic_0_cleared",
+            "hoa.launcher.requires_mastery_0_or_lower",
+            "hoa.launcher.0_only_works_on_a_regular_account_this_account_is_a_game_mas",
+            "hoa.launcher.database_error_0",
+            "hoa.launcher.other_players_can_t_reach_you_on_tcp_port_0_forward_that_por",
+            "hoa.launcher.only_players_on_your_own_network_can_join_to_let_others_join",
+            "hoa.launcher.only_players_on_your_vpn_can_join_to_let_others_join_forward",
+            "hoa.launcher.other_players_can_t_reach_0_1_check_that_it_forwards_tcp_to_",
         };
+
+        static readonly string[] Templates = Array.ConvertAll(TemplateIds, id => LauncherStrings.EnUs[id]);
+
 
         static readonly Regex[] Patterns = Array.ConvertAll(Templates, template =>
             new Regex("^" + Regex.Replace(Regex.Escape(template), @"\\\{\d+\}", "(.+?)") + "$", RegexOptions.Singleline));
@@ -38,7 +41,7 @@ namespace HordesOfAzeroth.Launcher
                     object[] values = new object[match.Groups.Count - 1];
                     for (int g = 1; g < match.Groups.Count; g++)
                         values[g - 1] = Loc.T(match.Groups[g].Value);
-                    return string.Format(CultureInfo.InvariantCulture, Loc.T(Templates[i]), values);
+                    return string.Format(CultureInfo.InvariantCulture, Loc.T(TemplateIds[i]), values);
                 }
             }
             return message;

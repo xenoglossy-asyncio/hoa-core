@@ -154,9 +154,9 @@ end
 function Tip.Yards(value)
     local tenths = floor(value * 10 + 0.5)
     if mod(tenths, 10) == 0 then
-        return L("{1} yd", format("%d", tenths / 10))
+        return L("hoa.addon.1_yd", format("%d", tenths / 10))
     end
-    return L("{1} yd", format("%.1f", tenths / 10))
+    return L("hoa.addon.1_yd", format("%.1f", tenths / 10))
 end
 
 local function Grown(base, current, phrase)
@@ -171,9 +171,9 @@ function Tip.ReachText(radius, range, current, currentRange)
     radius = tonumber(radius) or 0
     range = tonumber(range) or 0
     if radius > 0 then
-        return Grown(radius, current, L["{1} radius"])
+        return Grown(radius, current, L["hoa.addon.1_radius"])
     elseif range > 0 then
-        return Grown(range, currentRange, L["{1} range"])
+        return Grown(range, currentRange, L["hoa.addon.1_range"])
     end
     return ""
 end
@@ -188,7 +188,7 @@ end
 function Tip:AddFooter(spec, school, aoe)
     local text = (spec and spec ~= "") and spec or (school or "")
     if aoe then
-        text = text ~= "" and L("{1}  ·  AoE", text) or L["AoE"]
+        text = text ~= "" and L("hoa.addon.1_aoe", text) or L["hoa.addon.aoe_2"]
     end
     if text ~= "" then
         self:AddSmallLine(text, Tip.GREY)

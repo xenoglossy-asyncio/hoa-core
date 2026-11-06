@@ -5,10 +5,12 @@
 #include "BonkQuests.h"
 #include "Chat.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Log.h"
 #include "Map.h"
 #include "Player.h"
 #include "Utilities/Random.h"
+#include "WorldSession.h"
 
 namespace
 {
@@ -287,7 +289,12 @@ void BonkRun::CloseVendor()
     if (!m_vendorOpen)
         return;
     m_vendorOpen = false;
-    m_player->GetBonkPlayer()->SendAddon("vendorclose");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVendorClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     ResumeUnlessChoiceOpen();
     UpdateOffers();
 }
@@ -469,9 +476,10 @@ void BonkRun::SendVendor() const
     uint32 const rerollCost = GetVendorRerollCost();
     if (bonk->IsAddonReady())
     {
-        bonk->SendAddon("vendor~" + std::to_string(m_coins) + "~" + std::to_string(rerollCost) + "~" +
-            std::to_string((m_vendorLeftMs + IN_MILLISECONDS - 1) / IN_MILLISECONDS) + "~" + VendorName(m_player) + "~" +
-            std::to_string(GetVendorRestocksLeft()));
+        WorldPacket open(SMSG_HOA_MESSAGE);
+        HoAWriteVendorOpen(open, m_coins, rerollCost, (m_vendorLeftMs + IN_MILLISECONDS - 1) / IN_MILLISECONDS, VendorName(m_player),
+            GetVendorRestocksLeft());
+        m_player->GetSession()->SendPacket(&open);
         for (size_t i = 0; i < m_vendorStock.size(); ++i)
         {
             VendorSlot const& slot = m_vendorStock[i];
@@ -502,11 +510,14 @@ void BonkRun::SendVendor() const
                 if (card.isCard || (card.isWeapon && card.step != BONK_STEP_NEW))
                     rarity = std::to_string(card.rarity);
             }
-            bonk->SendAddon("vslot~" + std::to_string(i + 1) + "~" + kind + "~" + std::to_string(rank) + "~" + std::to_string(maxRank) + "~" +
-                name + "~" + icon + "~" + description + "~" + rarity + "~" + (slot.locked ? "1" : "0") + "~" + std::to_string(slot.price) + "~" +
-                std::to_string(slot.state));
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteVendorSlot(data, i + 1, kind, rank, maxRank, name, icon, description, rarity, slot.locked, slot.price,
+                slot.state);
+            m_player->GetSession()->SendPacket(&data);
         }
-        bonk->SendAddon("vendorend");
+        WorldPacket end(SMSG_HOA_MESSAGE);
+        HoAWriteVendorEnd(end);
+        m_player->GetSession()->SendPacket(&end);
         return;
     }
 

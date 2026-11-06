@@ -46,7 +46,7 @@ holder:SetScript("OnEvent", function()
         end
     end)
     if not ok then
-        DEFAULT_CHAT_FRAME:AddMessage(L("Hordes of Azeroth: missile models were not preloaded ({1}).", tostring(err)))
+        DEFAULT_CHAT_FRAME:AddMessage(L("hoa.addon.hordes_of_azeroth_missile_models_were_not_preloaded_1", tostring(err)))
     end
     this.shownFor = 0
     this:SetScript("OnUpdate", function()

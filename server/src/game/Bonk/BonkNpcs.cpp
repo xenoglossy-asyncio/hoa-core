@@ -7,10 +7,12 @@
 #include "BonkRun.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "ScriptedGossip.h"
+#include "WorldSession.h"
 
 #include <cctype>
 
@@ -300,7 +302,12 @@ bool GOGossipSelect_go_bonk_portal(Player* player, GameObject* go, uint32 , uint
     if (run && action == PORTAL_ACTION_ENDLESS && player->GetBonkPlayer()->IsAddonReady() && (run->IsOwnPortal(go) || BonkCoop::GroupPortalRun(player, go)))
     {
         player->CLOSE_GOSSIP_MENU();
-        player->GetBonkPlayer()->SendAddon("portalendless");
+        if (player->GetBonkPlayer()->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWritePortalEndless(data);
+            player->GetSession()->SendPacket(&data);
+        }
         return true;
     }
     if (action == PORTAL_ACTION_ENDLESS)
@@ -320,8 +327,9 @@ bool GOGossipSelect_go_bonk_portal(Player* player, GameObject* go, uint32 , uint
     if (action == PORTAL_ACTION_HOME && player->GetBonkPlayer()->IsAddonReady())
     {
         player->CLOSE_GOSSIP_MENU();
-        player->GetBonkPlayer()->SendAddon(std::string("portalhome~") + (run->IsVaultEmptyWithFinds() ? "1" : "0") + "~" +
-            (run->GetStage() >= run->GetTier().stages ? "1" : "0"));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWritePortalHome(data, run->IsVaultEmptyWithFinds(), run->GetStage() >= run->GetTier().stages);
+        player->GetSession()->SendPacket(&data);
         return true;
     }
     if (action == PORTAL_ACTION_HOME && run->IsVaultEmptyWithFinds())

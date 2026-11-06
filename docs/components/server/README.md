@@ -6,6 +6,26 @@ VMaNGOS 1.12.1 server (C++), with the HoA game logic in `src/game/Bonk/`.
 
 **Status: imported.** The directory will be reshaped according to the [architecture](../../architecture/README.md).
 
+## BonkRun split
+
+`BonkRun` used to live in one 14.8k-line `BonkRun.cpp`. It is now split by domain, with the
+file-local constants and helpers in `BonkRunInternal.h`:
+
+- `BonkRunLifecycle.cpp`: construction, stage selection, entering a run, route learning.
+- `BonkRunUpdate.cpp`: the per-tick update, offers, events and formations.
+- `BonkRunSpawn.cpp`: spawn target selection, sectors, lanes, crowd placement, emergence and
+  pathfinding checks.
+- `BonkRunCombat.cpp`: damage caps and mitigation, Necrotic, boss pressure, shields, crits,
+  death and revive.
+- `BonkRunLoot.cpp`: mob spawning, chests, glows, valor and powerups.
+- `BonkRunStage.cpp`: clearing a stage, portals, next stage and endless transitions.
+- `BonkRunWeapons.cpp`: weapon strikes, bolts, shots, keyword clouds, traps and projectiles.
+- `BonkRun.cpp`: waves, scaling, stats, enemy attacks and the remaining run logic.
+
+`BonkRunInternal.h` holds the anonymous-namespace constants and helpers and declares the mutable
+file state in `BonkRunShared`; the definitions live once in `BonkRun.cpp`, so every split file sees
+the same `s_spawnKit`, `s_spawnLookLeadMs`, `s_nextHelperLevel` and `t_missileLookSource`.
+
 ## Planned layering
 
 ```

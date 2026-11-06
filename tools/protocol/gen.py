@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -12,6 +13,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "shared" / "protocol" / "messages.yaml"
 CONTENT_HASH = ROOT / "shared" / "content" / "content.hash"
+CONTENT_MANIFEST = ROOT / "shared" / "content" / "content.manifest.json"
 CPP_TARGET = ROOT / "server" / "src" / "game" / "Bonk" / "HoaProtocol.h"
 RUST_TARGET = ROOT / "client" / "crates" / "hoa" / "src" / "protocol_generated.rs"
 
@@ -68,8 +70,8 @@ def load() -> dict:
         if message.get("direction") not in ("server_to_client", "client_to_server"):
             raise SystemExit(f"messages.yaml: {name} needs a direction")
         fields = message.get("fields")
-        if not isinstance(fields, list) or not fields:
-            raise SystemExit(f"messages.yaml: {name} needs fields")
+        if not isinstance(fields, list):
+            raise SystemExit(f"messages.yaml: {name} needs a field list")
         for field in fields:
             if not isinstance(field.get("name"), str) or field.get("type") not in CPP_TYPES:
                 raise SystemExit(f"messages.yaml: {name} has a bad field")
@@ -120,9 +122,10 @@ def compile_cpp(schema: dict) -> bytes:
             else f"std::string const& {camel(field['name'])}"
             for field in message["fields"]
         )
+        args = f", {params}" if params else ""
         lines += [
             f"inline void HoAWrite{camel(message['name'])[:1].upper()}{camel(message['name'])[1:]}"
-            f"(WorldPacket& packet, {params})",
+            f"(WorldPacket& packet{args})",
             "{",
             f"    packet << uint16(HOA_MSG_{upper(message['name'])});",
         ]
@@ -136,7 +139,11 @@ def compile_cpp(schema: dict) -> bytes:
     return "\n".join(lines).encode("utf-8")
 
 
-def compile_rust(schema: dict, content_hash: str) -> bytes:
+def compile_rust(
+    schema: dict,
+    content_hash: str,
+    sections: list[tuple[str, str]] | None = None,
+) -> bytes:
     used: set[str] = set()
     for message in schema["messages"]:
         used.update(field["type"] for field in message["fields"])
@@ -148,6 +155,13 @@ def compile_rust(schema: dict, content_hash: str) -> bytes:
         f"pub const CONTENT_HASH: &str = {rust_string(content_hash)};",
         "",
     ]
+    if sections:
+        entries = ", ".join(
+            f"({rust_string(name)}, {rust_string(hash_value)})"
+            for name, hash_value in sections
+        )
+        lines.append(f"pub const CONTENT_SECTIONS: &[(&str, &str)] = &[{entries}];")
+        lines.append("")
     for message in schema["messages"]:
         lines.append(f"pub const MSG_{upper(message['name'])}: u16 = 0x{message['id']:04X};")
     lines.append("")
@@ -174,10 +188,9 @@ def compile_rust(schema: dict, content_hash: str) -> bytes:
 
     for message in schema["messages"]:
         struct = camel(message["name"])[:1].upper() + camel(message["name"])[1:]
-        lines += [
-            f"fn decode_{message['name']}(body: &[u8]) -> Option<{struct}> {{",
-            "    let mut body = body;",
-        ]
+        lines.append(f"fn decode_{message['name']}(body: &[u8]) -> Option<{struct}> {{")
+        if message["fields"]:
+            lines.append("    let mut body = body;")
         for field in message["fields"]:
             lines.append(
                 f"    let {field['name']} = {RUST_READERS[field['type']][0]}(&mut body)?;"
@@ -247,11 +260,13 @@ def compile_rust(schema: dict, content_hash: str) -> bytes:
     return "\n".join(lines).encode("utf-8")
 
 
-def outputs(content_hash: str) -> list[tuple[str, Path, bytes]]:
+def outputs(
+    content_hash: str, sections: list[tuple[str, str]] | None = None
+) -> list[tuple[str, Path, bytes]]:
     schema = load()
     return [
         ("protocol cpp", CPP_TARGET, compile_cpp(schema)),
-        ("protocol rust", RUST_TARGET, compile_rust(schema, content_hash)),
+        ("protocol rust", RUST_TARGET, compile_rust(schema, content_hash, sections)),
     ]
 
 
@@ -261,11 +276,21 @@ def read_content_hash() -> str:
     return CONTENT_HASH.read_text(encoding="ascii").strip()
 
 
+def read_content_sections() -> list[tuple[str, str]]:
+    if not CONTENT_MANIFEST.exists():
+        return []
+    manifest = json.loads(CONTENT_MANIFEST.read_text(encoding="utf-8"))
+    return sorted(
+        (name, section["hash"])
+        for name, section in (manifest.get("sections") or {}).items()
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    generated = outputs(read_content_hash())
+    generated = outputs(read_content_hash(), read_content_sections())
     if args.check:
         stale = [name for name, target, data in generated
                  if (target.read_bytes().replace(b"\r\n", b"\n") if target.exists() else b"") != data]

@@ -8,112 +8,112 @@ BONK_COOP_POLL_EVERY = 1;
 BONK_COOP_MYTHIC_START = 9;
 BONK_COOP_MODES = { "Levels", "Dungeon", "Invasion" };
 BONK_COOP_WORDS = {
-	["Normal"] = L["Normal"], ["Heroic"] = L["Heroic"], ["Mythic"] = L["Mythic"],
-	["Levels"] = L["Levels"], ["Dungeon"] = L["Dungeon"], ["Invasion"] = L["Invasion"],
+	["Normal"] = L["hoa.ui.glue.normal"], ["Heroic"] = L["hoa.ui.glue.heroic"], ["Mythic"] = L["hoa.ui.glue.mythic"],
+	["Levels"] = L["hoa.ui.glue.levels"], ["Dungeon"] = L["hoa.ui.glue.dungeon"], ["Invasion"] = L["hoa.ui.glue.invasion"],
 };
 BONK_COOP_PLACES = {
-	["Westfall"] = L["Westfall"], ["Molten Core"] = L["Molten Core"], ["The Barrens"] = L["The Barrens"],
-	["Duskwood"] = L["Duskwood"], ["Zul'Gurub"] = L["Zul'Gurub"], ["Ruins of Ahn'Qiraj"] = L["Ruins of Ahn'Qiraj"],
-	["Tanaris"] = L["Tanaris"], ["Un'Goro Crater"] = L["Un'Goro Crater"], ["Stranglethorn Vale"] = L["Stranglethorn Vale"],
-	["Desolace"] = L["Desolace"], ["Badlands"] = L["Badlands"], ["Arathi Highlands"] = L["Arathi Highlands"],
-	["Swamp of Sorrows"] = L["Swamp of Sorrows"], ["Burning Steppes"] = L["Burning Steppes"],
-	["Eastern Plaguelands"] = L["Eastern Plaguelands"], ["Western Plaguelands"] = L["Western Plaguelands"],
-	["Feralas"] = L["Feralas"], ["Searing Gorge"] = L["Searing Gorge"], ["Felwood"] = L["Felwood"], ["Dun Morogh"] = L["Dun Morogh"],
+	["Westfall"] = L["hoa.ui.glue.westfall"], ["Molten Core"] = L["hoa.ui.glue.molten_core"], ["The Barrens"] = L["hoa.ui.glue.the_barrens"],
+	["Duskwood"] = L["hoa.ui.glue.duskwood"], ["Zul'Gurub"] = L["hoa.ui.glue.zul_gurub"], ["Ruins of Ahn'Qiraj"] = L["hoa.ui.glue.ruins_of_ahn_qiraj"],
+	["Tanaris"] = L["hoa.ui.glue.tanaris"], ["Un'Goro Crater"] = L["hoa.ui.glue.un_goro_crater"], ["Stranglethorn Vale"] = L["hoa.ui.glue.stranglethorn_vale"],
+	["Desolace"] = L["hoa.ui.glue.desolace"], ["Badlands"] = L["hoa.ui.glue.badlands"], ["Arathi Highlands"] = L["hoa.ui.glue.arathi_highlands"],
+	["Swamp of Sorrows"] = L["hoa.ui.glue.swamp_of_sorrows"], ["Burning Steppes"] = L["hoa.ui.glue.burning_steppes"],
+	["Eastern Plaguelands"] = L["hoa.ui.glue.eastern_plaguelands"], ["Western Plaguelands"] = L["hoa.ui.glue.western_plaguelands"],
+	["Feralas"] = L["hoa.ui.glue.feralas"], ["Searing Gorge"] = L["hoa.ui.glue.searing_gorge"], ["Felwood"] = L["hoa.ui.glue.felwood"], ["Dun Morogh"] = L["hoa.ui.glue.dun_morogh"],
 };
 BONK_COOP_NOTES = {
-	["The launcher isn't running."] = L["The launcher isn't running."],
-	["The launcher didn't answer."] = L["The launcher didn't answer."],
-	["The launcher sent a broken answer."] = L["The launcher sent an invalid response."],
-	["Unknown call."] = L["Unknown call."],
-	["Invalid request."] = L["Invalid request."],
-	["Unknown request."] = L["Unknown request."],
-	["Not found."] = L["Not found."],
-	["Co-op isn't available in this build."] = L["Co-op isn't available in this build."],
-	["Can't connect to the co-op service. Try again later."] = L["Can't connect to the co-op service. Try again later."],
-	["The co-op service sent an invalid response."] = L["The co-op service sent an invalid response."],
-	["The co-op service refused the request."] = L["The co-op service refused the request."],
-	["Hosting only works on a regular account. This account is a game master account."] = L["Game master accounts can't host games."],
-	["Joining a co-op game only works on a regular account. This account is a game master account."] = L["Game master accounts can't join co-op games."],
-	["Too many requests."] = L["Too many requests."],
-	["Too many requests. Try again in a minute."] = L["Too many requests. Try again in a minute."],
-	["Too many requests. Try again in a few minutes."] = L["Too many requests. Try again in a few minutes."],
-	["Too many lobbies created. Try again in a few minutes."] = L["Too many lobbies created. Try again in a few minutes."],
-	["You're already hosting a game."] = L["You're already hosting a game."],
-	["No game found with that code."] = L["No game found with that code."],
-	["That game has ended."] = L["That game has ended."],
-	["Version mismatch: that game runs a different version of Hordes of Azeroth."] = L["That game runs a different version of Hordes of Azeroth."],
-	["Incorrect password."] = L["Incorrect password."],
-	["Game is full."] = L["That game is full."],
-	["Every open slot has a pending join request. Try again shortly."] = L["Every open slot has a pending join request. Try again shortly."],
-	["Party already has that class."] = L["The party already has that class."],
-	["You already have a pending join request."] = L["You already have a pending join request."],
-	["Join request expired."] = L["Join request expired."],
-	["The host didn't respond."] = L["The host didn't respond."],
-	["The host closed the lobby."] = L["The host closed the lobby."],
-	["The host couldn't take your character."] = L["The host couldn't load your character."],
-	["Lost connection to the host. Your progress up to the last few seconds is saved."] = L["Lost connection to the host. Your progress up to the last few seconds is saved."],
-	["You were removed from the party."] = L["You were removed from the party."],
-	["That join has ended."] = L["Your join request has ended."],
-	["Other players can't connect to you: your router blocks automatic port forwarding, or your internet provider shares your address. You can still join other games."] = L["Other players can't connect to you because your router blocks automatic port forwarding or your internet provider shares your address. You can still join other games."],
-	["Your lobby expired. Host again to list it."] = L["Your lobby expired. Host again to list it."],
-	["The transfer was too large."] = L["The transfer was too large."],
-	["The connection closed during the transfer."] = L["The connection closed during the transfer."],
-	["The game server didn't answer. Is it running?"] = L["The game server didn't answer. Is it running?"],
-	["The joining player's account couldn't be created."] = L["The joining player's account couldn't be created."],
-	["broken ledger"] = L["The account progress is damaged."],
-	["The account progress couldn't be loaded."] = L["The account progress couldn't be loaded."],
-	["That character is online."] = L["That character is online."],
-	["That character belongs to another account."] = L["That character belongs to another account."],
-	["The old copy of the character couldn't be removed."] = L["The old copy of the character couldn't be removed."],
+	["The launcher isn't running."] = L["hoa.ui.glue.the_launcher_isn_t_running"],
+	["The launcher didn't answer."] = L["hoa.ui.glue.the_launcher_didn_t_answer"],
+	["The launcher sent a broken answer."] = L["hoa.ui.glue.the_launcher_sent_an_invalid_response"],
+	["Unknown call."] = L["hoa.ui.glue.unknown_call"],
+	["Invalid request."] = L["hoa.ui.glue.invalid_request"],
+	["Unknown request."] = L["hoa.ui.glue.unknown_request"],
+	["Not found."] = L["hoa.ui.glue.not_found"],
+	["Co-op isn't available in this build."] = L["hoa.ui.glue.co_op_isn_t_available_in_this_build"],
+	["Can't connect to the co-op service. Try again later."] = L["hoa.ui.glue.can_t_connect_to_the_co_op_service_try_again_later"],
+	["The co-op service sent an invalid response."] = L["hoa.ui.glue.the_co_op_service_sent_an_invalid_response"],
+	["The co-op service refused the request."] = L["hoa.ui.glue.the_co_op_service_refused_the_request"],
+	["Hosting only works on a regular account. This account is a game master account."] = L["hoa.ui.glue.game_master_accounts_can_t_host_games"],
+	["Joining a co-op game only works on a regular account. This account is a game master account."] = L["hoa.ui.glue.game_master_accounts_can_t_join_co_op_games"],
+	["Too many requests."] = L["hoa.ui.glue.too_many_requests"],
+	["Too many requests. Try again in a minute."] = L["hoa.ui.glue.too_many_requests_try_again_in_a_minute"],
+	["Too many requests. Try again in a few minutes."] = L["hoa.ui.glue.too_many_requests_try_again_in_a_few_minutes"],
+	["Too many lobbies created. Try again in a few minutes."] = L["hoa.ui.glue.too_many_lobbies_created_try_again_in_a_few_minutes"],
+	["You're already hosting a game."] = L["hoa.ui.glue.you_re_already_hosting_a_game"],
+	["No game found with that code."] = L["hoa.ui.glue.no_game_found_with_that_code"],
+	["That game has ended."] = L["hoa.ui.glue.that_game_has_ended"],
+	["Version mismatch: that game runs a different version of Hordes of Azeroth."] = L["hoa.ui.glue.that_game_runs_a_different_version_of_hordes_of_azeroth"],
+	["Incorrect password."] = L["hoa.ui.glue.incorrect_password"],
+	["Game is full."] = L["hoa.ui.glue.that_game_is_full"],
+	["Every open slot has a pending join request. Try again shortly."] = L["hoa.ui.glue.every_open_slot_has_a_pending_join_request_try_again_shortly"],
+	["Party already has that class."] = L["hoa.ui.glue.the_party_already_has_that_class"],
+	["You already have a pending join request."] = L["hoa.ui.glue.you_already_have_a_pending_join_request"],
+	["Join request expired."] = L["hoa.ui.glue.join_request_expired"],
+	["The host didn't respond."] = L["hoa.ui.glue.the_host_didn_t_respond"],
+	["The host closed the lobby."] = L["hoa.ui.glue.the_host_closed_the_lobby"],
+	["The host couldn't take your character."] = L["hoa.ui.glue.the_host_couldn_t_load_your_character"],
+	["Lost connection to the host. Your progress up to the last few seconds is saved."] = L["hoa.ui.glue.lost_connection_to_the_host_your_progress_up_to_the_last_few"],
+	["You were removed from the party."] = L["hoa.ui.glue.you_were_removed_from_the_party"],
+	["That join has ended."] = L["hoa.ui.glue.your_join_request_has_ended"],
+	["Other players can't connect to you: your router blocks automatic port forwarding, or your internet provider shares your address. You can still join other games."] = L["hoa.ui.glue.other_players_can_t_connect_to_you_because_your_router_block"],
+	["Your lobby expired. Host again to list it."] = L["hoa.ui.glue.your_lobby_expired_host_again_to_list_it"],
+	["The transfer was too large."] = L["hoa.ui.glue.the_transfer_was_too_large"],
+	["The connection closed during the transfer."] = L["hoa.ui.glue.the_connection_closed_during_the_transfer"],
+	["The game server didn't answer. Is it running?"] = L["hoa.ui.glue.the_game_server_didn_t_answer_is_it_running"],
+	["The joining player's account couldn't be created."] = L["hoa.ui.glue.the_joining_player_s_account_couldn_t_be_created"],
+	["broken ledger"] = L["hoa.ui.glue.the_account_progress_is_damaged"],
+	["The account progress couldn't be loaded."] = L["hoa.ui.glue.the_account_progress_couldn_t_be_loaded"],
+	["That character is online."] = L["hoa.ui.glue.that_character_is_online"],
+	["That character belongs to another account."] = L["hoa.ui.glue.that_character_belongs_to_another_account"],
+	["The old copy of the character couldn't be removed."] = L["hoa.ui.glue.the_old_copy_of_the_character_couldn_t_be_removed"],
 };
 BONK_COOP_TEXTS = {
-	{ "BonkCoopSoloButton", L["Solo"] },
-	{ "BonkCoopCoopButton", L["Co-op"] },
-	{ "BonkCoopFindButton", L["Browse Games"] },
-	{ "BonkCoopHostButton", L["Host Game"] },
-	{ "BonkCoopStatusButton", L["Close Lobby"] },
-	{ "BonkCoopBrowserTitle", L["Co-op Games"] },
-	{ "BonkCoopHeadGame", L["lobby::Game"] },
-	{ "BonkCoopHeadClasses", L["Classes"] },
-	{ "BonkCoopHeadDifficulty", L["Difficulty"] },
-	{ "BonkCoopHeadPlayers", L["Players"] },
-	{ "BonkCoopDetailGroup", L["Party"] },
-	{ "BonkCoopFilterButton", L["Filters"] },
-	{ "BonkCoopHideFullText", L["Hide Full Games"] },
-	{ "BonkCoopHideLockedText", L["Hide Password-Protected Games"] },
-	{ "BonkCoopHideUnfitText", L["Hide Unjoinable Games"] },
-	{ "BonkCoopCodeButton", L["Join with Code"] },
-	{ "BonkCoopRefreshButton", L["Refresh"] },
-	{ "BonkCoopAskButton", L["Join"] },
-	{ "BonkCoopCloseButton", L["Close"] },
-	{ "BonkCoopHostTitle", L["Host Game"] },
-	{ "BonkCoopNameLabel", L["Game Name"] },
-	{ "BonkCoopPrivacyLabel", L["Privacy"] },
-	{ "BonkCoopDifficultyLabel", L["Difficulty"] },
-	{ "BonkCoopPauseLabel", L["Pause"] },
-	{ "BonkCoopXpLabel", L["XP"] },
-	{ "BonkCoopModeLabel", L["Mode"] },
-	{ "BonkCoopPlayersLabel", L["Players"] },
-	{ "BonkCoopAddressLabel", L["Public Address (optional)"] },
-	{ "BonkCoopAddressNote", L["For ZeroTier, Tailscale, a tunnel or a forwarded port. Otherwise leave empty. ZeroTier and Tailscale games can only be joined with a code."] },
-	{ "BonkCoopWhoOpenText", L["Public"] },
-	{ "BonkCoopWhoPasswordText", L["Password Protected"] },
-	{ "BonkCoopWhoCodeText", L["Hidden (Code Only)"] },
-	{ "BonkCoopFloorEditLevel", L["difficulty level::level"] },
-	{ "BonkCoopAutoCheckText", L["Auto-Accept Requests"] },
-	{ "BonkCoopSameClassCheckText", L["Allow Duplicate Classes"] },
-	{ "BonkCoopNewCheckText", L["Only allow Mastery"] },
-	{ "BonkCoopMasteryEditSuffix", L["after the number::or lower"] },
-	{ "BonkCoopMinCheckText", L["Require Mythic"] },
-	{ "BonkCoopMinEditSuffix", L["after the number::cleared"] },
-	{ "BonkCoopHostGoButton", L["verb::Host"] },
-	{ "BonkCoopHostCancelButton", L["Cancel"] },
-	{ "BonkCoopRequest1Accept", L["Accept"] },
-	{ "BonkCoopRequest1Decline", L["Decline"] },
-	{ "BonkCoopRequest2Accept", L["Accept"] },
-	{ "BonkCoopRequest2Decline", L["Decline"] },
-	{ "BonkCoopRequest3Accept", L["Accept"] },
-	{ "BonkCoopRequest3Decline", L["Decline"] },
+	{ "BonkCoopSoloButton", L["hoa.ui.glue.solo"] },
+	{ "BonkCoopCoopButton", L["hoa.ui.glue.co_op"] },
+	{ "BonkCoopFindButton", L["hoa.ui.glue.browse_games"] },
+	{ "BonkCoopHostButton", L["hoa.ui.glue.host_game"] },
+	{ "BonkCoopStatusButton", L["hoa.ui.glue.close_lobby"] },
+	{ "BonkCoopBrowserTitle", L["hoa.ui.glue.co_op_games"] },
+	{ "BonkCoopHeadGame", L["hoa.ui.glue.lobby_game"] },
+	{ "BonkCoopHeadClasses", L["hoa.ui.glue.classes"] },
+	{ "BonkCoopHeadDifficulty", L["hoa.ui.glue.difficulty"] },
+	{ "BonkCoopHeadPlayers", L["hoa.ui.glue.players"] },
+	{ "BonkCoopDetailGroup", L["hoa.ui.glue.party"] },
+	{ "BonkCoopFilterButton", L["hoa.ui.glue.filters"] },
+	{ "BonkCoopHideFullText", L["hoa.ui.glue.hide_full_games"] },
+	{ "BonkCoopHideLockedText", L["hoa.ui.glue.hide_password_protected_games"] },
+	{ "BonkCoopHideUnfitText", L["hoa.ui.glue.hide_unjoinable_games"] },
+	{ "BonkCoopCodeButton", L["hoa.ui.glue.join_with_address"] },
+	{ "BonkCoopRefreshButton", L["hoa.ui.glue.refresh"] },
+	{ "BonkCoopAskButton", L["hoa.ui.glue.join"] },
+	{ "BonkCoopCloseButton", L["hoa.ui.glue.close"] },
+	{ "BonkCoopHostTitle", L["hoa.ui.glue.host_game"] },
+	{ "BonkCoopNameLabel", L["hoa.ui.glue.game_name"] },
+	{ "BonkCoopPrivacyLabel", L["hoa.ui.glue.privacy"] },
+	{ "BonkCoopDifficultyLabel", L["hoa.ui.glue.difficulty"] },
+	{ "BonkCoopPauseLabel", L["hoa.ui.glue.pause"] },
+	{ "BonkCoopXpLabel", L["hoa.ui.glue.xp"] },
+	{ "BonkCoopModeLabel", L["hoa.ui.glue.mode"] },
+	{ "BonkCoopPlayersLabel", L["hoa.ui.glue.players"] },
+	{ "BonkCoopAddressLabel", L["hoa.ui.glue.public_address_optional"] },
+	{ "BonkCoopAddressNote", L["hoa.ui.glue.for_zerotier_tailscale_a_tunnel_or_a_forwarded_port_otherwis"] },
+	{ "BonkCoopWhoOpenText", L["hoa.ui.glue.public"] },
+	{ "BonkCoopWhoPasswordText", L["hoa.ui.glue.password_protected"] },
+	{ "BonkCoopWhoCodeText", L["hoa.ui.glue.hidden_code_only"] },
+	{ "BonkCoopFloorEditLevel", L["hoa.ui.glue.difficulty_level_level"] },
+	{ "BonkCoopAutoCheckText", L["hoa.ui.glue.auto_accept_requests"] },
+	{ "BonkCoopSameClassCheckText", L["hoa.ui.glue.allow_duplicate_classes"] },
+	{ "BonkCoopNewCheckText", L["hoa.ui.glue.only_allow_mastery"] },
+	{ "BonkCoopMasteryEditSuffix", L["hoa.ui.glue.after_the_number_or_lower"] },
+	{ "BonkCoopMinCheckText", L["hoa.ui.glue.require_mythic"] },
+	{ "BonkCoopMinEditSuffix", L["hoa.ui.glue.after_the_number_cleared"] },
+	{ "BonkCoopHostGoButton", L["hoa.ui.glue.verb_host"] },
+	{ "BonkCoopHostCancelButton", L["hoa.ui.glue.cancel"] },
+	{ "BonkCoopRequest1Accept", L["hoa.ui.glue.accept"] },
+	{ "BonkCoopRequest1Decline", L["hoa.ui.glue.decline"] },
+	{ "BonkCoopRequest2Accept", L["hoa.ui.glue.accept"] },
+	{ "BonkCoopRequest2Decline", L["hoa.ui.glue.decline"] },
+	{ "BonkCoopRequest3Accept", L["hoa.ui.glue.accept"] },
+	{ "BonkCoopRequest3Decline", L["hoa.ui.glue.decline"] },
 };
 BONK_COOP_AWAY_WAIT = 30;
 BONK_COOP_RECONNECT_DELAY = 1;
@@ -236,46 +236,46 @@ function BonkCoop_Note(text)
 	end
 	local _, _, value = string.find(text, "^Requires Mythic (%d+) cleared%.$");
 	if ( value ) then
-		return L("Requires Mythic {1} cleared.", value);
+		return L("hoa.ui.glue.requires_mythic_1_cleared_2", value);
 	end
 	_, _, value = string.find(text, "^Requires Mastery (%d+) or lower%.$");
 	if ( value ) then
-		return L("Requires Mastery {1} or lower.", value);
+		return L("hoa.ui.glue.requires_mastery_1_or_lower", value);
 	end
 	_, _, value = string.find(text, "^The host declined your request%. You can ask again in (%d+) seconds%.$");
 	if ( value ) then
-		return L("The host declined your request. You can ask again in {1} seconds.", value);
+		return L("hoa.ui.glue.the_host_declined_your_request_you_can_ask_again_in_1_second", value);
 	end
 	_, _, value = string.find(text, "^Port (%d+) is already in use, so you can't host%.$");
 	if ( value ) then
-		return L("Port {1} is already in use, so you can't host.", value);
+		return L("hoa.ui.glue.port_1_is_already_in_use_so_you_can_t_host", value);
 	end
 	_, _, value = string.find(text, "^There is no account called (.*)%.$");
 	if ( value ) then
-		return L("There is no account called {1}.", value);
+		return L("hoa.ui.glue.there_is_no_account_called_1", value);
 	end
 	_, _, value = string.find(text, "^There is no character called (.*)%.$");
 	if ( value ) then
-		return L("There is no character called {1}.", value);
+		return L("hoa.ui.glue.there_is_no_character_called_1", value);
 	end
 	_, _, value = string.find(text, "^No free name for (.*)%.$");
 	if ( value ) then
-		return L("Couldn't find a free name for {1}.", value);
+		return L("hoa.ui.glue.couldn_t_find_a_free_name_for_1", value);
 	end
 	_, _, value = string.find(text, "^The character couldn't be loaded %((%d+)%)%.$");
 	if ( value ) then
-		return L("The character couldn't be loaded ({1}).", value);
+		return L("hoa.ui.glue.the_character_couldn_t_be_loaded_1", value);
 	end
 	_, _, value = string.find(text, "^Database error: (.*)$");
 	if ( value ) then
-		return L("Database error: {1}", value);
+		return L("hoa.ui.glue.database_error_1", value);
 	end
 	return text;
 end
 
 function BonkCoop_Call(method, path, fields)
 	if ( not HoaCoop_Call ) then
-		return nil, L["This client doesn't support co-op."];
+		return nil, L["hoa.ui.glue.this_client_doesn_t_support_co_op"];
 	end
 	return BonkCoop_ParseAnswer(HoaCoop_Call(method, path, fields and BonkCoop_Form(fields) or ""));
 end
@@ -295,7 +295,7 @@ end
 
 function BonkCoop_CallLater(method, path, fields, key, done)
 	if ( not HoaCoop_Start ) then
-		done(nil, L["This client doesn't support co-op."]);
+		done(nil, L["hoa.ui.glue.this_client_doesn_t_support_co_op"]);
 		return;
 	end
 	if ( BonkCoop.calls[key] ) then
@@ -343,13 +343,13 @@ function BonkCoop_SetClassIcon(texture, token)
 end
 
 function BonkCoop_Hero()
-	local class = BONK_CLASSES[Bonk.classIndex];
-	local hero = class and Bonk.heroes[class.token];
+	local class = BonkHero_SelectedClass();
+	local hero = BonkHero_Selected();
 	if ( not hero ) then
 		return nil;
 	end
 	local stats = BONK_STATS and BONK_STATS.heroes and BONK_STATS.heroes[hero.name] or {};
-	return { name = hero.name, class = class.token, className = class.display, race = hero.race, mastery = stats.mastery or 0, best = stats.bestLevel or 0, ironman = stats.ironman };
+	return { name = hero.name, class = class.token, className = class.display, race = hero.race, mastery = stats.mastery or 0, best = stats.bestLevel or 0, ironman = stats.ironman, hardcore = stats.hardcore };
 end
 
 function BonkCoop_IsJoined()
@@ -393,8 +393,8 @@ function BonkCoop_Apply()
 		BonkCoopBar:Hide();
 		BonkHeroPlayButton:Show();
 		BonkHeroWipeButton:Hide();
-		BonkCoopStatusText:SetText(L["You're in a co-op party."]);
-		BonkCoopStatusButton:SetText(L["Leave Party"]);
+		BonkCoopStatusText:SetText(L["hoa.ui.glue.you_re_in_a_co_op_party"]);
+		BonkCoopStatusButton:SetText(L["hoa.ui.glue.leave_party"]);
 		BonkCoopStatus:Show();
 		return;
 	end
@@ -402,7 +402,7 @@ function BonkCoop_Apply()
 		BonkCoopBar:Hide();
 		BonkHeroPlayButton:Show();
 		BonkCoopStatusText:SetText(BonkCoop_HostLine());
-		BonkCoopStatusButton:SetText(L["Close Lobby"]);
+		BonkCoopStatusButton:SetText(L["hoa.ui.glue.close_lobby"]);
 		BonkCoopStatus:Show();
 		return;
 	end
@@ -412,11 +412,11 @@ function BonkCoop_Apply()
 		BonkHeroPlayButton:Hide();
 		BonkCoopBar:Show();
 		if ( hero ) then
-			BonkCoopBarText:SetText(L("Joins as {1}", hero.name));
+			BonkCoopBarText:SetText(L("hoa.ui.glue.joins_as_1", hero.name));
 			BonkCoopFindButton:Enable();
 			BonkCoopHostButton:Enable();
 		else
-			BonkCoopBarText:SetText(L("Create a {1} first.", BONK_CLASSES[Bonk.classIndex].display));
+			BonkCoopBarText:SetText(L("hoa.ui.glue.create_a_1_first", BonkHero_SelectedClass().display));
 			BonkCoopFindButton:Disable();
 			BonkCoopHostButton:Disable();
 		end
@@ -429,9 +429,9 @@ end
 function BonkCoop_HostLine()
 	local host = BonkCoop.host;
 	if ( host.state == "starting" ) then
-		return L["Opening lobby..."];
+		return L["hoa.ui.glue.opening_lobby"];
 	end
-	return L("Lobby \"{1}\" · {2}/{3} players · Code: {4}", host.name or "", table.getn(host.members or {}), host.max or "4", host.code or "");
+	return L("hoa.ui.glue.host_1_2_3_players_address_4", host.name or "", table.getn(host.members or {}), host.max or "4", host.address or "");
 end
 
 local OriginalUpdateControls = BonkHero_UpdateControls;
@@ -451,7 +451,10 @@ end
 
 function BonkCoop_RefreshList()
 	BonkCoop.listTimer = 0;
-	BonkCoop_CallLater("GET", "/lobbies", nil, "lobbies", BonkCoop_ShowLobbies);
+	BonkCoop.lobbies = {};
+	BonkCoop.loading = nil;
+	BonkCoop.listError = L["hoa.ui.glue.the_public_game_list_is_gone_ask_the_host_for_their_address"];
+	BonkCoop_UpdateList();
 end
 
 function BonkCoop_ShowLobbies(lines, problem)
@@ -528,7 +531,7 @@ function BonkCoop_UpdateFilterButton()
 			active = active + 1;
 		end
 	end
-	BonkCoopFilterButton:SetText(active > 0 and L("Filters ({1})", active) or L["Filters"]);
+	BonkCoopFilterButton:SetText(active > 0 and L("hoa.ui.glue.filters_1", active) or L["hoa.ui.glue.filters"]);
 end
 
 function BonkCoop_UpdateList()
@@ -572,13 +575,13 @@ function BonkCoop_UpdateList()
 	if ( BonkCoop.listError ) then
 		BonkCoopListNote:SetText("|cffff4040"..BonkCoop_Note(BonkCoop.listError).."|r");
 	elseif ( BonkCoop.loading and count == 0 ) then
-		BonkCoopListNote:SetText(L["Searching for games..."]);
+		BonkCoopListNote:SetText(L["hoa.ui.glue.searching_for_games"]);
 	elseif ( count == 0 and table.getn(BonkCoop.lobbies) > 0 ) then
-		BonkCoopListNote:SetText(L("No games match your filters ({1} hidden).", table.getn(BonkCoop.lobbies)));
+		BonkCoopListNote:SetText(L("hoa.ui.glue.no_games_match_your_filters_1_hidden", table.getn(BonkCoop.lobbies)));
 	elseif ( count == 0 ) then
-		BonkCoopListNote:SetText(L["No games found. Host your own, or join a friend with their code."]);
+		BonkCoopListNote:SetText(L["hoa.ui.glue.no_games_found_host_your_own_or_join_a_friend_with_their_cod"]);
 	else
-		BonkCoopListNote:SetText(L("Games: {1} ({2} hidden by filters)", count, table.getn(BonkCoop.lobbies) - count));
+		BonkCoopListNote:SetText(L("hoa.ui.glue.games_1_2_hidden_by_filters", count, table.getn(BonkCoop.lobbies) - count));
 	end
 	BonkCoop_UpdateDetails();
 end
@@ -590,7 +593,7 @@ function BonkCoop_PlaceLanBadge(rowName, lan)
 		return;
 	end
 	local label = getglobal(rowName.."Name");
-	badge:SetText(L["lobby badge::LAN"]);
+	badge:SetText(L["hoa.ui.glue.lobby_badge_lan"]);
 	badge:ClearAllPoints();
 	badge:SetPoint("LEFT", label, "LEFT", math.min(label:GetStringWidth(), 196) + 6, 0);
 	badge:Show();
@@ -618,30 +621,33 @@ end
 
 function BonkCoop_Fit(lobby, hero)
 	if ( not hero ) then
-		return nil, L["Select a character first."];
+		return nil, L["hoa.ui.glue.select_a_character_first"];
+	end
+	if ( hero.hardcore ) then
+		return nil, L["hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet"];
 	end
 	if ( lobby.players >= lobby.max ) then
-		return nil, L["That game is full."];
+		return nil, L["hoa.ui.glue.that_game_is_full"];
 	end
 	for _, class in lobby.classes do
 		if ( strupper(class) == hero.class and not lobby.sameClass ) then
-			return nil, L("The party already has a {1}.", hero.className);
+			return nil, L("hoa.ui.glue.the_party_already_has_a_1", hero.className);
 		end
 	end
 	if ( lobby.minMythic > 0 and hero.best < BONK_COOP_MYTHIC_START + lobby.minMythic ) then
-		return nil, L("Requires Mythic {1} cleared.", lobby.minMythic);
+		return nil, L("hoa.ui.glue.requires_mythic_1_cleared_2", lobby.minMythic);
 	end
 	if ( lobby.masteryLimit > 0 and hero.mastery > lobby.masteryLimit ) then
-		return nil, L("Requires Mastery {1} or lower.", lobby.masteryLimit);
+		return nil, L("hoa.ui.glue.requires_mastery_1_or_lower", lobby.masteryLimit);
 	end
-	return 1, L("You'll join as {1} (Mastery {2} {3}).", hero.name, hero.mastery, hero.className);
+	return 1, L("hoa.ui.glue.you_ll_join_as_1_mastery_2_3", hero.name, hero.mastery, hero.className);
 end
 
 function BonkCoop_UpdateDetails()
 	local lobby = BonkCoop_Selected();
 	if ( not lobby ) then
 		BonkCoopDetailName:SetText("");
-		BonkCoopDetailSub:SetText(L["Select a game to see the party."]);
+		BonkCoopDetailSub:SetText(L["hoa.ui.glue.select_a_game_to_see_the_party"]);
 		BonkCoopDetailTags:SetText("");
 		BonkCoopDetailGroup:Hide();
 		BonkCoopDetailFit:SetText("");
@@ -652,23 +658,23 @@ function BonkCoop_UpdateDetails()
 		return;
 	end
 	BonkCoopDetailName:SetText(lobby.name);
-	local access = lobby.locked and L["lobby::Password"] or L["Public"];
+	local access = lobby.locked and L["hoa.ui.glue.lobby_password"] or L["hoa.ui.glue.public"];
 	if ( lobby.lan ) then
-		access = L("{1} · Your network only", access);
+		access = L("hoa.ui.glue.1_your_network_only", access);
 	end
-	BonkCoopDetailSub:SetText(L("Host: {1} · {2}", lobby.host, access));
+	BonkCoopDetailSub:SetText(L("hoa.ui.glue.host_1_2", lobby.host, access));
 	local tags = BonkCoop_Level(lobby.difficulty);
 	if ( lobby.masteryLimit > 0 ) then
-		tags = BonkCoop_AddTag(tags, L("Mastery {1} or lower only", lobby.masteryLimit));
+		tags = BonkCoop_AddTag(tags, L("hoa.ui.glue.mastery_1_or_lower_only", lobby.masteryLimit));
 	end
 	if ( lobby.minMythic > 0 ) then
-		tags = BonkCoop_AddTag(tags, L("Requires Mythic {1} cleared", lobby.minMythic));
+		tags = BonkCoop_AddTag(tags, L("hoa.ui.glue.requires_mythic_1_cleared", lobby.minMythic));
 	end
 	if ( lobby.sameClass ) then
-		tags = BonkCoop_AddTag(tags, L["Duplicate classes allowed"]);
+		tags = BonkCoop_AddTag(tags, L["hoa.ui.glue.duplicate_classes_allowed"]);
 	end
 	if ( lobby.playing ~= "" ) then
-		local playing = L("Playing now: {1}", BonkCoop_Level(lobby.playing));
+		local playing = L("hoa.ui.glue.playing_now_1", BonkCoop_Level(lobby.playing));
 		tags = tags.."\n"..playing;
 	end
 	tags = tags.."\n"..BonkCoop_SettingsText(lobby.pause, lobby.xp);
@@ -683,12 +689,12 @@ function BonkCoop_UpdateDetails()
 				getglobal(name.."Icon"):SetTexture("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes");
 				BonkCoop_SetClassIcon(getglobal(name.."Icon"), member.class);
 				getglobal(name.."Name"):SetText(member.name);
-				getglobal(name.."Sub"):SetText(L("Mastery {1} {2}", member.mastery, BonkCoop_ClassName(member.class)));
+				getglobal(name.."Sub"):SetText(L("hoa.ui.glue.mastery_1_2", member.mastery, BonkCoop_ClassName(member.class)));
 			else
 				getglobal(name.."Icon"):SetTexture(1, 1, 1, 0.08);
 				getglobal(name.."Icon"):SetTexCoord(0, 1, 0, 1);
 				getglobal(name.."Icon"):Show();
-				getglobal(name.."Name"):SetText(L["|cff808080Empty slot|r"]);
+				getglobal(name.."Name"):SetText(L["hoa.ui.glue.cff808080empty_slot_r"]);
 				getglobal(name.."Sub"):SetText("");
 			end
 			frame:Show();
@@ -712,19 +718,23 @@ function BonkCoop_AskSelected()
 		return;
 	end
 	if ( lobby.locked ) then
-		BonkCoop_ShowPopup("password", L("Enter the password for \"{1}\".", lobby.name), nil, L["Join"], L["Cancel"], { lobby = lobby });
+		BonkCoop_ShowPopup("password", L("hoa.ui.glue.enter_the_password_for_1", lobby.name), nil, L["hoa.ui.glue.join"], L["hoa.ui.glue.cancel"], { lobby = lobby });
 		return;
 	end
 	BonkCoop_Ask({ id = lobby.id }, lobby.host);
 end
 
 function BonkCoop_ShowCodeDialog()
-	BonkCoop_ShowPopup("code", L["Enter your friend's game code."], nil, L["Join"], L["Cancel"], {});
+	BonkCoop_ShowPopup("address", L["hoa.ui.glue.enter_the_host_s_address"], nil, L["hoa.ui.glue.join"], L["hoa.ui.glue.cancel"], {});
 end
 
 function BonkCoop_Ask(target, hostName)
 	local hero = BonkCoop_Hero();
 	if ( not hero ) then
+		return;
+	end
+	if ( hero.hardcore ) then
+		BonkHero_SetStatus(L["hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet"]);
 		return;
 	end
 	target.name = hero.name;
@@ -747,32 +757,32 @@ function BonkCoop_ReadJoin(lines)
 	local state = fields[2];
 	if ( state == "asking" ) then
 		if ( BonkCoop.popup ~= "asking" ) then
-			BonkCoop_ShowPopup("asking", L["Sending your join request..."], nil, nil, L["Cancel"], nil);
+			BonkCoop_ShowPopup("asking", L["hoa.ui.glue.sending_your_join_request"], nil, nil, L["hoa.ui.glue.cancel"], nil);
 		end
 	elseif ( state == "waiting" ) then
 		local joining = BonkCoop.joining or { started = GetTime() };
 		BonkCoop.joining = joining;
 		joining.seconds = tonumber(fields[4]) or 30;
-		local who = joining.host and ("|cffffd100"..joining.host.."|r") or L["the host"];
-		BonkCoop_ShowPopup("waiting", L("Waiting for {1} to accept...", who), "\""..(fields[3] or "").."\"", nil, L["Cancel"], nil);
+		local who = joining.host and ("|cffffd100"..joining.host.."|r") or L["hoa.ui.glue.the_host"];
+		BonkCoop_ShowPopup("waiting", L("hoa.ui.glue.waiting_for_1_to_accept", who), "\""..(fields[3] or "").."\"", nil, L["hoa.ui.glue.cancel"], nil);
 	elseif ( state == "transferring" ) then
 		if ( BonkCoop.popup ~= "transferring" ) then
 			local hero = BonkCoop_Hero();
-			BonkCoop_ShowPopup("transferring", L("The host accepted. Joining with {1}...", hero and hero.name or L["your character"]), nil, nil, L["Cancel"], nil);
+			BonkCoop_ShowPopup("transferring", L("hoa.ui.glue.the_host_accepted_joining_with_1", hero and hero.name or L["hoa.ui.glue.your_character"]), nil, nil, L["hoa.ui.glue.cancel"], nil);
 		end
 	elseif ( state == "accepted" ) then
 		BonkCoop.joining = nil;
-		BonkCoop_ShowPopup("message", L["Connecting to host..."], nil, nil, nil, nil);
+		BonkCoop_ShowPopup("message", L["hoa.ui.glue.connecting_to_host"], nil, nil, nil, nil);
 		BonkCoop_Switch(fields[3], fields[4], fields[5], fields[6], fields[7]);
 	elseif ( state == "declined" ) then
 		BonkCoop.joining = nil;
 		local reason = fields[3];
-		BonkCoop_ShowMessage((reason and reason ~= "") and reason or L["The host declined your join request."]);
+		BonkCoop_ShowMessage((reason and reason ~= "") and reason or L["hoa.ui.glue.the_host_declined_your_join_request"]);
 	elseif ( state == "joined" ) then
 		BonkCoop.joining = nil;
 	elseif ( state == "error" or state == "ended" ) then
 		BonkCoop.joining = nil;
-		BonkCoop_ShowMessage(fields[3] or L["Join request cancelled."]);
+		BonkCoop_ShowMessage(fields[3] or L["hoa.ui.glue.join_request_cancelled"]);
 	end
 end
 
@@ -794,15 +804,13 @@ function BonkCoop_Reconnect(delay)
 end
 
 function BonkCoop_SelectJoinedHero()
-	if ( not Bonk.listLoaded or Bonk.heroes[BONK_CLASSES[Bonk.classIndex].token] ) then
+	if ( not Bonk.listLoaded or BonkHero_Selected() ) then
 		return;
 	end
-	for index, class in ipairs(BONK_CLASSES) do
-		if ( Bonk.heroes[class.token] ) then
-			Bonk.classIndex = index;
-			BonkHero_Refresh();
-			return;
-		end
+	local hero = Bonk.heroes[1];
+	if ( hero ) then
+		BonkHero_ShowHero(hero);
+		BonkHero_Refresh();
 	end
 end
 
@@ -823,23 +831,23 @@ function BonkCoop_LostHost()
 	local tries = tonumber(fields[3]) or 0;
 	local seconds = tonumber(fields[4]) or BONK_COOP_REJOIN_SECONDS + 1;
 	if ( fields[2] ~= "rejoin" or seconds > BONK_COOP_REJOIN_SECONDS ) then
-		BonkLoginStatus:SetText(L["Can't reach the host. Returning to your own game..."]);
+		BonkLoginStatus:SetText(L["hoa.ui.glue.can_t_reach_the_host_returning_to_your_own_game"]);
 		BonkCoop_Leave();
 		return;
 	end
-	BonkLoginStatus:SetText(L["Connection to host lost. Reconnecting..."]);
+	BonkLoginStatus:SetText(L["hoa.ui.glue.connection_to_host_lost_reconnecting"]);
 	BonkCoop_Reconnect(math.min(BONK_COOP_REJOIN_LONGEST_WAIT, tries * 2));
 end
 
 function BonkCoop_RefusalNote(shown)
 	if ( shown == CHAR_LOGIN_DISABLED ) then
-		return L["You were removed from the party."];
+		return L["hoa.ui.glue.you_were_removed_from_the_party"];
 	elseif ( shown == CHAR_LOGIN_DUPLICATE_CHARACTER ) then
-		return L["Your party already has this class. Join with a character of another class."];
+		return L["hoa.ui.glue.your_party_already_has_this_class_join_with_a_character_of_a"];
 	elseif ( shown == CHAR_LOGIN_NO_INSTANCES ) then
-		return L["That party is full."];
+		return L["hoa.ui.glue.that_party_is_full"];
 	elseif ( shown == CHAR_LOGIN_FAILED ) then
-		return L["Couldn't join the host's game."];
+		return L["hoa.ui.glue.couldn_t_join_the_host_s_game"];
 	end
 	return nil;
 end
@@ -852,7 +860,7 @@ end
 
 function BonkCoop_Leave()
 	BonkCoop.leaving = 1;
-	BonkCoop_ShowPopup("message", L["Leaving party..."], nil, nil, nil, nil);
+	BonkCoop_ShowPopup("message", L["hoa.ui.glue.leaving_party"], nil, nil, nil, nil);
 	BonkCoop_ReadLeave(BonkCoop_Call("POST", "/join/leave?who="..BonkCoop_Encode(BonkCoop_Who())));
 end
 
@@ -870,7 +878,7 @@ function BonkCoop_ReadLeave(lines)
 end
 
 function BonkCoop_ShowMessage(text)
-	BonkCoop_ShowPopup("message", BonkCoop_Note(text), nil, L["Okay"], nil, nil);
+	BonkCoop_ShowPopup("message", BonkCoop_Note(text), nil, L["hoa.ui.glue.okay"], nil, nil);
 end
 
 function BonkCoop_ShowPopup(kind, text, sub, first, second, data)
@@ -879,7 +887,7 @@ function BonkCoop_ShowPopup(kind, text, sub, first, second, data)
 	BonkCoopPopupText:SetText(text or "");
 	BonkCoopPopupSub:SetText(sub or "");
 	BonkCoopPopupEdit:SetText("");
-	if ( kind == "password" or kind == "code" ) then
+	if ( kind == "password" or kind == "code" or kind == "address" ) then
 		BonkCoopPopupEdit:Show();
 		BonkCoopPopupEdit:SetFocus();
 	else
@@ -935,6 +943,8 @@ function BonkCoop_PopupButton(index)
 		BonkCoop_Ask({ id = data.lobby.id, password = BonkCoopPopupEdit:GetText() }, data.lobby.host);
 	elseif ( kind == "code" and index == 1 ) then
 		BonkCoop_Ask({ code = strupper(BonkCoopPopupEdit:GetText()) }, nil);
+	elseif ( kind == "address" and index == 1 ) then
+		BonkCoop_Ask({ address = BonkCoopPopupEdit:GetText() }, nil);
 	elseif ( kind == "waiting" or kind == "asking" or kind == "transferring" ) then
 		BonkCoop.joining = nil;
 		BonkCoop_Call("POST", "/join/cancel?who="..BonkCoop_Encode(BonkCoop_Who()));
@@ -952,12 +962,16 @@ function BonkCoop_OpenHostForm()
 	if ( not hero ) then
 		return;
 	end
+	if ( hero.hardcore ) then
+		BonkHero_SetStatus(L["hoa.ui.glue.hardcore_characters_can_t_play_co_op_yet"]);
+		return;
+	end
 	if ( BonkCoopHostForm:IsShown() ) then
 		BonkCoopHostForm:Hide();
 		return;
 	end
 	BonkCoopBrowser:Hide();
-	BonkCoopNameEdit:SetText(L("{1}'s Game", hero.name));
+	BonkCoopNameEdit:SetText(L("hoa.ui.glue.1_s_game", hero.name));
 	BonkCoopPasswordEdit:SetText("");
 	BonkCoopFloorEdit:SetText("1");
 	BonkCoopMasteryEdit:SetText("10");
@@ -1027,11 +1041,11 @@ function BonkCoop_ChoosePlayers(anchor)
 end
 
 function BonkCoop_ChoosePause(anchor)
-	BonkCoop_ShowChoices(anchor, { L["pause::Party"], L["Off"] }, BonkCoop.pause == 1 and 1 or 2, function(index) BonkCoop.pause = index == 1 and 1 or 0; end);
+	BonkCoop_ShowChoices(anchor, { L["hoa.ui.glue.pause_party"], L["hoa.ui.glue.off"] }, BonkCoop.pause == 1 and 1 or 2, function(index) BonkCoop.pause = index == 1 and 1 or 0; end);
 end
 
 function BonkCoop_ChooseXp(anchor)
-	BonkCoop_ShowChoices(anchor, { L["Shared"], L["Individual"] }, BonkCoop.xp == 1 and 1 or 2, function(index) BonkCoop.xp = index == 1 and 1 or 0; end);
+	BonkCoop_ShowChoices(anchor, { L["hoa.ui.glue.shared"], L["hoa.ui.glue.individual"] }, BonkCoop.xp == 1 and 1 or 2, function(index) BonkCoop.xp = index == 1 and 1 or 0; end);
 end
 
 function BonkCoop_ChooseMode(anchor)
@@ -1039,14 +1053,14 @@ function BonkCoop_ChooseMode(anchor)
 end
 
 function BonkCoop_SettingsText(pause, xp)
-	return L("Pause: {1} · XP: {2}", pause and L["pause::Party"] or L["Off"], xp and L["Shared"] or L["Individual"]);
+	return L("hoa.ui.glue.pause_1_xp_2", pause and L["hoa.ui.glue.pause_party"] or L["hoa.ui.glue.off"], xp and L["hoa.ui.glue.shared"] or L["hoa.ui.glue.individual"]);
 end
 
 function BonkCoop_UpdateHostForm()
 	BonkCoopDifficultyButton:SetText(BonkCoop_Word(BONK_COOP_DIFFICULTIES[BonkCoop.difficulty]));
 	BonkCoopPlayersButton:SetText(BonkCoop.players);
-	BonkCoopPauseButton:SetText(BonkCoop.pause == 1 and L["pause::Party"] or L["Off"]);
-	BonkCoopXpButton:SetText(BonkCoop.xp == 1 and L["Shared"] or L["Individual"]);
+	BonkCoopPauseButton:SetText(BonkCoop.pause == 1 and L["hoa.ui.glue.pause_party"] or L["hoa.ui.glue.off"]);
+	BonkCoopXpButton:SetText(BonkCoop.xp == 1 and L["hoa.ui.glue.shared"] or L["hoa.ui.glue.individual"]);
 	BonkCoopModeButton:SetText(BonkCoop_Word(BONK_COOP_MODES[BonkCoop.runMode]));
 	if ( BONK_COOP_DIFFICULTIES[BonkCoop.difficulty] == "Mythic" ) then
 		BonkCoopFloorEdit:Show();
@@ -1108,6 +1122,8 @@ function BonkCoop_ReadHost(lines)
 			host.code = fields[3];
 			host.max = fields[4];
 			host.difficulty = fields[5];
+		elseif ( fields[1] == "address" ) then
+			host.address = fields[2];
 		elseif ( fields[1] == "member" ) then
 			table.insert(host.members, { name = fields[2], class = fields[3], mastery = fields[4] });
 		elseif ( fields[1] == "request" ) then
@@ -1157,8 +1173,8 @@ function BonkCoop_FillRequest(frame, request)
 	local name = frame:GetName();
 	frame.request = request;
 	local race = BONK_RACE_DISPLAY_NAMES[strupper(request.race or "")] or "";
-	getglobal(name.."Text"):SetText(L("{1} wants to join.", "|cffffd100"..request.name.."|r"));
-	getglobal(name.."Sub"):SetText(L("Mastery {1} {2} {3} · Best: {4}", request.mastery, race, BonkCoop_ClassName(request.class), BonkLevelName(request.best)));
+	getglobal(name.."Text"):SetText(L("hoa.ui.glue.1_wants_to_join", "|cffffd100"..request.name.."|r"));
+	getglobal(name.."Sub"):SetText(L("hoa.ui.glue.mastery_1_2_3_best_4", request.mastery, race, BonkCoop_ClassName(request.class), BonkLevelName(request.best)));
 	getglobal(name.."Bar"):SetValue(request.seconds / 30);
 	frame:Show();
 end
@@ -1207,7 +1223,7 @@ function BonkCoop_OnUpdate(elapsed)
 	if ( BonkCoop_IsJoined() and not BonkCoop.reconnectAt ) then
 		BonkCoop_SelectJoinedHero();
 	end
-	local hero = BonkCoop_IsJoined() and Bonk.listLoaded and Bonk.heroes[BONK_CLASSES[Bonk.classIndex].token];
+	local hero = BonkCoop_IsJoined() and Bonk.listLoaded and BonkHero_Selected();
 	if ( hero and not BonkCoop.checkedEnter and not BonkCoop.reconnectAt ) then
 		BonkCoop.enterAt = BonkCoop.enterAt or GetTime() + BONK_COOP_ENTER_DELAY;
 		if ( GetTime() >= BonkCoop.enterAt ) then
@@ -1273,7 +1289,7 @@ function BonkCoop_ReadJoinPoll(lines, problem)
 		if ( BonkCoop.joinFailures >= BONK_COOP_POLL_FAILURES ) then
 			BonkCoop.joining = nil;
 			BonkCoop.joinFailures = nil;
-			BonkCoop_ShowMessage(problem or L["The launcher stopped answering. Restart the launcher and try again."]);
+			BonkCoop_ShowMessage(problem or L["hoa.ui.glue.the_launcher_stopped_answering_restart_the_launcher_and_try_"]);
 		end
 		return;
 	end
@@ -1297,7 +1313,7 @@ function BonkCoop_ReadHome(lines)
 		return;
 	end
 	if ( (fields[2] == "joined" or fields[2] == "accepted") and fields[3] and fields[3] ~= "" ) then
-		BonkCoop_ShowPopup("rejoin", L["You're still in a co-op party."], L["Reconnect, or leave the party. Your progress there is already saved."], L["Reconnect"], L["Leave Party"], fields);
+		BonkCoop_ShowPopup("rejoin", L["hoa.ui.glue.you_re_still_in_a_co_op_party"], L["hoa.ui.glue.reconnect_or_leave_the_party_your_progress_there_is_already_"], L["hoa.ui.glue.reconnect"], L["hoa.ui.glue.leave_party"], fields);
 	elseif ( fields[2] == "joined" or fields[2] == "accepted" ) then
 		BonkCoop_Leave();
 	end

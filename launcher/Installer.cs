@@ -64,11 +64,11 @@ namespace HordesOfAzeroth.Launcher
 
         public static readonly string[] Steps =
         {
-            Loc.Key("Download the game files"),
-            Loc.Key("Set up the game"),
-            Loc.Key("Read the maps"),
-            Loc.Key("Build the spell effects"),
-            Loc.Key("Set up the database"),
+            Loc.Key("hoa.launcher.download_the_game_files"),
+            Loc.Key("hoa.launcher.set_up_the_game"),
+            Loc.Key("hoa.launcher.read_the_maps"),
+            Loc.Key("hoa.launcher.build_the_spell_effects"),
+            Loc.Key("hoa.launcher.set_up_the_database"),
         };
 
         readonly GameFolder m_folder;
@@ -121,37 +121,37 @@ namespace HordesOfAzeroth.Launcher
 
         public static readonly string[] UpdateSteps =
         {
-            Loc.Key("Back up your characters"),
-            Loc.Key("Download the update"),
-            Loc.Key("Set up the game"),
-            Loc.Key("Rebuild the spell effects"),
-            Loc.Key("Update the database"),
+            Loc.Key("hoa.launcher.back_up_your_characters"),
+            Loc.Key("hoa.launcher.download_the_update"),
+            Loc.Key("hoa.launcher.set_up_the_game"),
+            Loc.Key("hoa.launcher.rebuild_the_spell_effects"),
+            Loc.Key("hoa.launcher.update_the_database"),
         };
 
         public static readonly string[] RepairSteps =
         {
-            Loc.Key("Check the game files"),
-            Loc.Key("Download the missing files"),
-            Loc.Key("Set up the game"),
-            Loc.Key("Read the maps"),
-            Loc.Key("Rebuild the spell effects"),
-            Loc.Key("Check the database"),
+            Loc.Key("hoa.launcher.check_the_game_files"),
+            Loc.Key("hoa.launcher.download_the_missing_files"),
+            Loc.Key("hoa.launcher.set_up_the_game"),
+            Loc.Key("hoa.launcher.read_the_maps"),
+            Loc.Key("hoa.launcher.rebuild_the_spell_effects"),
+            Loc.Key("hoa.launcher.check_the_database"),
         };
 
         static readonly Dictionary<string, string> StepsInProgress = new Dictionary<string, string>
         {
-            { "Check the game files", Loc.Key("Checking the game files") },
-            { "Download the missing files", Loc.Key("Downloading the missing files") },
-            { "Check the database", Loc.Key("Checking the database") },
-            { "Download the game files", Loc.Key("Downloading the game files") },
-            { "Set up the game", Loc.Key("Setting up the game") },
-            { "Read the maps", Loc.Key("Reading the maps") },
-            { "Build the spell effects", Loc.Key("Building the spell effects") },
-            { "Set up the database", Loc.Key("Setting up the database") },
-            { "Back up your characters", Loc.Key("Backing up your characters") },
-            { "Download the update", Loc.Key("Downloading the update") },
-            { "Rebuild the spell effects", Loc.Key("Rebuilding the spell effects") },
-            { "Update the database", Loc.Key("Updating the database") },
+            { "Check the game files", Loc.Key("hoa.launcher.checking_the_game_files") },
+            { "Download the missing files", Loc.Key("hoa.launcher.downloading_the_missing_files") },
+            { "Check the database", Loc.Key("hoa.launcher.checking_the_database") },
+            { "Download the game files", Loc.Key("hoa.launcher.downloading_the_game_files") },
+            { "Set up the game", Loc.Key("hoa.launcher.setting_up_the_game") },
+            { "Read the maps", Loc.Key("hoa.launcher.reading_the_maps") },
+            { "Build the spell effects", Loc.Key("hoa.launcher.building_the_spell_effects") },
+            { "Set up the database", Loc.Key("hoa.launcher.setting_up_the_database") },
+            { "Back up your characters", Loc.Key("hoa.launcher.backing_up_your_characters") },
+            { "Download the update", Loc.Key("hoa.launcher.downloading_the_update") },
+            { "Rebuild the spell effects", Loc.Key("hoa.launcher.rebuilding_the_spell_effects") },
+            { "Update the database", Loc.Key("hoa.launcher.updating_the_database") },
         };
 
         public static string InProgress(string step) =>
@@ -238,7 +238,7 @@ namespace HordesOfAzeroth.Launcher
             progress.Report(new InstallProgress { Step = RepairSteps[5] });
             if (thorough && m_server.DatabaseExists)
             {
-                progress.Report(new InstallProgress { Step = RepairSteps[5], Detail = Loc.T("backing up your characters") });
+                progress.Report(new InstallProgress { Step = RepairSteps[5], Detail = Loc.T("hoa.launcher.backing_up_your_characters_2") });
                 await BackUpAsync("Repair", cancel);
             }
             await EnsureDatabaseAsync(manifest, thorough, progress, RepairSteps[5], cancel);
@@ -282,7 +282,7 @@ namespace HordesOfAzeroth.Launcher
         void RefuseDevelopmentTree()
         {
             if (m_folder.IsDevelopmentTree)
-                throw new InvalidOperationException(Loc.T("This folder is a Hordes of Azeroth source checkout. Install the game into a separate copy of World of Warcraft 1.12.1 instead."));
+                throw new InvalidOperationException(Loc.T("hoa.launcher.this_folder_is_a_hordes_of_azeroth_source_checkout_install_t"));
         }
 
         public async Task InstallAsync(Manifest manifest, IProgress<InstallProgress> progress, CancellationToken cancel)
@@ -380,7 +380,7 @@ namespace HordesOfAzeroth.Launcher
             Action<long> report = bytes => progress.Report(new InstallProgress
             {
                 Step = step,
-                Detail = Loc.T("{0:0.0} of {1:0.0} MB", (finished + bytes) / 1048576.0, total / 1048576.0),
+                Detail = Loc.T("hoa.launcher.0_0_0_of_1_0_0_mb", (finished + bytes) / 1048576.0, total / 1048576.0),
                 Fraction = total > 0 ? (double)(finished + bytes) / total : 0,
             });
 
@@ -454,35 +454,93 @@ namespace HordesOfAzeroth.Launcher
         public async Task<string> FetchAsync(string url, string sha256, Action<long> report, CancellationToken cancel)
         {
             Directory.CreateDirectory(Downloads);
+            DeleteOldPartials();
             string name = Path.GetFileName(new Uri(url).AbsolutePath);
             string target = Path.Combine(Downloads, name);
-            if (File.Exists(target) && Sha256(target) == sha256)
-                return target;
+            if (File.Exists(target))
+            {
+                if (Sha256(target) == sha256)
+                    return target;
+                File.Delete(target);
+            }
 
             string local = UpdateCheck.LocalSource == null ? null : Path.Combine(UpdateCheck.LocalSource, name);
             if (local != null && File.Exists(local))
             {
                 File.Copy(local, target, true);
+                return CheckedDownload(target, name, sha256);
             }
-            else
+
+            string partial = PartialPath(name, sha256);
+            DeleteOtherPartials(name, partial);
+            bool resuming = File.Exists(partial);
+            await DownloadToTargetAsync(url, name, partial, target, report, cancel);
+            if (resuming && Sha256(target) != sha256)
             {
-                try
-                {
-                    await Mirror.TryEachAsync(url, cancel, source => Web.DownloadAsync(source, target, report, cancel));
-                }
-                catch (Exception e) when (Web.IsProblem(e) && !cancel.IsCancellationRequested)
-                {
-                    if (File.Exists(target))
-                        File.Delete(target);
-                    throw new InvalidOperationException(Loc.T("Couldn't download {0} ({1}). Check your connection and try again.", name, e.Message.TrimEnd('.')));
-                }
+                File.Delete(target);
+                await DownloadToTargetAsync(url, name, partial, target, report, cancel);
             }
+            return CheckedDownload(target, name, sha256);
+        }
+
+        async Task DownloadToTargetAsync(string url, string name, string partial, string target, Action<long> report, CancellationToken cancel)
+        {
+            try
+            {
+                await Mirror.TryEachAsync(url, cancel, source => Web.DownloadAsync(source, partial, report, cancel));
+            }
+            catch (Exception e) when (Web.IsProblem(e) && !cancel.IsCancellationRequested)
+            {
+                throw new InvalidOperationException(Loc.T("hoa.launcher.couldn_t_download_0_1_check_your_connection_and_try_again", name, e.Message.TrimEnd('.')));
+            }
+            try
+            {
+                File.Move(partial, target, true);
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                throw new InvalidOperationException(Loc.T("hoa.launcher.couldn_t_write_0_1", name, e.Message.TrimEnd('.')), e);
+            }
+        }
+
+        static string CheckedDownload(string target, string name, string sha256)
+        {
             if (Sha256(target) != sha256)
             {
                 File.Delete(target);
-                throw new InvalidDataException(Loc.T("{0} didn't download correctly. Try again.", name));
+                throw new InvalidDataException(Loc.T("hoa.launcher.0_didn_t_download_correctly_try_again", name));
             }
             return target;
+        }
+
+        string PartialPath(string name, string sha256) =>
+            Path.Combine(Downloads, name + "." + sha256.Substring(0, Math.Min(16, sha256.Length)) + ".part");
+
+        void DeleteOtherPartials(string name, string keep)
+        {
+            foreach (string stale in Directory.GetFiles(Downloads, name + ".*.part"))
+                if (!string.Equals(stale, keep, StringComparison.OrdinalIgnoreCase))
+                    TryDelete(stale);
+        }
+
+        static readonly TimeSpan PartialKeepTime = TimeSpan.FromDays(14);
+
+        void DeleteOldPartials()
+        {
+            foreach (string partial in Directory.GetFiles(Downloads, "*.part"))
+                if (DateTime.UtcNow - File.GetLastWriteTimeUtc(partial) > PartialKeepTime)
+                    TryDelete(partial);
+        }
+
+        static void TryDelete(string path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+            }
         }
 
         static string Sha256(string path)
@@ -552,7 +610,7 @@ namespace HordesOfAzeroth.Launcher
                         continue;
                     string target = versionTarget != null && relative == "VERSION" ? versionTarget : Path.GetFullPath(Path.Combine(root, relative));
                     if (target != versionTarget && !target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-                        throw new InvalidDataException(Loc.T("{0} contains a path outside the game folder.", Path.GetFileName(zip)));
+                        throw new InvalidDataException(Loc.T("hoa.launcher.0_contains_a_path_outside_the_game_folder", Path.GetFileName(zip)));
                     if (relative.EndsWith(Path.DirectorySeparatorChar.ToString()))
                     {
                         Directory.CreateDirectory(target);
@@ -645,16 +703,16 @@ namespace HordesOfAzeroth.Launcher
             string extractors = Path.Combine(m_folder.ServerRun, "Extractors");
             Directory.CreateDirectory(Path.Combine(DataDir, "vmaps"));
 
-            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("terrain and areas"), Fraction = 0.05 });
+            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.terrain_and_areas"), Fraction = 0.05 });
             await RunToolAsync(Path.Combine(extractors, Platform.Exe("MapExtractor")), DataDir, cancel, "-i", Quote(m_folder.Root), "--silent");
             string dbcTarget = Path.Combine(DataDir, "5875", "dbc");
             Directory.CreateDirectory(Path.GetDirectoryName(dbcTarget));
             await Folders.MoveAsync(Path.Combine(DataDir, "dbc"), dbcTarget, cancel);
 
-            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("buildings and trees"), Fraction = 0.4 });
+            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.buildings_and_trees"), Fraction = 0.4 });
             await Folders.DeleteAsync(Path.Combine(DataDir, "Buildings"), cancel);
             await RunToolAsync(Path.Combine(extractors, Platform.Exe("VMapExtractor")), DataDir, cancel, "-d", Quote(m_folder.Data), "--silent");
-            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("line of sight"), Fraction = 0.8 });
+            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.line_of_sight"), Fraction = 0.8 });
             await RunToolAsync(Path.Combine(extractors, Platform.Exe("VMapAssembler")), DataDir, cancel, "Buildings", "vmaps", "--silent");
             await Folders.DeleteAsync(Path.Combine(DataDir, "Buildings"), cancel);
         }
@@ -705,7 +763,7 @@ namespace HordesOfAzeroth.Launcher
             if (!m_server.DatabaseExists)
             {
                 ForgetApplied(WorldPackage);
-                progress.Report(new InstallProgress { Step = step, Detail = Loc.T("creating the database"), Fraction = 0.05, Fixing = true });
+                progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.creating_the_database"), Fraction = 0.05, Fixing = true });
                 await m_server.CreateDatabaseFilesAsync();
             }
             await m_server.StartDatabaseOnlyAsync(cancel);
@@ -723,7 +781,7 @@ namespace HordesOfAzeroth.Launcher
                 string database = imports[i, 0];
                 if (tables.Contains(database + "." + imports[i, 2]))
                     continue;
-                progress.Report(new InstallProgress { Step = step, Detail = Loc.T("creating {0}", database), Fraction = 0.1 + 0.15 * i, Fixing = true });
+                progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.creating_0", database), Fraction = 0.1 + 0.15 * i, Fixing = true });
                 await m_server.RunSqlFileAsync(database, Path.Combine(SqlDir, imports[i, 1]));
             }
 
@@ -761,8 +819,8 @@ namespace HordesOfAzeroth.Launcher
         async Task LoadWorldAsync(IProgress<InstallProgress> progress, string step)
         {
             if (!File.Exists(WorldSql))
-                throw new FileNotFoundException(Loc.T("The world database file (server/sql/world.sql) is missing. {0}", LocalServer.RepairAdvice), WorldSql);
-            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("loading the world (about a minute)"), Fraction = 0.55, Fixing = true });
+                throw new FileNotFoundException(Loc.T("hoa.launcher.the_world_database_file_server_sql_world_sql_is_missing_0", LocalServer.RepairAdvice), WorldSql);
+            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.loading_the_world_about_a_minute"), Fraction = 0.55, Fixing = true });
             ForgetApplied(WorldPackage);
             await m_server.RunSqlFileAsync(null, Path.Combine(m_folder.Config, "create-databases.sql"));
             await ClearWorldDatabaseAsync();
@@ -782,7 +840,7 @@ namespace HordesOfAzeroth.Launcher
                 string[] parts = Path.GetFileNameWithoutExtension(file).Split('_');
                 if (parts.Length != 2 || !MigrationDatabases.TryGetValue(parts[1], out string database) || applied.Contains(database + "." + parts[0]))
                     continue;
-                progress.Report(new InstallProgress { Step = step, Detail = Loc.T("applying updates to your characters"), Fraction = 0.75, Fixing = true });
+                progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.applying_updates_to_your_characters"), Fraction = 0.75, Fixing = true });
                 await m_server.RunSqlFileAsync(database, file);
             }
         }
@@ -793,13 +851,13 @@ namespace HordesOfAzeroth.Launcher
             await m_server.QueryAsync("realmd", $"INSERT INTO realmlist (id, name, address, port) VALUES (1, '{realm}', '127.0.0.1', 8085) ON DUPLICATE KEY UPDATE name = '{realm}', address = '127.0.0.1', port = 8085");
             if (await PlayerAccountExistsAsync())
                 return;
-            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("creating your account"), Fraction = 0.85, Fixing = true });
+            progress.Report(new InstallProgress { Step = step, Detail = Loc.T("hoa.launcher.creating_your_account"), Fraction = 0.85, Fixing = true });
             await m_server.StartAsync(new Progress<string>(_ => { }), cancel);
             await m_server.RunConsoleAsync("account create player player");
             bool created = await PlayerAccountExistsAsync();
             await m_server.StopAsync();
             if (!created)
-                throw new InvalidOperationException(Loc.T("The account couldn't be created. See server/logs/Server.log."));
+                throw new InvalidOperationException(Loc.T("hoa.launcher.the_account_couldn_t_be_created_see_server_logs_server_log"));
         }
 
         async Task<bool> PlayerAccountExistsAsync() =>
@@ -810,7 +868,7 @@ namespace HordesOfAzeroth.Launcher
         static async Task RunToolAsync(string exe, string workingDirectory, CancellationToken cancel, params string[] arguments)
         {
             if (!File.Exists(exe))
-                throw new FileNotFoundException(Loc.T("{0} is missing from the download.", Path.GetFileName(exe)));
+                throw new FileNotFoundException(Loc.T("hoa.launcher.0_is_missing_from_the_download", Path.GetFileName(exe)));
             ProcessStartInfo info = new ProcessStartInfo(exe, string.Join(" ", arguments))
             {
                 WorkingDirectory = workingDirectory,
@@ -849,7 +907,7 @@ namespace HordesOfAzeroth.Launcher
                     string said;
                     lock (lastLines)
                         said = string.Join(" / ", lastLines);
-                    throw new InvalidOperationException(Loc.T("{0} stopped with code {1}: {2}", Path.GetFileName(exe), process.ExitCode, said));
+                    throw new InvalidOperationException(Loc.T("hoa.launcher.0_stopped_with_code_1_2", Path.GetFileName(exe), process.ExitCode, said));
                 }
             }
         }

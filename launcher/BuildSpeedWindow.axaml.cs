@@ -20,8 +20,8 @@ namespace HordesOfAzeroth.Launcher
         BuildSpeedWindow(LauncherSettings settings) : this()
         {
             m_settings = settings;
-            DescribeChoices(InstallAll, InstallHalf, Loc.T("Done sooner, but the PC may feel slow until then."));
-            DescribeChoices(BackgroundAll, BackgroundHalf, Loc.T("Finishes sooner while the launcher is open."));
+            DescribeChoices(InstallAll, InstallHalf, Loc.T("hoa.launcher.done_sooner_but_the_pc_may_feel_slow_until_then"));
+            DescribeChoices(BackgroundAll, BackgroundHalf, Loc.T("hoa.launcher.finishes_sooner_while_the_launcher_is_open"));
             Select(InstallAll, InstallHalf, settings.InstallCores);
             Select(BackgroundAll, BackgroundHalf, settings.BackgroundCores);
         }
@@ -40,8 +40,8 @@ namespace HordesOfAzeroth.Launcher
 
         static void DescribeChoices(RadioButton all, RadioButton half, string allDetail)
         {
-            all.Content = Choice(Loc.T("All {0} cores", Environment.ProcessorCount), Loc.T("Fastest. {0}", allDetail));
-            half.Content = Choice(Loc.T("Half: {0} cores", LauncherSettings.HalfOfCores), Loc.T("Slower, and the PC stays easy to use."));
+            all.Content = Choice(Loc.T("hoa.launcher.all_0_cores", Environment.ProcessorCount), Loc.T("hoa.launcher.fastest_0", allDetail));
+            half.Content = Choice(Loc.T("hoa.launcher.half_0_cores", LauncherSettings.HalfOfCores), Loc.T("hoa.launcher.slower_and_the_pc_stays_easy_to_use"));
         }
 
         static StackPanel Choice(string title, string detail)

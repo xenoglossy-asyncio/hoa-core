@@ -2,11 +2,11 @@
 
 ## 0. Current state
 
-- HoA state and UI data travel as `BONK~type~field...` chat lines: the server builds strings, the client shows them as ordinary system messages, and the addon parses them from `CHAT_MSG_SYSTEM` (`Interface/AddOns/HordesOfAzeroth/VanillaBonkUI.lua:231-243`) after hiding them from the chat frame.
-- The Rust client recognizes only the `HOA~` prefix (`client/crates/hoa/src/world_fx.rs:62-65`); `parse_line` explicitly rejects `BONK~` (`hoa/src/server_draw.rs:342`), and unmatched lines fall through to system chat (`benilla-app/src/ui_chat/net.rs:14-20,46-61`).
+- HoA UI data now travels over the typed channel; neither the server nor the addon uses the `BONK~` chat channel anymore.
+- The Rust client receives presentation data over the typed channel; the old `HOA~` drawing parser has been removed.
 - The client has no spell query path (`benilla-app/src/net.rs:1034-1058`), so custom spell metadata has nowhere to come from.
-- State data (shield amount, dash, determination, card procs) all depends on this string channel; field order is by convention and every change must touch both sides.
-- First typed slice (2026-11-04): opcode `SMSG_HOA_MESSAGE` (826) carries `hoa.hello` — protocol version, content hash and account language — after the addon's `.bonk hello`. `shared/protocol/messages.yaml` is the source; `tools/protocol/gen.py` generates `HoaProtocol.h` and `protocol_generated.rs`; the client compares version/hash, warns on a mismatch and fires `HOA_HELLO` into Lua. `hoa.aura_value` (`spell_id`, `value`, `max_value`) is sent alongside the shield text and fires `HOA_AURA_VALUE`, so the addon can read the amount without parsing the chat line. `hoa.dash` carries the max charges, recharge, cooldown, blink flag and available charges and fires `HOA_DASH`. `hoa.aura_percent` (`spell_id`, `percent`) covers determination, necrotic and wounds and fires `HOA_AURA_PERCENT`. Everything else still uses `BONK~`.
+- State data (shield amount, dash, determination, card procs) used to depend on this string channel; field order was by convention and every change touched both sides. The state messages now use the typed channel below, and the server no longer sends `BONK~` lines.
+- First typed slice (2026-11-04): opcode `SMSG_HOA_MESSAGE` (826) carries `hoa.hello` — protocol version, content hash and account language — after the addon's `.bonk hello`. `shared/protocol/messages.yaml` is the source; `tools/protocol/gen.py` generates `HoaProtocol.h` and `protocol_generated.rs`; the client compares version/hash; a mismatch fires `HOA_INCOMPATIBLE`, stops applying typed packets, and the addon shows an explicit error, while a match fires `HOA_HELLO` into Lua. `hoa.aura_value` (`spell_id`, `value`, `max_value`) replaces the shield chat text and fires `HOA_AURA_VALUE`. `hoa.dash` carries the max charges, recharge, cooldown, blink flag and available charges and fires `HOA_DASH`. `hoa.aura_percent` (`spell_id`, `percent`) covers determination, necrotic and wounds and fires `HOA_AURA_PERCENT`. `hoa.aura_text` and `hoa.aura_catalog_entry`/`aura_catalog_end` carry the localized aura display data. `hoa.run_state` carries the run timer, kills, gold, stage, boss/portal flags and meter strings, and fires `HOA_RUN_STATE` with a Lua table; the addon no longer parses the old `state~` line. `hoa.run_start` and `hoa.run_end` replace `start~`/`end~` and fire `HOA_RUN_START`/`HOA_RUN_END` tables. `hoa.run_paused`, `hoa.coop_no_pause`, `hoa.run_xp` and `hoa.wave_beat` cover pause state, co-op pause policy, experience and wave callouts. `hoa.run_support`, `hoa.run_glyph_meter`, `hoa.run_other_meter` and `hoa.run_party_meter` carry the high-frequency meter payloads as typed text fields. `hoa.objective`, `hoa.objective_clear` and `hoa.objective_ping` cover the tracked objective pins. `hoa.mob`, `hoa.mob_dead`, `hoa.mob_clear`, `hoa.ally`, `hoa.ally_done` and `hoa.affix_info` cover enemy/ally plates and the affix glossary; `mob_clear` has no fields. `hoa.offer_*` and `hoa.ley_*` cover the level/chest and ley choice panels, including no-field close events. `hoa.glyph_*` covers the glyph offer, taken list, info cards and Shadowmourne count. `hoa.quest_*`, `hoa.vendor_*` and `hoa.portal_*` cover quest logs/rewards, the vendor shelf and the home/endless confirmations. `hoa.found_*` and `hoa.gear_*` cover found-gear cards and the gear replacement offer. `hoa.vault_*` covers the vault shelf and sent-home list. `hoa.enchant_*` covers the enchanter slots, offers and open/close events. `hoa.cards` and `hoa.card_*` cover the held-card list, tips, cooldowns and live values. `hoa.mastery_state`, `hoa.wallet`, `hoa.notice`, `hoa.message`, `hoa.find`, `hoa.npc_name`, `hoa.shard`, `hoa.valor` and `hoa.epic_luck` cover the remaining player-status signals. `hoa.coop_*` and `hoa.leash` cover co-op wait/watch/down/ready and leash warnings. `hoa.starter*`, `hoa.reach_ring`, `hoa.druid_form`, `hoa.greed` and `hoa.hearth` cover the remaining small run signals. `hoa.capture`, `hoa.moonwell`, `hoa.ley_bless*` and `hoa.event_timer` cover shrine and event timers. `hoa.death_*`, `hoa.run_summary`, `hoa.summary_*` and `hoa.summary_end` cover the death recap and end-of-run breakdown. `hoa.board_*` covers the leaderboard open/header/row/page/choice flow; row text stays a formatted `line` for now. `hoa.shop_*` and `hoa.mastery_*` cover the shop, mastery trees, nodes, presets and close events. `hoa.gear`, `hoa.gear_end`, `hoa.trinket_tip` and `hoa.arena` cover gear stats, trinket tooltips and the arena panel. `hoa.tier`, `hoa.tier_info`, `hoa.level_*`, `hoa.map_info` and `hoa.zone_art` cover the difficulty/map selector. `hoa.codex` carries the remaining codex/glossary rows as a typed kind plus packed line. `hoa.weapon_info`, `hoa.weapon_evolution*`, `hoa.cooldown_pie`, `hoa.quartermaster*`, `hoa.music`, `hoa.loadout`, `hoa.druid_slots`, `hoa.boss_bar`, `hoa.titles`, `hoa.stats` and `hoa.keyword_timers` cover the last dynamic signals. `hoa.visual_*` carries telegraph marks, kits, flights, missiles, props and aura anchors as typed coordinates, replacing the old `HOA~` chat lines. Neither the server nor the addon uses the `BONK~` channel anymore.
 
 ## 1. Goals
 
@@ -26,7 +26,7 @@ HoA protocol (new, versioned)
   ├─ handshake: account language, content hash, protocol version, capabilities
   ├─ content: manifest/incremental (client content-pack validation)
   ├─ run: start, waves, bosses, rewards, results
-  └─ presentation: cards, codex, leaderboard, notices (UI only)
+  └─ presentation: cards, codex, leaderboard, notices, telegraphs/flights/props (UI and client visuals)
 ```
 
 ## 3. Handshake
@@ -41,9 +41,7 @@ handshake:
   capabilities: [auras, content_pack, i18n]
 ```
 
-- The client loads the matching language/content pack. On a hash mismatch:
-  - single-player: warn about the update and allow continuing with an incompatible marker;
-  - co-op: the LAN/direct host refuses different content versions.
+- The client loads the matching language/content pack. On a hash or protocol mismatch it fires `HOA_INCOMPATIBLE`, stops applying typed packets, and the addon shows an explicit error; direct hosts are expected to refuse different versions before the world is entered.
 - Language change: the client sends `set_locale` (or reuses a vanilla command); the server updates the account language and refreshes cached names; the client reloads language packs and UI.
 
 ## 4. Message definitions
@@ -87,7 +85,7 @@ Generated files are committed; CI checks the diff.
 
 ## 6. How the addon receives data
 
-Current: the server sends state and UI data as `BONK~type~...` chat lines and the addon parses strings.
+Current: the server sends presentation data as `BONK~type~...` chat lines and the addon parses strings; state uses the typed channel.
 
 New design:
 

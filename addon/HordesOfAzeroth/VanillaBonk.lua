@@ -1,5 +1,4 @@
 local L = VanillaBonkL
-local PREFIX = "BONK~"
 local ICON_PATH = "Interface\\Icons\\"
 local FONT = VanillaBonkUI.FONT
 
@@ -37,12 +36,12 @@ local function FormatGold(copper)
     copper = tonumber(copper) or 0
     local gold = floor(copper / 10000)
     local silver = floor(mod(copper, 10000) / 100)
-    local text = format(L["|cffeda55f%dc|r"], mod(copper, 100))
+    local text = format(L["hoa.addon.cffeda55f_dc_r"], mod(copper, 100))
     if silver > 0 or gold > 0 then
-        text = format(L["|cffc7c7cf%ds|r "], silver) .. text
+        text = format(L["hoa.addon.cffc7c7cf_ds_r"], silver) .. text
     end
     if gold > 0 then
-        text = format(L["|cffffd700%dg|r "], gold) .. text
+        text = format(L["hoa.addon.cffffd700_dg_r"], gold) .. text
     end
     return text
 end
@@ -62,16 +61,6 @@ local function DialogBackdrop(frame)
         tile = true, tileSize = 32, edgeSize = 32,
         insets = { left = 11, right = 12, top = 12, bottom = 11 },
     })
-end
-
-local function TooltipBackdrop(frame)
-    frame:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 },
-    })
-    frame:SetBackdropColor(0, 0, 0, 0.8)
 end
 
 local hiddenBars = CreateFrame("Frame")
@@ -98,11 +87,11 @@ end
 UseAction = function() end
 
 local RARITIES = {
-    [0] = { name = L["Common"], r = 1, g = 1, b = 1 },
-    [1] = { name = L["Uncommon"], r = 0.12, g = 1, b = 0 },
-    [2] = { name = L["Rare"], r = 0, g = 0.44, b = 0.87 },
-    [3] = { name = L["Epic"], r = 0.64, g = 0.21, b = 0.93 },
-    [4] = { name = L["Legendary"], r = 1, g = 0.5, b = 0 },
+    [0] = { name = L["hoa.addon.common"], r = 1, g = 1, b = 1 },
+    [1] = { name = L["hoa.addon.uncommon"], r = 0.12, g = 1, b = 0 },
+    [2] = { name = L["hoa.addon.rare"], r = 0, g = 0.44, b = 0.87 },
+    [3] = { name = L["hoa.addon.epic"], r = 0.64, g = 0.21, b = 0.93 },
+    [4] = { name = L["hoa.addon.legendary"], r = 1, g = 0.5, b = 0 },
 }
 
 local function RarityText(rarity, text)
@@ -141,7 +130,7 @@ offerFrame.subtitle:SetShadowColor(0, 0, 0, 1)
 offerFrame.subtitle:SetShadowOffset(1, -1)
 offerFrame.subtitle:SetPoint("CENTER", offerFrame, "CENTER", 0, 186)
 offerFrame.subtitle:SetTextColor(0.9, 0.83, 0.64)
-offerFrame.subtitle:SetText(L["Choose an upgrade"])
+offerFrame.subtitle:SetText(L["hoa.addon.choose_an_upgrade"])
 
 for side = 1, 2 do
     local line = offerFrame.chrome:CreateTexture(nil, "ARTWORK")
@@ -212,9 +201,9 @@ local function SetBanishMode(on)
         end
     end
     if offerFrame.banish then
-        offerFrame.banish:SetText(on and L["Cancel"] or (L("|cffff6060Banish ({1})|r", VB.banishes or 0)))
+        offerFrame.banish:SetText(on and L["hoa.addon.cancel"] or (L("hoa.addon.cffff6060banish_1_r", VB.banishes or 0)))
     end
-    offerFrame.hint:SetText(on and L["|cffff6060Click a card to banish it, or press Escape to cancel.|r"] or "")
+    offerFrame.hint:SetText(on and L["hoa.addon.cffff6060click_a_card_to_banish_it_or_press_escape_to_cancel"] or "")
     if on then
         offerFrame.banishEscape:Show()
     else
@@ -247,7 +236,7 @@ local function Banish(index)
             return
         end
         offerFrame.banishWarned = true
-        UIErrorsFrame:AddMessage(L["You can't banish an upgrade you already have."], 1, 0.1, 0.1, 1)
+        UIErrorsFrame:AddMessage(L["hoa.addon.you_can_t_banish_an_upgrade_you_already_have"], 1, 0.1, 0.1, 1)
         return
     end
     VB.picking = true
@@ -352,12 +341,12 @@ local DARKMOON_CLOTH = "World\\ENVIRONMENT\\DOODAD\\Carnival\\bm_Carnie_tarp01"
 local DARKMOON_BANNER = "World\\ENVIRONMENT\\DOODAD\\Carnival\\Darkmoon_Banner01"
 local MAX_CARDS = 6
 local KEYWORD_ALIASES = {
-    [L["Chill"]] = { L["Chilled"] },
-    [L["Frozen"]] = { L["Freezes"], L["Freeze"], L["Shatter"] },
-    [L["Hunter's Mark"]] = { L["Marked"] },
-    [L["Poison"]] = { L["Poisoned"] },
-    [L["Bleed"]] = { L["Bleeding"] },
-    [L["Dazed"]] = { L["Dazes"], L["Daze"] },
+    [L["hoa.addon.chill"]] = { L["hoa.addon.chilled"] },
+    [L["hoa.addon.frozen"]] = { L["hoa.addon.freezes"], L["hoa.addon.freeze"], L["hoa.addon.shatter"] },
+    [L["hoa.addon.hunter_s_mark"]] = { L["hoa.addon.marked"] },
+    [L["hoa.addon.poison"]] = { L["hoa.addon.poisoned"] },
+    [L["hoa.addon.bleed"]] = { L["hoa.addon.bleeding"] },
+    [L["hoa.addon.dazed"]] = { L["hoa.addon.dazes"], L["hoa.addon.daze"] },
 }
 VB.keywords = {}
 
@@ -402,19 +391,19 @@ local function MatchKeyword(text, pos, terms)
 end
 
 VB.keywordColors = {
-    [L["Chill"]] = { 0.41, 0.8, 0.94 },
-    [L["Frozen"]] = { 0.41, 0.8, 0.94 },
-    [L["Burning"]] = { 1, 0.71, 0.24 },
-    [L["Fire Vulnerability"]] = { 1, 0.49, 0.1 },
-    [L["Bleed"]] = { 1, 0.33, 0.33 },
-    [L["Poison"]] = { 0.4, 0.85, 0.3 },
-    [L["Nature Vulnerability"]] = { 0.25, 0.78, 0.71 },
-    [L["Static"]] = { 0.25, 0.78, 0.71 },
-    [L["Decay"]] = { 0.7, 0.55, 1 },
-    [L["Shadow Vulnerability"]] = { 0.7, 0.55, 1 },
-    [L["Sunder Armor"]] = { 0.78, 0.61, 0.43 },
-    [L["Dazed"]] = { 0.78, 0.61, 0.43 },
-    [L["Hunter's Mark"]] = { 0.78, 0.61, 0.43 },
+    [L["hoa.addon.chill"]] = { 0.41, 0.8, 0.94 },
+    [L["hoa.addon.frozen"]] = { 0.41, 0.8, 0.94 },
+    [L["hoa.addon.burning"]] = { 1, 0.71, 0.24 },
+    [L["hoa.addon.fire_vulnerability"]] = { 1, 0.49, 0.1 },
+    [L["hoa.addon.bleed"]] = { 1, 0.33, 0.33 },
+    [L["hoa.addon.poison"]] = { 0.4, 0.85, 0.3 },
+    [L["hoa.addon.nature_vulnerability"]] = { 0.25, 0.78, 0.71 },
+    [L["hoa.addon.static"]] = { 0.25, 0.78, 0.71 },
+    [L["hoa.addon.decay"]] = { 0.7, 0.55, 1 },
+    [L["hoa.addon.shadow_vulnerability"]] = { 0.7, 0.55, 1 },
+    [L["hoa.addon.sunder_armor"]] = { 0.78, 0.61, 0.43 },
+    [L["hoa.addon.dazed"]] = { 0.78, 0.61, 0.43 },
+    [L["hoa.addon.hunter_s_mark"]] = { 0.78, 0.61, 0.43 },
 }
 
 function VB.KeywordRGB(id)
@@ -880,13 +869,13 @@ local CHOICE_KEYS = {
     ["4"] = "VANILLABONK_CHOICE4", ["5"] = "VANILLABONK_CHOICE5", ["6"] = "VANILLABONK_CHOICE6",
     ["R"] = "VANILLABONK_REROLL", ["X"] = "VANILLABONK_SKIP", ["B"] = "VANILLABONK_BANISH",
 }
-BINDING_HEADER_VANILLABONK = L["Hordes of Azeroth"]
+BINDING_HEADER_VANILLABONK = L["hoa.addon.hordes_of_azeroth"]
 for index = 1, 6 do
-    setglobal("BINDING_NAME_VANILLABONK_CHOICE" .. index, L("Choose Card {1}", index))
+    setglobal("BINDING_NAME_VANILLABONK_CHOICE" .. index, L("hoa.addon.choose_card_1", index))
 end
-BINDING_NAME_VANILLABONK_REROLL = L["Reroll Cards"]
-BINDING_NAME_VANILLABONK_SKIP = L["Skip Cards"]
-BINDING_NAME_VANILLABONK_BANISH = L["Banish Card"]
+BINDING_NAME_VANILLABONK_REROLL = L["hoa.addon.reroll_cards"]
+BINDING_NAME_VANILLABONK_SKIP = L["hoa.addon.skip_cards"]
+BINDING_NAME_VANILLABONK_BANISH = L["hoa.addon.banish_card"]
 
 local function GiveBackChoiceKeys()
     if not VanillaBonkChoiceKeys or (VanillaBonkGlyphs and VanillaBonkGlyphs.open) then
@@ -961,7 +950,7 @@ local function LayoutDamageRow(card, option, hasLock)
     local before = option.damageBefore or ""
     local label = option.damageLabel or ""
     if label == "" then
-        label = L["Damage"]
+        label = L["hoa.addon.damage_2"]
     end
     row.label:SetText(label ~= "" and label .. ":" or "")
     row.before:SetText(before)
@@ -1109,7 +1098,7 @@ local function LayoutStats(card, stats, width, room)
         block.before:SetFont(FONT, valueSize)
         block.after:SetFont(FONT, valueSize)
         local capped = stat.before == stat.after
-        block.before:SetText(capped and L("{1} (max)", stat.before) or stat.before)
+        block.before:SetText(capped and L("hoa.addon.1_max", stat.before) or stat.before)
         block.after:SetText(capped and "" or stat.after)
         block.arrow:SetWidth(arrowSize)
         block.arrow:SetHeight(arrowSize)
@@ -1177,7 +1166,7 @@ end
 
 function offerFrame.Subtitle()
     if VB.offerSource == "ley" then
-        return L["Choose a blessing"]
+        return L["hoa.addon.choose_a_blessing"]
     end
     local cards, upgrades = 0, 0
     for _, option in ipairs(VB.offer) do
@@ -1188,9 +1177,9 @@ function offerFrame.Subtitle()
         end
     end
     if cards > 0 and upgrades > 0 then
-        return L["Choose a reward"]
+        return L["hoa.addon.choose_a_reward"]
     end
-    return cards > 0 and L["Choose a Darkmoon Card"] or L["Choose an upgrade"]
+    return cards > 0 and L["hoa.addon.choose_a_darkmoon_card"] or L["hoa.addon.choose_an_upgrade"]
 end
 
 local function ShowOffer(level)
@@ -1207,11 +1196,11 @@ local function ShowOffer(level)
     end
 
     if VB.offerSource == "chest" then
-        offerFrame.title:SetText(L["Chest"])
+        offerFrame.title:SetText(L["hoa.addon.chest"])
     elseif VB.offerSource == "ley" then
-        offerFrame.title:SetText(L["Ley Line"])
+        offerFrame.title:SetText(L["hoa.addon.ley_line"])
     else
-        offerFrame.title:SetText(L("Level {1}", level))
+        offerFrame.title:SetText(L("hoa.addon.level_1", level))
     end
     offerFrame.subtitle:SetText(offerFrame.Subtitle())
 
@@ -1278,28 +1267,28 @@ local function ShowOffer(level)
             end
             local rarityName = option.rarity and RARITIES[option.rarity] and RarityText(option.rarity, RARITIES[option.rarity].name)
             if option.kind == "e" then
-                card.level:SetText(L("{1} Evolution", RarityText(4, L["Legendary"])))
+                card.level:SetText(L("hoa.addon.1_evolution", RarityText(4, L["hoa.addon.legendary"])))
             elseif option.kind == "ley" then
-                card.level:SetText(rarityName and L("{1} Blessing", rarityName) or L["Blessing"])
+                card.level:SetText(rarityName and L("hoa.addon.1_blessing", rarityName) or L["hoa.addon.blessing"])
             elseif option.kind == "c" then
-                card.level:SetText(rarityName and L("{1} Darkmoon Card", rarityName) or L["Darkmoon Card"])
+                card.level:SetText(rarityName and L("hoa.addon.1_darkmoon_card", rarityName) or L["hoa.addon.darkmoon_card_2"])
             elseif option.newLevel == 1 then
-                card.level:SetText(option.kind == "p" and L["|cff20ff20New passive|r"] or L["|cff20ff20New spell|r"])
+                card.level:SetText(option.kind == "p" and L["hoa.addon.cff20ff20new_passive_r"] or L["hoa.addon.cff20ff20new_spell_r"])
             elseif option.kind == "p" then
-                card.level:SetText(rarityName and L("{1} Passive", rarityName) or L["Passive"])
+                card.level:SetText(rarityName and L("hoa.addon.1_passive", rarityName) or L["hoa.addon.passive"])
             else
-                card.level:SetText(rarityName and L("{1} Spell", rarityName) or L["Spell"])
+                card.level:SetText(rarityName and L("hoa.addon.1_spell", rarityName) or L["hoa.addon.spell"])
             end
             if option.kind == "ley" or option.kind == "e" then
                 card.count:SetText("")
             elseif option.kind == "c" and option.maxLevel > 1 then
-                card.count:SetText(L("{1}/{2} copies", option.newLevel, option.maxLevel))
+                card.count:SetText(L("hoa.addon.1_2_copies", option.newLevel, option.maxLevel))
             elseif option.kind == "c" and option.newLevel > 1 then
-                card.count:SetText(L("{1} copies", option.newLevel))
+                card.count:SetText(L("hoa.addon.1_copies", option.newLevel))
             elseif option.maxLevel > 1 then
-                card.count:SetText(L("Rank {1}/{2}", option.newLevel, option.maxLevel))
+                card.count:SetText(L("hoa.addon.rank_1_2_2", option.newLevel, option.maxLevel))
             elseif option.newLevel > 1 then
-                card.count:SetText(L("Rank {1}", option.newLevel))
+                card.count:SetText(L("hoa.addon.rank_1", option.newLevel))
             else
                 card.count:SetText("")
             end
@@ -1308,7 +1297,7 @@ local function ShowOffer(level)
             card:SetBackdropBorderColor(card.borderColor[1], card.borderColor[2], card.borderColor[3])
             offerFrame.FitCard(card, option, width, hasLock)
             if hasLock then
-                card.lock:SetText(option.locked and L["Locked"] or L["Lock"])
+                card.lock:SetText(option.locked and L["hoa.addon.locked"] or L["hoa.addon.lock"])
                 card.lock:Show()
             else
                 card.lock:Hide()
@@ -1326,7 +1315,7 @@ local function ShowOffer(level)
 
     local buttons = {}
     if (VB.rerolls or 0) > 0 then
-        offerFrame.reroll:SetText(L("Reroll ({1})", VB.rerolls))
+        offerFrame.reroll:SetText(L("hoa.addon.reroll_1", VB.rerolls))
         tinsert(buttons, offerFrame.reroll)
     else
         offerFrame.reroll:Hide()
@@ -1337,7 +1326,7 @@ local function ShowOffer(level)
         offerFrame.banish:Hide()
     end
     if (VB.skips or 0) > 0 then
-        offerFrame.skip:SetText(L("Skip ({1})", VB.skips))
+        offerFrame.skip:SetText(L("hoa.addon.skip_1", VB.skips))
         tinsert(buttons, offerFrame.skip)
     else
         offerFrame.skip:Hide()
@@ -1499,7 +1488,7 @@ results.close = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, results, "U
 results.close:SetWidth(100)
 results.close:SetHeight(22)
 results.close:SetPoint("BOTTOM", results, "BOTTOM", 0, 18)
-results.close:SetText(L["Close"])
+results.close:SetText(L["hoa.addon.close"])
 results.close:SetScript("OnClick", function()
     results:Hide()
 end)
@@ -1565,7 +1554,7 @@ local STARTER_SIZE, STARTER_STEP = 28, 34
 
 local arena = UI.GoldWindow("VanillaBonkArena", ARENA_WIDTH, ARENA_HEIGHT)
 arena:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-arena.title:SetText(L["Run Master"])
+arena.title:SetText(L["hoa.addon.run_master"])
 
 local content = CreateFrame("Frame", nil, arena)
 content:SetAllPoints(arena)
@@ -1584,12 +1573,12 @@ arena.loadoutDivider:SetPoint("TOPLEFT", arena, "TOPLEFT", LOADOUT_X, -(LOADOUT_
 arena.loadoutLabel = UI.Text(content, 11)
 arena.loadoutLabel:SetPoint("TOPLEFT", arena, "TOPLEFT", LOADOUT_X, -LOADOUT_TOP)
 arena.loadoutLabel:SetTextColor(1, 0.82, 0)
-arena.loadoutLabel:SetText(L["Loadout"])
+arena.loadoutLabel:SetText(L["hoa.addon.loadout"])
 
 arena.challengesLabel = UI.Text(content, 10)
 arena.challengesLabel:SetPoint("TOPLEFT", arena, "TOPLEFT", LOADOUT_X, -(LOADOUT_TOP + 84))
 arena.challengesLabel:SetTextColor(LOADOUT_GREY[1], LOADOUT_GREY[2], LOADOUT_GREY[3])
-arena.challengesLabel:SetText(L["Dark Fortunes"])
+arena.challengesLabel:SetText(L["hoa.addon.dark_fortunes"])
 arena.challenges = UI.Text(content, 10)
 arena.challenges:SetPoint("TOPRIGHT", arena, "TOPLEFT", LOADOUT_X + LOADOUT_WIDTH, -(LOADOUT_TOP + 84))
 arena.challenges:SetWidth(120)
@@ -1597,7 +1586,7 @@ arena.challenges:SetJustifyH("RIGHT")
 
 arena.perksLabel = UI.Text(content, 10)
 arena.perksLabel:SetTextColor(LOADOUT_GREY[1], LOADOUT_GREY[2], LOADOUT_GREY[3])
-arena.perksLabel:SetText(L["Perks"])
+arena.perksLabel:SetText(L["hoa.addon.perks"])
 arena.perks = UI.Text(content, 10)
 arena.perks:SetPoint("TOPRIGHT", arena.challenges, "BOTTOMRIGHT", 0, -5)
 arena.perks:SetWidth(140)
@@ -1613,15 +1602,15 @@ arena.pauseCheck:SetPoint("TOP", arena.perks, "BOTTOM", 0, -6)
 arena.pauseCheck.label = UI.Text(arena.pauseCheck, 10)
 arena.pauseCheck.label:SetPoint("LEFT", arena.pauseCheck, "RIGHT", 2, 0)
 arena.pauseCheck.label:SetTextColor(LOADOUT_GREY[1], LOADOUT_GREY[2], LOADOUT_GREY[3])
-arena.pauseCheck.label:SetText(L["Pause on Rewards"])
+arena.pauseCheck.label:SetText(L["hoa.addon.pause_on_rewards"])
 arena.pauseCheck:SetScript("OnClick", function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     UI.SetOption("pauseOnChoices", this:GetChecked() and true or false)
 end)
 arena.pauseCheck:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:SetText(L["Pause on Rewards"], 1, 1, 1)
-    GameTooltip:AddLine(L["When disabled, rewards appear at the bottom of the screen and combat continues."], 1, 0.82, 0, 1)
+    GameTooltip:SetText(L["hoa.addon.pause_on_rewards"], 1, 1, 1)
+    GameTooltip:AddLine(L["hoa.addon.when_disabled_rewards_appear_at_the_bottom_of_the_screen_and"], 1, 0.82, 0, 1)
     GameTooltip:Show()
 end)
 arena.pauseCheck:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -1649,9 +1638,9 @@ local function ShowStarterTooltip(owner, option)
     end
     GameTooltip:AddLine(option.description, 1, 1, 1, 1)
     if option.chosen then
-        GameTooltip:AddLine(L["Your runs start with this spell."], 0.25, 1, 0.25, 1)
+        GameTooltip:AddLine(L["hoa.addon.your_runs_start_with_this_spell"], 0.25, 1, 0.25, 1)
     elseif option.unlocked then
-        GameTooltip:AddLine(L["Click to make this your starter spell."], 1, 0.82, 0, 1)
+        GameTooltip:AddLine(L["hoa.addon.click_to_make_this_your_starter_spell"], 1, 0.82, 0, 1)
     else
         GameTooltip:AddLine(option.hint, 1, 0.3, 0.3, 1)
     end
@@ -1678,7 +1667,7 @@ starterBox:SetHeight(48)
 starterBox.label = UI.Text(starterBox, 10)
 starterBox.label:SetPoint("TOPLEFT", starterBox, "TOPLEFT", 0, 0)
 starterBox.label:SetTextColor(LOADOUT_GREY[1], LOADOUT_GREY[2], LOADOUT_GREY[3])
-starterBox.label:SetText(L["Starter Spell"])
+starterBox.label:SetText(L["hoa.addon.starter_spell"])
 starterBox.name = UI.Text(starterBox, 11)
 starterBox.name:SetJustifyH("LEFT")
 starterBox.slots = {}
@@ -1743,7 +1732,7 @@ local function RefreshStarters()
     starterBox:Show()
 end
 
-arena.button = UI.Button(content, 140, L["Start Run"], function()
+arena.button = UI.Button(content, 140, L["hoa.addon.start_run"], function()
     local tier = arena.tier
     if not tier or not tier.unlocked or VB.inRun or not VanillaBonkRunMaster.CanStart(tier) then
         return
@@ -1761,7 +1750,7 @@ arena.button.label:SetTextColor(1, 0.82, 0)
 
 arena:SetScript("OnShow", function()
     PlaySound("igCharacterInfoOpen")
-    arena.title:SetText(UnitExists("npc") and UnitName("npc") or L["Run Master"])
+    arena.title:SetText(UnitExists("npc") and UnitName("npc") or L["hoa.addon.run_master"])
     local _, classToken = UnitClass("player")
     local color = RAID_CLASS_COLORS and RAID_CLASS_COLORS[classToken]
     local name = UnitName("player") or ""
@@ -1789,13 +1778,13 @@ ShowArenaDetail = function(tier)
     end
     VanillaBonkRunMaster.Show(tier)
     if not tier.unlocked then
-        arena.button.label:SetText(L["Locked"])
+        arena.button.label:SetText(L["hoa.addon.locked"])
         arena.button:Disable()
     elseif not VanillaBonkRunMaster.CanStart(tier) then
-        arena.button.label:SetText(L["Start Run"])
+        arena.button.label:SetText(L["hoa.addon.start_run"])
         arena.button:Disable()
     else
-        arena.button.label:SetText(L["Start Run"])
+        arena.button.label:SetText(L["hoa.addon.start_run"])
         arena.button:Enable()
     end
 end
@@ -1835,19 +1824,19 @@ RefreshArena = function()
                 lines = lines .. (lines ~= "" and ", " or "") .. trimmed
             end
         end
-        arena.challenges:SetText("|cffffffff" .. lines .. "|r |cffffe873" .. L("+{1}% gold", info.goldBonus or 0) .. "|r")
+        arena.challenges:SetText("|cffffffff" .. lines .. "|r |cffffe873" .. L("hoa.addon.1_gold", info.goldBonus or 0) .. "|r")
     else
-        arena.challenges:SetText(L["|cff9d9d9dNone|r"])
+        arena.challenges:SetText(L["hoa.addon.cff9d9d9dnone_r"])
     end
     if info.perks and info.perks ~= "" then
         arena.perks:SetText("|cffffffff" .. gsub(info.perks, ", ", "\n") .. "|r")
     else
-        arena.perks:SetText(L["|cff9d9d9dNone yet|r"])
+        arena.perks:SetText(L["hoa.addon.cff9d9d9dnone_yet_r"])
     end
 end
 
 StaticPopupDialogs["VANILLABONK_LEAVE_RUN"] = {
-    text = L["End this run? It counts as a defeat. You keep the gold and Darkmoon Tickets you earned, but loot outside your Extraction Vault is lost."],
+    text = L["hoa.addon.end_this_run_it_counts_as_a_defeat_you_keep_the_gold_and_dar"],
     button1 = YES,
     button2 = NO,
     OnAccept = function()
@@ -1871,18 +1860,18 @@ SlashCmdList["VANILLABONK"] = function(message)
     end
 end
 
-local SHOP_TITLES = { ["1"] = L["Upgrades"], ["2"] = L["Sayge's Fortunes"], ["3"] = L["Talents"] }
+local SHOP_TITLES = { ["1"] = L["hoa.addon.upgrades"], ["2"] = L["hoa.addon.sayge_s_fortunes"], ["3"] = L["hoa.addon.talents"] }
 local SHOP_HINTS = {
-    ["1"] = L["Upgrades apply to all your characters. Right-click to refund a rank."],
-    ["2"] = L["Click a Dark Fortune to buy it or switch it on or off. Right-click to refund it."],
-    ["3"] = L["Earn talent points from Mastery levels. Right-click a talent to refund a point."],
+    ["1"] = L["hoa.addon.upgrades_apply_to_all_your_characters_right_click_to_refund_"],
+    ["2"] = L["hoa.addon.click_a_dark_fortune_to_buy_it_or_switch_it_on_or_off_right_"],
+    ["3"] = L["hoa.addon.earn_talent_points_from_mastery_levels_right_click_a_talent_"],
 }
 local MASTERY_SHOP = "3"
 local FORTUNE_SHOP = "2"
 local SHOP_REFUNDS = {
-    ["1"] = { label = L["Refund All"], text = L["Refunds all upgrades for their full gold cost."] },
-    ["2"] = { label = L["Refund All"], text = L["Refunds all Dark Fortunes for their full Darkmoon Ticket cost."] },
-    ["3"] = { label = L["Reset Talents"], text = L["Refunds every talent point you spent."] },
+    ["1"] = { label = L["hoa.addon.refund_all"], text = L["hoa.addon.refunds_all_upgrades_for_their_full_gold_cost"] },
+    ["2"] = { label = L["hoa.addon.refund_all"], text = L["hoa.addon.refunds_all_dark_fortunes_for_their_full_darkmoon_ticket_cos"] },
+    ["3"] = { label = L["hoa.addon.reset_talents"], text = L["hoa.addon.refunds_every_talent_point_you_spent"] },
 }
 
 local TREE_LAYOUTS = {
@@ -1916,7 +1905,7 @@ shop.respec = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, shop, "UIPane
 shop.respec:SetWidth(110)
 shop.respec:SetHeight(22)
 shop.respec:SetPoint("BOTTOMRIGHT", shop, "BOTTOMRIGHT", -28, 22)
-shop.respec:SetText(L["Reset Talents"])
+shop.respec:SetText(L["hoa.addon.reset_talents"])
 shop.respec:SetScript("OnClick", function()
     if VB.shopBusy then
         return
@@ -1971,10 +1960,10 @@ do
         return button
     end
 
-    bar.activate = AddButton(84, L["Activate"])
+    bar.activate = AddButton(84, L["hoa.addon.activate"])
     bar.activate:SetScript("OnClick", SendPreset)
     bar.activate:SetScript("OnEnter", function()
-        ShowTip(L["Activate"], L["Switches to this preset's talents. Your current talents stay saved."])
+        ShowTip(L["hoa.addon.activate"], L["hoa.addon.switches_to_this_preset_s_talents_your_current_talents_stay_"])
     end)
 
     bar.slots = {}
@@ -1989,11 +1978,11 @@ do
         end)
         button:SetScript("OnEnter", function()
             local points = shop.presets and shop.presets.points[this.slot] or 0
-            local text = points > 0 and (points == 1 and L["1 talent point"] or L("{1} talent points", points)) or L["Empty"]
+            local text = points > 0 and (points == 1 and L["hoa.addon.1_talent_point"] or L("hoa.addon.1_talent_points_2", points)) or L["hoa.addon.empty_2"]
             if shop.presets and shop.presets.active == this.slot then
-                text = text .. "\n|cff20ff20" .. L["Active. Talent changes are saved to this preset."] .. "|r"
+                text = text .. "\n|cff20ff20" .. L["hoa.addon.active_talent_changes_are_saved_to_this_preset"] .. "|r"
             end
-            ShowTip(L("Preset {1}", this.slot), text)
+            ShowTip(L("hoa.addon.preset_1", this.slot), text)
         end)
         bar.slots[slot] = button
         anchor = button
@@ -2001,7 +1990,7 @@ do
 
     bar.label = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     bar.label:SetPoint("RIGHT", bar.slots[1], "LEFT", -6, 0)
-    bar.label:SetText(L["Presets"])
+    bar.label:SetText(L["hoa.addon.presets"])
 
     shop.PreviewSlot = function(data)
         local presets = not data.inspect and data.presets
@@ -2088,11 +2077,11 @@ local function ShopBalance()
 end
 
 local function FormatPoints(count)
-    return "|cff80d0ff" .. (count == 1 and L("{1} Talent Point", count) or L("{1} Talent Points", count)) .. "|r"
+    return "|cff80d0ff" .. (count == 1 and L("hoa.addon.1_talent_point_2", count) or L("hoa.addon.1_talent_points", count)) .. "|r"
 end
 
 local function FormatShards(count)
-    return "|cffc080ff" .. (count == 1 and L("{1} Darkmoon Ticket", count) or L("{1} Darkmoon Tickets", count)) .. "|r"
+    return "|cffc080ff" .. (count == 1 and L("hoa.addon.1_darkmoon_ticket", count) or L("hoa.addon.1_darkmoon_tickets", count)) .. "|r"
 end
 
 local function FormatCost(amount)
@@ -2128,29 +2117,29 @@ local function MissingRequirement(node)
         if node.questDescription ~= "" then
             local what = gsub(node.questDescription, "%.$", "")
             what = strlower(strsub(what, 1, 1)) .. strsub(what, 2)
-            return L("Requires the quest \"{1}\" ({2}).", node.quest, what)
+            return L("hoa.addon.requires_the_quest_1_2", node.quest, what)
         end
-        return L("Requires the quest \"{1}\".", node.quest)
+        return L("hoa.addon.requires_the_quest_1", node.quest)
     end
     if node.rankLock and node.rankLock ~= "" and node.rank < node.maxRank then
         return node.rankLock
     end
     local gate = VB.shop.gates and VB.shop.gates[node.row]
     if gate and gate.above < gate.need then
-        return L("Requires {1} Darkmoon Tickets spent in the rows above", gate.need)
+        return L("hoa.addon.requires_1_darkmoon_tickets_spent_in_the_rows_above", gate.need)
     end
     local perRow = VB.shop.pointsPerRow or 0
     if perRow > 0 and node.row > 1 and TreeSpent(node.tree) < (node.row - 1) * perRow then
-        return L("Requires {1} points in {2}", (node.row - 1) * perRow, TreeName(node.tree))
+        return L("hoa.addon.requires_1_points_in_2", (node.row - 1) * perRow, TreeName(node.tree))
     end
     local required = VB.shop.nodes[node.requiredId]
     if not required or node.requiredRank < 1 or required.rank >= node.requiredRank then
         return nil
     end
     if required.maxRank <= 1 then
-        return L("Requires {1}", required.name)
+        return L("hoa.addon.requires_1", required.name)
     end
-    return L(node.requiredRank == 1 and "Requires {1} rank in {2}" or "Requires {1} ranks in {2}", node.requiredRank, required.name)
+    return L(node.requiredRank == 1 and "hoa.addon.requires_1_rank_in_2" or "hoa.addon.requires_1_ranks_in_2", node.requiredRank, required.name)
 end
 
 function VB.IsEndless(node)
@@ -2196,11 +2185,11 @@ local function RefundBlocker(node)
     for _, other in pairs(VB.shop.nodes) do
         if other ~= node and other.rank > 0 then
             if other.requiredId == node.id and node.rank - 1 < other.requiredRank then
-                return L("Refund {1} first. It depends on this one.", other.name)
+                return L("hoa.addon.refund_1_first_it_depends_on_this_one", other.name)
             end
             local gate = VB.shop.gates and VB.shop.gates[other.row]
             if gate and node.maxRank ~= VB.ENDLESS_RANKS and other.row > node.row and gate.above - node.refund < gate.need then
-                return L("Refund {1} first. It needs the tickets you spent here.", other.name)
+                return L("hoa.addon.refund_1_first_it_needs_the_tickets_you_spent_here", other.name)
             end
             if perRow > 0 and other.tree == node.tree and other.row > node.row then
                 local above = 0
@@ -2210,7 +2199,7 @@ local function RefundBlocker(node)
                     end
                 end
                 if above - 1 < (other.row - 1) * perRow then
-                    return L("Refund {1} first. It needs the points you spent in {2}.", other.name, TreeName(node.tree))
+                    return L("hoa.addon.refund_1_first_it_needs_the_points_you_spent_in_2", other.name, TreeName(node.tree))
                 end
             end
         end
@@ -2223,9 +2212,9 @@ local function ShowNodeTooltip(button)
     GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
     GameTooltip:AddLine(node.name, 1, 1, 1)
     if node.toggle then
-        GameTooltip:AddLine(L["Dark Fortune"], 1, 1, 1)
+        GameTooltip:AddLine(L["hoa.addon.dark_fortune"], 1, 1, 1)
     else
-        GameTooltip:AddLine(VB.IsEndless(node) and L("Rank {1}", node.rank) or L("Rank {1}/{2}", node.rank, node.maxRank), 1, 1, 1)
+        GameTooltip:AddLine(VB.IsEndless(node) and L("hoa.addon.rank_1", node.rank) or L("hoa.addon.rank_1_2_2", node.rank, node.maxRank), 1, 1, 1)
     end
 
     local missing = MissingRequirement(node)
@@ -2240,57 +2229,57 @@ local function ShowNodeTooltip(button)
         if node.rank > 0 then
             GameTooltip:AddLine(DescribeRanks(node, node.rank), 1, 0.82, 0, 1)
             if VB.IsEndless(node) then
-                GameTooltip:AddLine(L("Next rank: |cff20ff20{1}|r", nextRank), 1, 1, 1, 1)
+                GameTooltip:AddLine(L("hoa.addon.next_rank_cff20ff20_1_r", nextRank), 1, 1, 1, 1)
             elseif node.rank < node.maxRank then
-                GameTooltip:AddLine(L("Next rank: |cff20ff20{1}|r", nextValue), 1, 1, 1)
+                GameTooltip:AddLine(L("hoa.addon.next_rank_cff20ff20_1_r", nextValue), 1, 1, 1)
             end
         else
             GameTooltip:AddLine(nextRank, 1, 0.82, 0, 1)
         end
     elseif node.maxRank > 1 then
-        GameTooltip:AddLine(L("Each rank: {1}", node.description), 1, 0.82, 0, 1)
+        GameTooltip:AddLine(L("hoa.addon.each_rank_1", node.description), 1, 0.82, 0, 1)
     else
         GameTooltip:AddLine(node.description, 1, 0.82, 0, 1)
     end
-    if node.description and string.find(node.description, L["Valor"], 1, true) then
-        GameTooltip:AddLine(L["Valor is spent on chests and shops during a run. Resets when the run ends."], 0.6, 0.6, 0.6, 1)
+    if node.description and string.find(node.description, L["hoa.addon.valor"], 1, true) then
+        GameTooltip:AddLine(L["hoa.addon.valor_is_spent_on_chests_and_shops_during_a_run_resets_when_"], 0.6, 0.6, 0.6, 1)
     end
 
     GameTooltip:AddLine(" ")
     if VB.shop.coopGuest and node.toggle then
         if node.rank > 0 then
-            GameTooltip:AddLine(node.enabled and L["Enabled"] or L["Disabled"], 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(node.enabled and L["hoa.addon.enabled"] or L["hoa.addon.disabled"], 0.6, 0.6, 0.6)
         end
-        GameTooltip:AddLine(L["In co-op, the host's Dark Fortunes count for everyone."], 0.6, 0.6, 0.6, 1)
+        GameTooltip:AddLine(L["hoa.addon.in_co_op_the_host_s_dark_fortunes_count_for_everyone"], 0.6, 0.6, 0.6, 1)
         GameTooltip:Show()
         return
     end
     if node.rank < node.maxRank then
-        GameTooltip:AddLine(L("Cost: {1}", FormatCost(node.cost)), 1, 1, 1)
+        GameTooltip:AddLine(L("hoa.addon.cost_1", FormatCost(node.cost)), 1, 1, 1)
         if ShopBalance() < node.cost then
-            GameTooltip:AddLine(L("You have {1}", FormatCost(ShopBalance())), 1, 0.1, 0.1)
+            GameTooltip:AddLine(L("hoa.addon.you_have_1", FormatCost(ShopBalance())), 1, 0.1, 0.1)
         elseif not missing then
-            GameTooltip:AddLine(L["Click to learn"], 0.1, 1, 0.1)
+            GameTooltip:AddLine(L["hoa.addon.click_to_learn"], 0.1, 1, 0.1)
         end
     elseif node.toggle then
         if node.enabled then
-            GameTooltip:AddLine(L["Enabled"], 0.1, 1, 0.1)
-            GameTooltip:AddLine(L["Click to disable"], 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(L["hoa.addon.enabled"], 0.1, 1, 0.1)
+            GameTooltip:AddLine(L["hoa.addon.click_to_disable"], 0.7, 0.7, 0.7)
         else
-            GameTooltip:AddLine(L["Disabled"], 0.6, 0.6, 0.6)
-            GameTooltip:AddLine(L["Click to enable"], 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(L["hoa.addon.disabled"], 0.6, 0.6, 0.6)
+            GameTooltip:AddLine(L["hoa.addon.click_to_enable"], 0.7, 0.7, 0.7)
         end
     else
-        GameTooltip:AddLine(L["Fully learned"], 1, 0.82, 0)
+        GameTooltip:AddLine(L["hoa.addon.fully_learned"], 1, 0.82, 0)
     end
     if node.rank > 0 then
         local blocker = RefundBlocker(node)
         if blocker then
             GameTooltip:AddLine(blocker, 0.6, 0.6, 0.6, 1)
         elseif node.refund > 0 then
-            GameTooltip:AddLine(L("Right-click to refund {1}", FormatCost(node.refund)), 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(L("hoa.addon.right_click_to_refund_1", FormatCost(node.refund)), 0.7, 0.7, 0.7)
         else
-            GameTooltip:AddLine(L["Right-click to refund"], 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(L["hoa.addon.right_click_to_refund"], 0.7, 0.7, 0.7)
         end
     end
     GameTooltip:Show()
@@ -2326,7 +2315,7 @@ local function ShopNode_OnClick()
             return
         end
         if ShopBalance() < node.cost then
-            Notice(L("You need {1}.", FormatCost(node.cost)))
+            Notice(L("hoa.addon.you_need_1", FormatCost(node.cost)))
             return
         end
         command = "learn " .. node.id
@@ -2364,7 +2353,7 @@ local function SetNode(button, node)
     local which, text, colour = "locked", VB.IsEndless(node) and tostring(node.rank) or (node.rank .. "/" .. node.maxRank), nil
     if node.toggle and node.rank > 0 then
         which = node.enabled and "on" or "off"
-        text = node.enabled and L["On"] or L["Off"]
+        text = node.enabled and L["hoa.addon.on"] or L["hoa.addon.off_2"]
         colour = node.enabled and { 0.1, 1, 0.1 } or { 0.8, 0.8, 0.8 }
     elseif not missing and node.rank >= node.maxRank then
         which = "max"
@@ -2474,9 +2463,9 @@ local function DrawTree(panel, tree)
     end
     panel.header:SetText(tree.name)
     if tree.tickets then
-        panel.spent:SetText(tree.tickets == 1 and L("{1} ticket spent", tree.tickets) or L("{1} tickets spent", tree.tickets))
+        panel.spent:SetText(tree.tickets == 1 and L("hoa.addon.1_ticket_spent", tree.tickets) or L("hoa.addon.1_tickets_spent", tree.tickets))
     else
-        panel.spent:SetText(spent == 1 and L("{1} point spent", spent) or L("{1} points spent", spent))
+        panel.spent:SetText(spent == 1 and L("hoa.addon.1_point_spent", spent) or L("hoa.addon.1_points_spent", spent))
     end
 
     local height = panel:GetHeight()
@@ -2507,7 +2496,7 @@ local function DrawTree(panel, tree)
             if gates[row].need > gates[row - 1].need then
                 count = count + 1
                 local lit = gates[row].above >= gates[row].need
-                local text = lit and L("Unlocked at {1} tickets spent", gates[row].need) or L("Requires {1} tickets spent", gates[row].need)
+                local text = lit and L("hoa.addon.unlocked_at_1_tickets_spent", gates[row].need) or L("hoa.addon.requires_1_tickets_spent", gates[row].need)
                 VanillaBonkTalents.ShopGate(panel, panel.arrows, count, -(TREE_OFFSET_Y + (row - 1.5) * TREE_SPACING + SHOP_NODE_HALF), text, lit)
             end
         end
@@ -2568,16 +2557,16 @@ RefreshShop = function()
     end
     shop.title:SetText((data.className and (data.className .. " ") or "") .. (SHOP_TITLES[data.kind] or ""))
     shop.header:SetText(data.npc)
-    shop.hint:SetText(data.inspect and L["Talents can only be changed at the Inn."] or
-        data.coopGuest and L["Click a fortune to buy it. Right-click to refund it. In co-op, the host's Dark Fortunes count for everyone."] or
-        previewSlot and L("Preset {1}. Click Activate to use these talents.", previewSlot) or SHOP_HINTS[data.kind] or "")
+    shop.hint:SetText(data.inspect and L["hoa.addon.talents_can_only_be_changed_at_the_inn"] or
+        data.coopGuest and L["hoa.addon.click_a_fortune_to_buy_it_right_click_to_refund_it_in_co_op_"] or
+        previewSlot and L("hoa.addon.preset_1_click_activate_to_use_these_talents", previewSlot) or SHOP_HINTS[data.kind] or "")
     if VanillaBonkTalents then
         VanillaBonkTalents.readOnly = data.inspect or previewSlot ~= nil
     end
     if data.currency == "shards" then
         shop.gold:SetText(FormatShards(data.balance))
     elseif data.currency == "points" then
-        local level = L("|cffffffffMastery {1}/{2}|r", data.level, data.maxLevel)
+        local level = L("hoa.addon.cffffffffmastery_1_2_r", data.level, data.maxLevel)
         if data.xpNext > 0 then
             level = level .. " |cff9d9d9d(" .. data.xp .. "/" .. data.xpNext .. ")|r"
         end
@@ -2619,10 +2608,6 @@ end)
 
 local handlers = {}
 
-handlers["hello"] = function()
-    VB.connected = true
-end
-
 handlers["kwd"] = function(f)
     local id = tonumber(f[2])
     if not id then
@@ -2660,6 +2645,15 @@ handlers["tier"] = function(f)
     tinsert(VB.pendingTiers, { id = f[2], key = f[3], name = f[4], unlocked = f[5] == "1", hint = f[6] or "", best = tonumber(f[7]) or 0,
         description = f[8] or "", art = f[9] or "", maps = maps, levels = tonumber(f[11] or "") or 0, open = tonumber(f[12] or "") or 0,
         dungeons = dungeons, details = f[14] or "", firstLevel = tonumber(f[15] or "") })
+end
+
+handlers["tiermap"] = function(f)
+    local tier = VB.pendingTiers[table.getn(VB.pendingTiers)]
+    if not tier or tier.id ~= f[2] or not f[3] or f[3] == "" then
+        return
+    end
+    local parts = Split(f[3], ":")
+    tinsert(tier.maps, { icon = parts[1] or "", name = parts[2] or parts[1], type = parts[3], reward = tonumber(parts[4] or ""), key = parts[5] or "" })
 end
 
 handlers["starter"] = function(f)
@@ -2725,19 +2719,20 @@ local function SetCombatLogQuiet(quiet)
     end
 end
 
-handlers["start"] = function(f)
-    VB.inRun = true
-    SetCombatLogQuiet(true)
-    VB.duration = tonumber(f[4]) or 0
-    results:Hide()
-    arena:Hide()
-    shop:Hide()
-end
-
-handlers["state"] = function()
-    VB.inRun = true
-    SetCombatLogQuiet(true)
-end
+UI.ListenHoa({
+    HOA_RUN_START = function(start)
+        VB.inRun = true
+        SetCombatLogQuiet(true)
+        VB.duration = tonumber(start.duration_s) or 0
+        results:Hide()
+        arena:Hide()
+        shop:Hide()
+    end,
+    HOA_RUN_STATE = function()
+        VB.inRun = true
+        SetCombatLogQuiet(true)
+    end,
+})
 
 handlers["offer"] = function(f)
     VB.offer = {}
@@ -2819,35 +2814,179 @@ handlers["leyofferclose"] = function()
     CloseOffer()
 end
 
-handlers["coopnopause"] = function(f)
-    VB.sideOffers = f[2] == "1"
-end
+UI.ListenHoa({
+    HOA_CODEX = function(entry)
+        if entry.kind ~= "kwd" then
+            return
+        end
+        local f = { false, entry.kind }
+        for _, part in ipairs(Split(entry.line or "", "~")) do
+            tinsert(f, part)
+        end
+        handlers[entry.kind](f)
+    end,
+    HOA_STATS = function(stats)
+        handlers["stats"]({ false, stats.in_run and "1" or "0", stats.caps, stats.after_caps })
+    end,
+    HOA_GEAR = function(gear)
+        handlers["gear"]({ false, tostring(gear.id), gear.stats })
+    end,
+    HOA_GEAR_END = function()
+        handlers["gearend"]()
+    end,
+    HOA_ARENA = function(arena)
+        handlers["arena"]({
+            false, arena.npc_present and "1" or "0", arena.npc, arena.gold_bonus, arena.challenges, arena.perks,
+        })
+    end,
+    HOA_TIER = function(tier)
+        handlers["tier"]({
+            false, tostring(tier.id), tier.key, tier.name, tier.unlocked and "1" or "0", tier.hint, tier.best,
+            tier.description, tier.art, tier.maps, tier.levels, tier.open_level, tier.dungeons, tier.details,
+            tier.first_level,
+        })
+    end,
+    HOA_TIER_END = function()
+        handlers["tierend"]()
+    end,
+    HOA_SHOP_OPEN = function(shop)
+        local kind = tostring(shop.kind)
+        if kind == FORTUNE_SHOP then
+            handlers["shop"]({
+                false, kind, shop.open and "1" or "0", shop.npc, shop.currency, shop.balance, shop.gates,
+                shop.coop_guest and "1" or "0",
+            })
+        else
+            handlers["shop"]({
+                false, kind, shop.open and "1" or "0", shop.npc, shop.currency, shop.balance, shop.level, shop.xp,
+                shop.xp_next, shop.max_level, shop.earned, shop.from_quests, shop.class_name, shop.points_per_row,
+                shop.inspect and "1" or "0",
+            })
+        end
+    end,
+    HOA_SHOP_TREE = function(tree)
+        handlers["tree"]({ false, tostring(tree.id), tree.name, tree.background, tree.spent })
+    end,
+    HOA_MASTERY_TREE = function(tree)
+        handlers["tree"]({ false, tostring(tree.id), tree.name, tree.background, tree.layout, tree.gates, tree.spent })
+    end,
+    HOA_SHOP_NODE = function(node)
+        handlers["node"]({
+            false, tostring(node.tree), tostring(node.id), node.row, node.column, node.icon, node.rank, node.max_rank,
+            node.cost, tostring(node.required_id), node.required_rank, node.toggle and "1" or "0",
+            node.enabled and "1" or "0", node.name, node.description, node.locked and "1" or "0", node.quest,
+            node.value_per_rank, node.refund, node.quest_description, node.rank_lock,
+        })
+    end,
+    HOA_MASTERY_NODE = function(node)
+        handlers["node"]({
+            false, tostring(node.tree), tostring(node.id), node.row, node.column, node.icon, node.rank, node.max_rank,
+            node.cost, tostring(node.required_id), node.required_rank, "0", "0", node.name, node.description, "0", "",
+            node.value_per_rank, node.refund, node.shape, node.position, node.parents, node.excludes,
+        })
+    end,
+    HOA_MASTERY_PRESETS = function(presets)
+        handlers["presets"]({ false, presets.active, presets.points_1, presets.points_2, presets.points_3 })
+    end,
+    HOA_MASTERY_PRESET_RANKS = function(ranks)
+        handlers["presetranks"]({ false, ranks.preset, ranks.ranks })
+    end,
+    HOA_SHOP_END = function()
+        handlers["shopend"]()
+    end,
+    HOA_SHOP_CLOSE = function()
+        handlers["shopclose"]()
+    end,
+    HOA_STARTER = function(starter)
+        handlers["starter"]({
+            false, tostring(starter.id), starter.icon, starter.name, starter.unlocked and "1" or "0",
+            starter.chosen and "1" or "0", starter.hint, starter.description,
+        })
+    end,
+    HOA_STARTER_END = function()
+        handlers["starterend"]()
+    end,
+    HOA_NPC_NAME = function(name)
+        handlers["npcname"]({ false, name.name, name.npc_name })
+    end,
+    HOA_MESSAGE = function(message)
+        handlers["msg"]({ false, message.text })
+    end,
+    HOA_FIND = function(find)
+        handlers["find"]({ false, find.text })
+    end,
+    HOA_SHARD = function()
+        handlers["shard"]()
+    end,
+    HOA_VALOR = function()
+        handlers["valor"]()
+    end,
+    HOA_OFFER_OPEN = function(offer)
+        handlers["offer"]({ false, offer.level, offer.count, offer.source, offer.rerolls, offer.banishes, offer.skips })
+    end,
+    HOA_OFFER_OPTION = function(option)
+        handlers["opt"]({
+            false, tostring(option.index), option.kind, option.new_level, option.max_level, option.name, option.icon,
+            option.description, option.rarity, option.locked and "1" or "0", option.damage_before, option.damage_after,
+            option.damage_label, option.banishable and "1" or "0",
+        })
+    end,
+    HOA_OFFER_STAT = function(stat)
+        handlers["ostat"]({ false, tostring(stat.index), stat.label, stat.before, stat.after })
+    end,
+    HOA_OFFER_END = function()
+        handlers["offerend"]()
+    end,
+    HOA_OFFER_CLOSED = function()
+        handlers["picked"]()
+    end,
+    HOA_LEY_OPEN = function()
+        handlers["leyoffer"]()
+    end,
+    HOA_LEY_OPTION = function(option)
+        handlers["leyopt"]({
+            false, tostring(option.index), option.name, option.icon, option.description, option.rarity, option.kind,
+            option.new_level, option.max_level,
+        })
+    end,
+    HOA_LEY_END = function()
+        handlers["leyofferend"]()
+    end,
+    HOA_LEY_CLOSED = function()
+        handlers["leyofferclose"]()
+    end,
+})
 
-handlers["end"] = function(f)
-    VB.inRun = false
-    VB.sideOffers = false
-    if VanillaBonkUI.InspectShown() then
-        shop:Hide()
-    end
-    SetCombatLogQuiet(false)
-    VB.offer = {}
-    offerFrame:Hide()
-    if f[9] == "1" then
-        results.title:SetText(L["|cffffd100Victory!|r"])
-        PlaySound("QUESTCOMPLETED")
-    elseif f[2] == "1" then
-        results.title:SetText(L["|cff20ff20Run complete!|r"])
-        PlaySound("QUESTCOMPLETED")
-    else
-        results.title:SetText(L["|cffff3030Defeated|r"])
-    end
-    results.body:SetText(L("Reached stage {1} in {2}", f[7] or "1", FormatTime(f[3])) .. "\n" ..
-        L("Kills: {1}    Level: {2}", f[4], f[6]) .. "\n" ..
-        L("Gold earned: {1}", FormatGold(f[5])) .. "\n" ..
-        L("Darkmoon Tickets: |cffc080ff{1}|r", f[8] or "0") .. "\n\n" ..
-        L["|cffaaaaaaReturning to the Inn...|r"])
-    results:Show()
-end
+UI.ListenHoa({
+    HOA_COOP_NO_PAUSE = function(state)
+        VB.sideOffers = state.no_pause and true or false
+    end,
+    HOA_RUN_END = function(ending)
+        VB.inRun = false
+        VB.sideOffers = false
+        if VanillaBonkUI.InspectShown() then
+            shop:Hide()
+        end
+        SetCombatLogQuiet(false)
+        VB.offer = {}
+        offerFrame:Hide()
+        if ending.victory then
+            results.title:SetText(L["hoa.addon.cffffd100victory_r"])
+            PlaySound("QUESTCOMPLETED")
+        elseif ending.went_home then
+            results.title:SetText(L["hoa.addon.cff20ff20run_complete_r"])
+            PlaySound("QUESTCOMPLETED")
+        else
+            results.title:SetText(L["hoa.addon.cffff3030defeated_r"])
+        end
+        results.body:SetText(L("hoa.addon.reached_stage_1_in_2", ending.stage or "1", FormatTime(ending.seconds)) .. "\n" ..
+            L("hoa.addon.kills_1_level_2", ending.kills, ending.player_level) .. "\n" ..
+            L("hoa.addon.gold_earned_1", FormatGold(ending.gold)) .. "\n" ..
+            L("hoa.addon.darkmoon_tickets_cffc080ff_1_r", ending.shards or "0") .. "\n\n" ..
+            L["hoa.addon.cffaaaaaareturning_to_the_inn_r"])
+        results:Show()
+    end,
+})
 
 handlers["msg"] = function(f)
     Notice(f[2])
@@ -3028,45 +3167,45 @@ handlers["shopclose"] = function()
 end
 
 local STATS = {
-    [0]  = { name = L["Power"], pct = true, text = L["Increases all damage you and your minions deal by %s."] },
-    [1]  = { name = L["Haste"], pct = true, curve = 75, gearCap = 20, text = L["Increases the speed of your attacks, periodic effects and minions by %s."] },
-    [2]  = { name = L["Count"], cap = 5, text = L["Your spells fire %s extra bolts, shots or swings."] },
-    [3]  = { name = L["Movement speed"], short = L["Speed"], pct = true, cap = 50, text = L["Increases movement speed by %s."] },
-    [4]  = { name = L["Max health"], pct = true, text = L["Increases maximum health by %s."] },
-    [5]  = { name = L["Regen"], pct = true, text = L["Restores %s of maximum health per second."] },
-    [6]  = { name = L["Gold"], pct = true, text = L["Increases gold found by %s."] },
-    [7]  = { name = L["Experience"], pct = true, text = L["Increases experience gained by %s."] },
-    [8]  = { name = L["Pickup range"], pct = true, cap = 400, text = L["Increases pickup range by %s."] },
-    [9]  = { name = L["Leech"], pct = true, text = L["Your hits have a %s chance to heal you for 1%% of maximum health."] },
-    [10] = { name = L["Area"], pct = true, curve = 60, text = L["Increases the size of your AoE spells by %s."] },
-    [11] = { name = L["Duration"], pct = true, text = L["Increases the duration of your spells by %s."] },
-    [12] = { name = L["Armor"], text = L["Reduces damage taken by %s."] },
-    [14] = { name = L["Dodge chance"], short = L["Dodge"], pct = true, cap = 60, text = L["Increases your chance to dodge attacks by %s."] },
-    [15] = { name = L["Critical strike chance"], short = L["Crit chance"], pct = true, text = L["Increases your critical strike chance by %s."] },
-    [16] = { name = L["Critical strike damage"], short = L["Crit damage"], pct = true, text = L["Increases critical strike damage by %s."] },
-    [17] = { name = L["Shield"], pct = true, text = L["Absorbs damage equal to %s of maximum health."], note = L["Shield is restored after 4 sec without taking damage."] },
-    [18] = { name = L["Luck"], text = L["Improves the rarity of chest and level-up choices."] },
-    [19] = { name = L["Poison damage"], pct = true, text = L["Increases Poison damage by %s."] },
-    [20] = { name = L["Burning damage"], pct = true, text = L["Increases Burning damage by %s."] },
-    [21] = { name = L["Bleed damage"], pct = true, text = L["Increases Bleed damage by %s."] },
+    [0]  = { name = L["hoa.addon.power"], pct = true, text = L["hoa.addon.increases_all_damage_you_and_your_minions_deal_by_s"] },
+    [1]  = { name = L["hoa.addon.haste"], pct = true, curve = 75, gearCap = 20, text = L["hoa.addon.increases_the_speed_of_your_attacks_periodic_effects_and_min"] },
+    [2]  = { name = L["hoa.addon.count"], cap = 5, text = L["hoa.addon.your_spells_fire_s_extra_bolts_shots_or_swings"] },
+    [3]  = { name = L["hoa.addon.movement_speed_2"], short = L["hoa.addon.speed"], pct = true, cap = 50, text = L["hoa.addon.increases_movement_speed_by_s"] },
+    [4]  = { name = L["hoa.addon.max_health_2"], pct = true, text = L["hoa.addon.increases_maximum_health_by_s"] },
+    [5]  = { name = L["hoa.addon.regen"], pct = true, text = L["hoa.addon.restores_s_of_maximum_health_per_second"] },
+    [6]  = { name = L["hoa.addon.gold"], pct = true, text = L["hoa.addon.increases_gold_found_by_s"] },
+    [7]  = { name = L["hoa.addon.experience_2"], pct = true, text = L["hoa.addon.increases_experience_gained_by_s"] },
+    [8]  = { name = L["hoa.addon.pickup_range"], pct = true, cap = 400, text = L["hoa.addon.increases_pickup_range_by_s"] },
+    [9]  = { name = L["hoa.addon.leech"], pct = true, text = L["hoa.addon.your_hits_have_a_s_chance_to_heal_you_for_1_of_maximum_healt"] },
+    [10] = { name = L["hoa.addon.area"], pct = true, curve = 60, text = L["hoa.addon.increases_the_size_of_your_aoe_spells_by_s"] },
+    [11] = { name = L["hoa.addon.duration"], pct = true, text = L["hoa.addon.increases_the_duration_of_your_spells_by_s"] },
+    [12] = { name = L["hoa.addon.armor"], text = L["hoa.addon.reduces_damage_taken_by_s"] },
+    [14] = { name = L["hoa.addon.dodge_chance"], short = L["hoa.addon.dodge"], pct = true, cap = 60, text = L["hoa.addon.increases_your_chance_to_dodge_attacks_by_s"] },
+    [15] = { name = L["hoa.addon.critical_strike_chance"], short = L["hoa.addon.crit_chance"], pct = true, text = L["hoa.addon.increases_your_critical_strike_chance_by_s"] },
+    [16] = { name = L["hoa.addon.critical_strike_damage_2"], short = L["hoa.addon.crit_damage"], pct = true, text = L["hoa.addon.increases_critical_strike_damage_by_s"] },
+    [17] = { name = L["hoa.addon.shield"], pct = true, text = L["hoa.addon.absorbs_damage_equal_to_s_of_maximum_health"], note = L["hoa.addon.shield_is_restored_after_4_sec_without_taking_damage"] },
+    [18] = { name = L["hoa.addon.luck"], text = L["hoa.addon.improves_the_rarity_of_chest_and_level_up_choices"] },
+    [19] = { name = L["hoa.addon.poison_damage"], pct = true, text = L["hoa.addon.increases_poison_damage_by_s"] },
+    [20] = { name = L["hoa.addon.burning_damage"], pct = true, text = L["hoa.addon.increases_burning_damage_by_s"] },
+    [21] = { name = L["hoa.addon.bleed_damage"], pct = true, text = L["hoa.addon.increases_bleed_damage_by_s"] },
 }
 local STAT_ORDER = { 0, 12, 14, 15, 16, 17, 1, 10, 8, 18, 4, 3, 5, 9, 11, 19, 20, 21, 6, 7, 2 }
 
 VB.statTips = {
-    s0 = { name = L["Power"], text = L["Increases all damage you and your minions deal."] },
-    s1 = { name = L["Haste"], text = L["Increases the speed of your attacks, periodic effects and minions."] },
-    s2 = { name = L["Count"], text = L["Your spells fire extra bolts, shots or swings. Does not affect AoE spells."] },
-    s3 = { name = L["Movement speed"], text = L["Increases movement speed."] },
-    s4 = { name = L["Maximum health"], text = L["Increases maximum health."] },
-    s5 = { name = L["Health regeneration"], text = L["Restores a portion of maximum health per second."] },
-    s7 = { name = L["Experience"], text = L["Increases experience gained."] },
-    s8 = { name = L["Pickup range"], text = L["Increases the range at which you pick up experience, food and gear."] },
-    s10 = { name = L["Area"], text = L["Increases the size of your AoE spells."] },
-    s12 = { name = L["Armor"], text = L["Reduces damage taken."] },
-    s14 = { name = L["Dodge chance"], text = L["Increases your chance to dodge attacks."] },
-    s15 = { name = L["Critical strike chance"], text = L["Increases your critical strike chance."] },
-    s16 = { name = L["Critical strike damage"], text = L["Increases critical strike damage."] },
-    s18 = { name = L["Luck"], text = L["Improves the rarity of chest and level-up choices."] },
+    s0 = { name = L["hoa.addon.power"], text = L["hoa.addon.increases_all_damage_you_and_your_minions_deal"] },
+    s1 = { name = L["hoa.addon.haste"], text = L["hoa.addon.increases_the_speed_of_your_attacks_periodic_effects_and_min_2"] },
+    s2 = { name = L["hoa.addon.count"], text = L["hoa.addon.your_spells_fire_extra_bolts_shots_or_swings_does_not_affect"] },
+    s3 = { name = L["hoa.addon.movement_speed_2"], text = L["hoa.addon.increases_movement_speed"] },
+    s4 = { name = L["hoa.addon.maximum_health"], text = L["hoa.addon.increases_maximum_health"] },
+    s5 = { name = L["hoa.addon.health_regeneration"], text = L["hoa.addon.restores_a_portion_of_maximum_health_per_second"] },
+    s7 = { name = L["hoa.addon.experience_2"], text = L["hoa.addon.increases_experience_gained"] },
+    s8 = { name = L["hoa.addon.pickup_range"], text = L["hoa.addon.increases_the_range_at_which_you_pick_up_experience_food_and"] },
+    s10 = { name = L["hoa.addon.area"], text = L["hoa.addon.increases_the_size_of_your_aoe_spells"] },
+    s12 = { name = L["hoa.addon.armor"], text = L["hoa.addon.reduces_damage_taken"] },
+    s14 = { name = L["hoa.addon.dodge_chance"], text = L["hoa.addon.increases_your_chance_to_dodge_attacks"] },
+    s15 = { name = L["hoa.addon.critical_strike_chance"], text = L["hoa.addon.increases_your_critical_strike_chance"] },
+    s16 = { name = L["hoa.addon.critical_strike_damage_2"], text = L["hoa.addon.increases_critical_strike_damage"] },
+    s18 = { name = L["hoa.addon.luck"], text = L["hoa.addon.improves_the_rarity_of_chest_and_level_up_choices"] },
 }
 function VB.BuildStatTerms(names)
     VB.statTerms = {}
@@ -3077,17 +3216,17 @@ function VB.BuildStatTerms(names)
 end
 
 VB.BuildStatTerms({
-    [L["Power"]] = "s0", [L["Haste"]] = "s1", [L["Count"]] = "s2",
-    [L["Movement speed"]] = "s3", [L["movement speed"]] = "s3", [L["Movement Speed"]] = "s3",
-    [L["Maximum health"]] = "s4", [L["maximum health"]] = "s4", [L["Max health"]] = "s4", [L["Max Health"]] = "s4",
-    [L["Health regained each second"]] = "s5",
-    [L["Experience"]] = "s7", [L["experience"]] = "s7",
-    [L["Pickup range"]] = "s8", [L["pickup range"]] = "s8",
-    [L["Area"]] = "s10", [L["Armor"]] = "s12",
-    [L["Dodge chance"]] = "s14", [L["chance to dodge"]] = "s14",
-    [L["Critical strike chance"]] = "s15", [L["critical strike chance"]] = "s15", [L["Crit chance"]] = "s15", [L["Critical Strike"]] = "s15",
-    [L["Critical strike damage"]] = "s16", [L["critical strike damage"]] = "s16", [L["Critical Strike Damage"]] = "s16",
-    [L["Luck"]] = "s18",
+    [L["hoa.addon.power"]] = "s0", [L["hoa.addon.haste"]] = "s1", [L["hoa.addon.count"]] = "s2",
+    [L["hoa.addon.movement_speed_2"]] = "s3", [L["hoa.addon.movement_speed_3"]] = "s3", [L["hoa.addon.movement_speed"]] = "s3",
+    [L["hoa.addon.maximum_health"]] = "s4", [L["hoa.addon.maximum_health_2"]] = "s4", [L["hoa.addon.max_health_2"]] = "s4", [L["hoa.addon.max_health"]] = "s4",
+    [L["hoa.addon.health_regained_each_second"]] = "s5",
+    [L["hoa.addon.experience_2"]] = "s7", [L["hoa.addon.experience_3"]] = "s7",
+    [L["hoa.addon.pickup_range"]] = "s8", [L["hoa.addon.pickup_range_2"]] = "s8",
+    [L["hoa.addon.area"]] = "s10", [L["hoa.addon.armor"]] = "s12",
+    [L["hoa.addon.dodge_chance"]] = "s14", [L["hoa.addon.chance_to_dodge"]] = "s14",
+    [L["hoa.addon.critical_strike_chance"]] = "s15", [L["hoa.addon.critical_strike_chance_2"]] = "s15", [L["hoa.addon.crit_chance"]] = "s15", [L["hoa.addon.critical_strike"]] = "s15",
+    [L["hoa.addon.critical_strike_damage_2"]] = "s16", [L["hoa.addon.critical_strike_damage_3"]] = "s16", [L["hoa.addon.critical_strike_damage"]] = "s16",
+    [L["hoa.addon.luck"]] = "s18",
 })
 
 VB.gear = {}
@@ -3230,14 +3369,14 @@ local function AddGearLines(tooltip, link, found, enchantLine)
         local bindLine = tooltip:GetName() and getglobal(tooltip:GetName() .. "TextLeft2")
         local bindText = bindLine and bindLine:GetText()
         if bindText == ITEM_BIND_ON_PICKUP then
-            bindLine:SetText(bindText .. "\n" .. L["Unique-Equipped (1)"])
-        elseif not (bindText and strfind(bindText, L["Unique-Equipped"], 1, true)) then
-            tooltip:AddLine(L["Unique-Equipped (1)"], 1, 1, 1)
+            bindLine:SetText(bindText .. "\n" .. L["hoa.addon.unique_equipped_1"])
+        elseif not (bindText and strfind(bindText, L["hoa.addon.unique_equipped"], 1, true)) then
+            tooltip:AddLine(L["hoa.addon.unique_equipped_1"], 1, 1, 1)
         end
-        tooltip:AddLine(L("Equip: {1}", proc), 0.12, 1, 0.12, 1)
+        tooltip:AddLine(L("hoa.addon.equip_1", proc), 0.12, 1, 0.12, 1)
     end
     if found and found.legacy then
-        tooltip:AddLine(L["Legacy item. Doesn't count toward this season's leaderboard."], 0.6, 0.6, 0.6, 1)
+        tooltip:AddLine(L["hoa.addon.legacy_item_doesn_t_count_toward_this_season_s_leaderboard"], 0.6, 0.6, 0.6, 1)
     end
     tooltip:Show()
 end
@@ -3528,13 +3667,13 @@ local function RefreshHeroStats()
         end
         line.lines = { format(stat.text, explained) }
         if statId == 9 and shown > 0 then
-            tinsert(line.lines, L("Heals up to {1} of maximum health per second.", Percent(floor(3 * shown + 0.5) / 100)))
+            tinsert(line.lines, L("hoa.addon.heals_up_to_1_of_maximum_health_per_second", Percent(floor(3 * shown + 0.5) / 100)))
         end
         if statId == 12 and shown > 300 then
-            tinsert(line.lines, L("Armor past 300 gives {1} maximum health.", Percent(floor(5 * (shown - 300) + 0.5) / 10)))
+            tinsert(line.lines, L("hoa.addon.armor_past_300_gives_1_maximum_health", Percent(floor(5 * (shown - 300) + 0.5) / 10)))
         end
         if stat.cap then
-            tinsert(line.lines, L("Maximum {1}.", FormatStat(statId, stat.cap)))
+            tinsert(line.lines, L("hoa.addon.maximum_1", FormatStat(statId, stat.cap)))
         end
         if stat.note then
             tinsert(line.lines, " ")
@@ -3620,98 +3759,14 @@ local function RefreshShield()
     shieldBar:Show()
 end
 
-handlers["shield"] = function(f)
-    VB.shield = tonumber(f[2]) or 0
-    RefreshShield()
-end
-
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
-        if tonumber(spellId) == 60005 then
+        if tonumber(spellId) == HOA_AURA_IDS.shield then
             VB.shield = tonumber(value) or 0
             RefreshShield()
         end
     end,
 })
-
-local necroticText = PlayerFrame:CreateFontString(nil, "OVERLAY")
-SetFont(necroticText, 11)
-necroticText:SetPoint("TOPLEFT", PlayerFrameManaBar, "BOTTOMLEFT", 0, -4)
-necroticText:SetTextColor(0.4, 1, 0.3)
-
-local NECROTIC_SPELL = 18951
-local necroticPercent = ""
-
-local function RefreshNecrotic()
-    local stacks = UI.AuraStacks(NECROTIC_SPELL, "HARMFUL")
-    if stacks > 0 then
-        necroticText:SetText(L("Necrotic x{1}: {2} less healing", stacks, necroticPercent))
-    else
-        necroticText:SetText("")
-    end
-end
-
-local necroticAura = CreateFrame("Frame")
-necroticAura:RegisterEvent("UNIT_AURA")
-necroticAura:SetScript("OnEvent", function()
-    if arg1 == "player" then
-        RefreshNecrotic()
-    end
-end)
-
-handlers["necroticpct"] = function(f)
-    necroticPercent = f[2] or ""
-    RefreshNecrotic()
-end
-
-UI.ListenHoa({
-    HOA_AURA_PERCENT = function(spellId, percent)
-        if tonumber(spellId) == 18951 then
-            necroticPercent = format("%g%%", tonumber(percent) or 0)
-            RefreshNecrotic()
-        end
-    end,
-})
-
-do
-    local WOUNDS_SPELL = 60003
-    local woundsPercent = ""
-    local woundsText = PlayerFrame:CreateFontString(nil, "OVERLAY")
-    SetFont(woundsText, 11)
-    woundsText:SetPoint("TOPLEFT", necroticText, "BOTTOMLEFT", 0, -2)
-    woundsText:SetTextColor(1, 0.3, 0.3)
-
-    local function RefreshWounds()
-        local stacks = UI.AuraStacks(WOUNDS_SPELL, "HARMFUL")
-        if stacks > 0 then
-            woundsText:SetText(L("Wounded x{1}: {2} less healing", stacks, woundsPercent))
-        else
-            woundsText:SetText("")
-        end
-    end
-
-    local woundsAura = CreateFrame("Frame")
-    woundsAura:RegisterEvent("UNIT_AURA")
-    woundsAura:SetScript("OnEvent", function()
-        if arg1 == "player" then
-            RefreshWounds()
-        end
-    end)
-
-    handlers["woundspct"] = function(f)
-        woundsPercent = f[2] or ""
-        RefreshWounds()
-    end
-
-    UI.ListenHoa({
-        HOA_AURA_PERCENT = function(spellId, percent)
-            if tonumber(spellId) == 60003 then
-                woundsPercent = format("%g%%", tonumber(percent) or 0)
-                RefreshWounds()
-            end
-        end,
-    })
-end
 
 local shieldEvents = CreateFrame("Frame")
 shieldEvents:RegisterEvent("UNIT_MAXHEALTH")
@@ -3720,14 +3775,6 @@ shieldEvents:SetScript("OnEvent", function()
         RefreshShield()
     end
 end)
-
-local function Handle(text)
-    local fields = Split(strsub(text, strlen(PREFIX) + 1), "~")
-    local handler = handlers[fields[1]]
-    if handler then
-        handler(fields)
-    end
-end
 
 local function LinePattern(text)
     if not text then
@@ -3758,9 +3805,6 @@ function ChatFrame_OnEvent(event)
         return
     end
     if event == "CHAT_MSG_SYSTEM" and arg1 then
-        if strsub(arg1, 1, strlen(PREFIX)) == PREFIX then
-            return
-        end
         for _, pattern in ipairs(HIDDEN_SYSTEM_LINES) do
             if strfind(arg1, pattern) then
                 return
@@ -3772,14 +3816,9 @@ end
 
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("CHAT_MSG_SYSTEM")
 events:RegisterEvent("PLAYER_MONEY")
 events:SetScript("OnEvent", function()
-    if event == "CHAT_MSG_SYSTEM" then
-        if arg1 and strsub(arg1, 1, strlen(PREFIX)) == PREFIX then
-            Handle(arg1)
-        end
-    elseif event == "PLAYER_MONEY" then
+    if event == "PLAYER_MONEY" then
         PlayPurchaseSound()
         if shop:IsShown() then
             RefreshShop()

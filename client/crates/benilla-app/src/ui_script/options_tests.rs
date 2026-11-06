@@ -1351,7 +1351,7 @@ fn the_spell_detail_slider_reads_and_writes_the_spell_effect_level() {
     );
     assert_eq!(
         s.eval::<String>(&format!("return {ROW}.tip")).unwrap(),
-        "OPTION_TOOLTIP_SPELL_DETAIL"
+        "HOA_UI_OPTIONS_GRAPHICS_SPELL_DETAIL_TOOLTIP"
     );
     assert!(s
         .eval::<bool>(&format!(
@@ -2223,8 +2223,10 @@ fn a_hovered_row_raises_its_1_12_description_on_the_era_seat() {
     // The stock tooltip sizes from its lines through the font engine, so reading its rect needs
     // a measurer.
     s.set_text_measurer(Box::new(super::FixedWidthFont(6.0)));
-    s.run("OPTION_TOOLTIP_GAMEFIELD_DESELECT = \"Checking this will prevent the deselection.\"")
-        .unwrap();
+    s.run(
+        "HOA_UI_OPTIONS_CONTROLS_STICKY_TARGET_TOOLTIP = \"Checking this will prevent the deselection.\"",
+    )
+    .unwrap();
     s.run("BENILLA_ERA_WINDOW_SCALE = 1").unwrap();
     s.run("ShowUIPanel(BenillaOptionsFrame)").unwrap();
 
@@ -2326,21 +2328,11 @@ fn a_row_with_no_1_12_string_raises_no_plate() {
     assert!(s.errors().is_empty(), "script errors: {:?}", s.errors());
 }
 
-/// Every row's key resolves in the player's 1.12 `GlobalStrings.lua`, so a mistyped key cannot
-/// silence a description.
+/// Every row's tooltip key resolves in the client language pack; a mistyped key cannot silence a
+/// description. The keys are generated globals (`HOA_UI_...`), not install GlobalStrings keys.
 #[test]
-fn every_row_tooltip_key_resolves_in_the_real_global_strings() {
-    let data = benilla_formats::wow_data_or_skip!();
-    let mut chain = benilla_formats::open_chain(&data).expect("open chain");
-    let src = chain
-        .read_file("Interface\\FrameXML\\GlobalStrings.lua")
-        .expect("GlobalStrings.lua in the chain");
-    let mut strings = UiScript::new().expect("VM");
-    strings.keep_calls();
-    strings
-        .run(&String::from_utf8_lossy(&src))
-        .expect("GlobalStrings runs clean");
-
+fn every_row_tooltip_key_resolves_in_the_language_pack() {
+    let _ = benilla_formats::wow_data_or_skip!();
     // Read off the live rows, so a new page is checked too.
     let s = harness();
     let listing: String = s
@@ -2364,43 +2356,15 @@ fn every_row_tooltip_key_resolves_in_the_real_global_strings() {
             untipped.push(row.to_string());
             continue;
         }
-        // Four rows with no fitting 1.12 string carry a `BENILLA_` one, each held to its row:
-        // Render Scale and Enable Sound in Background have no 1.12 setting, Display Mode's
-        // string describes a checkbox, and `OPTION_TOOLTIP_GAMMA` cites art this page lacks.
-        const BENILLA_OWNED: &[(&str, &str)] = &[
-            ("BENILLA_TOOLTIP_RENDER_SCALE", "GraphicsRowRenderScale"),
-            ("BENILLA_TOOLTIP_DISPLAY_MODE", "GraphicsRowDisplayMode"),
-            (
-                "BENILLA_TOOLTIP_BACKGROUND_SOUND",
-                "AudioRowBackgroundSound",
-            ),
-            ("BENILLA_TOOLTIP_BRIGHTNESS", "GraphicsRowBrightness"),
-        ];
-        if let Some((_, want_row)) = BENILLA_OWNED.iter().find(|(k, _)| *k == key) {
-            assert_eq!(row, *want_row, "{row}: not this row's string");
-            let text: String = s.eval(&format!("return {key}")).unwrap();
-            assert!(!text.is_empty(), "{row}: {key} resolves to nothing");
-            checked += 1;
-            continue;
-        }
         assert!(
-            key.starts_with("OPTION_TOOLTIP_"),
-            "{row}: {key} is not a 1.12 option-tooltip key"
+            key.starts_with("HOA_UI_"),
+            "{row}: {key} is not a generated language-pack key"
         );
-        let text: String = strings
-            .lua()
-            .globals()
-            .get::<String>(key)
-            .unwrap_or_default();
-        assert!(
-            !text.is_empty() && text != "PLACE_HOLDER",
-            "{row}: {key} resolves to nothing in the real GlobalStrings"
-        );
+        let text: String = s.eval(&format!("return {key}")).unwrap_or_default();
+        assert!(!text.is_empty(), "{row}: {key} resolves to nothing");
         checked += 1;
     }
-    // 84 rows less the three untipped below; four of the 81 carry a `BENILLA_` key, and a dropdown
-    // row is checked on the key it wears at rest.
-    assert_eq!(checked, 81, "every tipped row carries a live key");
+    assert_eq!(checked, 82, "every tipped row carries a live key");
     assert_eq!(
         untipped,
         vec![
@@ -2408,21 +2372,49 @@ fn every_row_tooltip_key_resolves_in_the_real_global_strings() {
             "NameplatesRowEnemyPlates".to_string(),
             "NameplatesRowFriendlyPlates".to_string(),
         ],
-        "the rows with no 1.12 option-tooltip string: Auto Loot (no 1.12 setting at all) and \
-         the two V-plate toggles (1.12 HAS the setting, as the V/Shift-V keybinding over a \
-         RegisterForSave'd global, but its options UI never carried a row for it — its own \
-         UIOptionsFrame comment says so — so there is no OPTION_TOOLTIP_ key to resolve)"
+        "the rows with no 1.12 option-tooltip string"
     );
+}
 
-    // Sticky Targeting's string, byte for byte off the chain.
+/// A zhCN VM for the layer: the language pack overrides `GetLocale` without touching the install
+/// locale the name charsets read.
+fn harness_zh() -> UiScript {
+    let mut s = UiScript::new().unwrap();
+    let locale = crate::client_language::locale_for_code("zhCN");
+    s.set_ui_locale(Some(locale.index()));
+    harness_on(s)
+}
+
+#[test]
+fn the_options_window_reads_the_account_language_pack() {
+    let _ = benilla_formats::wow_data_or_skip!();
+    let s = harness_zh();
     assert_eq!(
-        strings
-            .lua()
-            .globals()
-            .get::<String>("OPTION_TOOLTIP_GAMEFIELD_DESELECT")
+        s.eval::<String>("return BenillaOptionsFrameTitleText:GetText()")
             .unwrap(),
-        "Checking this will prevent the deselection of targets by clicking on the gamefield.  \
-         Targets can only be cleared by pressing escape or clicking another target."
+        "选项"
+    );
+    assert_eq!(
+        s.eval::<String>(
+            "return BenillaOptionsFrameContainerBodyControlsRowStickyTargetLabel:GetText()"
+        )
+        .unwrap(),
+        "粘性目标"
+    );
+    let tip: String = s
+        .eval(
+            "local row = BenillaOptionsFrameContainerBodyControlsRowStickyTarget \
+             return getglobal(row.tip) or \"\"",
+        )
+        .unwrap();
+    assert!(
+        tip.starts_with("勾选后，点击游戏区域不会取消当前目标"),
+        "{tip}"
+    );
+    assert_eq!(
+        s.eval::<String>("return GetLocale()").unwrap(),
+        "zhCN",
+        "the account language, not the install locale"
     );
 }
 
@@ -2496,8 +2488,8 @@ fn every_flavor_of_row_raises_its_plate_from_the_page_it_lives_on() {
             s.errors()
         );
     }
-    // Every tipped row: the same 81 the key census counts.
-    assert_eq!(raised, 81, "every row but Auto Loot raises a description");
+    // Every tipped row: the same 82 the key census counts.
+    assert_eq!(raised, 82, "every row but Auto Loot raises a description");
 }
 
 /// 1.12's AdvancedOptionsCombatText box as saved-global rows: a click writes the global, never a
@@ -3868,7 +3860,7 @@ fn the_camera_following_style_dropdown_carries_the_engine_enum_and_plate() {
     assert_eq!(
         s.eval::<String>("return BenillaOptionsFrameContainerBodyControlsRowCameraFollowStyle.tip")
             .unwrap(),
-        "OPTION_TOOLTIP_CAMERA1"
+        "HOA_UI_OPTIONS_CONTROLS_CAMERA_FOLLOW_STYLE_TOOLTIP"
     );
     assert!(
         s.take_cvar_changes().is_empty(),
@@ -3908,7 +3900,7 @@ fn the_camera_following_style_dropdown_carries_the_engine_enum_and_plate() {
     assert_eq!(
         s.eval::<String>("return BenillaOptionsFrameContainerBodyControlsRowCameraFollowStyle.tip")
             .unwrap(),
-        "OPTION_TOOLTIP_CAMERA3",
+        "HOA_UI_OPTIONS_TOOLTIP_CAMERA3",
         "the plate follows the selection, like the reference dropdown's own"
     );
 

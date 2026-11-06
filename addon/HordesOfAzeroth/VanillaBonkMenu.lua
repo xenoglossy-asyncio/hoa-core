@@ -10,7 +10,7 @@ local BUTTON_WIDTH = 176
 local SPELL_SIZE = 40
 local PASSIVE_SIZE = 30
 local CARD_SLOT_SIZE = 26
-local DIFFICULTY_COLORS = { [L["Normal"]] = "40ff40", [L["Heroic"]] = "ffd100", [L["Mythic"]] = "ff4d4d" }
+local DIFFICULTY_COLORS = { [L["hoa.addon.normal"]] = "40ff40", [L["hoa.addon.heroic"]] = "ffd100", [L["hoa.addon.mythic"]] = "ff4d4d" }
 
 local run = { inRun = false, stage = 1, difficulty = "", elapsed = 0, spells = {}, passives = {} }
 
@@ -60,7 +60,7 @@ end
 menu.hint = UI.Text(menu, 11)
 menu.hint:SetPoint("CENTER", menu, "CENTER", 0, CARD_Y - CARD_HEIGHT / 2 - 22)
 menu.hint:SetTextColor(0.78, 0.78, 0.78)
-menu.hint:SetText(L["Press Escape to resume."])
+menu.hint:SetText(L["hoa.addon.press_escape_to_resume"])
 
 local function Card(art)
     local card = CreateFrame("Frame", nil, menu)
@@ -104,7 +104,7 @@ local function Heading(card, text)
 end
 
 local runCard = Card("PaladinHoly")
-Heading(runCard, L["This Run"])
+Heading(runCard, L["hoa.addon.this_run"])
 runCard.rows = {}
 
 local function StatRow(index, label, icon)
@@ -124,11 +124,11 @@ local function StatRow(index, label, icon)
     return row
 end
 
-local levelRow = StatRow(1, L["Level"], "Spell_Nature_TimeStop")
-local killsRow = StatRow(2, L["Kills"], "INV_Misc_Bone_HumanSkull_01")
-local valorRow = StatRow(3, L["Valor"], "INV_Misc_Coin_04")
-local ticketsRow = StatRow(4, L["Tickets"], "INV_Misc_Ticket_Darkmoon_01")
-local goldRow = StatRow(5, L["Gold"], "INV_Misc_Coin_02")
+local levelRow = StatRow(1, L["hoa.addon.level"], "Spell_Nature_TimeStop")
+local killsRow = StatRow(2, L["hoa.addon.kills_2"], "INV_Misc_Bone_HumanSkull_01")
+local valorRow = StatRow(3, L["hoa.addon.valor"], "INV_Misc_Coin_04")
+local ticketsRow = StatRow(4, L["hoa.addon.tickets_2"], "INV_Misc_Ticket_Darkmoon_01")
+local goldRow = StatRow(5, L["hoa.addon.gold"], "INV_Misc_Coin_02")
 
 local menuCard = Card("MageFire")
 
@@ -170,33 +170,33 @@ local function VideoSettings()
     end
 end
 
-menuCard.resume = Button(L["Resume"], 28, function()
+menuCard.resume = Button(L["hoa.addon.resume"], 28, function()
     PlaySound("igMainMenuContinue")
     Close()
 end)
-menuCard.endRun = Button(L["|cffff5a4aEnd Run|r"], 22, function()
+menuCard.endRun = Button(L["hoa.addon.cffff5a4aend_run_r"], 22, function()
     PlaySound("igMainMenuOption")
     confirm:Show()
 end)
-menuCard.video = Button(L["Video"], 22, VideoSettings)
-menuCard.sound = Button(L["Sound"], 22, Panel(SoundOptionsFrame))
-menuCard.interface = Button(L["Interface"], 22, Panel(UIOptionsFrame))
-menuCard.bindings = Button(L["Key Bindings"], 22, function()
+menuCard.video = Button(L["hoa.addon.video"], 22, VideoSettings)
+menuCard.sound = Button(L["hoa.addon.sound"], 22, Panel(SoundOptionsFrame))
+menuCard.interface = Button(L["hoa.addon.interface"], 22, Panel(UIOptionsFrame))
+menuCard.bindings = Button(L["hoa.addon.key_bindings"], 22, function()
     PlaySound("igMainMenuOption")
     Close()
     VanillaBonkUI.ShowBindings(VanillaBonkController.kind ~= nil)
 end)
-menuCard.controller = Button(L["Controller"], 22, function()
+menuCard.controller = Button(L["hoa.addon.controller"], 22, function()
     PlaySound("igMainMenuOption")
     Close()
     VanillaBonkControllerPanel:Show()
 end)
-menuCard.logout = Button(L["Logout"], 22, function()
+menuCard.logout = Button(L["hoa.addon.logout"], 22, function()
     PlaySound("igMainMenuLogout")
     Close()
     Logout()
 end)
-menuCard.quit = Button(L["Exit Game"], 22, function()
+menuCard.quit = Button(L["hoa.addon.exit_game"], 22, function()
     PlaySound("igMainMenuQuit")
     Close()
     Quit()
@@ -229,20 +229,20 @@ local function LayoutButtons()
 end
 
 local buildCard = Card("MageFrost")
-Heading(buildCard, L["Your Build"])
+Heading(buildCard, L["hoa.addon.your_build"])
 buildCard.spells = {}
 buildCard.passives = {}
 buildCard.passiveLabel = UI.Text(buildCard, 11)
 buildCard.passiveLabel:SetTextColor(0.62, 0.62, 0.62)
-buildCard.passiveLabel:SetText(L["Passives"])
+buildCard.passiveLabel:SetText(L["hoa.addon.passives"])
 buildCard.cards = {}
 buildCard.cardLabel = UI.Text(buildCard, 11)
 buildCard.cardLabel:SetTextColor(0.62, 0.62, 0.62)
-buildCard.cardLabel:SetText(L["Darkmoon Cards"])
+buildCard.cardLabel:SetText(L["hoa.addon.darkmoon_cards"])
 buildCard.empty = UI.Text(buildCard, 12)
 buildCard.empty:SetPoint("TOP", buildCard, "TOP", 0, -80)
 buildCard.empty:SetTextColor(0.62, 0.62, 0.62)
-buildCard.empty:SetText(L["Nothing learned yet"])
+buildCard.empty:SetText(L["hoa.addon.nothing_learned_yet"])
 
 local function BuildSlot(list, index, size)
     local slot = list[index]
@@ -359,19 +359,19 @@ confirm.box:SetBackdrop({
 confirm.box:SetBackdropColor(0, 0, 0, 0.95)
 confirm.question = UI.Text(confirm.box, 14)
 confirm.question:SetPoint("TOP", confirm.box, "TOP", 0, -24)
-confirm.question:SetText(L["End this run?"])
+confirm.question:SetText(L["hoa.addon.end_this_run"])
 confirm.text = UI.Text(confirm.box, 12)
 confirm.text:SetPoint("TOP", confirm.question, "BOTTOM", 0, -6)
 confirm.text:SetWidth(310)
 confirm.text:SetTextColor(1, 0.82, 0)
-confirm.text:SetText(L["You keep the gold and Darkmoon Tickets earned so far. Loot outside your Extraction Vault is lost."])
-confirm.yes = UI.Button(confirm.box, 120, L["|cffff5a4aEnd Run|r"], function()
+confirm.text:SetText(L["hoa.addon.you_keep_the_gold_and_darkmoon_tickets_earned_so_far_loot_ou"])
+confirm.yes = UI.Button(confirm.box, 120, L["hoa.addon.cffff5a4aend_run_r"], function()
     PlaySound("igMainMenuOptionCheckBoxOn")
     Command(confirm.command or "stop")
     Close()
 end)
 confirm.yes:SetPoint("BOTTOMRIGHT", confirm.box, "BOTTOM", -6, 18)
-confirm.no = UI.Button(confirm.box, 120, L["Cancel"], function()
+confirm.no = UI.Button(confirm.box, 120, L["hoa.addon.cancel"], function()
     PlaySound("igMainMenuOptionCheckBoxOff")
     if confirm.command then
         Close()
@@ -387,21 +387,21 @@ local function SetConfirm(question, text, command, yesLabel, noLabel)
     confirm.question:SetText(question)
     confirm.text:SetText(text)
     confirm.command = command
-    confirm.yes:SetText(yesLabel or L["|cffff5a4aEnd Run|r"])
-    confirm.no:SetText(noLabel or L["Cancel"])
+    confirm.yes:SetText(yesLabel or L["hoa.addon.cffff5a4aend_run_r"])
+    confirm.no:SetText(noLabel or L["hoa.addon.cancel"])
     confirm.box:SetHeight(math.max(CONFIRM_MIN_HEIGHT, confirm.text:GetHeight() + CONFIRM_FRAME_HEIGHT))
 end
 
 local function SetEndRunConfirm()
-    SetConfirm(L["End this run?"], L["You keep the gold and Darkmoon Tickets earned so far. Loot outside your Extraction Vault is lost."])
+    SetConfirm(L["hoa.addon.end_this_run"], L["hoa.addon.you_keep_the_gold_and_darkmoon_tickets_earned_so_far_loot_ou"])
 end
 confirm.no:SetPoint("BOTTOMLEFT", confirm.box, "BOTTOM", 6, 18)
 
 local function Refresh()
     if run.inRun then
-        menu.title:SetText(L["Paused"])
+        menu.title:SetText(L["hoa.addon.paused"])
         local difficulty = run.difficulty ~= "" and ("  |cff9d9d9d·|r  |cff" .. (DIFFICULTY_COLORS[run.difficulty] or "ffffff") .. run.levelName .. "|r") or ""
-        local stage = run.finale and L["Finale"] or L("Stage {1}/{2}", run.stage, run.stages)
+        local stage = run.finale and L["hoa.addon.finale"] or L("hoa.addon.stage_1_2", run.stage, run.stages)
         menu.subtitle:SetText("|cffffd100" .. stage .. "|r" .. difficulty .. "  |cff9d9d9d·|r  |cffffffff" .. UI.FormatTime(run.elapsed) .. "|r")
         levelRow.value:SetText(run.level or "-")
         killsRow.value:SetText(run.kills or 0)
@@ -418,8 +418,8 @@ local function Refresh()
         runCard:Show()
         buildCard:Show()
     else
-        menu.title:SetText(L["Game Menu"])
-        menu.subtitle:SetText(L["Inn"])
+        menu.title:SetText(L["hoa.addon.game_menu"])
+        menu.subtitle:SetText(L["hoa.addon.inn"])
         runCard:Hide()
         buildCard:Hide()
         menuCard:ClearAllPoints()
@@ -537,30 +537,41 @@ end
 
 local handlers = {}
 
-handlers["start"] = function(f)
-    run.inRun = true
-    run.difficulty = f[3] or ""
-    run.levelName = (f[10] and f[10] ~= "") and f[10] or run.difficulty
-    run.stage = tonumber(f[5] or "") or 1
-    run.stages = tonumber(f[9] or "") or 3
-    run.finale = f[11] == "1"
-    run.elapsed = 0
-    run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
-end
-
-handlers["state"] = function(f)
-    run.inRun = true
-    run.elapsed = tonumber(f[2] or "") or run.elapsed
-    run.kills = tonumber(f[4] or "") or 0
-    run.gold = tonumber(f[5] or "") or 0
-    run.level = tonumber(f[6] or "") or run.level
-    run.valor = tonumber(f[8] or "") or 0
-    run.stage = tonumber(f[10] or "") or run.stage
-    run.shards = tonumber(f[12] or "") or 0
-    if menu:IsShown() then
-        Refresh()
-    end
-end
+UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+    end,
+    HOA_RUN_START = function(start)
+        run.inRun = true
+        run.difficulty = start.difficulty or ""
+        run.levelName = (start.level_name and start.level_name ~= "") and start.level_name or run.difficulty
+        run.stage = tonumber(start.stage) or 1
+        run.stages = tonumber(start.stages) or 3
+        run.finale = start.finale and true or false
+        run.elapsed = 0
+        run.level, run.kills, run.gold, run.valor, run.shards = nil, 0, 0, 0, 0
+    end,
+    HOA_RUN_STATE = function(state)
+        run.inRun = true
+        run.elapsed = tonumber(state.elapsed_s) or run.elapsed
+        run.kills = tonumber(state.kills) or 0
+        run.gold = tonumber(state.gold_earned) or 0
+        run.level = tonumber(state.player_level) or run.level
+        run.valor = tonumber(state.coins) or 0
+        run.stage = tonumber(state.stage) or run.stage
+        run.shards = tonumber(state.shards_earned) or 0
+        if menu:IsShown() then
+            Refresh()
+        end
+    end,
+    HOA_RUN_END = function()
+        run.inRun = false
+        run.spells, run.passives = {}, {}
+        if menu:IsShown() then
+            Refresh()
+        end
+    end,
+})
 
 handlers["loadout"] = function(f)
     run.spells, run.passives = {}, {}
@@ -580,30 +591,30 @@ handlers["loadout"] = function(f)
     end
 end
 
-handlers["end"] = function()
-    run.inRun = false
-    run.spells, run.passives = {}, {}
-    if menu:IsShown() then
-        Refresh()
-    end
-end
-
 handlers["portalhome"] = function(f)
     Open()
-    local text = L["This ends your run. Gear in your Extraction Vault waits in your mailbox; everything else you found is sold for gold."]
+    local text = L["hoa.addon.this_ends_your_run_gear_in_your_extraction_vault_waits_in_yo"]
     if f[2] == "1" then
-        text = L["This ends your run. Your Extraction Vault is empty, so everything you found will be sold for gold."]
+        text = L["hoa.addon.this_ends_your_run_your_extraction_vault_is_empty_so_everyth"]
     end
-    SetConfirm(f[3] == "1" and L["Finish the run?"] or L["Return to the Inn?"], text, "home")
+    SetConfirm(f[3] == "1" and L["hoa.addon.finish_the_run"] or L["hoa.addon.return_to_the_inn"], text, "home")
     confirm:Show()
 end
 
 handlers["portalendless"] = function()
     Open()
-    SetConfirm(L["Continue in endless mode?"],
-        L["Enemies and bosses keep coming, faster and faster, until you fall. Your time and score count as your best finale. Endless mode gives no extra rewards yet."],
-        "endless", L["Continue"], L["Back"])
+    SetConfirm(L["hoa.addon.continue_in_endless_mode"],
+        L["hoa.addon.enemies_and_bosses_keep_coming_faster_and_faster_until_you_f"],
+        "endless", L["hoa.addon.continue"], L["hoa.addon.back"])
     confirm:Show()
 end
 
-UI.Listen(handlers)
+UI.ListenHoa({
+    HOA_PORTAL_HOME = function(home)
+        handlers["portalhome"]({ false, home.vault_empty and "1" or "0", home.finale and "1" or "0" })
+    end,
+    HOA_PORTAL_ENDLESS = function()
+        handlers["portalendless"]()
+    end,
+})
+

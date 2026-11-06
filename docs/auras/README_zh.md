@@ -10,7 +10,9 @@ HoA 的效果目前有三种表示，互相之间没有唯一权威：
 
 暗月卡牌的触发型属性加成横跨三类。以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 力量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）：服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura；界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
 
-插件端只解析 `BONK~` 聊天行（`VanillaBonkUI.lua:231-243`），没有用 `UNIT_AURA`/`GetPlayerBuff`；客户端自带的 `C_UnitAuras` 只用于敌方姓名板 debuff（`VanillaBonkDebuffs.lua:62-78`），Boss debuff 仍走 BONK（`VanillaBonkBoss.lua:194`）。插件还有多处每帧 `OnUpdate`（`VanillaBonkDebuffs.lua:385`、`VanillaBonkCards.lua:255`、`VanillaBonkPlates.lua:652`、`VanillaBonkDash.lua:89` 等）。
+插件过去只解析 `BONK~` 聊天行，没有用 `UNIT_AURA`/`GetPlayerBuff`；现在它消费类型化 `HOA_*` 事件，并通过 `C_UnitAuras` 读取姓名板和 Boss debuff。仍有若干每帧 `OnUpdate`（`VanillaBonkDebuffs.lua`、`VanillaBonkCards.lua`、`VanillaBonkPlates.lua`、`VanillaBonkDash.lua`）。
+
+**进度（2026-11-05）：** 阶段 3 已把效果集迁到真实光环，阶段 4 统一了法术与内容源，阶段 5 把剩余状态/展示聊天行换成了类型化协议。上面的“三种表示”是重构前基线，保留作背景；后续工作是阶段 6（每帧轮询、重复计时器、光环刷新频率）。
 
 结果：玩家看到的、插件显示的、服务端实际生效的可能是三份状态；其他插件/战斗日志无法通过标准 API 识别 HoA 效果。
 
@@ -58,6 +60,8 @@ spell:
       stat: strength
       amount: 30
 ```
+
+实现使用 `shared/content/spells/spells.yaml` 的精简 schema。每个光环声明 `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | keyword:<id> | behavior:<enum> | none`；有来源的光环继承来源行的名称、图标和描述，`display` 覆盖必须写 `reason`。`stacks`、`permanent`、`dynamic` 分别描述实时层数、计时和数值文本。编译器校验所有绑定并生成 `hoa_aura`/`hoa_aura_locale`；服务端在 addon ready 和切语言时通过类型化协议下发本地化行，客户端只存字符串，不读语言。
 
 编译后：
 
@@ -111,24 +115,24 @@ spell:
 - 内容定义：`hoa.aura.darkmoon.zandalarian_surge`，`duration 10s`，`hoa_power_percent 25`，`internal_cooldown 30s`。
 - 服务端：战斗/计时钩子触发 → `Apply` → 真实 aura 生效；伤害计算由 VMaNGOS 的 aura 系统完成。删除 `m_cardSurgeUntilMs`、`GetCardPower` 里的手工加成和每秒 `cardnow~`。
 - 客户端：buff 栏出现图标和剩余时间；提示文本来自内容包。
-- 首个实现：spell `60004`（迁移 `20261104120000_world.sql`）是真正的正面光环；服务端按卡牌设置持续时间，生成的客户端表通过 `SpellCatalog::with_overlay` 提供名称/图标/描述，所以即使安装的 `Spell.dbc` 没有这一行，原生 buff 栏和 tooltip 也能显示。源文件是 `shared/content/spells/spells.yaml`；`tools/content/compile.py` 生成 SQL、服务端 ID 和客户端表。`60001`-`60099` 留给 HoA。
+- 首个实现：spell `60004` 是真正的正面光环；服务端按卡牌设置持续时间。源文件是 `shared/content/spells/spells.yaml`；`tools/content/compile.py` 生成 `spell_template` SQL、`hoa_aura`/`hoa_aura_locale` SQL 和服务端 ID。服务端在 addon ready 时下发本地化光环目录（`aura_catalog_entry`/`aura_catalog_end`），客户端通过 `SpellCatalog::set_overlay` 安装，所以即使安装的 `Spell.dbc` 没有这一行，原生 buff 栏和 tooltip 也能显示。`60001`-`60099` 留给 HoA。
 - 插件：不再自己计时/拼 tooltip；最多在自定义 UI 中读取该 aura 的剩余时间。
 
 ### 7.2 暗月卡牌 buff
 
-急速爆发（`60006`）、迅捷（`60007`）、免疫（`60008`）、灵魂石充能（`60009`）、荆棘（`60010`）也都是真实光环：服务端按卡牌持续时间施加，客户端 buff 栏和提示通过同一个覆盖层显示。卡牌窗口仍由插件绘制（卡牌是自定义对象，无法避免），但效果本身不再由插件计时。条件恢复类卡牌只在条件满足时保留光环：厚符文布绷带（`60053`）在未受击时存在，基础营火（`60054`）在原地站立时存在。
+暗月卡片：蓝龙（`60006`）、迅捷药水（`60007`）、联盟徽记（`60008`）、倒刺项圈（`60010`）、嗜血胸针（`60021`）、优越护符（`60022`）也都是真实光环：服务端按卡牌持续时间施加，客户端 buff 栏和提示通过服务端下发的目录显示。卡牌窗口仍由插件绘制（卡牌是自定义对象，无法避免），但效果本身不再由插件计时。条件恢复类卡牌只在条件满足时保留光环：厚符文布绷带（`60053`）在未受击时存在，基础营火（`60054`）在原地站立时存在。
 
 ### 7.3 职业 buff
 
-猛虎之怒（`60012`）、奥术强化（`60013`）、暗影之舞（`60014`）、毒伤（`60015`）、黑暗契约（`60016`）、灵魂收割（`60017`）、Glyph 血性狂暴（`60018`）、冰封（`60019`）、游牧惩罚（`60020`）、击杀之力（`60021`）、未受伤之力（`60022`）是从内部计时器改成真实光环的效果。剑刃乱舞（`33466`）、狂怒（`33462`）、圣盾（`33463`）和毁灭之风则改为直接读取已有的光环，不再维护平行计时器。服务端施加 dummy aura 并设置持续时间，行为逻辑读 `HasAura`，客户端通过覆盖层显示。其余限时职业效果见 7.6。
+猛虎之怒（`60012`）、奥术强化（`60013`）、暗影之舞（`60014`）、毒伤（`60015`）、黑暗契约（`60016`）、灵魂收割（`60017`）、Glyph 血性狂暴（`60018`）、冰封（`60019`）、游牧惩罚（`60020`）、嗜血胸针（`60021`）、优越护符（`60022`）是从内部计时器改成真实光环的效果。剑刃乱舞（`33466`）、狂怒（`33462`）、圣盾（`33463`）和毁灭之风则改为直接读取已有的光环，不再维护平行计时器。服务端施加 dummy aura 并设置持续时间，行为逻辑读 `HasAura`，客户端通过服务端下发的目录显示。其余限时职业效果见 7.6。
 
 ### 7.4 HoA 护盾/冲刺/决心
 
 - 护盾：自定义 aura `60005`。实时吸收量通过 `hoa.aura_value` 下发；客户端会改写提示文本（“吸收 N 点伤害。”），插件继续画护盾条。buff 栏只有图标、没有倒计时，因为护盾是吸收池而不是限时 buff。
-- 冲刺：是技能，不是 buff。充能和恢复留在 `BonkPlayer` 内部；`hoa.dash`/`dash~` 把可用层数和剩余恢复时间发给 UI，消耗或恢复充能时原生 buff 栏不会变化。
+- 冲刺：是技能，不是 buff。充能和恢复留在 `BonkPlayer` 内部；`hoa.dash` 把可用层数和剩余恢复时间发给 UI，消耗或恢复充能时原生 buff 栏不会变化。
 - 决心：自定义 aura `60001`，永久，层数镜像账号值；插件从光环读层数，服务端保留账号行作为持久来源。
 - 伤口：自定义 aura `60003`，层数和持续时间都在光环上；插件读层数，只从提示消息里取服务端算好的治疗削减百分比。
-- 坏死：spell `18951` 的层数就是状态；服务端读它，插件通过 `UI.AuraStacks` 读。
+- 坏死：spell `60056` 的层数就是状态；服务端读它，插件通过 `UI.AuraStacks` 读。
 - 武器 buff：服务端读生效中的光环，删除了 `m_buffs` 到期表。
 
 ### 7.5 原生法术

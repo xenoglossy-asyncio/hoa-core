@@ -60,17 +60,17 @@ local function ShowTooltip()
     end
     local tooltip = TooltipFor(this)
     tooltip:SetOwner(this, "ANCHOR_RIGHT")
-    tooltip:AddLine(objective.label ~= "" and objective.label or L["Objective"], 1, 1, 1)
+    tooltip:AddLine(objective.label ~= "" and objective.label or L["hoa.addon.objective"], 1, 1, 1)
     if objective.description ~= "" then
         tooltip:AddLine(objective.description, 1, 0.82, 0, 1)
     end
     local north, west = HeroPosition()
     if north then
         local dn, dw = objective.x - north, objective.y - west
-        tooltip:AddLine(L("{1} yards away", floor(sqrt(dn * dn + dw * dw))), 0.7, 0.7, 0.7)
+        tooltip:AddLine(L("hoa.addon.1_yards_away", floor(sqrt(dn * dn + dw * dw))), 0.7, 0.7, 0.7)
     end
     if objective.leaves then
-        tooltip:AddLine(L("Gone in {1} sec", max(0, ceil(objective.leaves - GetTime()))), 0.7, 0.7, 0.7)
+        tooltip:AddLine(L("hoa.addon.gone_in_1_sec", max(0, ceil(objective.leaves - GetTime()))), 0.7, 0.7, 0.7)
     end
     tooltip:Show()
 end
@@ -333,11 +333,26 @@ handlers["objectiveclear"] = function(f)
     end
 end
 
-handlers["end"] = function()
-    RemoveAll()
+local function ObjectiveFields(objective)
+    return {
+        false, tostring(objective.id), objective.kind, objective.x, objective.y, objective.map_id,
+        objective.label, objective.seconds, objective.icon, objective.description,
+    }
 end
 
-UI.Listen(handlers)
+UI.ListenHoa({
+    HOA_OBJECTIVE = function(objective)
+        handlers["objective"](ObjectiveFields(objective))
+    end,
+    HOA_OBJECTIVE_CLEAR = function(objective)
+        handlers["objectiveclear"]({ false, objective.id ~= 0 and tostring(objective.id) or nil })
+    end,
+    HOA_OBJECTIVE_PING = function(objective)
+        handlers["objectiveping"]({ false, tostring(objective.id) })
+    end,
+    HOA_RUN_END = RemoveAll,
+})
+
 
 UI.objectives = objectives
 UI.SMALL_OBJECTIVE_KINDS = SMALL_KINDS

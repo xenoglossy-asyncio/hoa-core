@@ -19,8 +19,9 @@ namespace HordesOfAzeroth.Launcher
 
         public static readonly (string Code, string Name)[] Languages =
         {
-            ("enUS", "English"),
-            ("zhCN", "简体中文"),
+            ("enUS", "hoa.launcher.language_english"),
+            ("zhCN", "hoa.launcher.language_simplified_chinese"),
+            ("zhTW", "hoa.launcher.language_traditional_chinese"),
         };
 
         static readonly string[] CarriedOver =
@@ -75,7 +76,7 @@ namespace HordesOfAzeroth.Launcher
             Write(folder, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [LanguageSetting] = code });
 
         public static string LanguageName(string code) =>
-            Languages.FirstOrDefault(language => language.Code == code).Name ?? Languages[0].Name;
+            Loc.T(Languages.FirstOrDefault(language => language.Code == code).Name ?? Languages[0].Name);
 
         static void CarryOverOldSettings(GameFolder folder)
         {

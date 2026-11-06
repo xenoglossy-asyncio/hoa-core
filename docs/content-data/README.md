@@ -117,6 +117,10 @@ Migration steps:
 
 ## 8. Client content pack
 
+> Current implementation: custom and reskinned auras use the server-pushed catalog
+> (`aura_catalog_entry`/`aura_catalog_end`) at addon-ready and language changes. The broader
+> content pack below remains the target for items, creatures and the spellbook.
+
 - Format: compact binary + string pool + ID index, containing:
   - names, icons, descriptions, quality and type for custom items/spells/auras/creatures/maps;
   - buff/debuff flags and stack-display rules for spells;

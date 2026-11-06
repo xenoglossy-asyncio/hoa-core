@@ -17,6 +17,8 @@ The new repository therefore puts all components together, hard-forks, and evolv
 
 **Goal:** language is an account/session property. The client install only supplies resources (models, textures, audio, base DBCs) and never decides the display language. Any 1.12.1 install language can run Chinese or English.
 
+**Progress (2026-11-04):** the first client slice is in. `shared/i18n/ui` + `tools/i18n/gen_client_pack.py` generate enUS/zhCN packs; HoA-authored UI and GlueXML read `HOA_UI_*` keys; `GetLocale` uses an account/launcher locale while the install locale stays for DBC columns and name charsets. Stock FrameXML/GlobalStrings, DBC name overlays, zhTW and the hardcoded shaper locale remain.
+
 ### 2.2 Buffs/effects have three representations
 
 - **Real auras, but only half-done:** move speed/max health use spells 17498/19255 (`BonkRun.cpp:11365-11376`); Necrotic has aura 18951 (`BonkRun.cpp:4411`) but the healing cut reads `m_necroticStacks` (`BonkRun.cpp:4439`); shield visual is 16051 (`BonkRun.cpp:4754-4758`); weapon buffs are cast as auras but their expiry is also stored in `m_buffs` (`BonkRun.cpp:8071-8072,7913-7922`).
@@ -24,7 +26,9 @@ The new repository therefore puts all components together, hard-forks, and evolv
 - **Native spells plus an addon copy:** Blade Flurry, Enrage and friends reuse native spells, but the addon keeps a second set of timers.
 - **Card procs span all three:** Zandalarian Hero Charm, for example, grants "25% Power for 10 sec every 30 sec" (`server/core/sql/migrations/20261027710000_world.sql:46-47`). The server uses `m_cardSurgeUntilMs` plus cooldown bookkeeping (`BonkRunCards.cpp:486-493`), and `GetCardPower` folds the bonus into damage and stats (`BonkRunCards.cpp:156-170`, `BonkRun.cpp:4867,6284`) with no Unit aura. The UI relies on the per-second `cardnow~` text (`BonkRunCards.cpp:507-533,586-596`) and a one-shot `Notify` (`:491`); the addon assembles the tooltip (`VanillaBonkCards.lua:84-86,205,313-328`).
 
-The addon only parses `BONK~` chat lines (`VanillaBonkUI.lua:231-243`) and never uses `UNIT_AURA`/`GetPlayerBuff`; the client's own `C_UnitAuras` is used only for enemy nameplate debuffs (`VanillaBonkDebuffs.lua:62-78`), and boss debuffs still go through BONK (`VanillaBonkBoss.lua:194`).
+The addon used to parse only `BONK~` chat lines and never used `UNIT_AURA`/`GetPlayerBuff`; it now consumes typed `HOA_*` events decoded by the Rust client, while `C_UnitAuras` serves enemy nameplate and boss debuffs. No chat parser remains.
+
+**Progress (2026-11-05):** phase 3 moved the effect set onto real auras, and phase 5 replaced every server presentation/state string with the typed protocol. The bullets above describe the pre-refactor baseline kept for context.
 
 Examples of duplication and polling:
 
@@ -49,10 +53,10 @@ Survey results (server = `server/core/src/game/Bonk/`, addon = `Interface/AddOns
 - **IDs:** game objects 900001-900062 (`BonkMgr.h:40-46` vs `VanillaBonkSettings.lua:9-11`, `VanillaBonkController.lua:1699`, `VanillaBonkTutorial.lua:4-8`), Hearthstone 900230 (`BonkMgr.h:1054` vs `VanillaBonkHearth.lua:5`).
 - **Key counts:** spell/passive slots (`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`), glyph offers (`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`), level-up offers (`BonkMgr.h:1028` vs `VanillaBonk.lua:353`), evolve rank (`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`).
 - **Duplicated computation:** leaderboard eligibility (`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`).
-- **Text:** the same Chinese sentence appears in the server migration (`server/core/sql/migrations/20261104010444_world.sql:959-963,2143-2145`) and the addon table (`VanillaBonkLocaleZhCN.lua:264,385,606,840,1137,490,694,728`).
-- **Custom spell IDs:** file-local `uint32 const`s in anonymous namespaces (`BonkRun.cpp:43` and kin), with no shared registry; the addon and client each keep their own display ID lists.
-- Spell/item names come half from client DBCs and half from server query responses; the server has zhCN names in `locales_spell`, but the client only reads the installed `Spell.dbc`, so custom spells are blank.
-- Text is keyed by English sentences plus a source hash (`BonkLocale`); when the English changes, the translation goes "out of date" and the server falls back to English.
+- **Text:** resolved. Server text, addon text and client UI text now come from `shared/i18n`; the addon's single generated `VanillaBonkLocaleData.lua` replaces the old hand-kept ZH table.
+- **Custom spell IDs:** resolved. `shared/content/spells/spells.yaml` generates `BonkSpellIds.h` and the addon's `VanillaBonkAuraIds.lua`; the client receives the localized custom aura rows from the server instead of keeping its own ID table.
+- Spell/item names: custom HoA spells display through the server-sent aura catalog. Stock spell/item/creature names still come from the installed DBC columns or the server's query response, so they follow the install locale rather than the account language until a DBC name overlay exists.
+- **Text:** resolved. Text is keyed by stable message IDs in `shared/i18n` and every artifact is generated from it.
 
 **Goal:** content is written only in `shared/content`, text only in `shared/i18n`, and tools generate each artifact. The server is authoritative at runtime; the client/addon keep no business copies.
 

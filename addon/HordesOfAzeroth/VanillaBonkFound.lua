@@ -98,19 +98,11 @@ function UI.ItemLevel(tier, quality)
 end
 
 function UI.ItemLevelText(tier, quality)
-    return L("Item Level {1}", UI.ItemLevel(tier, quality))
+    return L("hoa.addon.item_level_1", UI.ItemLevel(tier, quality))
 end
 
 function UI.ItemLevelRange(tier, lowQuality, highQuality)
-    return L("Item Level {1}-{2}", UI.ItemLevel(tier, lowQuality), UI.ItemLevel(tier, highQuality))
-end
-
-function UI.FoundLineText(piece)
-    local count = piece and table.getn(piece.lines) or 0
-    if count == 0 then
-        return ""
-    end
-    return count == 1 and L["1 bonus stat"] or L("{1} bonus stats", count)
+    return L("hoa.addon.item_level_1_2", UI.ItemLevel(tier, lowQuality), UI.ItemLevel(tier, highQuality))
 end
 
 local handlers = {}
@@ -140,7 +132,18 @@ handlers["foundend"] = function()
     end
 end
 
-UI.Listen(handlers)
+UI.ListenHoa({
+    HOA_FOUND_CLEAR = function()
+        handlers["foundclear"]()
+    end,
+    HOA_FOUND_ITEM = function(item)
+        handlers["founditem"]({ false, item.place, item.entry, item.tier, item.lines, item.extra, item.legacy and "1" or "0" })
+    end,
+    HOA_FOUND_END = function()
+        handlers["foundend"]()
+    end,
+})
+
 
 local refresh = CreateFrame("Frame")
 refresh:Hide()

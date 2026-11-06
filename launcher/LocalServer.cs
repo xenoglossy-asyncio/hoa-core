@@ -19,7 +19,7 @@ namespace HordesOfAzeroth.Launcher
 
     sealed class LocalServer
     {
-        public static string RepairAdvice => Loc.T("Choose Repair the game in the ••• menu next to Play.");
+        public static string RepairAdvice => Loc.T("hoa.launcher.choose_repair_the_game_in_the_menu_next_to_play");
         static readonly string[] OutdatedWorldLines = { "database structure is not up to date", "Database `mangos` is missing the following migrations" };
         const string Host = "127.0.0.1";
         const int LoginPort = 3724;
@@ -102,38 +102,37 @@ namespace HordesOfAzeroth.Launcher
         public async Task StartAsync(IProgress<string> progress, CancellationToken cancel)
         {
             await ChooseDatabasePortAsync();
-            ThrowIfPortTaken(LoginPort, Loc.Key("its login server"));
-            ThrowIfPortTaken(WorldPort, Loc.Key("its world server"));
+            ThrowIfPortTaken(LoginPort, Loc.Key("hoa.launcher.its_login_server"));
+            ThrowIfPortTaken(WorldPort, Loc.Key("hoa.launcher.its_world_server"));
             Directory.CreateDirectory(m_folder.ServerLogs);
             WriteServerConfig("mangosd");
             WriteServerConfig("realmd");
 
             if (!IsPortOpen(m_databasePort))
             {
-                progress.Report(Loc.T("Starting the database"));
-                m_database = StartDatabase();
-                await WaitForPortAsync(m_databasePort, m_database, TimeSpan.FromSeconds(60), Loc.Key("the database"), cancel);
+                progress.Report(Loc.T("hoa.launcher.starting_the_database"));
+                await LaunchDatabaseAsync(cancel);
             }
 
             if (!IsPortOpen(LoginPort))
             {
-                progress.Report(Loc.T("Starting the login server"));
+                progress.Report(Loc.T("hoa.launcher.starting_the_login_server"));
                 m_login = StartHidden(Path.Combine(m_folder.ServerRun, Platform.Exe("realmd")), m_folder.ServerRun, "-c", "realmd.conf");
-                await WaitForPortAsync(LoginPort, m_login, TimeSpan.FromSeconds(30), Loc.Key("the login server"), cancel);
+                await WaitForPortAsync(LoginPort, m_login, TimeSpan.FromSeconds(30), Loc.Key("hoa.launcher.the_login_server"), cancel);
             }
 
             if (!IsPortOpen(WorldPort))
             {
-                progress.Report(Loc.T("Loading the world"));
+                progress.Report(Loc.T("hoa.launcher.loading_the_world"));
                 DateTime started = DateTime.UtcNow;
                 m_world = StartHidden(Path.Combine(m_folder.ServerRun, Platform.Exe("mangosd")), m_folder.ServerRun, true, "-c", "mangosd.conf");
                 try
                 {
-                    await WaitForPortAsync(WorldPort, m_world, TimeSpan.FromMinutes(5), Loc.Key("the world server"), cancel);
+                    await WaitForPortAsync(WorldPort, m_world, TimeSpan.FromMinutes(5), Loc.Key("hoa.launcher.the_world_server"), cancel);
                 }
                 catch (InvalidOperationException) when (m_world.HasExited && WorldLogsMention(OutdatedWorldLines, started))
                 {
-                    throw new WorldDatabaseException(Loc.T("The world database doesn't match the server. {0}", RepairAdvice));
+                    throw new WorldDatabaseException(Loc.T("hoa.launcher.the_world_database_doesn_t_match_the_server_0", RepairAdvice));
                 }
             }
         }
@@ -182,10 +181,10 @@ namespace HordesOfAzeroth.Launcher
                 KillQuietly(m_login);
             if (m_database != null && !m_database.HasExited)
             {
-                string admin = MariaDbProgram("mariadb-admin");
-                Process shutdown = StartHidden(admin, m_folder.MariaDb, DatabaseLogin.Concat(new[] { "shutdown" }).ToArray());
-                await WaitForExitAsync(shutdown, TimeSpan.FromSeconds(30));
+                await AskDatabaseToShutDownAsync();
                 await WaitForExitAsync(m_database, TimeSpan.FromSeconds(30));
+                if (!m_database.HasExited)
+                    KillQuietly(m_database);
             }
             m_world = m_login = m_database = null;
             await StopLeftoversAsync();
@@ -199,14 +198,29 @@ namespace HordesOfAzeroth.Launcher
                 KillQuietly(login);
             if (OwnProcesses("mariadbd").Any())
             {
-                string admin = MariaDbProgram("mariadb-admin");
-                if (File.Exists(admin))
-                {
-                    Process shutdown = StartHidden(admin, m_folder.MariaDb, DatabaseLogin.Concat(new[] { "shutdown" }).ToArray());
-                    await WaitForExitAsync(shutdown, TimeSpan.FromSeconds(30));
-                }
+                await AskDatabaseToShutDownAsync();
                 foreach (Process database in OwnProcesses("mariadbd"))
+                {
                     await WaitForExitAsync(database, TimeSpan.FromSeconds(30));
+                    if (!database.HasExited)
+                        KillQuietly(database);
+                }
+            }
+        }
+
+        async Task AskDatabaseToShutDownAsync()
+        {
+            string admin = MariaDbProgram("mariadb-admin");
+            if (!File.Exists(admin))
+                return;
+            try
+            {
+                Process shutdown = StartHidden(admin, m_folder.MariaDb, DatabaseLogin.Concat(new[] { "shutdown" }).ToArray());
+                await WaitForExitAsync(shutdown, TimeSpan.FromSeconds(30));
+            }
+            catch (System.ComponentModel.Win32Exception error)
+            {
+                LauncherLog.Write(m_folder, "Database shutdown: " + error.Message);
             }
         }
 
@@ -238,7 +252,7 @@ namespace HordesOfAzeroth.Launcher
             foreach (PortOwners.Owner owner in PortOwners.Listening(port))
                 if (!owner.IsInside(m_folder.Root))
                     throw new InvalidOperationException(
-                        Loc.T("Port {0} is in use by {1}. Hordes of Azeroth needs it for {2}. Close that program (or stop its service) and try again.", port, owner.Describe(), Loc.T(use)));
+                        Loc.T("hoa.launcher.port_0_is_in_use_by_1_hordes_of_azeroth_needs_it_for_2_close", port, owner.Describe(), Loc.T(use)));
         }
 
         public bool DatabaseExists => Directory.Exists(Path.Combine(m_folder.MariaDbData, "mysql"));
@@ -270,7 +284,7 @@ namespace HordesOfAzeroth.Launcher
                 catch (UnauthorizedAccessException)
                 {
                 }
-                throw serverLog == null ? failure : new InvalidOperationException(Loc.T("{0} Database log: {1}", failure.Message, serverLog), failure);
+                throw serverLog == null ? failure : new InvalidOperationException(Loc.T("hoa.launcher.0_database_log_1", failure.Message, serverLog), failure);
             }
         }
 
@@ -295,17 +309,46 @@ namespace HordesOfAzeroth.Launcher
 
         string DatabaseErrorLogLine()
         {
+            string[] errors = LastDatabaseStartErrors().Distinct().Take(2).ToArray();
+            return errors.Length == 0 ? null : string.Join(" ", errors);
+        }
+
+        IEnumerable<string> LastDatabaseStartErrors()
+        {
+            string log = NewestDatabaseLog();
+            if (log == null)
+                return Enumerable.Empty<string>();
+            string[] lines = ReadLogTail(log).Split('\n');
+            int lastStart = Array.FindLastIndex(lines, l => l.Contains("Starting MariaDB"));
+            return lines.Skip(Math.Max(0, lastStart)).Select(l => l.Trim())
+                .Where(l => l.IndexOf("[ERROR]", StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+        }
+
+        string NewestDatabaseLog()
+        {
             if (!Directory.Exists(m_folder.MariaDbData))
                 return null;
-            foreach (string log in Directory.GetFiles(m_folder.MariaDbData, "*.err"))
+            return Directory.GetFiles(m_folder.MariaDbData, "*.err").OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault();
+        }
+
+        const int DatabaseLogTailBytes = 256 * 1024;
+
+        static string ReadLogTail(string log)
+        {
+            try
             {
-                string[] lines = File.ReadAllLines(log);
-                int lastStart = Array.FindLastIndex(lines, l => l.Contains("Starting MariaDB"));
-                string line = lines.Skip(Math.Max(0, lastStart)).Select(l => l.Trim()).FirstOrDefault(l => l.IndexOf("[ERROR]", StringComparison.OrdinalIgnoreCase) >= 0);
-                if (line != null)
-                    return line;
+                using (FileStream stream = new FileStream(log, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                {
+                    if (stream.Length > DatabaseLogTailBytes)
+                        stream.Seek(-DatabaseLogTailBytes, SeekOrigin.End);
+                    using (StreamReader reader = new StreamReader(stream))
+                        return reader.ReadToEnd();
+                }
             }
-            return null;
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                return "";
+            }
         }
 
         public async Task StartDatabaseOnlyAsync(CancellationToken cancel)
@@ -313,8 +356,52 @@ namespace HordesOfAzeroth.Launcher
             await ChooseDatabasePortAsync();
             if (IsPortOpen(m_databasePort))
                 return;
+            await LaunchDatabaseAsync(cancel);
+        }
+
+        async Task LaunchDatabaseAsync(CancellationToken cancel)
+        {
+            await RemoveLeftoverTempTablespaceAsync(cancel);
             m_database = StartDatabase();
-            await WaitForPortAsync(m_databasePort, m_database, TimeSpan.FromSeconds(60), Loc.Key("the database"), cancel);
+            try
+            {
+                await WaitForPortAsync(m_databasePort, m_database, TimeSpan.FromSeconds(60), Loc.Key("hoa.launcher.the_database"), cancel);
+            }
+            catch (InvalidOperationException) when (m_database.HasExited && LastDatabaseStartMentions(TempTablespaceFile))
+            {
+                LauncherLog.Write(m_folder, "Database could not open " + TempTablespaceFile + "; retrying once.");
+                await Task.Delay(TimeSpan.FromSeconds(3), cancel);
+                await RemoveLeftoverTempTablespaceAsync(cancel);
+                m_database.Dispose();
+                m_database = StartDatabase();
+                await WaitForPortAsync(m_databasePort, m_database, TimeSpan.FromSeconds(60), Loc.Key("hoa.launcher.the_database"), cancel);
+            }
+        }
+
+        const string TempTablespaceFile = "ibtmp1";
+
+        async Task RemoveLeftoverTempTablespaceAsync(CancellationToken cancel)
+        {
+            string leftover = Path.Combine(m_folder.MariaDbData, TempTablespaceFile);
+            for (int attempt = 0; File.Exists(leftover) && attempt < 10; attempt++)
+            {
+                try
+                {
+                    File.SetAttributes(leftover, FileAttributes.Normal);
+                    File.Delete(leftover);
+                }
+                catch (Exception error) when (error is IOException || error is UnauthorizedAccessException)
+                {
+                    if (attempt == 0)
+                        LauncherLog.Write(m_folder, "Leftover " + TempTablespaceFile + " is locked: " + error.Message);
+                    await Task.Delay(500, cancel);
+                }
+            }
+        }
+
+        bool LastDatabaseStartMentions(string text)
+        {
+            return LastDatabaseStartErrors().Any(line => line.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         public Task RunSqlFileAsync(string database, string file)
@@ -346,7 +433,7 @@ namespace HordesOfAzeroth.Launcher
         public async Task RunConsoleAsync(string command)
         {
             if (m_world == null || m_world.HasExited)
-                throw new InvalidOperationException(Loc.T("The world server isn't running."));
+                throw new InvalidOperationException(Loc.T("hoa.launcher.the_world_server_isn_t_running"));
             m_world.StandardInput.WriteLine(command);
             m_world.StandardInput.Flush();
             await Task.Delay(1500);
@@ -378,7 +465,7 @@ namespace HordesOfAzeroth.Launcher
                         process.WaitForExit(5000);
                         string stuck = $"{Path.GetFileName(exe)} did not finish within {limit.TotalMinutes:0} minutes";
                         LogOutput(stuck, await error, await output);
-                        throw new InvalidOperationException(Loc.T("{0} did not finish within {1:0} minutes. Its output is in the launcher log.", Path.GetFileName(exe), limit.TotalMinutes));
+                        throw new InvalidOperationException(Loc.T("hoa.launcher.0_did_not_finish_within_1_0_minutes_its_output_is_in_the_lau", Path.GetFileName(exe), limit.TotalMinutes));
                     }
                     await Task.Delay(100);
                 }
@@ -388,7 +475,7 @@ namespace HordesOfAzeroth.Launcher
                 {
                     string failure = $"{Path.GetFileName(exe)} failed (exit code 0x{process.ExitCode:X})";
                     LogOutput(failure, problem, text);
-                    throw new InvalidOperationException(Loc.T("{0} failed (exit code 0x{1:X}): {2}", Path.GetFileName(exe), process.ExitCode, Details(problem, text)));
+                    throw new InvalidOperationException(Loc.T("hoa.launcher.0_failed_exit_code_0x_1_x_2", Path.GetFileName(exe), process.ExitCode, Details(problem, text)));
                 }
                 return text;
             }
@@ -403,7 +490,7 @@ namespace HordesOfAzeroth.Launcher
             string line = errorLines.FirstOrDefault(l => l.StartsWith("ERROR"))
                 ?? errorLines.FirstOrDefault(l => !l.StartsWith("WARNING") && l.Trim('-').Length > 0)
                 ?? Lines(output).LastOrDefault(l => l.Trim('-').Length > 0);
-            return line ?? Loc.T("no details");
+            return line ?? Loc.T("hoa.launcher.no_details");
         }
 
         static IEnumerable<string> Lines(string text)
@@ -443,7 +530,7 @@ namespace HordesOfAzeroth.Launcher
         static Process StartHidden(string exe, string workingDirectory, bool redirectInput, params string[] arguments)
         {
             if (!File.Exists(exe))
-                throw new FileNotFoundException(Loc.T("{0} is missing. {1}", Path.GetFileName(exe), RepairAdvice), exe);
+                throw new FileNotFoundException(Loc.T("hoa.launcher.0_is_missing_1", Path.GetFileName(exe), RepairAdvice), exe);
             ProcessStartInfo info = new ProcessStartInfo(exe, string.Join(" ", arguments))
             {
                 WorkingDirectory = workingDirectory,
@@ -489,11 +576,11 @@ namespace HordesOfAzeroth.Launcher
                 {
                     string databaseError = process == m_database ? DatabaseErrorLogLine() : null;
                     if (databaseError != null)
-                        throw new InvalidOperationException(Loc.T("{0} stopped with code {1}: {2}", CapitalFirst(Loc.T(what)), process.ExitCode, databaseError));
-                    throw new InvalidOperationException(Loc.T("{0} stopped with code {1}. See {2}.", CapitalFirst(Loc.T(what)), process.ExitCode, Path.Combine(m_folder.ServerLogs, "Server.log")));
+                        throw new InvalidOperationException(Loc.T("hoa.launcher.0_stopped_with_code_1_2", CapitalFirst(Loc.T(what)), process.ExitCode, databaseError));
+                    throw new InvalidOperationException(Loc.T("hoa.launcher.0_stopped_with_code_1_see_2", CapitalFirst(Loc.T(what)), process.ExitCode, Path.Combine(m_folder.ServerLogs, "Server.log")));
                 }
                 if (clock.Elapsed > timeout)
-                    throw new TimeoutException(Loc.T("{0} did not start within {1:0} seconds.", CapitalFirst(Loc.T(what)), timeout.TotalSeconds));
+                    throw new TimeoutException(Loc.T("hoa.launcher.0_did_not_start_within_1_0_seconds", CapitalFirst(Loc.T(what)), timeout.TotalSeconds));
                 await Task.Delay(500, cancel);
             }
         }

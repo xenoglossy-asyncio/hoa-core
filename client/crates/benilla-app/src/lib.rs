@@ -35,6 +35,7 @@ mod capture;
 mod chat_bubble;
 mod chr_classes;
 mod cinematic;
+mod client_language;
 mod client_state;
 mod combat_log;
 mod combat_text;
@@ -61,8 +62,7 @@ mod game_plugins;
 mod glue_session;
 mod go_anim;
 mod go_templates;
-mod hoa_spells;
-mod hoa_spells_generated;
+mod hoa_aura;
 #[cfg(feature = "dev")]
 mod hover_log;
 mod item_lane;
@@ -214,6 +214,8 @@ pub use ui_chat::{ChatTap, TappedLine};
 pub use net::Objects;
 pub use net::NetHandlerApp;
 pub use entities::ViewerOverheadHeight;
+pub use client_language::set_hoa_account_language;
+pub use hoa_aura::{set_hoa_aura_catalog, HoaAuraRow};
 pub use player::pad_steer::PadSteer;
 pub use target::Interact;
 pub use vm_seed::{run_hosted, seed_every_vm};
@@ -243,7 +245,10 @@ pub fn config_dir() -> Option<std::path::PathBuf> {
 /// Rewrites a custom spell's tooltip description, for values the aura carries at runtime.
 pub fn set_hoa_spell_description(world: &mut bevy::prelude::World, spell_id: u32, description: String) {
     if let Some(mut spells) = world.get_resource_mut::<crate::ui_action::Spells>() {
-        spells.catalog.set_overlay_description(spell_id, description);
+        spells.catalog.set_overlay_description(spell_id, description.clone());
+    }
+    if let Some(mut texts) = world.get_resource_mut::<hoa_aura::HoaValueTexts>() {
+        texts.0.insert(spell_id, description);
     }
 }
 

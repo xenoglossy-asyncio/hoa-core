@@ -127,6 +127,7 @@ class BonkPlayer
         uint8 GetDetermination() const;
         void AddDetermination();
         void SendDetermination() const;
+        void SendDeterminationText() const;
         void RefreshDeterminationAura() const;
         bool IsShopVendor(Creature const* vendor) const;
         uint32 GetStockTier() const;
@@ -167,7 +168,39 @@ class BonkPlayer
         static uint32 GetIronmanAccount(uint32 guidLow);
         static void GatherAccountBank(uint32 accountId, uint32 guidLow);
         static void ParkAccountBank(uint32 guidLow);
+        static bool IsHardcoreName(std::string const& name);
+        static void RequestHardcore(uint32 accountId);
+        static bool TakeHardcoreRequest(uint32 accountId);
+        static void MarkHardcore(uint32 guidLow);
+        static bool IsHardcoreCharacter(uint32 guidLow);
+        static uint32 GetHardcoreAccount(uint32 accountId);
+        static uint32 GetProgressAccountOf(uint32 guidLow, uint32 accountId);
+        static void ParkFallenBanks(uint32 accountId);
+        static uint32 GetCharacterAccountOf(uint32 guidLow);
+        static uint32 GetPlainCharacterAccount(uint32 guidLow);
+        static uint32 GetStagedCharacterAccount(uint32 accountId);
+        void ClaimStagedCharacterRows();
+        static void AdoptClassProgress(uint32 guidLow);
+        static void DeleteCharacterProgress(uint32 guidLow);
+        static void RaisePoolBestLevel(uint32 poolAccount, uint32 level);
+        uint32 GetCharacterAccount() const;
         bool IsIronman() const;
+        bool IsHardcore() const;
+        bool HasFallenInHardcore() const { return m_fellInHardcore; }
+        void OnHardcoreDeath(std::string const& killer, std::string const& mapName, uint32 level, uint32 kills);
+        uint32 BeginHardcoreRun(std::string const& mapName);
+        void EndHardcoreRun();
+        uint32 GetHardcoreRun() const { return m_hardcoreRun; }
+        uint32 GetHardcoreCrashes() const { return m_hardcoreCrashes; }
+        bool HoldsAfterDisconnect() const;
+        void OnHardcoreDisconnected();
+        void OnHardcoreReconnected();
+        void SendUnannouncedFall();
+        static uint32 HardcoreHoldMs();
+        static uint32 HardcoreShutdownHoldSeconds();
+        static uint32 OpenHardcoreRuns();
+        bool RequestRest();
+        static bool TakeRestRequest(uint32 guidLow);
         uint32 GetProgressAccount() const;
 
         void RecordRun(uint32 level, uint32 seconds, uint32 kills, uint32 goldEarned);
@@ -192,7 +225,6 @@ class BonkPlayer
         uint32 GetFortuneSpent(uint32 tree) const;
         bool IsTalentEnabled(uint32 talentId) const { return m_enabledTalents.count(talentId) != 0; }
         bool BuyUpgrade(uint32 upgradeId, std::string& message);
-        void VisitSpellbook(Creature const* keeper);
         bool BuyTalent(uint32 talentId, std::string& message);
         bool ResetUpgrades(std::string& message);
         bool ResetTalents(std::string& message);
@@ -216,7 +248,14 @@ class BonkPlayer
         uint32 GetBoardClimb() const;
         void SetBoardChoice(bool show);
         void SendBoardChoice() const;
+        struct OffBoardGear
+        {
+            Item const* item = nullptr;
+            bool legacy = false;
+        };
         bool HasBoardGear(uint32 level) const;
+        OffBoardGear FindOffBoardGear(uint32 level) const;
+        bool IsBoardGameMaster() const;
         void CountEpicLuck(bool epicDropped);
         void SendEpicLuck() const;
         void TakeTalentResetNotice();
@@ -322,9 +361,12 @@ class BonkPlayer
 
         void SetAddonReady();
         void SendProtocolHello() const;
+        void SendAuraCatalog() const;
         void SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) const;
+        void SendAuraText(uint32 spellId, std::string const& text) const;
         void SendAuraPercent(uint32 spellId, float percent) const;
         bool IsAddonReady() const { return m_addonReady; }
+        Player* GetPlayer() const { return m_player; }
         void SetLocale(LocaleConstant locale);
         void ApplyLocale(LocaleConstant locale);
         LocaleConstant GetLocale() const { return m_locale; }
@@ -337,7 +379,6 @@ class BonkPlayer
         std::string GetItemName(ItemPrototype const* proto) const;
         std::string GetCreatureName(uint32 entry, std::string const& fallback) const;
 
-        void SendAddon(std::string const& line) const;
         void Notify(std::string const& text) const;
         void ResetReworkedTrinkets();
         void NotifyFind(std::string const& text) const;
@@ -369,11 +410,11 @@ class BonkPlayer
         void SendUpdateNotices();
         void SeeGearNotice();
         void SendStats() const;
+        void SendNoEnchants() const;
         void SendMasteryShop(bool open, bool inspect) const;
         std::map<uint32, uint8> ReadMasteryPreset(uint8 slot) const;
         void LoadMasteryPresets();
         void WriteMasteryPreset(uint8 slot, std::map<uint32, uint8> const& ranks);
-        std::string DescribeMasteryPresets() const;
         void SendMasteryPresetRanks() const;
         void SendStatTotals(float const* totals, bool inRun, float const* afterCaps = nullptr) const;
         void WatchStats(bool watching);
@@ -430,10 +471,10 @@ class BonkPlayer
         void SaveTalent(uint32 talentId) const;
 
         void SendShop(bool open) const;
+        void SendShopClose() const;
         void SendArena(std::string const& npc) const;
         void SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bonuses) const;
         bool IsAtShop() const;
-        bool IsAtSpellbook() const;
 
         Player* m_player;
         std::unique_ptr<BonkRun> m_run;
@@ -497,6 +538,16 @@ class BonkPlayer
         void UpdateMailboxGlow(uint32 diff);
         bool m_goldLoaded = false;
         mutable int8 m_ironman = -1;
+        mutable int8 m_hardcore = -1;
+        uint32 m_poolBestLevel = 0;
+        bool m_fellInHardcore = false;
+        bool m_mayRest = false;
+        uint32 m_hardcoreRun = 0;
+        uint32 m_hardcoreCrashes = 0;
+        bool UsesHardcorePool() const;
+        void SettleLeftHardcoreRun();
+        void SendFallenRecord(uint32 level, uint32 bestLevel, uint32 mastery, uint32 played, uint32 runs, uint32 kills, std::string const& killer,
+            std::string const& mapName, bool ironman);
         struct LevelRecord
         {
             uint32 best = 0;
@@ -529,7 +580,6 @@ class BonkPlayer
         uint32 m_starterChoice = 0;
         BonkShop m_shop{};
         ObjectGuid m_shopNpc;
-        ObjectGuid m_spellbookKeeper;
         ObjectGuid m_deckTable;
         std::string m_shopNpcName;
         std::string m_masteryNotice;

@@ -10,7 +10,9 @@ HoA effects currently have three representations and no single source of truth:
 
 Card procs span all three. Zandalarian Hero Charm, for example, grants "25% Power for 10 sec every 30 sec" (`server/core/sql/migrations/20261027710000_world.sql:46-47`): the server uses `m_cardSurgeUntilMs` plus cooldown bookkeeping (`BonkRunCards.cpp:486-493`), `GetCardPower` folds the bonus into damage and stats (`BonkRunCards.cpp:156-170`, `BonkRun.cpp:4867,6284`), and there is no Unit aura. The UI relies on per-second `cardnow~` text (`BonkRunCards.cpp:507-533,586-596`) and one `Notify` (`:491`); the addon assembles the tooltip (`VanillaBonkCards.lua:84-86,205,313-328`).
 
-The addon parses only `BONK~` chat lines (`VanillaBonkUI.lua:231-243`) and never uses `UNIT_AURA`/`GetPlayerBuff`; the client's `C_UnitAuras` serves only enemy nameplate debuffs (`VanillaBonkDebuffs.lua:62-78`), and boss debuffs still go through BONK (`VanillaBonkBoss.lua:194`). The addon also has several per-frame `OnUpdate` loops (`VanillaBonkDebuffs.lua:385`, `VanillaBonkCards.lua:255`, `VanillaBonkPlates.lua:652`, `VanillaBonkDash.lua:89`, etc.).
+The addon used to parse only `BONK~` chat lines and never used `UNIT_AURA`/`GetPlayerBuff`; it now consumes typed `HOA_*` events and reads `C_UnitAuras` for nameplate and boss debuffs. Several per-frame `OnUpdate` loops remain (`VanillaBonkDebuffs.lua`, `VanillaBonkCards.lua`, `VanillaBonkPlates.lua`, `VanillaBonkDash.lua`).
+
+**Progress (2026-11-05):** phase 3 moved the effect set onto real auras, phase 4 gave spells and content a single source, and phase 5 replaced the remaining state/presentation chat lines with the typed protocol. The three-representation baseline above is kept for context; the follow-up work is phase 6 (per-frame polling, duplicated timers, aura refresh rate).
 
 Result: what the player sees, what the addon shows and what the server applies may be three states; other addons/combat logs cannot identify HoA effects through standard APIs.
 
@@ -58,6 +60,8 @@ spell:
       stat: strength
       amount: 30
 ```
+
+The implementation in `shared/content/spells/spells.yaml` uses a smaller schema. Each aura declares `source: card:<id> | mastery:<id> | weapon:<id> | glyph:<id> | keyword:<id> | behavior:<enum> | none`; a sourced aura inherits the source row's name, icon and description, while `display` overrides require a `reason`. `stacks`, `permanent` and `dynamic` describe the live count, timer and value text. The compiler validates every binding and emits `hoa_aura`/`hoa_aura_locale`; the server pushes the localized rows over the typed protocol at addon-ready and language changes, so the client stores strings without reading a locale.
 
 After compilation:
 
@@ -111,24 +115,24 @@ Zandalarian Hero Charm: every 30 seconds, gain 25% Power for 10 seconds (`202610
 - Content definition: `hoa.aura.darkmoon.zandalarian_surge`, `duration 10s`, `hoa_power_percent 25`, `internal_cooldown 30s`.
 - Server: a combat/timer hook triggers → `Apply` → the real aura applies; damage calculation uses VMaNGOS's aura system. Remove `m_cardSurgeUntilMs`, the manual bonus in `GetCardPower`, and the per-second `cardnow~`.
 - Client: the buff frame shows the icon and remaining time; tooltip text comes from the content pack.
-- First implementation: spell `60004` (migration `20261104120000_world.sql`) is a real positive aura; the server sets its duration from the card, and the generated client table supplies the name/icon/description through `SpellCatalog::with_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. The source is `shared/content/spells/spells.yaml`; `tools/content/compile.py` emits the SQL, the server ids and the client table. Ids `60001`-`60099` are reserved for HoA.
+- First implementation: spell `60004` is a real positive aura; the server sets its duration from the card. The source is `shared/content/spells/spells.yaml`; `tools/content/compile.py` emits the `spell_template` SQL, `hoa_aura`/`hoa_aura_locale` SQL and the server ids. At addon-ready the server sends the localized aura catalog (`aura_catalog_entry`/`aura_catalog_end`), and the client installs it through `SpellCatalog::set_overlay`, so the native buff frame and tooltip render it even though the installed `Spell.dbc` has no row. Ids `60001`-`60099` are reserved for HoA.
 - Addon: no timing or tooltip assembly; at most read the aura's remaining time for custom UI.
 
 ### 7.2 Darkmoon card buffs
 
-Haste Burst (`60006`), Swiftness (`60007`), Immune (`60008`), Soulstone charges (`60009`) and Thorns (`60010`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the same overlay. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers. Conditional regeneration cards keep an aura only while their condition holds: Heavy Runecloth Bandage (`60053`) is present until you are hit, and Basic Campfire (`60054`) while you stand still.
+Darkmoon Card: Blue Dragon (`60006`), Swiftness Potion (`60007`), Insignia of the Alliance (`60008`), Barbed Choker (`60010`), Bloodlust Brooch (`60021`) and Talisman of Ascendance (`60022`) are real auras too: the server applies them with the card's duration, and the client's buff frame/tooltips show them through the server-pushed catalog. The card window is still an addon UI (it has to be: cards are custom objects), but the effects themselves no longer live in addon timers. Conditional regeneration cards keep an aura only while their condition holds: Heavy Runecloth Bandage (`60053`) is present until you are hit, and Basic Campfire (`60054`) while you stand still.
 
 ### 7.3 Class buffs
 
-Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`) the Nomad drawback (`60020`), Kill Power (`60021`) and Unhit Power (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. the server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the overlay. The remaining timed class effects are covered in 7.6.
+Tiger's Fury (`60012`), Arcane Power (`60013`), Shadow Dance (`60014`), Envenom (`60015`), Dark Pact (`60016`), Soul Harvest (`60017`), glyph Bloodlust (`60018`), Ice Block (`60019`), the Nomad drawback (`60020`), Bloodlust Brooch (`60021`) and Talisman of Ascendance (`60022`) are effects moved off internal timers onto real auras. Blade Flurry (`33466`), Enrage (`33462`), Divine Shield (`33463`) and Doom Winds now read their existing auras instead of parallel timers. The server applies a dummy aura with the buff's duration, reads `HasAura` for the behavior, and the client shows it through the server-pushed catalog. The remaining timed class effects are covered in 7.6.
 
 ### 7.4 HoA shield/dash/determination
 
 - Shield: custom aura `60005`. The live absorb value goes out as `hoa.aura_value`; the client rewrites the tooltip text ("Absorbs N damage.") and the addon still draws the shield bar. The buff frame shows the icon, not a countdown, because the shield is a pool rather than a timed buff.
-- Dash: a skill, not a buff. Its charges and recharge stay in `BonkPlayer`; `hoa.dash`/`dash~` carry the available charges and remaining recharge to the UI, and the native buff frame never changes when a charge is spent or returns.
+- Dash: a skill, not a buff. Its charges and recharge stay in `BonkPlayer`; `hoa.dash` carries the available charges and remaining recharge to the UI, and the native buff frame never changes when a charge is spent or returns.
 - Determination: custom aura `60001`, permanent, stacks mirror the account value; the addon reads the stacks from the aura, and the server keeps the account row as the persistent source.
 - Wounds: custom aura `60003`; stacks and duration live on the aura; the addon reads stacks and only takes the server-computed healing cut percentage from the notice.
-- Necrotic: spell `18951` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
+- Necrotic: spell `60056` stacks are the state; the server reads them and the addon reads them through `UI.AuraStacks`.
 - Weapon buffs: the server reads the live aura instead of the removed `m_buffs` expiry map.
 
 ### 7.5 Native spells

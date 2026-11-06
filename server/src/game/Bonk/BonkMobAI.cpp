@@ -1,4 +1,6 @@
 #include "BonkMobAI.h"
+#include "HoaProtocol.h"
+#include "WorldSession.h"
 #include "BonkCoop.h"
 #include "BonkLocale.h"
 #include "BonkPlayer.h"
@@ -638,9 +640,13 @@ void BonkMobAI::Setup(BonkSpawnKind kind)
         RollAffixes(affixes + 1);
 
     uint32 const plateKind = GetPlateKind();
-    if (plateKind && owner)
-        owner->GetBonkPlayer()->SendAddon("mob~" + std::to_string(plateKind) + "~" + owner->GetBonkPlayer()->GetLocalName(m_creature) + "~" + m_plateIcon + "~" +
-            std::to_string(m_creature->GetPlateId()) + "~" + GetUnitGuidText(m_creature));
+    if (plateKind && owner && owner->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMob(data, plateKind, owner->GetBonkPlayer()->GetLocalName(m_creature), m_plateIcon, m_creature->GetPlateId(),
+            GetUnitGuidText(m_creature));
+        owner->GetSession()->SendPacket(&data);
+    }
 }
 
 uint32 BonkMobAI::GetPlateKind() const
@@ -797,7 +803,12 @@ void BonkMobAI::SendAffixInfo(BonkPlayer* bonk)
             case AFFIX_VOLCANIC:   text = bonk->GetString(BONK_STRING_AFFIX_VOLCANIC_TEXT); break;
             default: break;
         }
-        bonk->SendAddon("affixinfo~" + bonk->GetString(BONK_AFFIXES[affix].name) + "~" + BONK_AFFIXES[affix].icon + "~" + text);
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteAffixInfo(data, bonk->GetString(BONK_AFFIXES[affix].name), BONK_AFFIXES[affix].icon, text);
+            bonk->GetPlayer()->GetSession()->SendPacket(&data);
+        }
     }
 }
 

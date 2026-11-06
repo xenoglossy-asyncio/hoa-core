@@ -26,9 +26,9 @@ local OTHER_FIELDS = 5
 local BAR_SPEED = 8
 local MODE_SPELLS, MODE_TYPES, MODE_HEALING = 1, 2, 3
 local MODES = {
-    { mode = MODE_SPELLS, label = L["Damage Done"] },
-    { mode = MODE_TYPES, label = L["Damage Types"] },
-    { mode = MODE_HEALING, label = L["Healing Done"] },
+    { mode = MODE_SPELLS, label = L["hoa.addon.damage_done"] },
+    { mode = MODE_TYPES, label = L["hoa.addon.damage_types"] },
+    { mode = MODE_HEALING, label = L["hoa.addon.healing_done"] },
 }
 local HEAL_COLOR = UI.HEAL_COLOR
 local ABSORB_COLOR = UI.ABSORB_COLOR
@@ -215,8 +215,8 @@ meter.eye:Hide()
 meter.eye:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_LEFT")
     local count = HiddenCount()
-    GameTooltip:AddLine(L(count == 1 and "{1} hidden entry" or "{1} hidden entries", count), 1, 1, 1)
-    GameTooltip:AddLine(L["Click to show everything again."], 0.75, 0.75, 0.75)
+    GameTooltip:AddLine(L(count == 1 and "hoa.addon.1_hidden_entry" or "hoa.addon.1_hidden_entries", count), 1, 1, 1)
+    GameTooltip:AddLine(L["hoa.addon.click_to_show_everything_again"], 0.75, 0.75, 0.75)
     GameTooltip:Show()
 end)
 meter.eye:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -241,17 +241,17 @@ end
 
 local function SpellTooltip(entry, share)
     GameTooltip:AddLine(entry.name, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Damage"], Short(entry.damage), 1, 0.82, 0, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Per second"], Short(seconds > 0 and entry.damage / seconds or 0), 1, 0.82, 0, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Share"], share .. "%", 1, 0.82, 0, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Kills"], entry.kills or 0, 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.damage_2"], Short(entry.damage), 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.per_second"], Short(seconds > 0 and entry.damage / seconds or 0), 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.share"], share .. "%", 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.kills_2"], entry.kills or 0, 1, 0.82, 0, 1, 1, 1)
     if getn(entry.parts) > 1 then
         AddPartLines(entry)
     end
 end
 
 local function AddHideHint()
-    GameTooltip:AddLine(L["Right-click to hide."], 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L["hoa.addon.right_click_to_hide"], 0.6, 0.6, 0.6)
 end
 
 local function TypeTooltip(entry, share)
@@ -267,10 +267,10 @@ end
 
 local function HealTooltip(entry, share)
     GameTooltip:AddLine(entry.name, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Healed"], Short(entry.healed), HEAL_COLOR.r, HEAL_COLOR.g, HEAL_COLOR.b, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Absorbed"], Short(entry.absorbed), ABSORB_COLOR.r, ABSORB_COLOR.g, ABSORB_COLOR.b, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Per second"], Short(seconds > 0 and entry.damage / seconds or 0), 1, 0.82, 0, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["Share"], share .. "%", 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.healed"], Short(entry.healed), HEAL_COLOR.r, HEAL_COLOR.g, HEAL_COLOR.b, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.absorbed"], Short(entry.absorbed), ABSORB_COLOR.r, ABSORB_COLOR.g, ABSORB_COLOR.b, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.per_second"], Short(seconds > 0 and entry.damage / seconds or 0), 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.share"], share .. "%", 1, 0.82, 0, 1, 1, 1)
 end
 
 local function ShowRowTooltip()
@@ -532,7 +532,7 @@ Refresh = function()
         end
     end
     if count == 0 then
-        meter.empty:SetText(mode == MODE_HEALING and L["No healing yet."] or L["No damage yet."])
+        meter.empty:SetText(mode == MODE_HEALING and L["hoa.addon.no_healing_yet"] or L["hoa.addon.no_damage_yet"])
         meter.empty:Show()
     else
         meter.empty:Hide()
@@ -589,7 +589,7 @@ end)
 partyFrame.title = UI.Text(partyFrame.toggle, 13)
 partyFrame.title:SetPoint("LEFT", partyFrame.header, "LEFT", 6, 0)
 partyFrame.title:SetTextColor(1, 0.82, 0)
-partyFrame.title:SetText(L["Party Damage"])
+partyFrame.title:SetText(L["hoa.addon.party_damage"])
 
 partyFrame.total = UI.Text(partyFrame.toggle, 12, UI.NUMBER_FONT)
 partyFrame.total:SetPoint("RIGHT", partyFrame.header, "RIGHT", -6, 0)
@@ -684,6 +684,14 @@ end)
 
 local handlers = {}
 
+local function TildeFields(text)
+    local fields = { false }
+    for _, part in ipairs(UI.Split(text or "", "~")) do
+        tinsert(fields, part)
+    end
+    return fields
+end
+
 local function Spell(index)
     if not spells[index] then
         spells[index] = { index = index, damage = 0, kills = 0 }
@@ -708,44 +716,68 @@ function UI.ApplyDamageMeter()
     end
 end
 
-handlers["start"] = function()
-    spells = {}
-    glyphs = {}
-    others = {}
-    support = {}
-    party = {}
-    partyFrame.Refresh()
-    seconds = 0
-    for _, row in ipairs(rows) do
-        row.key = nil
-    end
-    Refresh()
-    ShowMeter()
-end
-
-handlers["end"] = function()
-    inRun = false
-    meter:Hide()
-end
-
-handlers["state"] = function(f)
-    seconds = tonumber(f[14] or "") or seconds
-    if f[13] then
-        for index, item in ipairs(UI.Split(f[13], ",")) do
-            local parts = UI.Split(item, ":")
-            local spell = Spell(index)
-            spell.damage = tonumber(parts[1]) or 0
-            spell.kills = tonumber(parts[2]) or 0
+UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+    end,
+    HOA_WEAPON_INFO = function(weapon)
+        local index = tonumber(weapon.index)
+        if index and index > 0 then
+            Spell(index).name = weapon.name
+            Refresh()
         end
-    end
-    if f[15] then
-        for index, item in ipairs(UI.Split(f[15], ",")) do
-            Spell(index).types = item
+    end,
+    HOA_RUN_SUPPORT = function(state)
+        handlers["support"]({ false, state.text })
+    end,
+    HOA_RUN_GLYPH_METER = function(state)
+        handlers["gmeter"]({ false, state.text })
+    end,
+    HOA_RUN_OTHER_METER = function(state)
+        handlers["xmeter"](TildeFields(state.text))
+    end,
+    HOA_RUN_PARTY_METER = function(state)
+        handlers["pmeter"](TildeFields(state.text))
+    end,
+    HOA_RUN_START = function()
+        spells = {}
+        glyphs = {}
+        others = {}
+        support = {}
+        party = {}
+        partyFrame.Refresh()
+        seconds = 0
+        for _, row in ipairs(rows) do
+            row.key = nil
         end
-    end
-    Refresh()
-    ShowMeter()
-end
+        Refresh()
+        ShowMeter()
+    end,
+    HOA_RUN_STATE = function(state)
+        seconds = tonumber(state.total_s) or seconds
+        local stats = state.weapon_stats
+        if stats then
+            for index, item in ipairs(UI.Split(stats, ",")) do
+                local parts = UI.Split(item, ":")
+                local spell = Spell(index)
+                spell.damage = tonumber(parts[1]) or 0
+                spell.kills = tonumber(parts[2]) or 0
+            end
+        end
+        local types = state.damage_types
+        if types then
+            for index, item in ipairs(UI.Split(types, ",")) do
+                Spell(index).types = item
+            end
+        end
+        Refresh()
+        ShowMeter()
+    end,
+    HOA_RUN_END = function()
+        inRun = false
+        meter:Hide()
+    end,
+})
 
 handlers["gmeter"] = function(f)
     glyphs = {}
@@ -767,7 +799,7 @@ handlers["xmeter"] = function(f)
         local order = getn(others) + 1
         tinsert(others, {
             id = "x" .. f[field + 1], index = OTHER_INDEX + order, icon = f[field] ~= "" and f[field] or "INV_Misc_QuestionMark",
-            name = f[field + 1] == "Melee" and L["Melee"] or f[field + 1], damage = tonumber(f[field + 2]) or 0, kills = tonumber(f[field + 3]) or 0, types = f[field + 4],
+            name = f[field + 1] == "Melee" and L["hoa.addon.melee"] or f[field + 1], damage = tonumber(f[field + 2]) or 0, kills = tonumber(f[field + 3]) or 0, types = f[field + 4],
         })
         field = field + OTHER_FIELDS
     end
@@ -831,4 +863,3 @@ handlers["pw"] = function(f)
     end
 end
 
-UI.Listen(handlers)

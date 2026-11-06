@@ -17,37 +17,37 @@ local COLUMN_RIGHT = 434
 local SLIDER_WIDTH = 270
 local STATUS_INTERVAL = 0.5
 local CARD_BUTTON_WIDTH = 104
-local CARD_ACTIONS = { { "reroll", L["Reroll"] }, { "banish", L["Banish"] }, { "skip", L["Skip"] } }
-local CARD_HINT_TEXT = L["Level-up and chest cards"]
-local CARD_CANCEL_TEXT = L["Press Menu to cancel."]
+local CARD_ACTIONS = { { "reroll", L["hoa.addon.reroll"] }, { "banish", L["hoa.addon.banish"] }, { "skip", L["hoa.addon.skip"] } }
+local CARD_HINT_TEXT = L["hoa.addon.level_up_and_chest_cards"]
+local CARD_CANCEL_TEXT = L["hoa.addon.press_menu_to_cancel"]
 local ART = {
     xbox = { file = "Interface\\AddOns\\HordesOfAzeroth\\Textures\\ControllerXbox", height = 329 },
     ps = { file = "Interface\\AddOns\\HordesOfAzeroth\\Textures\\ControllerPlayStation", height = 331 },
 }
 ART.deck = ART.xbox
-local KIND_NAMES = { xbox = L["Xbox controller connected"], ps = L["PlayStation controller connected"], deck = L["Steam Deck controls connected"] }
+local KIND_NAMES = { xbox = L["hoa.addon.xbox_controller_connected"], ps = L["hoa.addon.playstation_controller_connected"], deck = L["hoa.addon.steam_deck_controls_connected"] }
 local LEFT_LABELS = {
-    { "lt", L["Zoom"], L["Hold, then use right stick or d-pad"] },
-    { "lb", L["Shapeshift"], L["Druid forms"], "shapeshift" },
-    { "ls", L["Move"], L["Move in any direction"] },
-    { "view", L["Run map"], nil, "map" },
-    { "dpad", L["Menus and cards"], L["Move selection"] },
+    { "lt", L["hoa.addon.zoom"], L["hoa.addon.hold_then_use_right_stick_or_d_pad"] },
+    { "lb", L["hoa.addon.shapeshift"], L["hoa.addon.druid_forms"], "shapeshift" },
+    { "ls", L["hoa.addon.move"], L["hoa.addon.move_in_any_direction"] },
+    { "view", L["hoa.addon.run_map"], nil, "map" },
+    { "dpad", L["hoa.addon.menus_and_cards"], L["hoa.addon.move_selection"] },
 }
 local RIGHT_LABELS = {
-    { "rt", L["Dash"], L["Dash in your movement direction"], "dash" },
-    { "rb", L["Hearthstone"], nil, "hearth" },
-    { "y", L["Character and bags"], nil, "character" },
-    { "x", L["Interact"], L["Talk, open, use"], "interact" },
-    { "b", L["Close or cancel"] },
-    { "a", L["Jump"] },
-    { "rs", L["Camera"], L["Press to recenter"] },
-    { "menu", L["Pause menu"] },
+    { "rt", L["hoa.addon.dash"], L["hoa.addon.dash_in_your_movement_direction"], "dash" },
+    { "rb", L["hoa.addon.hearthstone"], nil, "hearth" },
+    { "y", L["hoa.addon.character_and_bags"], nil, "character" },
+    { "x", L["hoa.addon.interact"], L["hoa.addon.talk_open_use"], "interact" },
+    { "b", L["hoa.addon.close_or_cancel"] },
+    { "a", L["hoa.addon.jump"] },
+    { "rs", L["hoa.addon.camera"], L["hoa.addon.press_to_recenter"] },
+    { "menu", L["hoa.addon.pause_menu"] },
 }
-local PROMPT_CHOICES = { { "auto", L["Automatic"] }, { "xbox", "Xbox" }, { "ps", "PlayStation" }, { "deck", "Steam Deck" } }
+local PROMPT_CHOICES = { { "auto", L["hoa.addon.automatic"] }, { "xbox", "Xbox" }, { "ps", "PlayStation" }, { "deck", "Steam Deck" } }
 
 local panel = UI.Window("VanillaBonkControllerPanel", PANEL_WIDTH, PANEL_HEIGHT)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 10)
-panel.title:SetText(L["Controller"])
+panel.title:SetText(L["hoa.addon.controller"])
 panel.ART = ART
 panel.controls = {}
 panel.labels = {}
@@ -58,7 +58,7 @@ panel.status:SetTextColor(0.78, 0.75, 0.66)
 panel.hint = UI.Text(panel, 10)
 panel.hint:SetPoint("TOP", panel.status, "BOTTOM", 0, -4)
 panel.hint:SetTextColor(0.66, 0.63, 0.56)
-panel.hint:SetText(L["Select an action, then press a button to bind it."])
+panel.hint:SetText(L["hoa.addon.select_an_action_then_press_a_button_to_bind_it"])
 
 panel.art = panel:CreateTexture(nil, "ARTWORK")
 panel.art:SetPoint("TOP", panel, "TOP", 0, ART_TOP)
@@ -68,8 +68,8 @@ local function ArtHeight(style)
     return ART_WIDTH * ART[style].height / 512
 end
 
-local LISTEN_TEXT = L["Press a button"]
-local LISTEN_HELP = L["B cancels"]
+local LISTEN_TEXT = L["hoa.addon.press_a_button"]
+local LISTEN_HELP = L["hoa.addon.b_cancels"]
 
 local function MakeLabel(rightSide, rebindable)
     local label = CreateFrame(rebindable and "Button" or "Frame", nil, panel)
@@ -153,7 +153,7 @@ local SETTINGS_TOP = ART_TOP - ArtHeight("xbox") - 18
 panel.section = UI.Text(panel, 13)
 panel.section:SetPoint("TOPLEFT", panel, "TOPLEFT", COLUMN_LEFT, SETTINGS_TOP)
 panel.section:SetTextColor(1, 0.82, 0)
-panel.section:SetText(L["Settings"])
+panel.section:SetText(L["hoa.addon.settings"])
 panel.rule = panel:CreateTexture(nil, "ARTWORK")
 panel.rule:SetTexture(UI.FLAT)
 panel.rule:SetVertexColor(1, 0.82, 0, 0.35)
@@ -257,10 +257,10 @@ local function ChoiceRow(x, y, key, title, help, choices)
 end
 
 local leftY = SETTINGS_TOP - 24
-leftY = leftY - SliderRow(COLUMN_LEFT, leftY, "yawSpeed", L["Camera Turn Speed"], L["How fast the right stick turns the camera"], 0.5, 2, 0.05, L["Slow"], L["Fast"], Percent)
-leftY = leftY - SliderRow(COLUMN_LEFT, leftY, "pitchSpeed", L["Camera Pitch Speed"], L["Right stick up and down"], 0.5, 2, 0.05, L["Slow"], L["Fast"], Percent)
-leftY = leftY - CheckRow(COLUMN_LEFT, leftY, "invertPitch", L["Invert Camera Pitch"], L["Push up to look down"])
-SliderRow(COLUMN_LEFT, leftY, "deadzone", L["Stick Deadzone"], L["Raise this if your character moves on its own."], 0.1, 0.4, 0.01, L["Small"], L["Large"], Percent)
+leftY = leftY - SliderRow(COLUMN_LEFT, leftY, "yawSpeed", L["hoa.addon.camera_turn_speed"], L["hoa.addon.how_fast_the_right_stick_turns_the_camera"], 0.5, 2, 0.05, L["hoa.addon.slow"], L["hoa.addon.fast"], Percent)
+leftY = leftY - SliderRow(COLUMN_LEFT, leftY, "pitchSpeed", L["hoa.addon.camera_pitch_speed"], L["hoa.addon.right_stick_up_and_down"], 0.5, 2, 0.05, L["hoa.addon.slow"], L["hoa.addon.fast"], Percent)
+leftY = leftY - CheckRow(COLUMN_LEFT, leftY, "invertPitch", L["hoa.addon.invert_camera_pitch"], L["hoa.addon.push_up_to_look_down"])
+SliderRow(COLUMN_LEFT, leftY, "deadzone", L["hoa.addon.stick_deadzone"], L["hoa.addon.raise_this_if_your_character_moves_on_its_own"], 0.1, 0.4, 0.01, L["hoa.addon.small"], L["hoa.addon.large"], Percent)
 
 local function CardButton(x, y, action, title)
     local button = CreateFrame("Button", nil, panel)
@@ -287,7 +287,7 @@ local function CardButton(x, y, action, title)
         if panel.listeningTo == self then
             self.title:SetTextColor(1, 1, 1)
             self:LockHighlight()
-            panel.cardHint:SetText(L("Press a button for {1}.", self.text) .. " " .. CARD_CANCEL_TEXT)
+            panel.cardHint:SetText(L("hoa.addon.press_a_button_for_1", self.text) .. " " .. CARD_CANCEL_TEXT)
         else
             self.title:SetTextColor(1, 0.82, 0)
             self:UnlockHighlight()
@@ -297,7 +297,7 @@ local function CardButton(x, y, action, title)
 end
 
 local function CardRow(x, y)
-    local _, hint = Heading(x, y, L["Card Buttons"], CARD_HINT_TEXT)
+    local _, hint = Heading(x, y, L["hoa.addon.card_buttons"], CARD_HINT_TEXT)
     panel.cardHint = hint
     hint.Load = function(self)
         self:SetText(CARD_HINT_TEXT)
@@ -310,27 +310,27 @@ local function CardRow(x, y)
 end
 
 local rightY = SETTINGS_TOP - 24
-rightY = rightY - SliderRow(COLUMN_RIGHT, rightY, "cursorSpeed", L["Cursor Speed"], L["How fast the right stick moves the cursor in menus."], 0.5, 2, 0.05, L["Slow"], L["Fast"], Percent)
-rightY = rightY - ChoiceRow(COLUMN_RIGHT, rightY, "prompts", L["Button Prompts"], L["Automatic matches the controller you're using."], PROMPT_CHOICES)
-rightY = rightY - CheckRow(COLUMN_RIGHT, rightY, "interactPrompts", L["Interact Prompts"], L["\"X Talk\" above NPCs, chests and portals"])
+rightY = rightY - SliderRow(COLUMN_RIGHT, rightY, "cursorSpeed", L["hoa.addon.cursor_speed"], L["hoa.addon.how_fast_the_right_stick_moves_the_cursor_in_menus"], 0.5, 2, 0.05, L["hoa.addon.slow"], L["hoa.addon.fast"], Percent)
+rightY = rightY - ChoiceRow(COLUMN_RIGHT, rightY, "prompts", L["hoa.addon.button_prompts"], L["hoa.addon.automatic_matches_the_controller_you_re_using"], PROMPT_CHOICES)
+rightY = rightY - CheckRow(COLUMN_RIGHT, rightY, "interactPrompts", L["hoa.addon.interact_prompts"], L["hoa.addon.x_talk_above_npcs_chests_and_portals"])
 CardRow(COLUMN_RIGHT, rightY)
 
-panel.reset = UI.Button(panel, 150, L["Defaults"], function()
+panel.reset = UI.Button(panel, 150, L["hoa.addon.defaults"], function()
     panel:StopListening()
     Controller.ResetSettings()
     panel:Refresh()
 end)
 panel.reset:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", COLUMN_LEFT, 22)
-panel.done = UI.Button(panel, 120, L["Done"], function()
+panel.done = UI.Button(panel, 120, L["hoa.addon.done"], function()
     panel:Hide()
 end)
 panel.done:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -COLUMN_LEFT, 22)
 
 local function StatusText()
     local connected = HoAController_GetConnected and HoAController_GetConnected()
-    local text = connected and ("|cff40d040" .. KIND_NAMES[connected] .. "|r") or L["No controller connected"]
+    local text = connected and ("|cff40d040" .. KIND_NAMES[connected] .. "|r") or L["hoa.addon.no_controller_connected"]
     if Controller.Setting("prompts") == "auto" then
-        text = L("{1}  |cff9d9d9d·|r  prompts follow your last input", text)
+        text = L("hoa.addon.1_cff9d9d9d_r_prompts_follow_your_last_input", text)
     end
     return text
 end

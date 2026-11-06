@@ -16,6 +16,7 @@ namespace HordesOfAzeroth.Launcher
 
         readonly GameFolder m_folder;
         StreamWriter m_log;
+        Process m_started;
 
         public GameClient(GameFolder folder)
         {
@@ -35,7 +36,7 @@ namespace HordesOfAzeroth.Launcher
         public void Prepare(Account account)
         {
             if (!File.Exists(m_folder.GameExe))
-                throw new FileNotFoundException(Loc.T("{0} is missing. {1}", m_folder.GameExeName, LocalServer.RepairAdvice));
+                throw new FileNotFoundException(Loc.T("hoa.launcher.0_is_missing_1", m_folder.GameExeName, LocalServer.RepairAdvice));
 
             Directory.CreateDirectory(m_folder.GlueXml);
             File.WriteAllLines(Path.Combine(m_folder.GlueXml, "BonkAccount.lua"), new[]
@@ -177,6 +178,7 @@ namespace HordesOfAzeroth.Launcher
             m_log = new StreamWriter(m_folder.ClientLog, false, new UTF8Encoding(false)) { AutoFlush = true };
             LaunchedAt = DateTime.UtcNow;
             Process game = new Process { StartInfo = info, EnableRaisingEvents = true };
+            m_started = game;
             game.OutputDataReceived += (_, line) => WriteLog(line.Data);
             game.ErrorDataReceived += (_, line) => WriteLog(line.Data);
             game.Exited += (_, __) => CloseLog();
@@ -188,7 +190,7 @@ namespace HordesOfAzeroth.Launcher
             while (clock.Elapsed < TimeSpan.FromSeconds(30))
             {
                 if (game.HasExited)
-                    throw new InvalidOperationException(Loc.T("The game closed while starting. Its log is {0}.", m_folder.ClientLog));
+                    throw new InvalidOperationException(Loc.T("hoa.launcher.the_game_closed_while_starting_its_log_is_0", m_folder.ClientLog));
                 if (game.MainWindowHandle != IntPtr.Zero || clock.Elapsed > TimeSpan.FromSeconds(2))
                     return game;
                 await Task.Delay(250, cancel);
@@ -218,6 +220,36 @@ namespace HordesOfAzeroth.Launcher
         {
             while (IsRunning)
                 await Task.Delay(1000, cancel);
+        }
+
+        public async Task<bool> OpensWindowOrClosesWithinAsync(TimeSpan limit)
+        {
+            Process game = m_started;
+            if (game == null)
+                return true;
+            Stopwatch clock = Stopwatch.StartNew();
+            while (clock.Elapsed < limit)
+            {
+                if (game.HasExited)
+                    return true;
+                game.Refresh();
+                if (game.MainWindowHandle != IntPtr.Zero)
+                    return true;
+                await Task.Delay(500);
+            }
+            return game.HasExited;
+        }
+
+        public void StopStartedGame()
+        {
+            try
+            {
+                if (m_started != null && !m_started.HasExited)
+                    m_started.Kill(true);
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+            {
+            }
         }
 
         static string LuaString(string text) => "\"" + text.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";

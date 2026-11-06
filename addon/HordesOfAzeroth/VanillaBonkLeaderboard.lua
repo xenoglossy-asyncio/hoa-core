@@ -15,6 +15,9 @@ local MEMBERS_WIDTH = 352
 local RANK_WIDTH = 46
 local MEMBERS_LEFT = 50
 local GROUP_SIZES = { 2, 3, 4 }
+local HARDCORE_VIEW_OFFSET = 4
+local HARDCORE_TAB_COLOR = { 1, 0.35, 0.3 }
+local STATUS_TEXT = { fell = L["hoa.addon.fell"], revived = L["hoa.addon.revived"], unverified = L["hoa.addon.unverified"], crashes = L["hoa.addon.many_crashes"] }
 local CLASSES = {
     { id = 1, token = "WARRIOR" }, { id = 2, token = "PALADIN" }, { id = 3, token = "HUNTER" },
     { id = 4, token = "ROGUE" }, { id = 5, token = "PRIEST" }, { id = 7, token = "SHAMAN" },
@@ -28,8 +31,8 @@ end
 local PAGE_ROWS = 50
 local OUTSIDE_RANK = "1000+"
 
-local board = { season = 1, updated = nil, views = {}, mine = { solo = {}, group = {} }, locals = { solo = {}, group = {} },
-    cutoffs = { solo = {}, group = {} }, sync = nil, choice = -1, size = 1, class = nil }
+local board = { season = 1, updated = nil, views = {}, mine = { solo = {}, group = {}, hard = {} }, locals = { solo = {}, group = {}, hard = {} },
+    cutoffs = { solo = {}, group = {} }, sync = nil, choice = -1, size = 1, class = nil, hardcore = false }
 
 local function Command(text)
     SendChatMessage(".bonk " .. text, "SAY")
@@ -37,7 +40,7 @@ end
 
 local window = UI.Window("VanillaBonkLeaderboard", WIDTH, HEIGHT)
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 20)
-window.title:SetText(L["Leaderboard"])
+window.title:SetText(L["hoa.addon.leaderboard"])
 
 local panel = UI.Panel(window)
 panel:SetPoint("TOPLEFT", window, "TOPLEFT", LEFT, PANEL_TOP)
@@ -79,7 +82,7 @@ local function ShowMember(member, name, classId, width)
     member.icon:Show()
     member.name:SetWidth(width)
     if name == "" then
-        member.name:SetText(L["Hidden"])
+        member.name:SetText(L["hoa.addon.hidden"])
         member.name:SetTextColor(0.6, 0.6, 0.6)
     else
         member.name:SetText(name)
@@ -107,25 +110,39 @@ local function CreateRow(parent)
     for index = 1, 4 do
         row.members[index] = CreateMember(row)
     end
+    row.tag = UI.Text(row, 11)
+    row.tag:SetPoint("RIGHT", row, "LEFT", 404, 0)
+    row.tag:SetJustifyH("RIGHT")
     row.level = UI.Text(row, 12)
     row.level:SetPoint("LEFT", row, "LEFT", 410, 0)
     row.level:SetWidth(76)
     row.level:SetJustifyH("LEFT")
     row.level:SetTextColor(0.83, 0.55, 1)
     row.time = UI.Text(row, 12)
-    row.time:SetPoint("RIGHT", row, "RIGHT", -84, 0)
+    row.time:SetPoint("RIGHT", row, "RIGHT", -92, 0)
     row.time:SetWidth(44)
     row.time:SetJustifyH("RIGHT")
     row.date = UI.Text(row, 12)
     row.date:SetPoint("RIGHT", row, "RIGHT", -4, 0)
-    row.date:SetWidth(76)
+    row.date:SetWidth(84)
     row.date:SetJustifyH("RIGHT")
     row.date:SetTextColor(0.6, 0.6, 0.6)
     return row
 end
 
+local function ShowTag(row, entry)
+    local text = entry.status and STATUS_TEXT[entry.status]
+    row.tag:SetText(text or "")
+    if entry.status == "fell" then
+        row.tag:SetTextColor(1, 0.35, 0.3)
+    else
+        row.tag:SetTextColor(0.6, 0.6, 0.6)
+    end
+end
+
 local function ShowEntry(row, rank, entry)
     row.rank:SetText(rank and tostring(rank) or "-")
+    ShowTag(row, entry)
     local members = entry.members or { { name = entry.name, class = entry.class } }
     local count = getn(members)
     local slot = floor(MEMBERS_WIDTH / max(1, count))
@@ -146,6 +163,7 @@ end
 
 local function ClearRow(row)
     row.rank:SetText("")
+    row.tag:SetText("")
     for _, member in ipairs(row.members) do
         HideMember(member)
     end
@@ -164,9 +182,20 @@ panel.tabs = UI.PanelTabs(panel, 10, function(index)
     ScrollToTop()
     window.Refresh()
 end)
-panel.tabs:SetTabs({ L["Solo"], L["2 players"], L["3 players"], L["4 players"] })
+panel.tabs:SetTabs({ L["hoa.addon.solo"], L["hoa.addon.2_players"], L["hoa.addon.3_players"], L["hoa.addon.4_players"] })
 
-window.allClasses = UI.Button(panel, 96, L["All classes"], function()
+local function ShowMode(hardcore)
+    board.hardcore = hardcore
+    ScrollToTop()
+    window.Refresh()
+end
+
+window.regular = UI.Button(window, 88, L["hoa.addon.regular"], function() ShowMode(false) end)
+window.hardcore = UI.Button(window, 88, L["hoa.addon.hardcore"], function() ShowMode(true) end)
+window.hardcore:SetPoint("BOTTOMRIGHT", panel, "TOPRIGHT", 0, 6)
+window.regular:SetPoint("RIGHT", window.hardcore, "LEFT", -6, 0)
+
+window.allClasses = UI.Button(panel, 96, L["hoa.addon.all_classes"], function()
     board.class = nil
     ScrollToTop()
     window.Refresh()
@@ -211,11 +240,11 @@ local function Heading(text, x, justify, width)
     return heading
 end
 
-Heading(L["Rank"], 10, "RIGHT", RANK_WIDTH)
-window.whoHeading = Heading(L["Character"], 10 + MEMBERS_LEFT, "LEFT", 200)
-Heading(L["Highest Clear"], 420, "LEFT", 76)
-Heading(L["Time"], 502, "RIGHT", 44)
-Heading(L["Date"], 550, "RIGHT", 76)
+Heading(L["hoa.addon.rank"], 10, "RIGHT", RANK_WIDTH)
+window.whoHeading = Heading(L["hoa.addon.character"], 10 + MEMBERS_LEFT, "LEFT", 200)
+Heading(L["hoa.addon.highest_clear"], 420, "LEFT", 76)
+Heading(L["hoa.addon.time"], 494, "RIGHT", 44)
+Heading(L["hoa.addon.date"], 542, "RIGHT", 84)
 
 window.rows = {}
 for index = 1, ROWS do
@@ -249,21 +278,21 @@ window.you.note:SetTextColor(0.6, 0.6, 0.6)
 window.youTitle = UI.Text(panel, 11)
 window.youTitle:SetPoint("BOTTOMLEFT", window.you, "TOPLEFT", 4, 3)
 window.youTitle:SetTextColor(1, 0.82, 0)
-window.youTitle:SetText(L["Your best"])
+window.youTitle:SetText(L["hoa.addon.your_best"])
 
 window.join = CreateFrame("CheckButton", "VanillaBonkLeaderboardJoin", window, "UICheckButtonTemplate")
 window.join:SetWidth(24)
 window.join:SetHeight(24)
 window.join:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", LEFT, 44)
 VanillaBonkLeaderboardJoinText:SetFontObject(GameFontHighlightSmall)
-VanillaBonkLeaderboardJoinText:SetText(L["Show on Leaderboard"])
+VanillaBonkLeaderboardJoinText:SetText(L["hoa.addon.show_on_leaderboard"])
 window.join:SetScript("OnClick", function()
     PlaySound(this:GetChecked() and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff")
     Command("joinboard " .. (this:GetChecked() and "1" or "0"))
 end)
 window.join:SetScript("OnEnter", function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:SetText(L["When enabled, your Mythic clears are listed with your character's name and class, including group clears."], 1, 1, 1, 1, 1)
+    GameTooltip:SetText(L["hoa.addon.when_enabled_your_mythic_clears_are_listed_with_your_charact"], 1, 1, 1, 1, 1)
 end)
 window.join:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
@@ -271,7 +300,7 @@ window.soon = UI.Text(window, 11)
 window.soon:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -LEFT - 10, 50)
 window.soon:SetJustifyH("RIGHT")
 window.soon:SetTextColor(1, 0.82, 0)
-window.soon:SetText(L["Builds will be shown here in a future update."])
+window.soon:SetText(L["hoa.addon.builds_will_be_shown_here_in_a_future_update"])
 
 window.note = UI.Text(window, 11)
 window.note:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", LEFT, 26)
@@ -292,8 +321,20 @@ local function HasClass(entry, classId)
     return false
 end
 
+local function IsHardcoreView()
+    return board.hardcore
+end
+
+local function IsGroupView()
+    return board.size > 1
+end
+
+local function ViewId()
+    return board.size + (board.hardcore and HARDCORE_VIEW_OFFSET or 0)
+end
+
 local function CurrentView()
-    local key = board.size .. ":" .. (board.class or 0)
+    local key = ViewId() .. ":" .. (board.class or 0)
     board.views[key] = board.views[key] or { rows = {}, asked = {} }
     return board.views[key]
 end
@@ -304,12 +345,21 @@ local function AskPage(view, position)
         return
     end
     view.asked[page] = true
-    Command("boardpage " .. board.size .. " " .. (board.class or 0) .. " " .. page)
+    Command("boardpage " .. ViewId() .. " " .. (board.class or 0) .. " " .. page)
 end
 
 local function BestOfMine()
     local best, rank
-    if board.size == 1 then
+    if IsHardcoreView() and IsGroupView() then
+        return nil
+    elseif IsHardcoreView() then
+        for _, entry in ipairs(board.mine.hard) do
+            if (not board.class or entry.class == board.class) and Better(entry, best) then
+                best = entry
+                rank = board.class and entry.rank > 0 and entry.rank or nil
+            end
+        end
+    elseif board.size == 1 then
         for _, entry in ipairs(board.mine.solo) do
             if (not board.class or entry.class == board.class) and Better(entry, best) then
                 best = entry
@@ -329,7 +379,15 @@ end
 
 local function BestLocal()
     local best
-    if board.size == 1 then
+    if IsHardcoreView() and IsGroupView() then
+        return nil
+    elseif IsHardcoreView() then
+        for _, entry in ipairs(board.locals.hard) do
+            if (not board.class or entry.class == board.class) and Better(entry, best) then
+                best = entry
+            end
+        end
+    elseif board.size == 1 then
         for _, entry in ipairs(board.locals.solo) do
             if (not board.class or entry.class == board.class) and Better(entry, best) then
                 best = entry
@@ -347,7 +405,9 @@ end
 
 local function OutsideTop(entry)
     local cutoff
-    if board.size == 1 then
+    if IsHardcoreView() then
+        return false
+    elseif board.size == 1 then
         cutoff = board.cutoffs.solo[entry.class]
     else
         cutoff = board.cutoffs.group[entry.size]
@@ -357,20 +417,38 @@ end
 
 local function SyncText()
     local sync = board.sync
-    local waiting = sync and sync.pending > 0 and L("{1} runs waiting to upload", sync.pending) or nil
+    local waiting = sync and sync.pending > 0 and L("hoa.addon.1_runs_waiting_to_upload", sync.pending) or nil
     if sync and sync.state == "failed" then
-        local text = sync.since ~= "" and L("Leaderboard unreachable since {1}", sync.since) or L["Leaderboard unreachable"]
+        local text = sync.since ~= "" and L("hoa.addon.leaderboard_unreachable_since_1", sync.since) or L["hoa.addon.leaderboard_unreachable"]
         return "|cffff6666" .. text .. (waiting and ("  ·  " .. waiting) or "") .. "|r"
     end
-    local updated = board.updated and L("Updated {1}", board.updated) or ""
+    local updated = board.updated and L("hoa.addon.updated_1", board.updated) or ""
     if waiting then
         return updated ~= "" and (updated .. "  ·  " .. waiting) or waiting
     end
     return updated
 end
 
+local function RowRank(position, entry)
+    if not IsHardcoreView() then
+        return position
+    end
+    if not entry.rank or entry.rank == 0 then
+        return nil
+    end
+    return board.class and entry.rank or position
+end
+
 function window.Refresh()
-    panel.tabs:Select(board.size)
+    panel.tabs:Select(board.size, IsHardcoreView() and HARDCORE_TAB_COLOR or nil)
+    window.title:SetText(IsHardcoreView() and L["hoa.addon.hardcore_leaderboard"] or L["hoa.addon.leaderboard"])
+    if IsHardcoreView() then
+        window.hardcore:LockHighlight()
+        window.regular:UnlockHighlight()
+    else
+        window.regular:LockHighlight()
+        window.hardcore:UnlockHighlight()
+    end
     if board.class then
         window.allClasses:UnlockHighlight()
     else
@@ -386,7 +464,7 @@ function window.Refresh()
             button.ring:Hide()
         end
     end
-    window.whoHeading:SetText(board.size == 1 and L["Character"] or L["Group"])
+    window.whoHeading:SetText(IsGroupView() and L["hoa.addon.group"] or L["hoa.addon.character"])
 
     local view = CurrentView()
     if not view.total then
@@ -399,7 +477,7 @@ function window.Refresh()
         local position = index + offset
         local entry = view.rows[position]
         if entry then
-            ShowEntry(row, position, entry)
+            ShowEntry(row, RowRank(position, entry), entry)
         else
             ClearRow(row)
             if position <= total then
@@ -410,33 +488,44 @@ function window.Refresh()
     if total > 0 then
         window.empty:SetText("")
     elseif not view.total and board.updated then
-        window.empty:SetText(L["Loading..."])
+        window.empty:SetText(L["hoa.addon.loading"])
     elseif board.updated then
-        window.empty:SetText(L["Nobody is on this list yet."])
+        window.empty:SetText(L["hoa.addon.nobody_is_on_this_list_yet"])
     else
-        window.empty:SetText(L["The launcher downloads the leaderboard when it starts."])
+        window.empty:SetText(L["hoa.addon.the_launcher_downloads_the_leaderboard_when_it_starts"])
     end
 
     local best, rank = BestOfMine()
     local own = best or BestLocal()
+    local held = not IsHardcoreView() and not best and own and UI.boardClimb and UI.boardClimb > 0 and own.level > UI.boardClimb
     if own then
         ShowEntry(window.you, best and rank or (OutsideTop(own) and OUTSIDE_RANK or nil), own)
         window.you.note:SetText("")
     else
         ClearRow(window.you)
         if board.choice ~= 1 then
-            window.you.note:SetText(L["Check the box below to be listed."])
+            window.you.note:SetText(L["hoa.addon.check_the_box_below_to_be_listed"])
         elseif UI.WearsLegacyGear() then
-            window.you.note:SetText(L["You're wearing legacy gear, so your runs don't count this season."])
+            window.you.note:SetText(L["hoa.addon.you_re_wearing_legacy_gear_so_your_runs_don_t_count_this_sea"])
         else
-            window.you.note:SetText(L["Not ranked yet."])
+            window.you.note:SetText(L["hoa.addon.not_ranked_yet"])
         end
     end
 
-    window.header:SetText(L("Season {1}", board.season))
+    window.header:SetText(L("hoa.addon.season_1", board.season))
     window.headerRight:SetText(SyncText())
     window.join:SetChecked(board.choice == 1)
-    window.note:SetText(L("Season {1}. Mythic clears with gear found this season. Ties go to the faster clear.", board.season))
+    if held then
+        window.note:SetTextColor(1, 0.4, 0.4)
+        window.note:SetText(L("hoa.addon.your_1_clear_is_held_until_you_clear_the_levels_below_it_thi",
+            UI.LevelName(own.level), UI.LevelName(UI.boardClimb + 1)))
+    elseif IsHardcoreView() then
+        window.note:SetTextColor(0.6, 0.6, 0.6)
+        window.note:SetText(L["hoa.addon.hardcore_characters_a_character_that_falls_keeps_its_place_m"])
+    else
+        window.note:SetTextColor(0.6, 0.6, 0.6)
+        window.note:SetText(L("hoa.addon.season_1_mythic_clears_with_gear_found_this_season_ties_go_t", board.season))
+    end
 end
 
 local function ReadMembers(text)
@@ -462,17 +551,17 @@ window.ask:EnableMouse(true)
 window.ask.title = UI.Text(window.ask, 14)
 window.ask.title:SetPoint("TOP", window.ask, "TOP", 0, -14)
 window.ask.title:SetTextColor(1, 0.82, 0)
-window.ask.title:SetText(L["Join the leaderboard?"])
+window.ask.title:SetText(L["hoa.addon.join_the_leaderboard"])
 window.ask.text = UI.Text(window.ask, 12)
 window.ask.text:SetPoint("TOP", window.ask.title, "BOTTOM", 0, -8)
 window.ask.text:SetWidth(ASK_WIDTH - 32)
-window.ask.text:SetText(L["Show your characters on the public leaderboard? Your solo and group Mythic clears are sent with the character's name and class. You can change this any time at the bottom of this window."])
-window.ask.join = UI.Button(window.ask, 120, L["Join"], function()
+window.ask.text:SetText(L["hoa.addon.show_your_characters_on_the_public_leaderboard_your_solo_and"])
+window.ask.join = UI.Button(window.ask, 120, L["hoa.addon.join"], function()
     window.ask:Hide()
     Command("joinboard 1")
 end)
 window.ask.join:SetPoint("BOTTOMRIGHT", window.ask, "BOTTOM", -6, 14)
-window.ask.decline = UI.Button(window.ask, 120, L["No thanks"], function()
+window.ask.decline = UI.Button(window.ask, 120, L["hoa.addon.no_thanks"], function()
     window.ask:Hide()
     Command("joinboard 0")
 end)
@@ -484,14 +573,19 @@ local handlers = {}
 handlers["boardopen"] = function()
     board.updated = nil
     board.views = {}
-    board.mine = { solo = {}, group = {} }
-    board.locals = { solo = {}, group = {} }
+    board.mine = { solo = {}, group = {}, hard = {} }
+    board.locals = { solo = {}, group = {}, hard = {} }
     board.cutoffs = { solo = {}, group = {} }
     board.sync = nil
 end
 
 local function ReadSolo(f, first)
     return { class = tonumber(f[first]) or 0, name = f[first + 2] or "", level = tonumber(f[first + 3]) or 0, ms = tonumber(f[first + 4]) or 0, date = f[first + 5] or "" }
+end
+
+local function ReadHard(f, first)
+    return { class = tonumber(f[first]) or 0, rank = tonumber(f[first + 1]) or 0, name = f[first + 2] or "", level = tonumber(f[first + 3]) or 0,
+        ms = tonumber(f[first + 4]) or 0, date = f[first + 5] or "", status = f[first + 6] or "" }
 end
 
 local function ReadGroup(f, first)
@@ -512,6 +606,10 @@ handlers["board"] = function(f)
         board.cutoffs.group[tonumber(f[4]) or 0] = { level = tonumber(f[5]) or 0, ms = tonumber(f[6]) or 0 }
     elseif kind == "local" and f[3] == "solo" then
         tinsert(board.locals.solo, { class = tonumber(f[4]) or 0, name = f[5] or "", level = tonumber(f[6]) or 0, ms = tonumber(f[7]) or 0, date = f[8] or "" })
+    elseif kind == "local" and f[3] == "hard" then
+        tinsert(board.locals.hard, { class = tonumber(f[4]) or 0, name = f[5] or "", level = tonumber(f[6]) or 0, ms = tonumber(f[7]) or 0, date = f[8] or "" })
+    elseif kind == "mine" and f[3] == "hard" then
+        tinsert(board.mine.hard, ReadHard(f, 4))
     elseif kind == "local" and f[3] == "group" then
         tinsert(board.locals.group, { size = tonumber(f[4]) or 0, level = tonumber(f[5]) or 0, ms = tonumber(f[6]) or 0, date = f[7] or "", members = ReadMembers(f[8]) })
     elseif kind == "mine" and f[3] == "solo" then
@@ -533,6 +631,8 @@ handlers["boardrow"] = function(f)
         view.rows[position] = ReadSolo(f, 6)
     elseif f[5] == "group" then
         view.rows[position] = ReadGroup(f, 6)
+    elseif f[5] == "hard" then
+        view.rows[position] = ReadHard(f, 6)
     end
 end
 
@@ -551,6 +651,8 @@ handlers["boardchoice"] = function(f)
     board.choice = tonumber(f[2]) or -1
     UI.boardChoice = board.choice
     UI.boardClimb = tonumber(f[3] or "") or 0
+    UI.boardGameMaster = f[4] == "1"
+    UI.boardModified = f[5] == "1"
     if window:IsShown() then
         window.Refresh()
     end
@@ -567,4 +669,33 @@ handlers["boardend"] = function()
     end
 end
 
-UI.Listen(handlers)
+local function Fields(prefix, text)
+    local fields = prefix
+    for field in string.gmatch(text, "([^~]*)~?") do
+        if field ~= "" or true then
+            table.insert(fields, field)
+        end
+    end
+    return fields
+end
+
+UI.ListenHoa({
+    HOA_BOARD_OPEN = function()
+        handlers["boardopen"]()
+    end,
+    HOA_BOARD_HEADER = function(header)
+        handlers["board"](Fields({}, header.line))
+    end,
+    HOA_BOARD_ROW = function(row)
+        handlers["boardrow"](Fields({ row.view, row.class_id, row.position }, row.line))
+    end,
+    HOA_BOARD_PAGE = function(page)
+        handlers["boardpage"]({ false, page.view, page.class_id, page.offset, page.total })
+    end,
+    HOA_BOARD_CHOICE = function(choice)
+        handlers["boardchoice"]({ false, choice.choice, choice.climb, choice.game_master and "1" or "0", choice.server_modified and "1" or "0" })
+    end,
+    HOA_BOARD_END = function()
+        handlers["boardend"]()
+    end,
+})

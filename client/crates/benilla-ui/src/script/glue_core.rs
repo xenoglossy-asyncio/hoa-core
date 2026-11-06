@@ -792,6 +792,29 @@ pub(super) fn global_text(lua: &Lua, key: &str) -> String {
     }
 }
 
+fn billing_plan_values(flags: u8) -> [Value; 3] {
+    let plan = match flags & 0x16 {
+        0x02 => 1.0,
+        0x04 => 2.0,
+        0x00 => 3.0,
+        0x10 => 4.0,
+        _ => 0.0,
+    };
+    [
+        Value::Number(plan),
+        Value::Number(f64::from((flags >> 5) & 1)),
+        Value::Number(f64::from((flags >> 3) & 1)),
+    ]
+}
+
+fn billing_minutes_left(time_remaining: u32, plan_flags: u8) -> u32 {
+    if plan_flags & 0x02 != 0 {
+        0
+    } else {
+        time_remaining
+    }
+}
+
 pub(super) fn install(lua: &Lua) -> mlua::Result<()> {
     // `Screenshot` (`0x46d3d0`): the in-game verb's capture ask, answered with the glue's events.
     super::screenshot::install(lua)?;
@@ -1083,6 +1106,37 @@ pub(super) fn install(lua: &Lua) -> mlua::Result<()> {
         lua.create_function(|lua, _: MultiValue| {
             queue(lua, GlueRequest::StopGlueMusic);
             Ok(())
+        })?,
+    )?;
+    // Three numbers (`0x46dc40`): the plan decoded from the `BillingPlanFlags` byte, then its
+    // two one-bit halves, all from the connection's billing group.
+    g.set(
+        "GetBillingPlan",
+        lua.create_function(|lua, _: MultiValue| {
+            let flags = lua
+                .app_data_ref::<Model>()
+                .expect("model app_data")
+                .billing_plan_flags;
+            Ok(MultiValue::from_vec(billing_plan_values(flags).to_vec()))
+        })?,
+    )?;
+    // One number (`0x46dc00`): a recurring plan answers 0 without reading the minutes.
+    g.set(
+        "GetBillingTimeRemaining",
+        lua.create_function(|lua, _: MultiValue| {
+            let model = lua.app_data_ref::<Model>().expect("model app_data");
+            Ok(f64::from(billing_minutes_left(
+                model.billing_time_remaining,
+                model.billing_plan_flags,
+            )))
+        })?,
+    )?;
+    // One number (`0x48ec50`): the rested minutes, unconverted.
+    g.set(
+        "GetBillingTimeRested",
+        lua.create_function(|lua, _: MultiValue| {
+            let model = lua.app_data_ref::<Model>().expect("model app_data");
+            Ok(f64::from(model.billing_time_rested))
         })?,
     )?;
 
@@ -1547,6 +1601,32 @@ mod tests {
             s.take_glue_requests().as_slice(),
             [GlueRequest::PlayCreditsMusic, GlueRequest::PlayCreditsMusic]
         ));
+    }
+
+    #[test]
+    fn the_billing_verbs_decode_the_connections_group() {
+        let mut s = UiScript::new_glue().unwrap();
+        let plan = |s: &UiScript| s.eval::<Vec<f64>>("return {GetBillingPlan()}").unwrap();
+        assert_eq!(plan(&s), [3.0, 0.0, 0.0]);
+        assert_eq!(s.eval::<f64>("return GetBillingTimeRemaining()").unwrap(), 0.0);
+        assert_eq!(s.eval::<f64>("return GetBillingTimeRested()").unwrap(), 0.0);
+
+        for (flags, want) in [
+            (0x02, [1.0, 0.0, 0.0]),
+            (0x04, [2.0, 0.0, 0.0]),
+            (0x10, [4.0, 0.0, 0.0]),
+            (0x06, [0.0, 0.0, 0.0]),
+            (0x28, [3.0, 1.0, 1.0]),
+        ] {
+            s.set_billing(90, 7, flags);
+            assert_eq!(plan(&s), want, "flags {flags:#x}");
+        }
+        // A recurring plan answers 0 minutes without reading the wire's number.
+        s.set_billing(90, 7, 0x02);
+        assert_eq!(s.eval::<f64>("return GetBillingTimeRemaining()").unwrap(), 0.0);
+        s.set_billing(90, 7, 0x00);
+        assert_eq!(s.eval::<f64>("return GetBillingTimeRemaining()").unwrap(), 90.0);
+        assert_eq!(s.eval::<f64>("return GetBillingTimeRested()").unwrap(), 7.0);
     }
 
     #[test]

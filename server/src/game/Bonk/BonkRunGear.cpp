@@ -6,10 +6,12 @@
 #include "BonkMobAI.h"
 #include "BonkObjectives.h"
 #include "BonkPlayer.h"
+#include "BonkTransmog.h"
 #include "Chat.h"
 #include "Creature.h"
 #include "Database/DatabaseEnv.h"
 #include "GameObject.h"
+#include "HoaProtocol.h"
 #include "Item.h"
 #include "Mail.h"
 #include "Map.h"
@@ -206,6 +208,14 @@ uint8 BonkRun::RollGearQuality() const
     return quality;
 }
 
+uint8 BonkRun::RollOwnBagQuality(bool boss)
+{
+    uint8 const quality = boss && roll_chance_f(m_levelRow.legendaryChance) ? uint8(ITEM_QUALITY_LEGENDARY) : RollGearQuality();
+    if (m_levelRow.epicChance > 0.0f)
+        m_player->GetBonkPlayer()->CountEpicLuck(quality >= ITEM_QUALITY_EPIC);
+    return quality;
+}
+
 void BonkRun::DropTierPiece(Creature const* mob, BonkSpawnKind kind)
 {
     if (m_sandbox || m_gearDrops.size() >= BONK_MAX_GEAR_DROPS)
@@ -229,14 +239,26 @@ void BonkRun::DropTierPiece(Creature const* mob, BonkSpawnKind kind)
         m_player->GetBonkPlayer()->CountEpicLuck(quality >= ITEM_QUALITY_EPIC);
 }
 
+std::string BonkRun::GetChallengeMapKey() const
+{
+    uint32 const mapId = m_dungeonId ? m_dungeonId : m_invaderId;
+    BonkMap const* map = mapId ? sBonkMgr.GetMap(mapId) : nullptr;
+    return map ? map->key : std::string();
+}
+
 bool BonkRun::MakeTierPiece(uint8 quality, PendingGear& piece) const
 {
     piece.gear = BonkFound::Roll(GetDropTier(), quality, m_levelRow.rollFloor);
     std::vector<uint32> choices, weapons, trinkets;
-    uint32 const look = BonkMgr::PickGearLook(quality, piece.gear.tier);
+    std::string const challenge = GetChallengeMapKey();
+    bool const epic = quality == ITEM_QUALITY_EPIC;
+    uint32 const look = epic && challenge == BONK_MOLTEN_CORE_MAP_KEY ? BonkMgr::PickMoltenCoreLook() : BonkMgr::PickGearLook(quality, piece.gear.tier);
+    int32 const dungeonBand = epic ? BonkMgr::GetDungeonLookBand(challenge) : -1;
     for (uint32 kind : BonkMgr::GetGearKindsFor(m_player->GetClassMask()))
     {
-        uint32 const entry = BonkMgr::GetGearEntry(kind, quality, look);
+        uint32 entry = dungeonBand >= 0 ? BonkMgr::PickDungeonLookEntry(uint32(dungeonBand), kind) : 0;
+        if (!entry)
+            entry = BonkMgr::GetGearEntry(kind, quality, look);
         if (!entry)
             continue;
         if (kind >= BONK_GEAR_FIRST_TRINKET)
@@ -431,8 +453,18 @@ bool BonkRun::PlaceGearDrop(Creature const* mob, PendingGear const& piece, uint8
     drop.quality = quality;
     drop.marker = PlaceLootBeam(go, quality, drop.core, drop.swirl);
     for (Player* member : BonkCoop::RunGroupOf(m_player))
-        if (member != m_player)
-            ShowLootBeamTo(member, go, quality, drop);
+    {
+        BonkRun* run = member == m_player ? nullptr : member->GetBonkPlayer()->GetRun();
+        if (!run || run->IsOver())
+            continue;
+        if (!drop.core)
+            drop.core = NextBonkAuraKey();
+        if (!drop.swirl)
+            drop.swirl = NextBonkAuraKey();
+        uint8 const own = run->RollOwnBagQuality(kind == BONK_SPAWN_BOSS);
+        drop.memberQuality[member->GetObjectGuid()] = own;
+        ShowLootBeamTo(member, go, own, drop);
+    }
     m_gearDrops.push_back(drop);
     return true;
 }
@@ -441,10 +473,10 @@ void BonkRun::ShowLootBeamTo(Player* viewer, GameObject const* go, uint8 quality
 {
     float const x = go->GetPositionX(), y = go->GetPositionY(), z = go->GetPositionZ();
     SendBonkAuraAt(viewer, drop.marker, GetLootBeamSpell(quality), x, y, z, BONK_LOOT_BEAM_SCALE);
-    if (drop.core)
-        SendBonkAuraAt(viewer, drop.core, GetLootCoreSpell(quality), x, y, z, BONK_LOOT_BEAM_SCALE);
-    if (drop.swirl)
-        SendBonkAuraAt(viewer, drop.swirl, GetLootSwirlSpell(quality), x, y, z, BONK_LOOT_SWIRL_SCALE);
+    if (uint32 const coreSpell = drop.core ? GetLootCoreSpell(quality) : 0)
+        SendBonkAuraAt(viewer, drop.core, coreSpell, x, y, z, BONK_LOOT_BEAM_SCALE);
+    if (uint32 const swirlSpell = drop.swirl ? GetLootSwirlSpell(quality) : 0)
+        SendBonkAuraAt(viewer, drop.swirl, swirlSpell, x, y, z, BONK_LOOT_SWIRL_SCALE);
 }
 
 void BonkRun::HideLootBagFrom(Player* viewer, GearDrop const& drop) const
@@ -479,8 +511,12 @@ void BonkRun::GiveBagTo(Player* member, GearDrop& drop)
         return;
     }
     BonkRun* run = member->GetBonkPlayer()->GetRun();
+    if (!run)
+        return;
+    auto const own = drop.memberQuality.find(member->GetObjectGuid());
+    uint8 const quality = own != drop.memberQuality.end() ? own->second : run->RollOwnBagQuality(false);
     PendingGear piece;
-    if (!run || !run->MakeBagPiece(drop.quality, piece))
+    if (!run->MakeBagPiece(quality, piece))
         return;
     sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, "Co-op: %s takes %s's loot bag, item %u", member->GetName(), m_player->GetName(), piece.entry);
     run->m_pendingGear.push_back(piece);
@@ -599,9 +635,24 @@ bool BonkRun::PlaceChestLooksNow(std::string& error)
     return true;
 }
 
+void BonkRun::RollGroupTabardDrops()
+{
+    for (Player* member : BonkCoop::RunGroupOf(m_player))
+        BonkTransmog::RollTabardDrops(member, m_map.key);
+}
+
+void BonkRun::DropTestBags(Creature const* mob, uint32 count)
+{
+    for (uint32 bag = 0; bag < count; ++bag)
+        PlaceTierPiece(mob, RollGearQuality());
+    CollectAllGear();
+}
+
 void BonkRun::DropGear(Creature const* mob, BonkSpawnKind kind)
 {
     MaybeDropHearthstone(kind);
+    if (kind == BONK_SPAWN_BOSS)
+        RollGroupTabardDrops();
     if (kind == BONK_SPAWN_ELITE)
         AddEliteScrap();
     else if (kind != BONK_SPAWN_NORMAL)
@@ -700,17 +751,18 @@ void BonkRun::SendGearOffer() const
     uint8 const slot = twoSlots ? choices[0] : m_player->FindEquipSlot(proto, NULL_SLOT, true);
     bool const blockedByTwoHander = slot == EQUIPMENT_SLOT_OFFHAND && m_player->IsTwoHandUsed();
     uint32 const replaced = wornIn(blockedByTwoHander ? uint8(EQUIPMENT_SLOT_MAINHAND) : slot);
-    std::string const slotChoice = twoSlots ? "~" + std::to_string(choices[0]) + "~" + std::to_string(choices[1]) + "~" +
-        std::to_string(wornIn(choices[1])) : std::string("~~~");
 
     uint32 const valor = GetGearSalvage(m_gearOfferEntry);
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (bonk->IsAddonReady())
     {
-        bonk->SendAddon("gearoffer~" + std::to_string(m_gearOfferEntry) + "~" + std::to_string(replaced) + "~" + std::to_string(valor) + "~" +
-            std::to_string(proto->Quality) + "~" + std::to_string(m_gearOffer.gear.tier) + "~" +
-            BonkFound::DescribeLines(m_gearOffer.gear, m_gearOffer.gear.tier) + slotChoice + "~" +
-            BonkFound::DescribeExtra(m_gearOfferEntry, m_gearOffer.gear.tier));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGearOffer(data, m_gearOfferEntry, replaced, valor, proto->Quality, m_gearOffer.gear.tier,
+            BonkFound::DescribeLines(m_gearOffer.gear, m_gearOffer.gear.tier), twoSlots ? choices[0] : 0,
+            twoSlots ? choices[1] : 0, twoSlots ? wornIn(choices[1]) : 0,
+            BonkFound::DescribeExtra(m_gearOfferEntry, m_gearOffer.gear.tier),
+            sBonkTransmog.IsNewLook(m_player, m_gearOfferEntry));
+        m_player->GetSession()->SendPacket(&data);
         return;
     }
 
@@ -724,7 +776,12 @@ void BonkRun::CloseGearOffer()
         return;
     m_gearOfferEntry = 0;
     m_gearOffer = PendingGear();
-    m_player->GetBonkPlayer()->SendAddon("gearclose");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGearClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::ChooseGear(GearChoice choice, uint8 slot, std::string& error)
@@ -740,6 +797,7 @@ bool BonkRun::ChooseGear(GearChoice choice, uint8 slot, std::string& error)
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     ItemPrototype const* proto = sObjectMgr.GetItemPrototype(entry);
     std::string const name = proto ? m_player->GetBonkPlayer()->GetItemName(proto) : GetString(BONK_STRING_THE_GEAR);
+    sBonkTransmog.Collect(m_player, entry);
     if (choice == GEAR_CHOICE_EQUIP && slot != NULL_SLOT)
     {
         std::vector<uint8> const choices = GetGearSlotChoices(entry);
@@ -1066,8 +1124,12 @@ void BonkRun::SendHearthBar(bool inside)
     m_hearthSendMs = 0;
     m_hearthShown = true;
     m_hearthInside = inside;
-    m_player->GetBonkPlayer()->SendAddon("hearth~" + std::to_string(std::min(m_hearthMs, needed) * 100 / needed) + "~" + (inside ? "1" : "0") + "~" +
-        std::to_string((left + IN_MILLISECONDS - 1) / IN_MILLISECONDS));
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteHearth(data, std::min(m_hearthMs, needed) * 100 / needed, inside, (left + IN_MILLISECONDS - 1) / IN_MILLISECONDS);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::IsHeroInHearthRing() const
@@ -1078,8 +1140,12 @@ bool BonkRun::IsHeroInHearthRing() const
 
 void BonkRun::EndHearth()
 {
-    if (m_hearthShown)
-        m_player->GetBonkPlayer()->SendAddon("hearth~-1");
+    if (m_hearthShown && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteHearth(data, -1, false, 0);
+        m_player->GetSession()->SendPacket(&data);
+    }
     m_hearthShown = false;
     m_hearthActive = false;
     SendBonkUnmark(m_player, BONK_HEARTH_MARK);
@@ -1157,8 +1223,12 @@ void BonkRun::DespawnVault()
             vault->Delete();
     m_vaultGuid.Clear();
     m_vaultOpen = false;
-    if (m_player->IsInWorld())
-        m_player->GetBonkPlayer()->SendAddon("vaultclose");
+    if (m_player->IsInWorld() && m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 bool BonkRun::IsOwnVault(GameObject const* vault) const
@@ -1285,23 +1355,36 @@ void BonkRun::SendVault() const
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (!bonk->IsAddonReady())
         return;
-    bonk->SendAddon("vaultclear");
-    bonk->SendAddon("vaultsent");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultSent(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     for (SentHomePiece const& piece : m_sentHome)
-        bonk->SendAddon("vaultsentitem~" + std::to_string(piece.entry) + "~" + std::to_string(piece.stage) + "~" +
-            std::to_string(piece.tier) + "~" + piece.lines + "~" + piece.extra);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultSentItem(data, piece.entry, piece.stage, piece.tier, piece.lines, piece.extra);
+        m_player->GetSession()->SendPacket(&data);
+    }
     std::string chosen;
     for (VaultFind const& find : GetVaultFinds())
     {
-        bonk->SendAddon("vaultitem~" + std::to_string(find.guid.GetCounter()) + "~" + std::to_string(find.entry) + "~" +
-            std::to_string(find.quality) + "~" + (find.worn ? "1" : "0") + "~" + std::to_string(find.sellCopper) + "~" +
-            DescribeBroughtGearFor(find.entry) + "~" + std::to_string(find.tier) + "~" + std::to_string(find.bestOwnedTier) + "~" +
-            (find.owned ? "1" : "0") + "~" + std::to_string(find.scrap) + "~" + find.lines + "~" + find.extra);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultItem(data, find.guid.GetCounter(), find.entry, find.quality, find.worn, find.sellCopper,
+            DescribeBroughtGearFor(find.entry), find.tier, find.bestOwnedTier, find.owned, find.scrap, find.lines, find.extra);
+        m_player->GetSession()->SendPacket(&data);
         if (find.inVault && !m_hearthSending)
             chosen += (chosen.empty() ? "" : ",") + std::to_string(find.guid.GetCounter());
     }
-    bonk->SendAddon("vaultopen~" + std::to_string(m_hearthSending ? 1u : GetVaultSlots()) + "~" + chosen + "~" + (m_hearthSending ? "hearth" : "vault") + "~" +
-        std::to_string(uint32(m_bonuses.scrapBonus + 0.5f)));
+    WorldPacket open(SMSG_HOA_MESSAGE);
+    HoAWriteVaultOpen(open, m_hearthSending ? 1u : GetVaultSlots(), chosen, m_hearthSending ? "hearth" : "vault",
+        uint32(m_bonuses.scrapBonus + 0.5f));
+    m_player->GetSession()->SendPacket(&open);
 }
 
 bool BonkRun::SendHomeFromHearth(uint32 guidLow, std::string& error)
@@ -1352,7 +1435,12 @@ bool BonkRun::SendHomeFromHearth(uint32 guidLow, std::string& error)
             ShowKitAt(BONK_KIT_ASTRAL_RECALL, vault->GetPositionX(), vault->GetPositionY(), vault->GetPositionZ());
     CloseVault();
     DespawnVault();
-    bonk->SendAddon("vaultclose");
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteVaultClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     return true;
 }
 

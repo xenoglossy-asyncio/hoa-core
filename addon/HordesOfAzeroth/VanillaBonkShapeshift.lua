@@ -2,10 +2,10 @@ local L = VanillaBonkL
 local UI = VanillaBonkUI
 
 local SHAPESHIFT = "VANILLABONK_SHAPESHIFT"
-local SPELL_NAME = L["Shapeshift"]
+local SPELL_NAME = L["hoa.addon.shapeshift"]
 local SEND_INTERVAL = 0.25
 local GLYPH_SIZE = 16
-BINDING_NAME_VANILLABONK_SHAPESHIFT = L["Shapeshift"]
+BINDING_NAME_VANILLABONK_SHAPESHIFT = L["hoa.addon.shapeshift"]
 
 local FORM_ICONS = {
     moonkin = "Interface\\Icons\\Spell_Nature_ForceOfNature",
@@ -127,11 +127,15 @@ driver:SetScript("OnUpdate", function()
     end
 end)
 
-UI.Listen({
-    druidform = function(f)
-        current = FORM_ICONS[f[2]] and f[2] or nil
+UI.ListenHoa({
+    HOA_DRUID_FORM = function(form)
+        current = FORM_ICONS[form.form] and form.form or nil
     end,
-    druidslots = function(f)
+    HOA_DRUID_SLOTS = function(slots)
+        local f = { false }
+        for _, part in ipairs(UI.Split(slots.slots or "", "~")) do
+            tinsert(f, part)
+        end
         slotStates = {}
         for index = 2, table.getn(f) do
             slotStates[index - 1] = f[index]

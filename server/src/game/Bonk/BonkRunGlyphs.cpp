@@ -6,10 +6,12 @@
 #include "BonkRunStats.h"
 #include "Chat.h"
 #include "Creature.h"
+#include "HoaProtocol.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "Utilities/Random.h"
+#include "WorldSession.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -193,10 +195,18 @@ void BonkRun::SendGlyphOffer() const
     BonkPlayer* bonk = m_player->GetBonkPlayer();
     if (bonk->IsAddonReady())
     {
-        bonk->SendAddon("glyphoffer~" + std::to_string(m_glyphPicksGiven) + "~" + std::to_string(m_glyphOffer.size()) + "~" + std::to_string(m_glyphRerolls));
+        WorldPacket offer(SMSG_HOA_MESSAGE);
+        HoAWriteGlyphOffer(offer, m_glyphPicksGiven, m_glyphOffer.size(), m_glyphRerolls);
+        m_player->GetSession()->SendPacket(&offer);
         for (size_t i = 0; i < m_glyphOffer.size(); ++i)
-            bonk->SendAddon("glyphopt~" + std::to_string(i + 1) + "~" + std::to_string(m_glyphOffer[i]));
-        bonk->SendAddon("glyphofferend");
+        {
+            WorldPacket option(SMSG_HOA_MESSAGE);
+            HoAWriteGlyphOption(option, i + 1, m_glyphOffer[i]);
+            m_player->GetSession()->SendPacket(&option);
+        }
+        WorldPacket end(SMSG_HOA_MESSAGE);
+        HoAWriteGlyphOfferEnd(end);
+        m_player->GetSession()->SendPacket(&end);
         return;
     }
 
@@ -231,7 +241,12 @@ bool BonkRun::ChooseGlyph(uint32 choice, std::string& error)
     BonkGlyph const* glyph = sBonkMgr.GetGlyph(m_glyphOffer[choice - 1]);
     m_glyphOffer.clear();
     BonkPlayer* bonk = m_player->GetBonkPlayer();
-    bonk->SendAddon("glyphclose");
+    if (bonk->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGlyphClose(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     if (glyph)
     {
         TakeGlyph(*glyph);
@@ -284,7 +299,12 @@ void BonkRun::SendGlyphs() const
     std::string ids;
     for (BonkGlyph const* glyph : m_glyphs)
         ids += (ids.empty() ? "" : ",") + std::to_string(glyph->id);
-    m_player->GetBonkPlayer()->SendAddon("glyphs~" + ids);
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGlyphTaken(data, ids);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 BonkGlyph const* BonkRun::GetGlyph(BonkGlyphEffect effect) const
@@ -663,7 +683,12 @@ void BonkRun::UpdateShadowmourne()
     if (m_shadowmourneSouls / BONK_SHADOWMOURNE_SHOW_STEP != m_shadowmourneShown)
     {
         m_shadowmourneShown = m_shadowmourneSouls / BONK_SHADOWMOURNE_SHOW_STEP;
-        m_player->GetBonkPlayer()->SendAddon("glyphcount~" + std::to_string(mourne->id) + "~" + std::to_string(m_shadowmourneSouls));
+        if (m_player->GetBonkPlayer()->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteGlyphCount(data, mourne->id, m_shadowmourneSouls);
+            m_player->GetSession()->SendPacket(&data);
+        }
     }
 }
 

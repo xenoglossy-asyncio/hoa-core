@@ -87,7 +87,7 @@
         -- base key reads its KEY_* global. "CTRL--" is CTRL plus the minus key.
         function BenillaKeyBindings_KeyText(key)
             if not key then
-                return NORMAL_FONT_COLOR_CODE .. BenillaKeyBindings_String("NOT_BOUND", "Not Bound") .. FONT_COLOR_CODE_CLOSE
+                return NORMAL_FONT_COLOR_CODE .. HOA_UI_KEYBINDINGS_NOT_BOUND .. FONT_COLOR_CODE_CLOSE
             end
             local prefix = ""
             local rest = key
@@ -322,13 +322,13 @@
                 else
                     BenillaKeyBindings_SetSelected(this.commandName, this:GetID())
                     BenillaKeyBindings_Output(string.format(
-                        BenillaKeyBindings_String("BIND_KEY_TO_COMMAND", "Press Key to Bind to Command -> %s"),
+                        HOA_UI_KEYBINDINGS_PRESS_KEY,
                         BenillaKeyBindings_String("BINDING_NAME_" .. this.commandName, this.commandName)))
                 end
             else
                 BenillaKeyBindings_SetSelected(this.commandName, this:GetID())
                 BenillaKeyBindings_Output(string.format(
-                    BenillaKeyBindings_String("BIND_KEY_TO_COMMAND", "Press Key to Bind to Command -> %s"),
+                    HOA_UI_KEYBINDINGS_PRESS_KEY,
                     BenillaKeyBindings_String("BINDING_NAME_" .. this.commandName, this.commandName)))
             end
             BenillaKeyBindings_RepaintVisible()
@@ -379,13 +379,13 @@
                 local k1, k2 = GetBindingKey(oldAction)
                 if (not k1 or k1 == chord) and (not k2 or k2 == chord) then
                     BenillaKeyBindings_Output(string.format(
-                        BenillaKeyBindings_String("KEY_UNBOUND_ERROR", "|cffff0000%s Function is Now Unbound!|r"),
+                        HOA_UI_KEYBINDINGS_UNBOUND_ERROR,
                         BenillaKeyBindings_String("BINDING_NAME_" .. oldAction, oldAction)))
                 else
-                    BenillaKeyBindings_Output(BenillaKeyBindings_String("KEY_BOUND", "Key Bound Successfully"))
+                    BenillaKeyBindings_Output(HOA_UI_KEYBINDINGS_KEY_BOUND)
                 end
             else
-                BenillaKeyBindings_Output(BenillaKeyBindings_String("KEY_BOUND", "Key Bound Successfully"))
+                BenillaKeyBindings_Output(HOA_UI_KEYBINDINGS_KEY_BOUND)
             end
             local key1, key2 = GetBindingKey(selected)
             if key1 then SetBinding(key1) end
@@ -406,9 +406,7 @@
         function BenillaKeyBindings_SetOrRestore(key, command, oldKey)
             if not SetBinding(key, command) then
                 if oldKey then SetBinding(oldKey, command) end
-                BenillaKeyBindings_Output(BenillaKeyBindings_String(
-                    "KEYBINDINGFRAME_MOUSEWHEEL_ERROR",
-                    "Can't bind mousewheel to actions with up and down states"))
+                BenillaKeyBindings_Output(HOA_UI_KEYBINDINGS_MOUSEWHEEL_ERROR)
             end
         end
 
@@ -457,10 +455,9 @@
 
         -- Our key: Blizzard_BindingUI.lua:10 defines the stock one for its own window.
         StaticPopupDialogs["BENILLA_CONFIRM_DELETING_CHARACTER_SPECIFIC_BINDINGS"] = {
-            text = BenillaKeyBindings_String("CONFIRM_DELETING_CHARACTER_SPECIFIC_BINDINGS",
-                "Really switch to general key bindings?  All key bindings specific to this character will be permanantly deleted."),
-            button1 = BenillaKeyBindings_String("OKAY", "Okay"),
-            button2 = BenillaKeyBindings_String("CANCEL", "Cancel"),
+            text = HOA_UI_KEYBINDINGS_SWITCH_TO_GENERAL,
+            button1 = HOA_UI_COMMON_OKAY,
+            button2 = HOA_UI_COMMON_CANCEL,
             OnAccept = function()
                 LoadBindings(1)
                 SaveBindings(1)
@@ -476,9 +473,9 @@
         }
         -- Reset To Default confirms, as the era's does; our string, since 1.12 has none.
         StaticPopupDialogs["BENILLA_CONFIRM_RESET_KEYBINDINGS"] = {
-            text = "Are you sure you want to reset all keybindings to their defaults?",
-            button1 = BenillaKeyBindings_String("OKAY", "Okay"),
-            button2 = BenillaKeyBindings_String("CANCEL", "Cancel"),
+            text = HOA_UI_KEYBINDINGS_RESET_PROMPT,
+            button1 = HOA_UI_COMMON_OKAY,
+            button2 = HOA_UI_COMMON_CANCEL,
             OnAccept = function()
                 PlaySound("igMainMenuOptionCheckBoxOn")
                 LoadBindings(0)

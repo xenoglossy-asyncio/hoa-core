@@ -17,6 +17,14 @@ struct BonkEnchant
     bool IsSet() const { return effect != BONK_ENCHANT_NONE; }
 };
 
+struct BonkEnchantDisplay
+{
+    uint32 effect = BONK_ENCHANT_NONE;
+    uint32 grade = 0;
+    float value = 0.0f;
+    float percent = 0.0f;
+};
+
 namespace BonkEnchanting
 {
     uint8 const OFFER_COUNT = 3;
@@ -27,6 +35,7 @@ namespace BonkEnchanting
     BonkEnchant Roll(float const* pieceStats);
     float GetValue(BonkEnchant const& enchant, float const* pieceStats);
     BonkString GetGradeName(uint8 grade);
+    BonkEnchantDisplay DescribeDisplay(BonkEnchant const& enchant, float const* pieceStats);
     std::string Describe(BonkEnchant const& enchant, float const* pieceStats);
 }
 

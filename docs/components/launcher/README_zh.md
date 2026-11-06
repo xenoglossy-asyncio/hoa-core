@@ -10,7 +10,7 @@ Avalonia C# 启动器。
 - 不再要求英文版 1.12.1：校验任意语言的 1.12.1 build 5875（文件版本号），英文 MD5 只作为快速路径。相关实验已在上游 PR #25 验证。
 - 启动前按 `(locale, content version)` 清理/失效客户端缓存（当前实现的 `*.bin` 清理逻辑保留并升级）。
 - 服务端、数据库、realmlist 的启动/停止逻辑保留。
-- 联机只做两种：局域网自动发现（同网段广播）和 `ip/domain:port` 直连。不做公网大厅、房间注册或任何中心通知服务；公网穿透由玩家自己解决（端口转发、ZeroTier/Tailscale 等）。
+- 联机只做直连：房主显示自己的局域网/VPN 地址 `ip:port`，玩家输入该地址（以及房主设置的可选密码）加入。不做公网大厅、房间注册或任何中心通知服务；公网穿透由玩家自己解决（端口转发、ZeroTier/Tailscale 等）。
 - 启动器自身文本走 i18n 资源，随语言设置切换。
 
 ## 构建
@@ -19,6 +19,12 @@ Avalonia C# 启动器。
 
 ## 待改
 
-- 删除公网大厅/注册逻辑（`CoopAgent` 的 `/host` 注册、`LobbyUrl` 元数据、相关网络探测）；保留局域网自动发现和 `ip/domain:port` 直连。
 - 语言选择改为账号级，启动前按 `(locale, contentVersion)` 失效缓存。
 - 清理 `Repository`/`StatsUrl`/`MirrorUrl` 等上游地址，换成新仓库或留空。
+
+## 直连联机
+
+`CoopAgent` 不再连接大厅服务。房主在 gate 端口（默认 3725）上直接响应 `HOA1 ASK`、`HOA1 POLL`
+和 `HOA1 CANCEL`；玩家在 Glue 联机界面输入房主的 `ip:port`。房主在显示请求前检查版本和协议，
+原有的 token gate 继续承载 `LOGIN`、`WORLD`、`UPLOAD`、`LEDGER`、`ANSWERS` 和 `LEAVE`。
+房主状态会列出所有可用的局域网地址，VPN/代理地址排在局域网地址之后；也可以手动填写公网地址。

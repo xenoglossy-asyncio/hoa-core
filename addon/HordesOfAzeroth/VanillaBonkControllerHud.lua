@@ -16,11 +16,11 @@ local METER_LIFT = HUD_HEIGHT + 6
 local KEY_REFRESH = 1
 local PAIR_GAP = 2
 local ITEMS = {
-    { button = "lt", with = "rs", label = L["Zoom"], padOnly = true },
-    { action = "dash", label = L["Dash"], dash = true },
-    { button = "a", label = L["Jump"], command = "JUMP" },
-    { action = "character", label = L["Character"], command = "TOGGLECHARACTER0", click = function() Controller.ToggleCharacterAndBags() end },
-    { action = "map", label = L["Map"], command = "TOGGLEWORLDMAP", click = function() ToggleWorldMap() end },
+    { button = "lt", with = "rs", label = L["hoa.addon.zoom"], padOnly = true },
+    { action = "dash", label = L["hoa.addon.dash"], dash = true },
+    { button = "a", label = L["hoa.addon.jump"], command = "JUMP" },
+    { action = "character", label = L["hoa.addon.character"], command = "TOGGLECHARACTER0", click = function() Controller.ToggleCharacterAndBags() end },
+    { action = "map", label = L["hoa.addon.map"], command = "TOGGLEWORLDMAP", click = function() ToggleWorldMap() end },
 }
 
 local hud = CreateFrame("Frame", "VanillaBonkControllerHud", UIParent)

@@ -133,6 +133,7 @@ class BonkRun
         bool IsDungeon() const { return m_dungeonId != 0; }
         bool IsChallenge() const { return m_dungeonId != 0 || m_invaderId != 0; }
         bool IsInvasion() const { return m_invaderId != 0; }
+        std::string GetChallengeMapKey() const;
         std::string DescribeForLobby() const;
         void FollowToPortal();
 
@@ -162,6 +163,7 @@ class BonkRun
         void Update(uint32 diff);
         void Abort();
         void Surrender();
+        void SetConnectionLost(bool lost);
         bool SkipTime(uint32 seconds, std::string& error);
         bool StartMiniEventNow(BonkMiniEventType type, std::string& error);
         bool PlaceShrineNow(BonkShrineType type, std::string& error);
@@ -187,6 +189,7 @@ class BonkRun
         void DiscardEnchantOffers();
         void SendEnchants() const;
         void PlaceEnchanter(float x, float y, float z, float facing);
+        void UseHostEnchanter(ObjectGuid enchanter);
         void CloseVendor();
         bool SpawnVendorNow(std::string& error);
 
@@ -430,6 +433,10 @@ class BonkRun
         void ShowSandboxMenu(Creature* keeper, uint32 menu);
         void SelectSandboxOption(Creature* keeper, uint32 sender, uint32 action);
         bool RunSandboxVerb(std::string const& verb, uint32 first, uint32 second, std::string& error);
+        void RollSandboxDrops(uint8 quality, uint32 count);
+        void QueueSandboxGearOffer(uint8 quality);
+        void RollGroupTabardDrops();
+        void DropTestBags(Creature const* mob, uint32 count);
         void LeaveSandbox();
         time_t GetSkyTime() const;
 
@@ -601,6 +608,7 @@ class BonkRun
         void UpdateRecovery(uint32 diff);
         void ReportQuestCounts();
         void UpdateShield(uint32 diff);
+        void SendShieldState() const;
         uint32 GetMaxShield() const;
         BonkSupportSource ShieldStatSupport() const;
         void RefillShield(uint32 target);
@@ -623,6 +631,7 @@ class BonkRun
         };
         std::vector<VoidZone> m_voidZones;
         void EndVoidZone(VoidZone const& zone);
+        void EndVoidZones();
         std::vector<uint32> m_boltLandings;
         void UpdateVoidZones(uint32 diff);
         void UpdateHeroMark(uint32 diff);
@@ -630,7 +639,6 @@ class BonkRun
         void UpdateBossWounds(uint32 diff);
         void SetBossWoundStacks(uint32 stacks);
         uint32 GetBossWoundStacks() const;
-        void RefreshSoulstoneAura() const;
         void RefreshThornsAura() const;
         void RefreshKillPowerAura() const;
         void AddKillPowerStack() const;
@@ -639,7 +647,7 @@ class BonkRun
         void ApplyTimedAuraTo(Unit* target, uint32 spellId, uint32 durationMs, uint32 flags) const;
         uint32 RemainingAuraMs(uint32 spellId) const;
         void SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const;
-        void SyncStackAura(uint32 spellId, uint32 stacks) const;
+        bool SyncStackAura(uint32 spellId, uint32 stacks) const;
         void UpdateTalentAuras();
         uint32 GetCardAuraStacks(uint32 spellId) const;
         void ClearBossPressure();
@@ -660,6 +668,8 @@ class BonkRun
         bool IsMythic() const { return m_tier.key == "mythic"; }
         float GetScrapMultiplier() const;
         void PlacePortal(float x, float y, float baseZ);
+        bool HasPortalRoom(float x, float y, float z) const;
+        bool IsAboveTerrain(float x, float y, float z) const;
 
         void PruneMobs();
         BonkMapCreature const* PickCreature(BonkSpawnKind kind, int32 archetype = -1) const;
@@ -1004,7 +1014,6 @@ class BonkRun
         BonkSupportSource SpellSupport(uint32 spellId) const;
         BonkSupportSource PassiveSupport(BonkPassiveEffect effect) const;
         BonkSupportSource CardSupport(BonkCardEffect effect) const;
-        BonkSupportSource GlyphSupport(BonkGlyphEffect effect) const;
         BonkSupportSource TalentSupport(BonkMasteryEffect effect) const;
         BonkSupportSource CapstoneSupport(BonkCapstone capstone) const;
         struct SupportCredit
@@ -1232,12 +1241,17 @@ class BonkRun
         void SendCardCooldowns() const;
         std::string DescribeCardNow(BonkCard const& card) const;
         static std::string DescribeHeldCard(BonkCard const& card, uint32 copies, LocaleConstant locale);
+        void SendCardAuraText(uint32 spellId, BonkCard const& card) const;
+    public:
+        void ResendAuraTexts() const;
+    private:
         void SendCardStatus(bool force) const;
         mutable std::map<uint32, std::string> m_cardNowSent;
         uint32 m_cardCooldownTotals[MAX_BONK_CARD_EFFECT] = {};
         std::vector<OwnedCard> m_cards;
         float m_cardStats[MAX_BONK_PASSIVE_EFFECT] = {};
         uint32 m_cardCopies[MAX_BONK_CARD_EFFECT] = {};
+        mutable uint32 m_killPowerKills = 0;
         BonkCard const* m_cardByEffect[MAX_BONK_CARD_EFFECT] = {};
         int32 m_cardCooldowns[MAX_BONK_CARD_EFFECT] = {};
         uint32 m_cardTickMs = 0;
@@ -1279,6 +1293,7 @@ class BonkRun
             uint32 core = 0;
             uint32 swirl = 0;
             uint8 quality = 0;
+            std::map<ObjectGuid, uint8> memberQuality;
             std::set<ObjectGuid> takenBy;
         };
         bool MakeTierPiece(uint8 quality, PendingGear& piece) const;
@@ -1302,6 +1317,7 @@ class BonkRun
         uint32 GetScrapPoints(Item const* item) const;
         void GetOwnedTiers(uint32 entry, uint32& bestTier, bool& owned) const;
         uint8 RollGearQuality() const;
+        uint8 RollOwnBagQuality(bool boss);
         void UpdateGearDrops(uint32 diff);
         void CollectAllGear();
         void OfferGear();
@@ -1375,6 +1391,7 @@ class BonkRun
         void NoteWeaponFired(OwnedWeapon& owned);
         void SendCooldownPie(uint32 index, OwnedWeapon const& owned) const;
         void SendOffer() const;
+        void SendOfferClosed() const;
 
         void Revive(bool soulstone = false, BonkGlyph const* glyph = nullptr, bool stillAlive = false);
         uint32 PreventDeath(uint32 damage);
@@ -1440,9 +1457,13 @@ class BonkRun
         void LogMinute();
         void LogDeath();
         void LogLoadout() const;
+        void BeginHardcoreRun();
+        void EndHardcoreRunOnAbort();
         void LogBuild() const;
         void LogRunEnd(bool wentHome, std::string const& build) const;
         void LogLevelClear() const;
+        void NotifyBoardMiss() const;
+        bool NotifyBoardMissInParty() const;
         void LogFinale(float minutes, uint32 score) const;
         std::string DescribeBoardEntry() const;
         std::string DescribeBoardParty() const;
@@ -1524,10 +1545,11 @@ class BonkRun
         bool m_ownPaused = false;
         bool m_groupHeld = false;
         bool m_away = false;
+        bool m_connectionLost = false;
         bool m_followPending = false;
         BonkMap m_followMap;
         uint32 m_followStage = 0;
-        bool WantsPause() const { return (m_ownPaused && (!m_coopNoPause || (m_menuOpen && m_coopPlayers <= 1))) || m_groupHeld || m_away; }
+        bool WantsPause() const { return !m_connectionLost && ((m_ownPaused && (!m_coopNoPause || (m_menuOpen && m_coopPlayers <= 1))) || m_groupHeld || m_away); }
         void ApplyPause(bool paused);
         bool m_wentHome = false;
 
@@ -1787,6 +1809,7 @@ class BonkRun
         void AddEnchantStats(float* passives) const;
         void DespawnEnchanter();
         bool IsNearEnchanter() const;
+        bool IsOwnSummon(Creature const* creature) const;
         float m_leechCarry = 0.0f;
         uint32 m_necroticCheckMs = 0;
         struct HeroMark
@@ -2382,7 +2405,6 @@ class BonkRun
         void ShowHeroRing(BonkHeroRing ring, float reach, uint32 fillMs = 0);
         static BonkTelegraphStyle GetRingStyle(BonkHeroRing ring);
         static std::string GetHeroRingKey(BonkHeroRing ring);
-        uint32 GetRingSpell(BonkHeroRing ring, float reach) const;
         void HideHeroRing(BonkHeroRing ring);
         void RemoveHeroRingAuras(BonkHeroRing ring);
         void RemoveHeroLooks();
@@ -2477,6 +2499,11 @@ class BonkRun
         bool GetShamanCloudKind(OwnedWeapon const& owned, KeywordCloudKind& kind) const;
         bool IsLavaBurstOnBurning(SpellEntry const* spell, Unit const* victim) const;
         float GetShamanDamageMultiplier(SpellEntry const* spell, Unit const* victim) const;
+        float GetHunterDamageMultiplier(SpellEntry const* spell, Unit const* victim) const;
+        float GetMageSpellDamageMultiplier(SpellEntry const* spell, Unit const* victim) const;
+        bool IsChampion(Unit const* victim) const;
+        bool IsInDeepFreeze(Unit const* victim) const;
+        float GetSwipeBleedScale(Creature* mob) const;
         uint32 GetShamanExtraPets(OwnedWeapon const& owned);
         bool ApplyShamanKeyword(OwnedWeapon const& owned, Creature* mob, BonkKeyword keyword, uint32 stacks);
         void BurnWithFlametongue(OwnedWeapon& owned, Creature* target, uint32 stacks);
@@ -2655,6 +2682,7 @@ class BonkRun
         void StabOffHand(OwnedWeapon& owned, SpellEntry const* spellInfo, Creature* target, std::vector<Creature*> const& taken);
         void SlashOnward(OwnedWeapon& owned, SpellEntry const* spellInfo, Creature* target);
         void Mutilate(OwnedWeapon& owned, SpellEntry const* spellInfo, Creature* target);
+        void ShortenEnvenom();
         bool OpenRogueWindow(OwnedWeapon& owned, uint32& untilMs, uint32 auraSpellId);
         void StartShadowDance(OwnedWeapon& owned);
         void StartKillingSpree(OwnedWeapon& owned);
@@ -2707,6 +2735,8 @@ class BonkRun
         bool GetPaladinCloudKind(OwnedWeapon const& owned, KeywordCloudKind& kind) const;
         void OnPaladinCloudPulse(OwnedWeapon const& owned, KeywordCloud const& cloud);
         bool IsStandingInConsecration() const;
+        bool IsInConsecration(Unit const* unit) const;
+        size_t CountConsecrationsAround(Unit const* unit) const;
         bool IsPaladinNear() const;
         void CastExorcism(OwnedWeapon& owned, SpellEntry const* spellInfo);
         void SpinDivineStorm(OwnedWeapon& owned, SpellEntry const* spellInfo);
@@ -3010,7 +3040,6 @@ class BonkRun
         void ShowMissileBetween(SpellEntry const* spellInfo, float fromX, float fromY, float fromZ, float toX, float toY, float toZ);
         void ShowThrowAtSpot(Unit* source, SpellEntry const* spellInfo, Unit const* target);
         void ShowMissilesAround(SpellEntry const* spellInfo, float radius, uint32 count);
-        void PlaceAreaLook(uint32 spellId, float x, float y, float z, float radius, uint32 durationMs);
         struct Bladestorm
         {
             uint32 weaponId = 0;

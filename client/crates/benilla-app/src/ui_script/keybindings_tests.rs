@@ -42,6 +42,33 @@ pub(crate) fn harness() -> UiScript {
     s
 }
 
+/// The stock keybinding names and headers are globals from `GlobalStrings.lua`; the language pack
+/// overrides them after the core load, so the page's existing `getglobal` lookup gets Chinese.
+#[test]
+fn keybinding_names_follow_the_language_pack() {
+    let _ = benilla_formats::wow_data_or_skip!();
+    let mut s = harness();
+    let locale = crate::client_language::locale_for_code("zhCN");
+    s.set_ui_locale(Some(locale.index()));
+    crate::client_language::install_for_script(&s);
+    assert_eq!(
+        s.eval::<String>("return BINDING_HEADER_MOVEMENT").unwrap(),
+        "移动按键"
+    );
+    assert_eq!(
+        s.eval::<String>("return BINDING_NAME_MOVEFORWARD").unwrap(),
+        "前进"
+    );
+    assert_eq!(
+        s.eval::<String>("return BINDING_NAME_TARGETPARTYMEMBER1")
+            .unwrap(),
+        "选中队友1"
+    );
+    assert_eq!(s.eval::<String>("return KEY_UP").unwrap(), "方向键上");
+    assert_eq!(s.eval::<String>("return KEY_ENTER").unwrap(), "Enter");
+    assert_eq!(s.eval::<String>("return KEY_NUMLOCK").unwrap(), "Num Lock");
+}
+
 /// The install's defaults live, as a first login's account set is, on a VM whose load registered
 /// the stock commands.
 pub(crate) fn seed_defaults(s: &mut UiScript) {

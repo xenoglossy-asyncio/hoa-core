@@ -97,7 +97,7 @@ local function ShowEntryTooltip()
         return
     end
     GameTooltip:SetOwner(this, "ANCHOR_BOTTOMRIGHT")
-    GameTooltip:AddDoubleLine(keyword.name, this.stacks > 1 and L("{1} stacks", this.stacks) or "", 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(keyword.name, this.stacks > 1 and L("hoa.addon.1_stacks", this.stacks) or "", 1, 0.82, 0, 1, 1, 1)
     if keyword.description ~= "" then
         GameTooltip:AddLine(keyword.description, 1, 1, 1, 1)
     end
@@ -466,48 +466,69 @@ function UI.AddGlossary(tooltip, texts)
     end
 end
 
-UI.Listen({
-    ["gls"] = function(f)
-        local term = f[2]
-        if not term or term == "" or not f[4] then
+local function HandleGlossary(f)
+    local term = f[2]
+    if not term or term == "" or not f[4] then
+        return
+    end
+    if not glossary.entries[term] then
+        tinsert(glossary.order, term)
+    end
+    glossary.entries[term] = { words = UI.Split(f[3] or "", ","), description = f[4] }
+end
+
+local function HandleKeywordAura(f)
+    local id = tonumber(f[2] or "")
+    if not id then
+        return
+    end
+    local keyword = KeywordEntry(id)
+    local icon = (f[4] and f[4] ~= "") and f[4] or QUESTION_MARK
+    keyword.name = f[3] or ""
+    keyword.icon = UI.ICON_PATH .. icon
+    keyword.maxStacks = tonumber(f[6] or "") or 1
+    keyword.color = UI.DamageType(UI.DAMAGE_TYPE_BY_KEYWORD[keyword.name] or UI.DamageTypeFromIcon(icon))
+    local spellId = tonumber(f[5] or "")
+    if spellId then
+        keywordsBySpell[spellId] = keyword
+    end
+end
+
+local function HandleKeyword(f)
+    local id = tonumber(f[2] or "")
+    if id then
+        KeywordEntry(id).description = f[5] or ""
+    end
+end
+
+UI.ListenHoa({
+    HOA_KEYWORD_TIMERS = function(timers)
+        ReadTimers(timers.entries)
+    end,
+    HOA_MOB_DEAD = function(dead)
+        if dead.guid ~= "" then
+            timers[dead.guid] = nil
+        end
+    end,
+    HOA_MOB_CLEAR = function()
+        ClearTimers()
+    end,
+    HOA_CODEX = function(entry)
+        if entry.kind ~= "gls" and entry.kind ~= "kwdaura" and entry.kind ~= "kwd" then
             return
         end
-        if not glossary.entries[term] then
-            tinsert(glossary.order, term)
+        local f = { false, entry.kind }
+        for _, part in ipairs(UI.Split(entry.line or "", "~")) do
+            tinsert(f, part)
         end
-        glossary.entries[term] = { words = UI.Split(f[3] or "", ","), description = f[4] }
-    end,
-    ["kwdaura"] = function(f)
-        local id = tonumber(f[2] or "")
-        if not id then
-            return
-        end
-        local keyword = KeywordEntry(id)
-        local icon = (f[4] and f[4] ~= "") and f[4] or QUESTION_MARK
-        keyword.name = f[3] or ""
-        keyword.icon = UI.ICON_PATH .. icon
-        keyword.maxStacks = tonumber(f[6] or "") or 1
-        keyword.color = UI.DamageType(UI.DAMAGE_TYPE_BY_KEYWORD[keyword.name] or UI.DamageTypeFromIcon(icon))
-        local spellId = tonumber(f[5] or "")
-        if spellId then
-            keywordsBySpell[spellId] = keyword
+        if entry.kind == "gls" then
+            HandleGlossary(f)
+        elseif entry.kind == "kwdaura" then
+            HandleKeywordAura(f)
+        else
+            HandleKeyword(f)
         end
     end,
-    ["kwd"] = function(f)
-        local id = tonumber(f[2] or "")
-        if id then
-            KeywordEntry(id).description = f[5] or ""
-        end
-    end,
-    ["kwdt"] = function(f)
-        ReadTimers(f[2])
-    end,
-    ["mobdead"] = function(f)
-        if f[4] and f[4] ~= "" then
-            timers[f[4]] = nil
-        end
-    end,
-    ["mobclear"] = ClearTimers,
-    ["start"] = ClearTimers,
-    ["end"] = ClearTimers,
+    HOA_RUN_START = ClearTimers,
+    HOA_RUN_END = ClearTimers,
 })

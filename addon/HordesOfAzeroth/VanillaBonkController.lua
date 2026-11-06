@@ -273,8 +273,17 @@ local function ChoiceArmed(window)
     return window == Controller.window and GetTime() - (Controller.windowAt or 0) >= CHOICE_ARM_DELAY
 end
 
+local GLYPH_CARD_ACTIONS = { reroll = true }
+
+local function WindowCardAction(window, name)
+    local action = CardActionFor(name)
+    if window == VanillaBonkOffer or (window == VanillaBonkGlyphs and GLYPH_CARD_ACTIONS[action]) then
+        return action
+    end
+end
+
 local function ChoiceButton(window, name)
-    local cardAction = window == VanillaBonkOffer and CardActionFor(name)
+    local cardAction = WindowCardAction(window, name)
     if NEXT[name] then
         MoveFocus(window, NEXT[name])
     elseif name ~= "a" and not cardAction then
@@ -645,22 +654,24 @@ local function AnyCardDetails(window)
 end
 
 local function ChoicePrompts(window)
-    local prompts = { { "leftright", L["Choose"] }, { "a", L["Pick"] } }
+    local prompts = { { "leftright", L["hoa.addon.choose"] }, { "a", L["hoa.addon.pick"] } }
     if window == VanillaBonkOffer then
         ButtonPrompt(prompts, Controller.CardButtonFor("reroll"), window.reroll)
         ButtonPrompt(prompts, Controller.CardButtonFor("banish"), window.banish)
         ButtonPrompt(prompts, Controller.CardButtonFor("skip"), window.skip)
+    elseif window == VanillaBonkGlyphs then
+        ButtonPrompt(prompts, Controller.CardButtonFor("reroll"), window.reroll)
     end
     if AnyCardDetails(window) then
         local card = window.cards[Controller.focus]
         local hasDetails = card and card:IsShown() and table.getn(CardKeywords(card)) > 0
-        table.insert(prompts, { "lt", L["Hold for details"], not hasDetails })
+        table.insert(prompts, { "lt", L["hoa.addon.hold_for_details"], not hasDetails })
     end
     return prompts
 end
 
 local MOUSE_BUTTONS = {
-    { "VanillaBonkOffer", "reroll" }, { "VanillaBonkOffer", "banish" }, { "VanillaBonkOffer", "skip" },
+    { "VanillaBonkOffer", "reroll" }, { "VanillaBonkOffer", "banish" }, { "VanillaBonkOffer", "skip" }, { "VanillaBonkGlyphs", "reroll" },
     { "VanillaBonkGear", "equip" }, { "VanillaBonkGear", "equipOther" }, { "VanillaBonkGear", "loot" }, { "VanillaBonkGear", "salvage" },
 }
 
@@ -693,6 +704,7 @@ end
 HookFadingParent(VanillaBonkOffer)
 HookFadingParent(VanillaBonkOffer and VanillaBonkOffer.chrome)
 HookFadingParent(VanillaBonkGear)
+HookFadingParent(VanillaBonkGlyphs)
 
 local function HideMouseButtons(hidden)
     for _, entry in ipairs(MOUSE_BUTTONS) do
@@ -1097,7 +1109,7 @@ local function Unequip(slot)
 end
 
 StaticPopupDialogs["HOA_CONTROLLER_DELETE"] = {
-    text = L["Delete %s?"],
+    text = L["hoa.addon.delete_s"],
     button1 = YES,
     button2 = NO,
     OnAccept = function()
@@ -1361,6 +1373,11 @@ local function NavButton(name, windows)
         return true
     end
     if name == "lb" or name == "rb" then
+        local paged = target and WindowOf(target, windows)
+        if paged and paged.PadPage then
+            paged.PadPage(name == "rb" and 1 or -1)
+            return true
+        end
         local window = TabWindow(windows, target)
         if window and SwitchTab(window, name == "rb" and 1 or -1) then
             Controller.refocus = window
@@ -1456,7 +1473,7 @@ local function WindowPrompts(windows)
     local prompts = {}
     local target = navGlow.target
     if target then
-        table.insert(prompts, { "dpad", L["Move"] })
+        table.insert(prompts, { "dpad", L["hoa.addon.move"] })
     end
     local bag, slot, inventory
     if target then
@@ -1464,16 +1481,16 @@ local function WindowPrompts(windows)
         inventory = InventorySlot(target)
     end
     if target and IsSlider(target) then
-        table.insert(prompts, { "leftright", L["Adjust"] })
+        table.insert(prompts, { "leftright", L["hoa.addon.adjust"] })
     elseif bag then
         local link = GetContainerItemLink(bag, slot)
         if link then
-            table.insert(prompts, { "a", IsGear(link) and L["Equip"] or L["Use"] })
-            table.insert(prompts, { "x", L["Delete"] })
+            table.insert(prompts, { "a", IsGear(link) and L["hoa.addon.equip"] or L["hoa.addon.use"] })
+            table.insert(prompts, { "x", L["hoa.addon.delete"] })
         end
     elseif inventory then
         if GetInventoryItemLink("player", inventory) then
-            table.insert(prompts, { "a", L["Unequip"] })
+            table.insert(prompts, { "a", L["hoa.addon.unequip"] })
         end
     elseif target and IsMerchantItem(target) then
         local buyback = target.buysOnRightClick and target.item and target.item.buyback
@@ -1481,23 +1498,28 @@ local function WindowPrompts(windows)
             buyback = MerchantFrame.selectedTab == 2
         end
         local upgrade = target.buysOnRightClick and target.item and target.item.upgrade
-        table.insert(prompts, { "a", upgrade and L["Upgrade"] or buyback and L["Buy back"] or L["Buy"] })
+        table.insert(prompts, { "a", upgrade and L["hoa.addon.upgrade"] or buyback and L["hoa.addon.buy_back"] or L["hoa.addon.buy"] })
     elseif target and not target.navTooltip then
-        table.insert(prompts, { "a", TooltipVerb(target, "Click") or L["Select"] })
+        table.insert(prompts, { "a", TooltipVerb(target, "Click") or L["hoa.addon.select"] })
         local rightVerb = TooltipVerb(target, "Right-click")
         if rightVerb then
             table.insert(prompts, { "x", rightVerb })
         end
     end
-    table.insert(prompts, { "b", L["Close"] })
+    table.insert(prompts, { "b", L["hoa.addon.close"] })
+    local paged = target and WindowOf(target, windows)
+    if paged and paged.padPages and paged.padPages > 1 then
+        table.insert(prompts, { "lb", L["hoa.addon.previous_page"] })
+        table.insert(prompts, { "rb", L["hoa.addon.next_page"] })
+    end
     if table.getn(windows) > 1 then
-        table.insert(prompts, { "rt", L["Next window"] })
+        table.insert(prompts, { "rt", L["hoa.addon.next_window"] })
     end
     if Controller.scrollMode then
-        table.insert(prompts, { "rs", L["Scroll"] })
-        table.insert(prompts, { "r3", L["Cursor"] })
+        table.insert(prompts, { "rs", L["hoa.addon.scroll"] })
+        table.insert(prompts, { "r3", L["hoa.addon.cursor"] })
     else
-        table.insert(prompts, { "rs", L["Cursor"] })
+        table.insert(prompts, { "rs", L["hoa.addon.cursor"] })
     end
     return prompts
 end
@@ -1603,7 +1625,7 @@ local function UpdateScroll(windows)
     Controller.scrollAt = now + SCROLL_REPEAT / math.abs(ry)
 end
 
-local CURSOR_PROMPTS = { { "rs", L["Move cursor"] }, { "a", L["Click"] }, { "x", L["Right-click"] }, { "dpad", L["Buttons"] }, { "b", L["Close"] } }
+local CURSOR_PROMPTS = { { "rs", L["hoa.addon.move_cursor"] }, { "a", L["hoa.addon.click"] }, { "x", L["hoa.addon.right_click"] }, { "dpad", L["hoa.addon.buttons"] }, { "b", L["hoa.addon.close"] } }
 
 local function HideNavForCursor()
     local button = navGlow.target
@@ -1696,8 +1718,8 @@ local INTERACT_FADE = 6
 local INTERACT_PLATE_GAP = 4
 local INTERACT_KEYCAP = 26
 local INTERACT_COMMAND = "VANILLABONK_INTERACT"
-local OBJECT_VERBS = { [900001] = L["Open"], [900002] = L["Open"], [900003] = L["Enter"], [900041] = L["Open"], [900060] = L["Search"] }
-local OBJECT_TYPE_VERBS = { [3] = L["Open"], [19] = L["Mail"] }
+local OBJECT_VERBS = { [900001] = L["hoa.addon.open"], [900002] = L["hoa.addon.open"], [900003] = L["hoa.addon.enter"], [900041] = L["hoa.addon.open"], [900060] = L["hoa.addon.search"] }
+local OBJECT_TYPE_VERBS = { [3] = L["hoa.addon.open"], [19] = L["hoa.addon.mail"] }
 local NPC_FLAG_GOSSIP = 1
 local NPC_FLAG_VENDOR = 4
 local NPC_FLAG_BANKER = 256
@@ -1722,18 +1744,18 @@ end
 
 local function InteractVerb(kind, entry, detail)
     if kind == "object" then
-        return OBJECT_VERBS[entry] or OBJECT_TYPE_VERBS[detail] or L["Use"]
+        return OBJECT_VERBS[entry] or OBJECT_TYPE_VERBS[detail] or L["hoa.addon.use"]
     end
     if HasFlag(detail, NPC_FLAG_GOSSIP) then
-        return L["Talk"]
+        return L["hoa.addon.talk"]
     end
     if HasFlag(detail, NPC_FLAG_BANKER) then
-        return L["Bank"]
+        return L["hoa.addon.bank"]
     end
     if HasFlag(detail, NPC_FLAG_VENDOR) then
-        return L["Shop"]
+        return L["hoa.addon.shop"]
     end
-    return L["Talk"]
+    return L["hoa.addon.talk"]
 end
 
 local function HideInteract()

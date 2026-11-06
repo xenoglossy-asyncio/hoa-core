@@ -126,7 +126,7 @@ events:SetScript("OnEvent", function()
     HidePlayerPower()
 end)
 
-VanillaBonkUI.Listen({
-    ["start"] = function() corner:Hide() end,
-    ["end"] = function() corner:Show() end,
+VanillaBonkUI.ListenHoa({
+    HOA_RUN_START = function() corner:Hide() end,
+    HOA_RUN_END = function() corner:Show() end,
 })

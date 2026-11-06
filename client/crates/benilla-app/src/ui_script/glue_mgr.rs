@@ -182,7 +182,7 @@ use crate::net::{
     AddonInfoMessage, AddonInfoReply, CharActionResultMessage, CharListMessage, CharRenameMessage,
     CharRequest, CharacterLoginFailedMessage, DisconnectedMessage, LoginFailedMessage,
     LoginQueuedMessage, LoginStageMessage, ParkRequest, RealmListMessage, RealmRequest,
-    RosterFailedMessage, WorldAuthMessage,
+    RosterFailedMessage, SessionBilling, WorldAuthMessage,
 };
 use crate::run_mode::EnvPin;
 
@@ -1960,6 +1960,7 @@ pub(crate) fn drive_glue_mgr(
     mut asks: GlueAsks,
     tables: Option<Res<crate::glue_session::realm::RealmTables>>,
     run: Option<Res<RunModeRealm>>,
+    billing: Option<Res<SessionBilling>>,
     env_pin: Option<Res<EnvPin>>,
     mut realmlist: Option<ResMut<crate::realmlist::Realmlist>>,
     areas: Option<Res<crate::area::AreaTableRes>>,
@@ -2013,6 +2014,12 @@ pub(crate) fn drive_glue_mgr(
             if !fresh_vm && r.is_changed() {
                 let (categories, types) = r.glue_setup();
                 s.set_glue_realm_setup(categories, types);
+            }
+        }
+        // The billing words the connection brought, for `GetBillingPlan` and its two siblings.
+        if let (Some(s), Some(b)) = (script.as_deref_mut(), billing.as_ref()) {
+            if fresh_vm || b.is_changed() {
+                s.set_billing(b.0.time_remaining, b.0.time_rested, b.0.plan_flags);
             }
         }
         // The name a connect resolves (`0x5ab7d0`).

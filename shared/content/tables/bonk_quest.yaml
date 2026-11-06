@@ -1,4 +1,3 @@
-# Imported by tools/content/dump_tables.py from bonk_quest. Edit this file, then run tools/content/compile.py.
 table: bonk_quest
 columns:
 - id
@@ -2712,5 +2711,41 @@ rows:
   - 1
   - 10
   - 20
+  - 0
+  - 1
+- - 577
+  - For the King
+  - Clear Heroic 5.
+  - INV_Shirt_GuildTabard_01
+  - 3
+  - 0
+  - 0
+  - 9
+  - 15
+  - 939002
+  - 0
+  - 1
+- - 578
+  - Heart of the Mountain
+  - Clear the Molten Core dungeon or its invasion.
+  - INV_Shirt_GuildTabard_01
+  - 41
+  - 2
+  - 0
+  - 1
+  - 15
+  - 939003
+  - 0
+  - 3
+- - 579
+  - Winter's Edge
+  - Clear Mythic 20.
+  - INV_Shirt_GuildTabard_01
+  - 3
+  - 0
+  - 0
+  - 29
+  - 15
+  - 939004
   - 0
   - 1

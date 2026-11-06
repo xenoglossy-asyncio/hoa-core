@@ -130,7 +130,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentLan" inherits="GlueFontNormalSmall" text="LAN" hidden="true">
+				<FontString name="$parentLan" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_LAN" hidden="true">
 					<Anchors>
 						<Anchor point="LEFT">
 							<Offset>
@@ -267,7 +267,7 @@
 			</Anchor>
 		</Anchors>
 		<Frames>
-			<Button name="BonkCoopSoloButton" inherits="GlueButtonSmallTemplate" text="Solo">
+			<Button name="BonkCoopSoloButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_SOLO">
 				<Size>
 					<AbsDimension x="116" y="28"/>
 				</Size>
@@ -280,7 +280,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkCoopCoopButton" inherits="GlueButtonSmallTemplate" text="Co-op">
+			<Button name="BonkCoopCoopButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_CO_OP">
 				<Size>
 					<AbsDimension x="116" y="28"/>
 				</Size>
@@ -317,7 +317,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="BonkCoopFindButton" inherits="GlueButtonTemplate" text="Browse Games">
+			<Button name="BonkCoopFindButton" inherits="GlueButtonTemplate" text="HOA_UI_GLUE_BROWSE_GAMES">
 				<Size>
 					<AbsDimension x="230" y="60"/>
 				</Size>
@@ -334,7 +334,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkCoopHostButton" inherits="GlueButtonTemplate" text="Host Game">
+			<Button name="BonkCoopHostButton" inherits="GlueButtonTemplate" text="HOA_UI_GLUE_HOST_GAME">
 				<Size>
 					<AbsDimension x="230" y="60"/>
 				</Size>
@@ -379,7 +379,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="BonkCoopStatusButton" inherits="GlueButtonSmallTemplate" text="Close Lobby">
+			<Button name="BonkCoopStatusButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_CLOSE_LOBBY">
 				<Size>
 					<AbsDimension x="150" y="24"/>
 				</Size>
@@ -412,7 +412,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="BonkCoopBrowserTitle" inherits="GlueFontNormalLarge" text="Co-op Games">
+				<FontString name="BonkCoopBrowserTitle" inherits="GlueFontNormalLarge" text="HOA_UI_GLUE_CO_OP_GAMES">
 					<Anchors>
 						<Anchor point="TOP">
 							<Offset>
@@ -421,7 +421,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopHeadGame" inherits="GlueFontNormalSmall" text="Game" justifyH="LEFT">
+				<FontString name="BonkCoopHeadGame" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_GAME" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -430,7 +430,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopHeadClasses" inherits="GlueFontNormalSmall" text="Classes" justifyH="LEFT">
+				<FontString name="BonkCoopHeadClasses" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_CLASSES" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -439,7 +439,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopHeadDifficulty" inherits="GlueFontNormalSmall" text="Difficulty" justifyH="LEFT">
+				<FontString name="BonkCoopHeadDifficulty" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_DIFFICULTY" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -448,7 +448,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopHeadPlayers" inherits="GlueFontNormalSmall" text="Players" justifyH="LEFT">
+				<FontString name="BonkCoopHeadPlayers" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_PLAYERS" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -506,7 +506,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopDetailGroup" inherits="GlueFontNormal" text="Party" justifyH="LEFT">
+				<FontString name="BonkCoopDetailGroup" inherits="GlueFontNormal" text="HOA_UI_GLUE_PARTY" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -550,7 +550,7 @@
 					</OnEnterPressed>
 				</Scripts>
 			</EditBox>
-			<Button name="BonkCoopFilterButton" inherits="GlueButtonSmallTemplate" text="Filters">
+			<Button name="BonkCoopFilterButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_FILTERS">
 				<Size>
 					<AbsDimension x="120" y="26"/>
 				</Size>
@@ -592,7 +592,7 @@
 					</HitRectInsets>
 					<Scripts>
 						<OnLoad>
-							BonkCoopHideFullText:SetText("Hide full games");
+							BonkCoopHideFullText:SetText(L["hoa.ui.glue.hide_full_games_2"]);
 							this:SetChecked(1);
 						</OnLoad>
 						<OnClick>
@@ -613,7 +613,7 @@
 					</HitRectInsets>
 					<Scripts>
 						<OnLoad>
-							BonkCoopHideLockedText:SetText("Hide passworded games");
+							BonkCoopHideLockedText:SetText(L["hoa.ui.glue.hide_passworded_games"]);
 						</OnLoad>
 						<OnClick>
 							BonkCoop_UpdateList();
@@ -633,7 +633,7 @@
 					</HitRectInsets>
 					<Scripts>
 						<OnLoad>
-							BonkCoopHideUnfitText:SetText("Hide games I can't join");
+							BonkCoopHideUnfitText:SetText(L["hoa.ui.glue.hide_games_i_can_t_join"]);
 						</OnLoad>
 						<OnClick>
 							BonkCoop_UpdateList();
@@ -767,7 +767,7 @@
 					</Anchor>
 				</Anchors>
 			</Frame>
-			<Button name="BonkCoopCodeButton" inherits="GlueButtonSmallTemplate" text="Join with Code">
+			<Button name="BonkCoopCodeButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_JOIN_WITH_ADDRESS">
 				<Size>
 					<AbsDimension x="140" y="28"/>
 				</Size>
@@ -784,7 +784,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkCoopRefreshButton" inherits="GlueButtonSmallTemplate" text="Refresh">
+			<Button name="BonkCoopRefreshButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_REFRESH">
 				<Size>
 					<AbsDimension x="120" y="28"/>
 				</Size>
@@ -801,7 +801,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkCoopAskButton" inherits="GlueButtonSmallTemplate" text="Join">
+			<Button name="BonkCoopAskButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_JOIN">
 				<Size>
 					<AbsDimension x="160" y="28"/>
 				</Size>
@@ -818,7 +818,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkCoopCloseButton" inherits="GlueButtonSmallTemplate" text="Close">
+			<Button name="BonkCoopCloseButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_CLOSE">
 				<Size>
 					<AbsDimension x="120" y="28"/>
 				</Size>
@@ -860,7 +860,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="BonkCoopHostTitle" inherits="GlueFontNormalLarge" text="Host Game">
+				<FontString name="BonkCoopHostTitle" inherits="GlueFontNormalLarge" text="HOA_UI_GLUE_HOST_GAME">
 					<Anchors>
 						<Anchor point="TOP">
 							<Offset>
@@ -869,7 +869,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopNameLabel" inherits="GlueFontNormalSmall" text="Game Name" justifyH="LEFT">
+				<FontString name="BonkCoopNameLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_GAME_NAME" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -878,7 +878,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopPrivacyLabel" inherits="GlueFontNormalSmall" text="Privacy" justifyH="LEFT">
+				<FontString name="BonkCoopPrivacyLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_PRIVACY" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -887,7 +887,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopDifficultyLabel" inherits="GlueFontNormalSmall" text="Difficulty" justifyH="LEFT">
+				<FontString name="BonkCoopDifficultyLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_DIFFICULTY" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -896,7 +896,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopPauseLabel" inherits="GlueFontNormalSmall" text="Pause" justifyH="LEFT">
+				<FontString name="BonkCoopPauseLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_PAUSE" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -905,7 +905,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopXpLabel" inherits="GlueFontNormalSmall" text="XP" justifyH="LEFT">
+				<FontString name="BonkCoopXpLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_XP" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -914,7 +914,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopModeLabel" inherits="GlueFontNormalSmall" text="Mode" justifyH="LEFT">
+				<FontString name="BonkCoopModeLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_MODE" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -923,7 +923,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopPlayersLabel" inherits="GlueFontNormalSmall" text="Players" justifyH="LEFT">
+				<FontString name="BonkCoopPlayersLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_PLAYERS" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -932,7 +932,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopAddressLabel" inherits="GlueFontNormalSmall" text="Public Address (optional)" justifyH="LEFT">
+				<FontString name="BonkCoopAddressLabel" inherits="GlueFontNormalSmall" text="HOA_UI_GLUE_PUBLIC_ADDRESS_OPTIONAL" justifyH="LEFT">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
@@ -941,7 +941,7 @@
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="BonkCoopAddressNote" inherits="GlueFontDisableSmall" text="For ZeroTier, Tailscale, a tunnel or a forward to another port. Leave empty otherwise. Games on ZeroTier or Tailscale addresses are invite-code only." justifyH="LEFT">
+				<FontString name="BonkCoopAddressNote" inherits="GlueFontDisableSmall" text="HOA_UI_GLUE_FOR_ZEROTIER_TAILSCALE_A_TUNNEL_OR_A_FORWARD_TO_ANOTHER_PORT" justifyH="LEFT">
 					<Size>
 						<AbsDimension x="512" y="0"/>
 					</Size>
@@ -986,7 +986,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopWhoOpenText:SetText("Public");
+						BonkCoopWhoOpenText:SetText(L["hoa.ui.glue.public"]);
 					</OnLoad>
 					<OnClick>
 						BonkCoop_SetWho(1);
@@ -1003,7 +1003,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						BonkCoopWhoPasswordText:SetText("Password protected");
+						BonkCoopWhoPasswordText:SetText(L["hoa.ui.glue.password_protected_2"]);
 					</OnLoad>
 					<OnClick>
 						BonkCoop_SetWho(2);
@@ -1043,7 +1043,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopWhoCodeText:SetText("Hidden, join with code");
+						BonkCoopWhoCodeText:SetText(L["hoa.ui.glue.hidden_join_with_code"]);
 					</OnLoad>
 					<OnClick>
 						BonkCoop_SetWho(3);
@@ -1080,7 +1080,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="$parentLevel" inherits="GlueFontHighlightSmall" text="level">
+						<FontString name="$parentLevel" inherits="GlueFontHighlightSmall" text="HOA_UI_GLUE_DIFFICULTY_LEVEL_LEVEL">
 							<Anchors>
 								<Anchor point="RIGHT" relativePoint="LEFT">
 									<Offset>
@@ -1175,7 +1175,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						BonkCoopAutoCheckText:SetText("Auto-accept join requests");
+						BonkCoopAutoCheckText:SetText(L["hoa.ui.glue.auto_accept_join_requests"]);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1189,7 +1189,7 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						BonkCoopSameClassCheckText:SetText("Allow duplicate classes");
+						BonkCoopSameClassCheckText:SetText(L["hoa.ui.glue.allow_duplicate_classes_2"]);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1206,7 +1206,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopNewCheckText:SetText("Only allow Mastery");
+						BonkCoopNewCheckText:SetText(L["hoa.ui.glue.only_allow_mastery"]);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1223,7 +1223,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="$parentSuffix" inherits="GlueFontHighlightSmall" text="or lower" justifyH="LEFT">
+						<FontString name="$parentSuffix" inherits="GlueFontHighlightSmall" text="HOA_UI_GLUE_AFTER_THE_NUMBER_OR_LOWER" justifyH="LEFT">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT">
 									<Offset>
@@ -1253,7 +1253,7 @@
 				</HitRectInsets>
 				<Scripts>
 					<OnLoad>
-						BonkCoopMinCheckText:SetText("Requests need Mythic");
+						BonkCoopMinCheckText:SetText(L["hoa.ui.glue.requests_need_mythic"]);
 					</OnLoad>
 				</Scripts>
 			</CheckButton>
@@ -1270,7 +1270,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="$parentSuffix" inherits="GlueFontHighlightSmall" text="cleared" justifyH="LEFT">
+						<FontString name="$parentSuffix" inherits="GlueFontHighlightSmall" text="HOA_UI_GLUE_AFTER_THE_NUMBER_CLEARED" justifyH="LEFT">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT">
 									<Offset>
@@ -1304,7 +1304,7 @@
 					</OnEnterPressed>
 				</Scripts>
 			</EditBox>
-			<Button name="BonkCoopHostGoButton" inherits="GlueButtonSmallTemplate" text="Host">
+			<Button name="BonkCoopHostGoButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_HOST">
 				<Size>
 					<AbsDimension x="130" y="28"/>
 				</Size>
@@ -1321,7 +1321,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="BonkCoopHostCancelButton" inherits="GlueButtonSmallTemplate" text="Cancel">
+			<Button name="BonkCoopHostCancelButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_CANCEL">
 				<Size>
 					<AbsDimension x="130" y="28"/>
 				</Size>
@@ -1401,7 +1401,7 @@
 					</Layer>
 				</Layers>
 			</StatusBar>
-			<Button name="$parentAccept" inherits="GlueButtonSmallTemplate" text="Accept">
+			<Button name="$parentAccept" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_ACCEPT">
 				<Size>
 					<AbsDimension x="130" y="28"/>
 				</Size>
@@ -1418,7 +1418,7 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentDecline" inherits="GlueButtonSmallTemplate" text="Decline">
+			<Button name="$parentDecline" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_DECLINE">
 				<Size>
 					<AbsDimension x="130" y="28"/>
 				</Size>

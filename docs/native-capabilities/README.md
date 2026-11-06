@@ -43,13 +43,16 @@ benilla's Lua/FrameXML coverage is incomplete. Before migrating, inventory and f
 - `UnitAffectingCombat`/`PLAYER_REGEN_*`
 - party-member and target APIs
 
-The current `C_UnitAuras` serves only enemy nameplates (`Interface/AddOns/HordesOfAzeroth/VanillaBonkDebuffs.lua:62-78`); extend it into a complete aura-reading interface.
+`C_UnitAuras` now serves enemy nameplates, boss debuffs, keyword stacks and player auras; the remaining gaps are the stock spell/cooldown and party APIs listed above.
 
 ## Addon migration
 
-Delete:
+Done in phase 5:
 
-- `BONK~state` parsing and local timers (`VanillaBonk.lua:3611-3655`, `VanillaBonkDetermination.lua:35-44`, `VanillaBonkHeroBar.lua:1072-1080`, `VanillaBonkDash.lua:89`, `VanillaBonkCards.lua:255-328`);
+- the `BONK~state` parser and local state timers are gone; typed `HOA_*` events carry server state, and native auras carry the effects.
+
+Remaining:
+
 - per-frame `OnUpdate` countdown/cooldown rebuilds;
 - addon-computed item level/stats/gear tooltips (read server data instead).
 

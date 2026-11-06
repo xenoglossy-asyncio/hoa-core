@@ -39,24 +39,19 @@ watch:SetScript("OnUpdate", function()
     end
 end)
 
-local handlers = {}
-
-handlers["paused"] = function(f)
-    paused = f[2] == "1"
-    stuckFor = 0
-end
-
-handlers["start"] = function()
-    inRun = true
-end
-
-handlers["state"] = function()
-    inRun = true
-end
-
-handlers["end"] = function()
-    inRun = false
-    paused = false
-end
-
-UI.Listen(handlers)
+UI.ListenHoa({
+    HOA_RUN_PAUSED = function(state)
+        paused = state.paused and true or false
+        stuckFor = 0
+    end,
+    HOA_RUN_START = function()
+        inRun = true
+    end,
+    HOA_RUN_STATE = function()
+        inRun = true
+    end,
+    HOA_RUN_END = function()
+        inRun = false
+        paused = false
+    end,
+})

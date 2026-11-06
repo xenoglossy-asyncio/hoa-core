@@ -752,6 +752,9 @@ pub(crate) struct Model {
     /// The client's locale index, `[0xc0e080]` (0, enUS, until the host seats the install's): the
     /// name `GetLocale` answers is the table `0x8558a4` at it ([`crate::toc::LOCALES`]).
     pub(crate) locale: usize,
+    /// The language-pack locale [`UiScript::set_ui_locale`] seats for `GetLocale`; `None` falls
+    /// back to `locale`. It leaves `locale` alone, which DBC columns and the name charsets read.
+    pub(crate) ui_locale: Option<usize>,
     /// `Wow.ini`'s `Region` as start-up hands it to the name check (`0x402b7f` → `0x6c91b8`,
     /// `[0x86c9e0]`): 0 until the host seats the install's.
     pub(crate) client_region: i32,
@@ -1059,6 +1062,10 @@ pub(crate) struct Model {
     /// `PLAYER_FLAGS` bit 13, `NoPlayTime()` (`0x48ebe0`), the same regime's harsher half.
     pub(crate) no_play_time: bool,
 
+    /// `GetBillingTimeRemaining()` in minutes from `SMSG_AUTH_RESPONSE`, unconverted.
+    pub(crate) billing_time_remaining: u32,
+    /// The `BillingPlanFlags` byte from `SMSG_AUTH_RESPONSE`; `GetBillingPlan` decodes it.
+    pub(crate) billing_plan_flags: u8,
     /// `GetBillingTimeRested()` (`0x48ec50`) in minutes from `SMSG_AUTH_RESPONSE`, unconverted.
     pub(crate) billing_time_rested: u32,
     /// `InCinematic()`. While set, `StaticPopup_Show` refuses any dialog without
@@ -1601,6 +1608,7 @@ impl Model {
             layout_mode: 0,
             european_numbers: false,
             locale: 0,
+            ui_locale: None,
             client_region: 0,
             name_lists: None,
             slider_drag: None,
@@ -1742,6 +1750,8 @@ impl Model {
             resting: false,
             partial_play_time: false,
             no_play_time: false,
+            billing_time_remaining: 0,
+            billing_plan_flags: 0,
             billing_time_rested: 0,
             in_cinematic: false,
             exhaustion: [

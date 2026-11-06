@@ -1,6 +1,6 @@
 RegisterCVar("hoaLanguage", "enUS")
 
-VanillaBonkLocale = { tables = {} }
+VanillaBonkLocale = { tables = {}, keys = {}, english = {} }
 
 local function SavedLanguage()
     local language = GetCVar("hoaLanguage")
@@ -22,7 +22,10 @@ end
 
 function VanillaBonkLocale.Text(language, text)
     local strings = VanillaBonkLocale.tables[language]
-    return strings and strings[text] or WithoutNote(text)
+    local message_id = VanillaBonkLocale.keys[text]
+    local translated = message_id and strings and strings[message_id]
+    local english = VanillaBonkLocale.english[message_id or text]
+    return translated or (strings and strings[text]) or english or WithoutNote(text)
 end
 
 function VanillaBonkLocale.English(text)
@@ -32,8 +35,8 @@ function VanillaBonkLocale.English(text)
     end
     if not VanillaBonkLocale.reverse then
         VanillaBonkLocale.reverse = {}
-        for english, translated in pairs(strings) do
-            VanillaBonkLocale.reverse[translated] = WithoutNote(english)
+        for message_id, translated in pairs(strings) do
+            VanillaBonkLocale.reverse[translated] = VanillaBonkLocale.english[message_id] or message_id
         end
     end
     return VanillaBonkLocale.reverse[text] or text
@@ -57,6 +60,23 @@ VanillaBonkL = setmetatable({}, {
 
 function VanillaBonkLocale.Register(language, strings)
     VanillaBonkLocale.tables[language] = strings
+    VanillaBonkLocale.reverse = nil
+end
+
+function VanillaBonkLocale.RegisterLanguages(tables)
+    for language, strings in pairs(tables) do
+        VanillaBonkLocale.tables[language] = strings
+    end
+    VanillaBonkLocale.reverse = nil
+end
+
+function VanillaBonkLocale.RegisterKeys(keys)
+    VanillaBonkLocale.keys = keys
+end
+
+function VanillaBonkLocale.RegisterEnglish(english)
+    VanillaBonkLocale.english = english
+    VanillaBonkLocale.reverse = nil
 end
 
 StaticPopupDialogs["VANILLABONK_LANGUAGE"] = {
@@ -74,7 +94,7 @@ function VanillaBonkLocale.Changed(language)
         return
     end
     local dialog = StaticPopupDialogs["VANILLABONK_LANGUAGE"]
-    dialog.button1 = VanillaBonkLocale.Text(language, "Reload")
-    dialog.button2 = VanillaBonkLocale.Text(language, "Later")
-    StaticPopup_Show("VANILLABONK_LANGUAGE", VanillaBonkLocale.Text(language, "Reload the interface to show it in the new language?"))
+    dialog.button1 = VanillaBonkLocale.Text(language, "hoa.addon.reload")
+    dialog.button2 = VanillaBonkLocale.Text(language, "hoa.addon.later")
+    StaticPopup_Show("VANILLABONK_LANGUAGE", VanillaBonkLocale.Text(language, "hoa.addon.reload_the_interface_to_show_it_in_the_new_language"))
 end

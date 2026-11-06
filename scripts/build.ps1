@@ -68,6 +68,16 @@ function Test-I18n {
     if ($LASTEXITCODE -ne 0) { throw 'generated server strings are out of date' }
     python "$Root\tools\i18n\gen_addon_locale.py" --check
     if ($LASTEXITCODE -ne 0) { throw 'generated addon locale is out of date' }
+    python "$Root\tools\i18n\gen_client_pack.py" --check
+    if ($LASTEXITCODE -ne 0) { throw 'generated client language packs are out of date' }
+    python "$Root\tools\i18n\gen_launcher_strings.py" --check
+    if ($LASTEXITCODE -ne 0) { throw 'generated launcher strings are out of date' }
+    python "$Root\tools\i18n\check_ui_xml.py"
+    if ($LASTEXITCODE -ne 0) { throw 'client UI language keys are out of date' }
+    python "$Root\tools\i18n\check_code_text.py"
+    if ($LASTEXITCODE -ne 0) { throw 'addon/glue still use English L keys' }
+    python -m unittest discover -s "$Root\tools\i18n" -p "test_*.py"
+    if ($LASTEXITCODE -ne 0) { throw 'i18n tests failed' }
 }
 
 function Test-Content {

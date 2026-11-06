@@ -1,10 +1,12 @@
 #include "BonkMgr.h"
 #include "BonkContentHash.h"
+#include "BonkAura.h"
 #include "BonkCoop.h"
 #include "BonkEnchant.h"
 #include "BonkFoundGear.h"
 #include "BonkLocale.h"
 #include "BonkRun.h"
+#include "BonkCharacterProgress.h"
 #include "BonkMastery.h"
 #include "BonkQuests.h"
 #include "Database/DatabaseEnv.h"
@@ -23,6 +25,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <map>
 #include <tuple>
 
 INSTANTIATE_SINGLETON_1(BonkMgr);
@@ -48,6 +51,9 @@ namespace
     };
 
     float const BONK_NEWEST_RAID_CHANCE = 60.0f;
+    uint32 const BONK_MYTHIC_LEVEL_OFFSET = 9;
+    char const* const BONK_ZUL_GURUB_KEY = "zulgurub";
+    char const* const BONK_RUINS_OF_AHNQIRAJ_KEY = "ruinsaq";
 
     uint32 PickLookUpTo(uint32 firstLook, uint32 lastLook, uint32 tier)
     {
@@ -277,9 +283,40 @@ void BonkMgr::CheckContentHash()
         sLog.Out(LOG_BASIC, LOG_LVL_ERROR,
             "HoA content: database hash %s does not match this build's %s; apply server/sql/content/*.sql",
             hash.c_str(), HOA_CONTENT_HASH);
+    }
+    else
+        sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> HoA content hash %s", HOA_CONTENT_HASH);
+
+    std::unique_ptr<QueryResult> sections(WorldDatabase.Query("SELECT `name`, `hash` FROM `hoa_content_section`"));
+    if (!sections)
+    {
+        sLog.Out(LOG_BASIC, LOG_LVL_ERROR,
+            "HoA content: table `hoa_content_section` is missing; apply server/sql/content/*.sql");
         return;
     }
-    sLog.Out(LOG_BASIC, LOG_LVL_MINIMAL, ">> HoA content hash %s", HOA_CONTENT_HASH);
+    std::map<std::string, std::string> actual;
+    do
+    {
+        Field* fields = sections->Fetch();
+        actual[fields[0].GetCppString()] = fields[1].GetCppString();
+    } while (sections->NextRow());
+    for (HoaContentSection const& expected : HOA_CONTENT_SECTIONS)
+    {
+        auto itr = actual.find(expected.name);
+        if (itr == actual.end())
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "HoA content: section %s is missing from the database", expected.name);
+        else if (itr->second != expected.hash)
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "HoA content: section %s has database hash %s, this build expects %s",
+                expected.name, itr->second.c_str(), expected.hash);
+    }
+    for (auto const& row : actual)
+    {
+        bool known = false;
+        for (HoaContentSection const& expected : HOA_CONTENT_SECTIONS)
+            known = known || row.first == expected.name;
+        if (!known)
+            sLog.Out(LOG_BASIC, LOG_LVL_ERROR, "HoA content: database has unknown section %s", row.first.c_str());
+    }
 }
 
 void BonkMgr::Load()
@@ -328,8 +365,10 @@ void BonkMgr::Load()
     LoadBoltLooks();
     sBonkQuests.Load();
     sBonkMastery.Load();
+    BonkCharacterProgress::MoveClassProgressToCharacters();
     LoadPetFamilies();
     sBonkLocale.Load();
+    sBonkAura.Load();
 
     for (uint32 entry : { BONK_GO_CHEST, BONK_GO_CHEST_FREE, BONK_GO_PORTAL, BONK_GO_SHARD, BONK_GO_VAULT })
         if (!sObjectMgr.GetGameObjectTemplate(entry))
@@ -2340,11 +2379,59 @@ std::vector<uint32> BonkMgr::GetLegendariesFor(uint32 classMask, uint32 tier)
 
 uint32 BonkMgr::GetGearTier(uint32 entry)
 {
-    uint32 kind, tier;
+    uint32 kind, tier, band;
     uint8 quality;
     if (ReadGearEntry(entry, kind, quality, tier) || ReadLegendaryEntry(entry, kind, tier))
         return tier;
+    if (ReadDungeonLookEntry(entry, band, kind, tier))
+        return 1;
     return 0;
+}
+
+uint32 BonkMgr::PickMoltenCoreLook()
+{
+    RaidLooks const& moltenCore = BONK_EPIC_RAID_LOOKS[0];
+    return urand(moltenCore.firstLook, moltenCore.lastLook);
+}
+
+int32 BonkMgr::GetDungeonLookBand(std::string const& mapKey)
+{
+    if (mapKey == BONK_ZUL_GURUB_KEY)
+        return 0;
+    if (mapKey == BONK_RUINS_OF_AHNQIRAJ_KEY)
+        return 1;
+    return -1;
+}
+
+uint32 BonkMgr::PickDungeonLookEntry(uint32 band, uint32 kind)
+{
+    std::vector<uint32> looks;
+    for (uint32 look = 1; look <= BONK_DUNGEON_LOOKS; ++look)
+    {
+        uint32 const entry = BONK_DUNGEON_LOOK_FIRST + (band * BONK_GEAR_KINDS + kind) * BONK_DUNGEON_LOOKS + look - 1;
+        if (sObjectMgr.GetItemPrototype(entry))
+            looks.push_back(entry);
+    }
+    return looks.empty() ? 0 : looks[urand(0, uint32(looks.size() - 1))];
+}
+
+bool BonkMgr::ReadDungeonLookEntry(uint32 entry, uint32& band, uint32& kind, uint32& look)
+{
+    if (entry < BONK_DUNGEON_LOOK_FIRST || entry >= BONK_DUNGEON_LOOK_FIRST + BONK_DUNGEON_LOOK_BANDS * BONK_GEAR_KINDS * BONK_DUNGEON_LOOKS)
+        return false;
+    uint32 const index = entry - BONK_DUNGEON_LOOK_FIRST;
+    look = index % BONK_DUNGEON_LOOKS + 1;
+    kind = (index / BONK_DUNGEON_LOOKS) % BONK_GEAR_KINDS;
+    band = index / (BONK_DUNGEON_LOOKS * BONK_GEAR_KINDS);
+    return true;
+}
+
+uint32 BonkMgr::GetEpicLookMythic(uint32 look)
+{
+    for (RaidLooks const& raid : BONK_EPIC_RAID_LOOKS)
+        if (look >= raid.firstLook && look <= raid.lastLook)
+            return raid.openLevel - BONK_MYTHIC_LEVEL_OFFSET;
+    return 1;
 }
 
 uint32 BonkMgr::PickGearLook(uint8 quality, uint32 tier)
@@ -2413,14 +2500,6 @@ std::string BonkMgr::DescribePassiveNow(BonkPassive const& passive, uint32 rank,
     if (cap > 0.0f && passive.valuePerRank > 0.0f)
         scale = std::min(scale, cap / passive.valuePerRank);
     return ScalePassiveText(sBonkLocale.Localize(BONK_FIELD_PASSIVE_DESCRIPTION, passive.id, passive.description, locale), scale);
-}
-
-bool BonkMgr::IsArenaLocation(uint32 mapId, uint32 zoneId) const
-{
-    auto itr = m_arenaZonesByMap.find(mapId);
-    if (itr == m_arenaZonesByMap.end())
-        return false;
-    return itr->second.count(0) || itr->second.count(zoneId);
 }
 
 bool BonkMgr::IsStaticCreatureSuppressed(Map const* map, uint32 dbGuid) const

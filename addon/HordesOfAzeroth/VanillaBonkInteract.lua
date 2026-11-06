@@ -2,7 +2,7 @@ local L = VanillaBonkL
 local UI = VanillaBonkUI
 local Controller = VanillaBonkController
 
-BINDING_NAME_VANILLABONK_INTERACT = L["Interact With Nearby"]
+BINDING_NAME_VANILLABONK_INTERACT = L["hoa.addon.interact_with_nearby"]
 
 function VanillaBonk_Interact()
     if HoAController_Interact then

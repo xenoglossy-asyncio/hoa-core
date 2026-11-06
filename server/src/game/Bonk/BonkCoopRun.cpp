@@ -6,6 +6,7 @@
 #include "BonkTelegraph.h"
 #include "Camera.h"
 #include "Group.h"
+#include "HoaProtocol.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "Unit.h"
@@ -318,7 +319,11 @@ namespace
 
     void SendWatching(Player* watcher, Player* watched, size_t choices)
     {
-        watcher->GetBonkPlayer()->SendAddon("coopwatch~" + std::string(watched ? watched->GetName() : "") + "~" + std::to_string(choices));
+        if (!watcher->GetBonkPlayer()->IsAddonReady())
+            return;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCoopWatch(data, watched ? watched->GetName() : "", choices);
+        watcher->GetSession()->SendPacket(&data);
     }
 
     void StopWatching(Player* player)
@@ -482,9 +487,14 @@ namespace
                 std::to_string(entry.second.reviveMs * 100 / REVIVE_MS) + ":" + (entry.second.spectator ? "1" : "0") + ":" +
                 (entry.second.fill == REVIVE_FILL_GROWING ? "1" : "0");
         }
-        std::string const line = "coopdown~" + std::to_string(group.pool) + "~" + std::to_string(group.cap) + "~" + list;
         for (Player* member : members)
-            member->GetBonkPlayer()->SendAddon(line);
+        {
+            if (!member->GetBonkPlayer()->IsAddonReady())
+                continue;
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCoopDown(data, group.pool, group.cap, list);
+            member->GetSession()->SendPacket(&data);
+        }
     }
 
     void Wipe(Player* host, GroupRun& group)
@@ -528,7 +538,13 @@ namespace
         Player* host = sObjectMgr.GetPlayer(check.host);
         for (auto const& answer : check.answers)
             if (Player* guest = sObjectMgr.GetPlayer(answer.first))
-                guest->GetBonkPlayer()->SendAddon("coopreadyend");
+            {
+                if (!guest->GetBonkPlayer()->IsAddonReady())
+                    continue;
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteCoopReadyEnd(data);
+                guest->GetSession()->SendPacket(&data);
+            }
         if (!check.nextStageAsker.IsEmpty())
         {
             ConcludeNextStage(check, host);
@@ -642,8 +658,13 @@ void BonkCoop::UpdateLeash(uint32 diff)
             float const factor = LeashFactor(distance, previous);
             SetLeash(member, factor, distance);
             if (warn && distance > LEASH_RADIUS - LEASH_WARN_MARGIN)
-                member->GetBonkPlayer()->SendAddon("leash~" + std::to_string(int32(distance)) + "~" + std::to_string(int32(LEASH_RADIUS)) +
-                    "~" + std::to_string(int32(std::lround((1.0f - factor) * 100.0f))));
+            {
+                if (!member->GetBonkPlayer()->IsAddonReady())
+                    continue;
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteLeash(data, int32(distance), int32(LEASH_RADIUS), int32(std::lround((1.0f - factor) * 100.0f)));
+                member->GetSession()->SendPacket(&data);
+            }
         }
     }
 
@@ -793,6 +814,12 @@ void BonkCoop::PlaceGroupVaults(Player* host, GameObject const* portal, float si
     }
 }
 
+void BonkCoop::ShareEnchanter(Player* host, ObjectGuid enchanter)
+{
+    for (BonkRun* run : GuestRunsOf(host))
+        run->UseHostEnchanter(enchanter);
+}
+
 Player* BonkCoop::VaultOwner(Player* viewer, GameObject const* vault)
 {
     for (Player* member : RunGroupOf(viewer))
@@ -830,7 +857,12 @@ bool BonkCoop::RequestGroupStart(Player* host, BonkTier const& tier, BonkRunChoi
         check.answers[guest->GetObjectGuid()] = ANSWER_WAITING;
         BonkPlayer* bonk = guest->GetBonkPlayer();
         std::string const text = bonk->GetString(BONK_STRING_COOP_HOST_WANTS_START, { bonk->GetLevelName(choice.level) });
-        bonk->SendAddon("coopready~" + text + "~" + std::to_string(READY_CHECK_MS / IN_MILLISECONDS));
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCoopReady(data, text, READY_CHECK_MS / IN_MILLISECONDS);
+            guest->GetSession()->SendPacket(&data);
+        }
     }
     s_checks.push_back(check);
     host->GetBonkPlayer()->Notify(BONK_STRING_COOP_ASKING_READY);
@@ -924,7 +956,12 @@ void BonkCoop::RequestNextStage(Player* player)
         check.answers[member->GetObjectGuid()] = ANSWER_WAITING;
         BonkPlayer* bonk = member->GetBonkPlayer();
         std::string const text = bonk->GetString(BONK_STRING_COOP_WANTS_NEXT_STAGE, { player->GetName() });
-        bonk->SendAddon("coopready~" + text + "~" + std::to_string(READY_CHECK_MS / IN_MILLISECONDS));
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCoopReady(data, text, READY_CHECK_MS / IN_MILLISECONDS);
+            member->GetSession()->SendPacket(&data);
+        }
     }
     if (check.answers.empty())
     {
@@ -954,7 +991,13 @@ void BonkCoop::OnHostFinished(Player* host)
     auto group = s_groups.find(host->GetObjectGuid());
     bool const wiped = group != s_groups.end() && group->second.wiped;
     for (Player* member : GroupMembers(host))
-        member->GetBonkPlayer()->SendAddon("coopdown~0~0~");
+    {
+        if (!member->GetBonkPlayer()->IsAddonReady())
+            continue;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteCoopDown(data, 0, 0, "");
+        member->GetSession()->SendPacket(&data);
+    }
     if (group != s_groups.end())
     {
         ReleaseAllDowned(group->second, GroupMembers(host));
@@ -1173,9 +1216,15 @@ void BonkCoop::UpdateSharedPause(uint32 diff)
             continue;
         group.waitSendMs = 0;
         group.lastWait = names;
-        std::string const line = "coopwait~" + names + "~" + std::to_string((longestLeftMs + 999) / IN_MILLISECONDS);
+        uint32 const seconds = (longestLeftMs + 999) / IN_MILLISECONDS;
         for (auto const& member : members)
-            member.first->GetBonkPlayer()->SendAddon(line);
+        {
+            if (!member.first->GetBonkPlayer()->IsAddonReady())
+                continue;
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteCoopWait(data, names, seconds);
+            member.first->GetSession()->SendPacket(&data);
+        }
     }
 }
 

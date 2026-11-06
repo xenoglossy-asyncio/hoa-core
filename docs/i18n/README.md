@@ -82,7 +82,7 @@ The compiler then generates:
 
 - `server/src/game/Hoa/i18n/generated/Messages.h/.cpp`: ID enums + English source + lookup
 - `client/assets/i18n/<locale>.json`: client language packs
-- `addon/HordesOfAzeroth/VanillaBonkLocaleZhCN.lua`: generated addon language table (fixed TOC name)
+- `addon/HordesOfAzeroth/VanillaBonkLocaleData.lua`: one generated addon data file holding every language (fixed TOC name)
 - `tools/translate` reads and writes `shared/i18n` directly instead of maintaining its own JSON
 
 ## 6. Server
@@ -97,21 +97,29 @@ The compiler then generates:
 
 ## 7. Client
 
-- **Language packs:** the client loads `assets/i18n/<locale>.json` at startup from the launcher/last language; the account language overrides it after login. enUS is built in; other languages ship with the content pack.
-- **GlobalStrings:** currently read directly from the installed MPQs (`benilla-app/src/ui_script/lifecycle.rs:1165-1188`). Replace them with repository-owned multilingual GlobalStrings/language packs; the install no longer supplies UI strings.
-- **`GetLocale`:** before login it returns the launcher/last language; after login it returns the account language. `GetLocale()` in the addon means the game language, not the install language. The `Wow.ini` locale is only for parsing DBC columns and resources.
-- **UI text:** replace hardcoded English in `assets/ui/OptionsFrame.xml`, `GameMenuAdapters.xml`, `ScriptLogFrame.xml`, `AccountLoginRealmlist.xml` and kin with language-pack keys; Lua/FrameXML read the same table.
-- **DBC names:** spellbook, map, talent, class/race names come from the language pack by ID (generated from official 1.12.1 name tables + HOA content), no longer from the install's localized columns. An English install can display Chinese.
-- **Fonts:** choose the fallback chain per language (zhCN: Noto Sans SC; zhTW: Noto Sans TC; enUS: stock fonts), with a fixed glyph fallback order.
-- **Layout:** CJK line breaking without spaces, kinsoku rules, minimum button/label widths; long text scales or wraps. The shaper must not hardcode `"en-US"` (`ui_text/engine/mod.rs:169`).
+- **Language packs:** the client loads `client/crates/benilla-app/assets/i18n/<locale>.json` at startup from the launcher/last language; the account language overrides it after login. enUS, zhCN and zhTW are compiled into the client.
+- **GlobalStrings:** stock UI still reads `GlobalStrings.lua` from the install's MPQ chain. When `benilla-config/locale/<language>/GlobalStrings.lua` exists, `Chain` returns that file instead, so stock FrameXML follows the account language without replacing the install.
+- **`GetLocale`:** implemented through a separate UI locale: before login it returns the launcher/last language; after login it returns the account language. `GetLocale()` in the addon means the game language, not the install language. The `Wow.ini` locale is still used for parsing DBC columns and resources, and for name charsets.
+- **UI text:** `OptionsFrame.xml`, `GameMenuAdapters.xml`, `ScriptLogFrame.xml`, `AccountLoginRealmlist.xml`, `KeyBindingsPage.xml` and the GlueXML files now read generated `HOA_UI_*` keys from the language pack; Lua/FrameXML read the same table.
+- **DBC names:** spellbook, map, talent, class/race names read DBC columns. With `benilla-config/locale/<language>/DBFilesClient/*.dbc`, the chain reads those files and selects the pack's locale column; otherwise the install's columns remain. `tools/install-locale-pack.ps1 -Client <official-client> -Language zhCN -Config <benilla-config>` fills the folder through `benilla-extract locale-pack` (GlobalStrings plus every live `DBFilesClient` table, patch tombstones excluded); it requires a 1.12.1 client in that language, e.g. a zhCN build. zhTW has no stock pack yet and falls back to the install.
+- **Fonts:** the fallback chain follows the selected UI language (zhCN: Noto Sans SC; zhTW: Noto Sans TC; enUS: stock fonts), with a fixed glyph fallback order.
+- **Layout:** CJK line breaking without spaces, kinsoku rules, minimum button/label widths; long text scales or wraps. The shaper receives `zh-CN`/`zh-TW`/`en-US` from `UiLanguage::shaping_locale()`.
 - **Caches:** add `(locale, contentVersion)` to WDB/template cache names or headers; old caches expire on language or content changes. This also fixes "gear names stay English after switching language". The first slice is in `client/crates/benilla-app/src/wdb.rs`: the WDB header (formats 2) folds the HOA account language into the locale tag, so a cache written under another language is discarded; the content version follows when the content pack exists.
-- **Custom spells:** the client has no spell query path (`benilla-app/src/net.rs:1034-1058`), so IDs missing from `Spell.dbc` render blank (`ui_spellbook.rs:351-355`, `ui_aura.rs:256-260`). The content pack must provide spell ID → name/icon/description/cast data; the client falls back to it when the DBC lookup fails.
+- **Custom spells:** the client has no spell query path (`benilla-app/src/net.rs:1034-1058`), so IDs missing from `Spell.dbc` render blank (`ui_spellbook.rs:351-355`, `ui_aura.rs:256-260`). Custom aura rows are pushed by the server at addon-ready and on a language change (`aura_catalog_entry`/`aura_catalog_end`); the Rust side stores the already-localized name/icon/description and never selects a language.
+- **Glue class names:** the glue code must not hardcode localized class names. It maps a character through the server-provided class id, and otherwise learns the client's localized class names at runtime from `GetClassesForRace`/`GetSelectedClass`; the old hardcoded Chinese table is gone.
+- **GlueXML:** login/character-select/creation use the same language pack; language selection can live in Glue or the launcher.
+
+**Progress (2026-11-06):** `shared/i18n/ui` + `tools/i18n/gen_client_pack.py` generate enUS/zhCN/zhTW packs; `HOA_UI_*` globals cover HoA's Options, GameMenu, ScriptLog, Realmlist, KeyBindings and GlueXML, and `GetLocale` follows the account language. zhTW has its own font and shaping locale. The client also reads stock GlobalStrings and DBCs from `benilla-config/locale/<language>/` when installed; `tools/install-locale-pack.ps1` fills that folder from an official 1.12.1 client, and a zhCN pack generated this way was verified against the official zhCN client.
+
+- **Caches:** add `(locale, contentVersion)` to WDB/template cache names or headers; old caches expire on language or content changes. The first slice is in `client/crates/benilla-app/src/wdb.rs`: the WDB header (formats 2) folds the HOA account language into the locale tag, so a cache written under another language is discarded.
+- **Custom spells:** the client has no spell query path (`benilla-app/src/net.rs:1034-1058`), so IDs missing from `Spell.dbc` render blank (`ui_spellbook.rs:351-355`, `ui_aura.rs:256-260`). Custom aura rows are pushed by the server at addon-ready and on a language change (`aura_catalog_entry`/`aura_catalog_end`); the Rust side stores the already-localized name/icon/description and never selects a language.
 - **Glue class names:** the glue code must not hardcode localized class names. It maps a character through the server-provided class id, and otherwise learns the client's localized class names at runtime from `GetClassesForRace`/`GetSelectedClass`; the old hardcoded Chinese table is gone.
 - **GlueXML:** login/character-select/creation use the same language pack; language selection can live in Glue or the launcher.
 
 ## 8. Addon
 
-- Delete tables keyed by English sentences in `VanillaBonkLocale*.lua`; use generated `locale_<locale>.lua` plus message IDs.
+- All languages live in one generated `VanillaBonkLocaleData.lua`, keyed by stable message ID; there is no per-language Lua file.
+- The addon registers the tables through `VanillaBonkLocale.RegisterLanguages`. `L()` call sites still pass their English lookup text; a generated English→ID map keeps them working during the migration.
 - Delete the `VanillaBonkLocale.English` reverse lookup (currently used to match NPC names across languages); NPC windows match by NPC entry/ID, not by name.
 - Option text (`VanillaBonkOptionsText.lua`) becomes language-pack driven; no more English→Chinese map in Lua.
 - Text arguments use `L(id, args)`; never concatenate sentences with variable word order in Lua.
@@ -130,7 +138,7 @@ The compiler then generates:
 | --- | --- |
 | Server `BonkLocale`: English sentences + `source_hash` | Extract 900+ messages, assign stable IDs, generate enums; import old translations by English match |
 | `bonk_*_locale` tables | Row key becomes the content ID; the generator maintains them |
-| Addon `VanillaBonkLocaleZhCN.lua` (~1000+ entries) | Import by English match into the new catalogue; generate Lua tables |
+| Addon `VanillaBonkLocaleData.lua` (~1000+ entries) | Generated from the catalogue; one data file for every language |
 | `VanillaBonkOptionsText.lua` client-option patch | Replace with native client language packs; keep the patch during the transition |
 | GlueXML `BonkGlueLocaleZhCN.lua` | Merge into the Glue section of `shared/i18n/ui` |
 | Hardcoded English in client `OptionsFrame.xml` and kin | Replace with language-pack keys in a client PR |

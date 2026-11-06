@@ -1,9 +1,13 @@
 #include "BonkPlayer.h"
 #include "BonkContentHash.h"
+#include "BonkAura.h"
 #include "BonkCoop.h"
+#include "BonkIntegrity.h"
 #include "Bag.h"
 #include "BonkEnchant.h"
 #include "BonkFoundGear.h"
+#include "BonkTransmog.h"
+#include "BonkHardcore.h"
 #include "BonkLeaderboard.h"
 #include "BonkLocale.h"
 #include "BonkMastery.h"
@@ -46,7 +50,7 @@ namespace
 {
     char const* const BONK_ACCOUNT_TABLES[] = { "bonk_account", "bonk_account_mastery", "bonk_account_mastery_node", "bonk_account_quest",
         "bonk_account_starter", "bonk_account_talent", "bonk_account_level", "bonk_account_level_best", "bonk_account_kept_talents", "bonk_account_epic_luck", "bonk_account_board", "bonk_account_upgrade",
-        "bonk_account_mastery_preset", "bonk_account_mastery_preset_active" };
+        "bonk_account_mastery_preset", "bonk_account_mastery_preset_active", "bonk_account_appearance" };
     uint8 const BONK_MASTERY_PRESET_SLOTS = 3;
     char const* const BONK_PROGRESS_ONLY_TABLES[] = { "bonk_account_disabled", "bonk_account_unlock" };
     uint32 const BONK_IRONMAN_ACCOUNT_BIT = 0x80000000;
@@ -147,7 +151,12 @@ BonkPlayer::~BonkPlayer() = default;
 
 void BonkPlayer::OnLogin()
 {
+    if (BonkCoop::IsGuestAccount(m_player))
+        ClaimStagedCharacterRows();
     sBonkFound.LoadCharacter(m_player->GetGUIDLow());
+    sBonkTransmog.LoadAccount(m_player->GetSession()->GetAccountId());
+    sBonkTransmog.LoadCharacter(m_player->GetGUIDLow());
+    sBonkTransmog.CollectOwned(m_player);
     uint32 const accountId = GetProgressAccount();
     std::unique_ptr<QueryResult> result(CharacterDatabase.PQuery("SELECT `gold`, `locale` FROM `bonk_account` WHERE `account` = %u", accountId));
     if (result)
@@ -164,8 +173,10 @@ void BonkPlayer::OnLogin()
     for (uint8 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
         m_player->SetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i, 0xFFFFFFFF);
 
+    uint32 const characterAccount = GetCharacterAccount();
     m_levels.clear();
-    result = CharacterDatabase.PQuery("SELECT `class`, `best_level`, `best_ms`, `best_finale` FROM `bonk_account_level` WHERE `account` = %u", accountId);
+    result = CharacterDatabase.PQuery("SELECT `class`, `best_level`, `best_ms`, `best_finale` FROM `bonk_account_level` WHERE `account` = %u AND `class` = %u",
+        characterAccount, uint32(m_player->GetClass()));
     if (result)
     {
         do
@@ -177,10 +188,12 @@ void BonkPlayer::OnLogin()
             record.finale = fields[3].GetUInt32();
         } while (result->NextRow());
     }
+    result = CharacterDatabase.PQuery("SELECT `best_level` FROM `bonk_account_level` WHERE `account` = %u AND `class` = 0", accountId);
+    m_poolBestLevel = result ? result->Fetch()[0].GetUInt32() : 0;
 
-    LoadLevelBests(accountId);
+    LoadLevelBests(characterAccount);
     m_keptTalentPoints.clear();
-    result = CharacterDatabase.PQuery("SELECT `class`, `points` FROM `bonk_account_kept_talents` WHERE `account` = %u", accountId);
+    result = CharacterDatabase.PQuery("SELECT `class`, `points` FROM `bonk_account_kept_talents` WHERE `account` = %u", characterAccount);
     if (result)
     {
         do
@@ -228,6 +241,7 @@ void BonkPlayer::OnLogin()
     ResetReworkedTrinkets();
     TeachWeaponSkills();
     m_player->GetCamera().UpdateVisibilityForOwner();
+    SettleLeftHardcoreRun();
     BonkCoop::JoinHostGroup(m_player);
 }
 
@@ -364,7 +378,7 @@ void BonkPlayer::LoadPurchases()
 
 void BonkPlayer::LoadMastery()
 {
-    uint32 const accountId = GetProgressAccount();
+    uint32 const accountId = GetCharacterAccount();
     uint8 const classId = m_player->GetClass();
 
     m_masteryXp = 0;
@@ -373,7 +387,8 @@ void BonkPlayer::LoadMastery()
     if (result)
         m_masteryXp = result->Fetch()[0].GetUInt32();
 
-    m_accountHasRun = bool(CharacterDatabase.PQuery("SELECT 1 FROM `bonk_account_mastery` WHERE `account` = %u AND `xp` > 0 LIMIT 1", accountId));
+    m_accountHasRun = m_masteryXp > 0 || bool(CharacterDatabase.PQuery("SELECT 1 FROM `bonk_character_stats` s JOIN `characters` c ON c.`guid` = s.`guid` "
+        "WHERE c.`account` = %u AND s.`runs` > 0 LIMIT 1", m_player->GetSession()->GetAccountId()));
 
     m_titleId = 0;
     result = CharacterDatabase.PQuery("SELECT `title` FROM `bonk_character_title` WHERE `guid` = %u", m_player->GetGUIDLow());
@@ -550,13 +565,16 @@ uint32 BonkPlayer::GetMasterySpentAbove(uint32 treeId, uint8 row) const
 
 void BonkPlayer::SendMasteryState() const
 {
+    if (!m_addonReady)
+        return;
     uint32 const level = GetMasteryLevel();
     uint32 const earned = GetMasteryPoints();
     uint32 const spent = GetMasterySpent();
-    SendAddon("mastery~" + GetClassName() + "~" + std::to_string(level) + "~" + std::to_string(BonkMastery::GetXpIntoLevel(m_masteryXp)) + "~" +
-        std::to_string(level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0) + "~" +
-        std::to_string(BONK_MASTERY_MAX_LEVEL) + "~" + std::to_string(earned > spent ? earned - spent : 0) + "~" +
-        (sBonkMastery.HasTrees(m_player->GetClass()) ? "1" : "0"));
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteMasteryState(data, GetClassName(), level, BonkMastery::GetXpIntoLevel(m_masteryXp),
+        level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0, BONK_MASTERY_MAX_LEVEL,
+        earned > spent ? earned - spent : 0, sBonkMastery.HasTrees(m_player->GetClass()));
+    m_player->GetSession()->SendPacket(&data);
 }
 
 bool BonkPlayer::CanSeeTownObject(uint32 entry, bool gameObject) const
@@ -578,10 +596,15 @@ BonkTitle const* BonkPlayer::GetActiveTitle() const
 void BonkPlayer::SendTitles() const
 {
     BonkTitle const* active = GetActiveTitle();
-    std::string line = "titles~" + std::to_string(active ? active->id : 0);
+    std::string list;
     for (BonkTitle const* title : sBonkQuests.GetEarnedTitles(GetProgressAccount()))
-        line += "~" + std::to_string(title->id) + "~" + Localize(BONK_FIELD_TITLE_PATTERN, title->id, title->pattern) + "~" + std::to_string(title->stat) + "~" + std::to_string(title->value);
-    SendAddon(line);
+        list += (list.empty() ? "" : "~") + std::to_string(title->id) + "~" + Localize(BONK_FIELD_TITLE_PATTERN, title->id, title->pattern) +
+            "~" + std::to_string(title->stat) + "~" + std::to_string(title->value);
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteTitles(data, active ? active->id : 0, list);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 bool BonkPlayer::SetTitle(uint32 titleId, std::string& error)
@@ -614,7 +637,7 @@ void BonkPlayer::AddMasteryXp(uint32 xp)
     uint32 const before = GetMasteryLevel();
     m_masteryXp += xp;
     CharacterDatabase.PExecute("REPLACE INTO `bonk_account_mastery` (`account`, `class`, `xp`) VALUES (%u, %u, %u)",
-        GetProgressAccount(), uint32(m_player->GetClass()), m_masteryXp);
+        GetCharacterAccount(), uint32(m_player->GetClass()), m_masteryXp);
 
     uint32 const after = GetMasteryLevel();
     if (after > before)
@@ -691,7 +714,7 @@ bool BonkPlayer::LearnMastery(uint32 nodeId, std::string& message)
 
     m_masteryRanks[nodeId] = rank + 1;
     CharacterDatabase.PExecute("REPLACE INTO `bonk_account_mastery_node` (`account`, `node`, `rank`) VALUES (%u, %u, %u)",
-        GetProgressAccount(), nodeId, uint32(rank + 1));
+        GetCharacterAccount(), nodeId, uint32(rank + 1));
     message = node->maxRank > 1 ? GetString(BONK_STRING_YOU_LEARNED_RANK, { name, std::to_string(rank + 1) }) :
         GetString(BONK_STRING_YOU_LEARNED, { name });
     SendMasteryState();
@@ -730,7 +753,7 @@ bool BonkPlayer::ResetMastery(std::string& message)
     for (auto const& itr : m_masteryRanks)
         nodes += (nodes.empty() ? "" : ",") + std::to_string(itr.first);
     CharacterDatabase.PExecute("DELETE FROM `bonk_account_mastery_node` WHERE `account` = %u AND `node` IN (%s)",
-        GetProgressAccount(), nodes.c_str());
+        GetCharacterAccount(), nodes.c_str());
 
     uint32 const refunded = GetMasterySpent();
     m_masteryRanks.clear();
@@ -741,7 +764,7 @@ bool BonkPlayer::ResetMastery(std::string& message)
 
 void BonkPlayer::LoadMasteryPresets()
 {
-    uint32 const accountId = GetProgressAccount();
+    uint32 const accountId = GetCharacterAccount();
     uint8 const classId = m_player->GetClass();
 
     m_masteryPresets.clear();
@@ -779,7 +802,7 @@ std::map<uint32, uint8> BonkPlayer::ReadMasteryPreset(uint8 slot) const
 void BonkPlayer::WriteMasteryPreset(uint8 slot, std::map<uint32, uint8> const& ranks)
 {
     m_masteryPresets[slot] = ranks;
-    uint32 const accountId = GetProgressAccount();
+    uint32 const accountId = GetCharacterAccount();
     uint32 const classId = m_player->GetClass();
     CharacterDatabase.BeginTransaction();
     CharacterDatabase.PExecute("DELETE FROM `bonk_account_mastery_preset` WHERE `account` = %u AND `class` = %u AND `slot` = %u",
@@ -823,7 +846,7 @@ bool BonkPlayer::LoadMasteryPreset(uint8 slot, std::string& message)
     }
     m_activeMasteryPreset = slot;
     CharacterDatabase.PExecute("REPLACE INTO `bonk_account_mastery_preset_active` (`account`, `class`, `slot`) VALUES (%u, %u, %u)",
-        GetProgressAccount(), uint32(m_player->GetClass()), uint32(slot));
+        GetCharacterAccount(), uint32(m_player->GetClass()), uint32(slot));
 
     uint32 const missing = wanted - std::min(wanted, GetMasterySpent());
     if (preset.empty())
@@ -838,6 +861,8 @@ bool BonkPlayer::LoadMasteryPreset(uint8 slot, std::string& message)
 
 void BonkPlayer::SendMasteryPresetRanks() const
 {
+    if (!m_addonReady)
+        return;
     size_t const nodesPerLine = 16;
     for (auto const& preset : m_masteryPresets)
     {
@@ -850,29 +875,15 @@ void BonkPlayer::SendMasteryPresetRanks() const
             ranks += (ranks.empty() ? "" : ",") + std::to_string(itr.first) + ":" + std::to_string(itr.second);
             if (++count % nodesPerLine == 0 || count == preset.second.size())
             {
-                SendAddon("presetranks~" + std::to_string(preset.first) + "~" + ranks);
+                WorldPacket data(SMSG_HOA_MESSAGE);
+                HoAWriteMasteryPresetRanks(data, preset.first, ranks);
+                m_player->GetSession()->SendPacket(&data);
                 ranks.clear();
             }
         }
     }
 }
 
-std::string BonkPlayer::DescribeMasteryPresets() const
-{
-    uint8 const active = m_activeMasteryPreset;
-    std::string line = "presets~" + std::to_string(active);
-    for (uint8 slot = 1; slot <= BONK_MASTERY_PRESET_SLOTS; ++slot)
-    {
-        uint32 spent = 0;
-        if (slot == active)
-            spent = GetMasterySpent();
-        else
-            for (auto const& itr : ReadMasteryPreset(slot))
-                spent += itr.second;
-        line += "~" + std::to_string(spent);
-    }
-    return line;
-}
 
 bool BonkPlayer::RefundMastery(uint32 nodeId, std::string& message)
 {
@@ -927,13 +938,13 @@ bool BonkPlayer::RefundMastery(uint32 nodeId, std::string& message)
     {
         m_masteryRanks[nodeId] = rank - 1;
         CharacterDatabase.PExecute("REPLACE INTO `bonk_account_mastery_node` (`account`, `node`, `rank`) VALUES (%u, %u, %u)",
-            GetProgressAccount(), nodeId, uint32(rank - 1));
+            GetCharacterAccount(), nodeId, uint32(rank - 1));
     }
     else
     {
         m_masteryRanks.erase(nodeId);
         CharacterDatabase.PExecute("DELETE FROM `bonk_account_mastery_node` WHERE `account` = %u AND `node` = %u",
-            GetProgressAccount(), nodeId);
+            GetCharacterAccount(), nodeId);
     }
     message = node->maxRank > 1 ? GetString(BONK_STRING_REFUNDED_RANK_TALENT_POINT, { std::to_string(rank), name }) :
         GetString(BONK_STRING_REFUNDED_TALENT_POINT, { name });
@@ -943,6 +954,7 @@ bool BonkPlayer::RefundMastery(uint32 nodeId, std::string& message)
 
 void BonkPlayer::OnLogout()
 {
+    sBonkTransmog.ForgetCharacter(m_player->GetGUIDLow());
     m_previewTelegraphs.Dismiss(m_player);
     if (m_run)
     {
@@ -989,8 +1001,11 @@ void BonkPlayer::WriteHeroScreenStats() const
         uint32 itemLevels = 0;
         uint32 gearValue = 0;
         bool ironman = false;
+        bool hardcore = false;
+        bool fell = false;
+        uint32 fellBest = 0;
         uint32 gold = 0;
-        uint32 ironmanMasteryXp = 0;
+        uint32 masteryXp = 0;
     };
     std::map<uint32, Hero> heroes;
 
@@ -1022,10 +1037,9 @@ void BonkPlayer::WriteHeroScreenStats() const
         } while (result->NextRow());
     }
 
-    result = CharacterDatabase.PQuery("SELECT i.`guid`, a.`gold`, m.`xp` FROM `bonk_ironman` i JOIN `characters` c ON c.`guid` = i.`guid` "
+    result = CharacterDatabase.PQuery("SELECT i.`guid`, a.`gold` FROM `bonk_ironman` i JOIN `characters` c ON c.`guid` = i.`guid` "
         "LEFT JOIN `bonk_account` a ON a.`account` = (%u | i.`guid`) "
-        "LEFT JOIN `bonk_account_mastery` m ON m.`account` = (%u | i.`guid`) AND m.`class` = c.`class` "
-        "WHERE c.`account` = %u", GetIronmanAccount(0), GetIronmanAccount(0), accountId);
+        "WHERE c.`account` = %u", GetIronmanAccount(0), accountId);
     if (result)
     {
         do
@@ -1036,29 +1050,44 @@ void BonkPlayer::WriteHeroScreenStats() const
                 continue;
             hero->second.ironman = true;
             hero->second.gold = fields[1].GetUInt32();
-            hero->second.ironmanMasteryXp = fields[2].GetUInt32();
         } while (result->NextRow());
     }
 
-    std::map<uint8, uint32> masteryXp;
-    result = CharacterDatabase.PQuery("SELECT `class`, `xp` FROM `bonk_account_mastery` WHERE `account` = %u", accountId);
+    result = CharacterDatabase.PQuery("SELECT c.`guid`, m.`xp` FROM `characters` c JOIN `bonk_account_mastery` m ON m.`class` = c.`class` "
+        "AND m.`account` = IF(EXISTS (SELECT 1 FROM `bonk_ironman` i WHERE i.`guid` = c.`guid`), %u | c.`guid`, %u | c.`guid`) WHERE c.`account` = %u",
+        GetIronmanAccount(0), GetPlainCharacterAccount(0), accountId);
     if (result)
     {
         do
         {
-            Field* fields = result->Fetch();
-            masteryXp[fields[0].GetUInt8()] = fields[1].GetUInt32();
+            auto hero = heroes.find(result->Fetch()[0].GetUInt32());
+            if (hero != heroes.end())
+                hero->second.masteryXp = result->Fetch()[1].GetUInt32();
         } while (result->NextRow());
     }
-    if (!IsIronman())
-        masteryXp[m_player->GetClass()] = m_masteryXp;
 
-    uint32 sharedGold = m_player->GetMoney();
-    if (IsIronman())
+    result = CharacterDatabase.PQuery("SELECT h.`guid` FROM `bonk_hardcore` h JOIN `characters` c ON c.`guid` = h.`guid` WHERE c.`account` = %u", accountId);
+    if (result)
     {
-        result = CharacterDatabase.PQuery("SELECT `gold` FROM `bonk_account` WHERE `account` = %u", accountId);
-        sharedGold = result ? result->Fetch()[0].GetUInt32() : 0;
+        do
+        {
+            auto hero = heroes.find(result->Fetch()[0].GetUInt32());
+            if (hero != heroes.end())
+                hero->second.hardcore = true;
+        } while (result->NextRow());
     }
+
+    uint32 const hardcoreAccount = GetHardcoreAccount(accountId);
+    auto loadGold = [](uint32 account)
+    {
+        std::unique_ptr<QueryResult> row(CharacterDatabase.PQuery("SELECT `gold` FROM `bonk_account` WHERE `account` = %u", account));
+        return row ? row->Fetch()[0].GetUInt32() : 0u;
+    };
+
+    bool const usesSharedPool = !IsIronman() && !UsesHardcorePool();
+
+    uint32 const sharedGold = usesSharedPool ? m_player->GetMoney() : loadGold(accountId);
+    uint32 const hardcoreGold = !IsIronman() && UsesHardcorePool() ? m_player->GetMoney() : loadGold(hardcoreAccount);
 
     result = CharacterDatabase.PQuery("SELECT s.`guid`, s.`runs`, s.`best_level`, s.`best_time_sec`, s.`kills`, s.`gold_earned` "
         "FROM `bonk_character_stats` s JOIN `characters` c ON c.`guid` = s.`guid` WHERE c.`account` = %u", accountId);
@@ -1096,15 +1125,28 @@ void BonkPlayer::WriteHeroScreenStats() const
     self.record = m_record;
     self.played = m_player->GetTotalPlayedTime();
     self.ironman = IsIronman();
+    self.hardcore = IsHardcore();
     self.gold = m_player->GetMoney();
-    self.ironmanMasteryXp = m_masteryXp;
+    self.masteryXp = m_masteryXp;
     for (uint32 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
         if (Item const* item = m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
             addItem(self, slot, item->GetEntry());
 
+    std::vector<BonkFallenRecord> const fallen = LoadBonkFallenRecords(accountId);
+    for (BonkFallenRecord const& record : fallen)
+    {
+        auto hero = heroes.find(record.guid);
+        if (hero != heroes.end() && !hero->second.hardcore && !hero->second.fell)
+        {
+            hero->second.fell = true;
+            hero->second.fellBest = record.bestLevel;
+        }
+    }
+
     std::ostringstream lua;
     lua << "{\n";
     lua << "\tgold = " << sharedGold << ",\n";
+    lua << "\thardcoreGold = " << hardcoreGold << ",\n";
     lua << "\tlastHero = \"" << m_player->GetName() << "\",\n";
     lua << "\theroes = {\n";
     for (auto const& itr : heroes)
@@ -1122,11 +1164,21 @@ void BonkPlayer::WriteHeroScreenStats() const
             << ", gearValue = " << hero.gearValue
             << ", played = " << hero.played
             << ", class = " << uint32(hero.classId)
-            << ", mastery = " << BonkMastery::GetLevel(hero.ironman ? hero.ironmanMasteryXp : masteryXp[hero.classId]);
+            << ", mastery = " << BonkMastery::GetLevel(hero.masteryXp);
         if (hero.ironman)
             lua << ", ironman = true, gold = " << hero.gold;
+        else if (hero.hardcore)
+            lua << ", gold = " << hardcoreGold;
+        if (hero.hardcore)
+            lua << ", hardcore = true";
+        if (hero.fell)
+            lua << ", fell = true, fellBest = " << hero.fellBest;
         lua << " },\n";
     }
+    lua << "\t},\n";
+    lua << "\tfallen = {\n";
+    for (BonkFallenRecord const& record : fallen)
+        lua << "\t\t" << DescribeBonkFallenForGlue(record) << ",\n";
     lua << "\t},\n}";
     WriteHeroScreenFile(m_player->GetSession()->GetUsername(), lua.str());
 }
@@ -1240,6 +1292,7 @@ uint32 BonkPlayer::GetIronmanAccount(uint32 guidLow)
 
 void BonkPlayer::GatherAccountBank(uint32 accountId, uint32 guidLow)
 {
+    ParkFallenBanks(accountId);
     if (!CharacterDatabase.PQuery("SELECT 1 FROM `characters` c WHERE c.`guid` = %u AND c.`account` = %u "
         "AND NOT EXISTS (SELECT 1 FROM `bonk_ironman` m WHERE m.`guid` = c.`guid`)", guidLow, accountId))
         return;
@@ -1255,12 +1308,15 @@ void BonkPlayer::GatherAccountBank(uint32 accountId, uint32 guidLow)
         } while (result->NextRow());
     }
 
+    bool const hardcore = IsHardcoreCharacter(guidLow);
+    uint32 const poolAccount = hardcore ? GetHardcoreAccount(accountId) : accountId;
     std::vector<AccountBankItem> items;
     result = CharacterDatabase.PQuery("SELECT i.`item_guid`, i.`item_id`, i.`slot`, i.`guid` FROM `character_inventory` i JOIN `characters` c ON c.`guid` = i.`guid` "
         "WHERE c.`account` = %u AND i.`guid` <> %u AND i.`bag` = 0 AND i.`slot` >= %u AND i.`slot` < %u "
         "AND NOT EXISTS (SELECT 1 FROM `bonk_ironman` m WHERE m.`guid` = i.`guid`) "
+        "AND %s EXISTS (SELECT 1 FROM `bonk_hardcore` h WHERE h.`guid` = i.`guid`) "
         "UNION ALL SELECT `item_guid`, `item_id`, `slot`, 0 FROM `bonk_account_bank` WHERE `account` = %u AND `bag` = 0",
-        accountId, guidLow, uint32(BANK_SLOT_ITEM_START), uint32(BANK_SLOT_BAG_END), accountId);
+        accountId, guidLow, uint32(BANK_SLOT_ITEM_START), uint32(BANK_SLOT_BAG_END), hardcore ? "" : "NOT", poolAccount);
     if (result)
     {
         do
@@ -1299,13 +1355,17 @@ void BonkPlayer::GatherAccountBank(uint32 accountId, uint32 guidLow)
 
 void BonkPlayer::ParkAccountBank(uint32 guidLow)
 {
-    CharacterDatabase.PExecute("INSERT IGNORE INTO `bonk_account_bank` (`account`, `bag`, `slot`, `item_guid`, `item_id`) "
-        "SELECT c.`account`, i.`bag`, i.`slot`, i.`item_guid`, i.`item_id` FROM `character_inventory` i JOIN `characters` c ON c.`guid` = i.`guid` "
-        "WHERE i.`guid` = %u AND c.`account` <> 0 AND NOT EXISTS (SELECT 1 FROM `bonk_ironman` m WHERE m.`guid` = i.`guid`) "
-        "AND ((i.`bag` = 0 AND i.`slot` >= %u AND i.`slot` < %u) OR i.`bag` IN "
-        "(SELECT b.`item_guid` FROM `character_inventory` b WHERE b.`guid` = %u AND b.`bag` = 0 AND b.`slot` >= %u AND b.`slot` < %u))",
-        guidLow, uint32(BANK_SLOT_ITEM_START), uint32(BANK_SLOT_BAG_END), guidLow, uint32(BANK_SLOT_BAG_START), uint32(BANK_SLOT_BAG_END));
-    CharacterDatabase.PExecute("UPDATE `item_instance` i JOIN `bonk_account_bank` b ON b.`item_guid` = i.`guid` SET i.`owner_guid` = 0 WHERE i.`owner_guid` = %u", guidLow);
+    std::unique_ptr<QueryResult> result(CharacterDatabase.PQuery("SELECT c.`account` FROM `characters` c WHERE c.`guid` = %u AND c.`account` <> 0 "
+        "AND NOT EXISTS (SELECT 1 FROM `bonk_ironman` m WHERE m.`guid` = c.`guid`)", guidLow));
+    if (!result)
+        return;
+    uint32 const accountId = result->Fetch()[0].GetUInt32();
+    std::unique_ptr<QueryResult> unparkedFall(CharacterDatabase.PQuery("SELECT 1 FROM `bonk_hardcore_fallen` WHERE `guid` = %u AND `bank_parked` = 0", guidLow));
+    bool const hardcorePool = IsHardcoreCharacter(guidLow) || unparkedFall;
+    if (unparkedFall)
+        CharacterDatabase.PExecute("UPDATE `bonk_hardcore_fallen` SET `bank_parked` = 1 WHERE `guid` = %u", guidLow);
+    for (std::string const& statement : BonkParkBankStatements(guidLow, hardcorePool ? GetHardcoreAccount(accountId) : accountId, false))
+        CharacterDatabase.Execute(statement.c_str());
 }
 
 bool BonkPlayer::IsIronman() const
@@ -1320,7 +1380,10 @@ bool BonkPlayer::IsIronman() const
 
 uint32 BonkPlayer::GetProgressAccount() const
 {
-    return IsIronman() ? GetIronmanAccount(m_player->GetGUIDLow()) : m_player->GetSession()->GetAccountId();
+    if (IsIronman())
+        return GetIronmanAccount(m_player->GetGUIDLow());
+    uint32 const accountId = m_player->GetSession()->GetAccountId();
+    return UsesHardcorePool() ? GetHardcoreAccount(accountId) : accountId;
 }
 
 void BonkPlayer::OnSave()
@@ -1408,7 +1471,11 @@ void BonkPlayer::AddShards(uint32 count)
 
 void BonkPlayer::SendWallet() const
 {
-    SendAddon("wallet~" + std::to_string(m_shards));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteWallet(data, m_shards);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::SaveShards() const
@@ -1527,6 +1594,11 @@ bool BonkPlayer::BuyTalent(uint32 talentId, std::string& message)
     if (talent->IsToggle())
         m_enabledTalents.insert(talentId);
     SaveTalent(talentId);
+    if (talent->effect == BONK_TALENT_APPEARANCE)
+    {
+        BonkTransmog::UnlockAppearance(m_player, uint32(talent->valuePerRank));
+        return true;
+    }
     message = talent->IsToggle() ? GetString(BONK_STRING_LEARNED_AND_SWITCHED_ON, { name }) :
         GetString(BONK_STRING_NOW_RANK, { name, std::to_string(rank + 1) });
     return true;
@@ -1579,14 +1651,27 @@ bool BonkPlayer::ResetTalents(std::string& message)
     }
 
     uint32 refunded = 0;
+    std::map<uint32, uint8> kept;
     for (auto const& itr : m_talentRanks)
         if (BonkTalent const* talent = sBonkMgr.GetTalent(itr.first))
+        {
+            if (talent->effect == BONK_TALENT_APPEARANCE)
+            {
+                kept[itr.first] = itr.second;
+                continue;
+            }
             for (uint8 rank = 0; rank < itr.second; ++rank)
                 refunded += talent->GetCost(rank);
+        }
 
     m_talentRanks.clear();
     m_enabledTalents.clear();
     CharacterDatabase.PExecute("DELETE FROM `bonk_account_talent` WHERE `account` = %u", GetProgressAccount());
+    for (auto const& itr : kept)
+    {
+        m_talentRanks[itr.first] = itr.second;
+        SaveTalent(itr.first);
+    }
     AddShards(refunded);
     message = GetString(BONK_STRING_YOU_REFUNDED_ALL_YOUR_FORTUNES, { FormatBonkShards(refunded, m_locale) });
     return true;
@@ -1692,6 +1777,12 @@ bool BonkPlayer::RefundTalent(uint32 talentId, std::string& message)
         return false;
     }
 
+    if (talent->effect == BONK_TALENT_APPEARANCE)
+    {
+        message = GetString(BONK_STRING_CANT_BE_REFUNDED, { name });
+        return false;
+    }
+
     for (auto const& itr : m_talentRanks)
         if (BonkTalent const* other = sBonkMgr.GetTalent(itr.first))
             if (itr.second && other->layout.requiredId == talentId && rank - 1 < other->layout.requiredRank)
@@ -1765,20 +1856,6 @@ void BonkPlayer::OpenShop(BonkShop shop, Creature const* npc)
     SendShop(true);
 }
 
-void BonkPlayer::VisitSpellbook(Creature const* keeper)
-{
-    m_spellbookKeeper = keeper->GetObjectGuid();
-}
-
-bool BonkPlayer::IsAtSpellbook() const
-{
-    if (m_spellbookKeeper.IsEmpty() || !m_player->IsInWorld())
-        return false;
-
-    Creature const* keeper = m_player->GetMap()->GetCreature(m_spellbookKeeper);
-    return keeper && keeper->IsAlive() && m_player->IsWithinDistInMap(keeper, BONK_SHOP_RANGE);
-}
-
 void BonkPlayer::VisitDeck(GameObject const* table)
 {
     m_deckTable = table->GetObjectGuid();
@@ -1827,7 +1904,7 @@ void BonkPlayer::ShopLearn(uint32 id)
     if (!IsAtShop())
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1849,7 +1926,7 @@ void BonkPlayer::ShopUnlearn(uint32 id)
     if (!IsAtShop())
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1871,7 +1948,7 @@ void BonkPlayer::ShopToggle(uint32 id)
     if (!IsAtShop() || m_shop != BONK_SHOP_TALENTS)
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1887,7 +1964,7 @@ void BonkPlayer::ShopPreset(uint8 slot)
     if (!IsAtShop() || m_shop != BONK_SHOP_MASTERY)
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1904,7 +1981,7 @@ void BonkPlayer::ShopRespec()
     if (!IsAtShop())
     {
         Notify(m_shopNpcName.empty() ? BONK_STRING_TOO_FAR_FROM_SHOP : BONK_STRING_TOO_FAR_FROM, { m_shopNpcName });
-        SendAddon("shopclose");
+        SendShopClose();
         return;
     }
 
@@ -1923,29 +2000,46 @@ void BonkPlayer::ShopRespec()
 
 void BonkPlayer::SendMasteryShop(bool open, bool inspect) const
 {
+    if (!m_addonReady)
+        return;
     uint8 const classId = m_player->GetClass();
     uint32 const level = GetMasteryLevel();
     uint32 const earned = GetMasteryPoints();
     uint32 const spent = GetMasterySpent();
-    SendAddon("shop~" + std::to_string(uint32(BONK_SHOP_MASTERY)) + "~" + (open ? "1" : "0") + "~" + (inspect ? std::string() : m_shopNpcName) + "~points~" +
-        std::to_string(earned > spent ? earned - spent : 0) + "~" + std::to_string(level) + "~" +
-        std::to_string(BonkMastery::GetXpIntoLevel(m_masteryXp)) + "~" +
-        std::to_string(level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0) + "~" +
-        std::to_string(BONK_MASTERY_MAX_LEVEL) + "~" + std::to_string(earned) + "~" + std::to_string(earned - level) + "~" +
-        GetClassName() + "~" + std::to_string(BONK_MASTERY_POINTS_PER_ROW) + (inspect ? "~1" : ""));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShopOpen(data, uint32(BONK_SHOP_MASTERY), open, inspect ? std::string() : m_shopNpcName, "points",
+            earned > spent ? earned - spent : 0, level, BonkMastery::GetXpIntoLevel(m_masteryXp),
+            level < BONK_MASTERY_MAX_LEVEL ? BonkMastery::GetXpForLevel(level + 1) : 0, BONK_MASTERY_MAX_LEVEL, earned,
+            earned - level, GetClassName(), BONK_MASTERY_POINTS_PER_ROW, inspect, "", false);
+        m_player->GetSession()->SendPacket(&data);
+    }
 
     for (BonkMasteryTree const* tree : sBonkMastery.GetTrees(classId))
     {
         std::string gates;
         for (uint8 row = 0; row < BONK_MASTERY_FREE_ROWS; ++row)
             gates += (row ? "," : "") + std::to_string(tree->IsFree() ? BONK_MASTERY_FREE_GATES[row] : uint32(std::max<uint8>(row, 1) - 1) * BONK_MASTERY_POINTS_PER_ROW);
-        SendAddon("tree~" + std::to_string(tree->id) + "~" + Localize(BONK_FIELD_MASTERY_TREE_NAME, tree->id, tree->name) + "~" + tree->background + "~" + std::to_string(uint32(tree->layout)) + "~" + gates +
-            "~" + std::to_string(GetMasterySpentInTree(tree->id)));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMasteryTree(data, tree->id, Localize(BONK_FIELD_MASTERY_TREE_NAME, tree->id, tree->name), tree->background,
+            uint32(tree->layout), gates, GetMasterySpentInTree(tree->id));
+        m_player->GetSession()->SendPacket(&data);
     }
 
     if (!inspect)
     {
-        SendAddon(DescribeMasteryPresets());
+        uint32 points[BONK_MASTERY_PRESET_SLOTS] = {};
+        for (uint8 slot = 1; slot <= BONK_MASTERY_PRESET_SLOTS; ++slot)
+        {
+            if (slot == m_activeMasteryPreset)
+                points[slot - 1] = GetMasterySpent();
+            else
+                for (auto const& itr : ReadMasteryPreset(slot))
+                    points[slot - 1] += itr.second;
+        }
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMasteryPresets(data, m_activeMasteryPreset, points[0], points[1], points[2]);
+        m_player->GetSession()->SendPacket(&data);
         SendMasteryPresetRanks();
     }
 
@@ -1955,23 +2049,27 @@ void BonkPlayer::SendMasteryShop(bool open, bool inspect) const
         if (node.classId != classId)
             continue;
         uint8 const rank = GetMasteryRank(node.id);
-        std::ostringstream line;
-        line << "node~" << node.tree << '~' << node.id << '~' << uint32(node.row) << '~' << uint32(node.column) << '~' << node.icon
-             << '~' << uint32(rank) << '~' << uint32(node.maxRank) << '~' << (rank < node.maxRank ? 1 : 0)
-             << '~' << node.requiredId << '~' << uint32(node.requiredRank) << "~0~0~" << Localize(BONK_FIELD_MASTERY_NAME, node.id, node.name)
-             << '~' << Localize(BONK_FIELD_MASTERY_DESCRIPTION, node.id, node.description) << "~0~~" << FormatStat(node.valuePerRank) << '~' << (rank ? 1 : 0);
         std::string parents;
         for (uint32 parentId : node.parents)
             parents += (parents.empty() ? "" : ",") + std::to_string(parentId);
-        line << '~' << uint32(node.shape) << '~' << FormatStat(node.position) << '~' << parents << '~' << node.excludes;
-        SendAddon(line.str());
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMasteryNode(data, node.tree, node.id, uint32(node.row), uint32(node.column), node.icon, uint32(rank),
+            uint32(node.maxRank), rank < node.maxRank ? 1 : 0, node.requiredId, uint32(node.requiredRank),
+            Localize(BONK_FIELD_MASTERY_NAME, node.id, node.name),
+            Localize(BONK_FIELD_MASTERY_DESCRIPTION, node.id, node.description), FormatStat(node.valuePerRank),
+            rank ? 1 : 0, uint32(node.shape), FormatStat(node.position), parents, std::to_string(node.excludes));
+        m_player->GetSession()->SendPacket(&data);
     }
 
-    SendAddon("shopend");
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteShopEnd(end);
+    m_player->GetSession()->SendPacket(&end);
 }
 
 void BonkPlayer::SendShop(bool open) const
 {
+    if (!m_addonReady)
+        return;
     if (m_shop == BONK_SHOP_MASTERY)
     {
         SendMasteryShop(open, false);
@@ -1988,13 +2086,22 @@ void BonkPlayer::SendShop(bool open) const
         for (uint8 row = 1; row <= lastRow; ++row)
             gates += (row > 1 ? "," : "") + std::to_string(GetFortuneRowGate(row)) + ":" + std::to_string(GetFortuneSpentAbove(row));
     }
-    SendAddon("shop~" + std::to_string(uint32(m_shop)) + "~" + (open ? "1" : "0") + "~" + m_shopNpcName + "~" +
-        (shards ? "shards~" + std::to_string(m_shards) + "~" + gates + "~" + (BonkCoop::IsGuestAccount(m_player) ? "1" : "0") : "gold~" + std::to_string(m_player->GetMoney())));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShopOpen(data, uint32(m_shop), open, m_shopNpcName, shards ? "shards" : "gold",
+            shards ? m_shards : m_player->GetMoney(), 0, 0, 0, 0, 0, 0, "", 0, false, gates,
+            BonkCoop::IsGuestAccount(m_player));
+        m_player->GetSession()->SendPacket(&data);
+    }
 
     for (auto const& itr : sBonkMgr.GetShopTrees())
         if (itr.second.shop == m_shop)
-            SendAddon("tree~" + std::to_string(itr.first) + "~" + Localize(BONK_FIELD_SHOP_TREE_NAME, itr.first, itr.second.name) + "~" + itr.second.background + "~" +
-                std::to_string(shards ? GetFortuneSpent(itr.first) : 0));
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteShopTree(data, itr.first, Localize(BONK_FIELD_SHOP_TREE_NAME, itr.first, itr.second.name), itr.second.background,
+                shards ? GetFortuneSpent(itr.first) : 0);
+            m_player->GetSession()->SendPacket(&data);
+        }
 
     BonkQuestReward const lockType = m_shop == BONK_SHOP_UPGRADES ? BONK_REWARD_UPGRADE : BONK_REWARD_TALENT;
     auto sendNode = [this, lockType](uint32 id, BonkShopNode const& layout, uint8 rank, uint8 maxRank, uint32 nextCost, uint32 refund, bool toggle,
@@ -2006,14 +2113,13 @@ void BonkPlayer::SendShop(bool open) const
         BonkQuest const* lock = GetLockingQuest(m_player, lockType, id);
 
         rank = std::min(rank, maxRank);
-        std::ostringstream line;
-        line << "node~" << layout.tree << '~' << id << '~' << uint32(layout.row) << '~' << uint32(layout.column) << '~' << layout.icon
-             << '~' << uint32(rank) << '~' << uint32(maxRank) << '~' << (rank < maxRank ? nextCost : 0)
-             << '~' << layout.requiredId << '~' << uint32(layout.requiredRank) << '~' << (toggle ? 1 : 0) << '~' << (enabled ? 1 : 0)
-             << '~' << name << '~' << description << '~' << (lock ? 1 : 0) << '~' << (lock ? Localize(BONK_FIELD_QUEST_NAME, lock->id, lock->name) : "") << '~' << FormatStat(valuePerRank)
-             << '~' << (rank ? refund : 0) << '~' << (lock ? Localize(BONK_FIELD_QUEST_DESCRIPTION, lock->id, lock->description) : "")
-             << '~' << (rank < maxRank ? rankLock : std::string());
-        SendAddon(line.str());
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteShopNode(data, layout.tree, id, uint32(layout.row), uint32(layout.column), layout.icon, uint32(rank),
+            uint32(maxRank), rank < maxRank ? nextCost : 0, layout.requiredId, uint32(layout.requiredRank), toggle, enabled, name,
+            description, lock != nullptr, lock ? Localize(BONK_FIELD_QUEST_NAME, lock->id, lock->name) : "", FormatStat(valuePerRank),
+            rank ? refund : 0, lock ? Localize(BONK_FIELD_QUEST_DESCRIPTION, lock->id, lock->description) : "",
+            rank < maxRank ? rankLock : std::string());
+        m_player->GetSession()->SendPacket(&data);
     };
 
     if (m_shop == BONK_SHOP_UPGRADES)
@@ -2049,7 +2155,18 @@ void BonkPlayer::SendShop(bool open) const
         }
     }
 
-    SendAddon("shopend");
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteShopEnd(end);
+    m_player->GetSession()->SendPacket(&end);
+}
+
+void BonkPlayer::SendShopClose() const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteShopClose(data);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 BonkRunBonuses BonkPlayer::GetRunBonuses() const
@@ -2179,6 +2296,7 @@ void BonkPlayer::Update(uint32 diff)
         if (m_run->IsFinished())
         {
             m_run.reset();
+            SendNoEnchants();
             SendStats();
             SendDash();
         }
@@ -2284,7 +2402,11 @@ void BonkPlayer::RefreshReachRing()
 void BonkPlayer::SendReachRingSlot()
 {
     m_reachRingSlotSent = m_run ? m_run->GetReachRingSlot(m_reachRingRoot) : 0;
-    SendAddon("reachring~" + std::to_string(m_reachRingRoot) + "~" + std::to_string(m_reachRingSlotSent));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteReachRing(data, m_reachRingRoot, m_reachRingSlotSent);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 bool BonkPlayer::IsTierCleared(BonkTier const& tier) const
@@ -2336,8 +2458,15 @@ void BonkPlayer::SendDetermination() const
 {
     RefreshDeterminationAura();
     uint8 const stacks = GetDetermination();
-    SendAddon("determinationpct~" + FormatStat(stacks * BONK_DETERMINATION_PER_STACK));
     SendAuraPercent(BONK_SPELL_DETERMINATION, stacks * BONK_DETERMINATION_PER_STACK);
+    SendDeterminationText();
+}
+
+void BonkPlayer::SendDeterminationText() const
+{
+    if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_DETERMINATION))
+        SendAuraText(BONK_SPELL_DETERMINATION,
+            sBonkAura.Format(*entry, GetLocale(), { FormatStat(GetDetermination() * BONK_DETERMINATION_PER_STACK) }));
 }
 
 void BonkPlayer::RefreshDeterminationAura() const
@@ -2407,6 +2536,7 @@ std::vector<uint32> BonkPlayer::GetShopStock() const
             if (uint32 const entry = BonkMgr::GetGearEntry(kind, quality, tier))
                 stock.push_back(entry);
     }
+    stock.push_back(BONK_BLANK_TABARD_ENTRY);
     return stock;
 }
 
@@ -2431,7 +2561,11 @@ void BonkPlayer::AddScrap(uint32 points)
 
 void BonkPlayer::SendQuartermaster() const
 {
-    SendAddon("quartermaster~" + std::to_string(GetStockTier()) + "~" + std::to_string(m_scrap));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteQuartermaster(data, GetStockTier(), m_scrap);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 uint32 BonkPlayer::GetUpgradeCeiling() const
@@ -2458,7 +2592,13 @@ std::vector<Item*> BonkPlayer::GetUpgradableGear() const
 
 void BonkPlayer::SendFoundUpgrades() const
 {
-    SendAddon("qmupclear");
+    if (!m_addonReady)
+        return;
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteQuartermasterUpgradeClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     uint32 const ceiling = GetUpgradeCeiling();
     for (Item* item : GetUpgradableGear())
     {
@@ -2470,14 +2610,18 @@ void BonkPlayer::SendFoundUpgrades() const
         if (item->GetGUIDLow() == m_rerollItem)
             for (auto const& offer : m_rerollOffers)
                 offers.push_back({ offer.first, offer.second });
-        SendAddon("qmup~" + std::to_string(item->GetGUIDLow()) + "~" + std::to_string(item->GetEntry()) + "~" + std::to_string(tier) + "~" +
-            std::to_string(cost) + "~" + (tier < ceiling && found.upgrades < BONK_FOUND_MAX_UPGRADES ? "1" : "0") + "~" + (item->IsEquipped() ? "1" : "0") + "~" +
-            BonkFound::DescribeLines(found, tier) + "~" + BonkFound::DescribeExtra(item, tier) + "~" +
-            std::to_string(BonkFound::GetRerollCost(found.rerolls)) + "~" + std::to_string(found.rerollLine) + "~" +
-            (offers.empty() ? "~" : std::to_string(m_rerollLine) + "~" + BonkFound::DescribeOffers(offers, tier)) + "~" +
-            BonkFound::DescribeRanges(tier) + "~" + std::to_string(BONK_FOUND_MAX_UPGRADES - std::min(found.upgrades, BONK_FOUND_MAX_UPGRADES)));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteQuartermasterUpgrade(data, item->GetGUIDLow(), item->GetEntry(), tier, cost,
+            tier < ceiling && found.upgrades < BONK_FOUND_MAX_UPGRADES, item->IsEquipped(),
+            BonkFound::DescribeLines(found, tier), BonkFound::DescribeExtra(item, tier),
+            BonkFound::GetRerollCost(found.rerolls), found.rerollLine, offers.empty() ? 0 : m_rerollLine,
+            offers.empty() ? "" : BonkFound::DescribeOffers(offers, tier), BonkFound::DescribeRanges(tier),
+            BONK_FOUND_MAX_UPGRADES - std::min(found.upgrades, BONK_FOUND_MAX_UPGRADES));
+        m_player->GetSession()->SendPacket(&data);
     }
-    SendAddon("qmupend~" + std::to_string(m_scrap));
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteQuartermasterUpgradeEnd(end, m_scrap);
+    m_player->GetSession()->SendPacket(&end);
 }
 
 Item* BonkPlayer::FindUpgradableGear(uint32 guidLow) const
@@ -2634,7 +2778,11 @@ void BonkPlayer::SendFoundItems() const
 {
     if (!m_addonReady)
         return;
-    SendAddon("foundclear");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFoundClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     auto send = [&](Item const* item, std::string const& place)
     {
         if (!item)
@@ -2643,8 +2791,10 @@ void BonkPlayer::SendFoundItems() const
         uint32 const tier = BonkFound::GetItemTier(item);
         if (!sBonkFound.Get(item->GetGUIDLow(), found) && !tier)
             return;
-        SendAddon("founditem~" + place + "~" + std::to_string(item->GetEntry()) + "~" + std::to_string(tier) + "~" +
-            BonkFound::DescribeLines(found, tier) + "~" + BonkFound::DescribeExtra(item, tier) + "~" + (found.season != BONK_LEADERBOARD_SEASON ? "1" : "0"));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFoundItem(data, place, item->GetEntry(), tier, BonkFound::DescribeLines(found, tier),
+            BonkFound::DescribeExtra(item, tier), found.season != BONK_LEADERBOARD_SEASON);
+        m_player->GetSession()->SendPacket(&data);
     };
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
         send(m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot), "inv:" + std::to_string(slot + 1));
@@ -2660,13 +2810,21 @@ void BonkPlayer::SendFoundItems() const
         if (Bag const* container = dynamic_cast<Bag const*>(m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
             for (uint32 slot = 0; slot < container->GetBagSize(); ++slot)
                 send(container->GetItemByPos(uint8(slot)), std::to_string(bag - BANK_SLOT_BAG_START + 5) + ":" + std::to_string(slot + 1));
-    SendAddon("foundend");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFoundEnd(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkPlayer::SendUpdateNotices()
 {
-    if (m_gearNoticePending)
-        SendAddon("notice~gear");
+    if (m_gearNoticePending && m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteNotice(data, "gear");
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkPlayer::SeeGearNotice()
@@ -2687,6 +2845,12 @@ bool BonkPlayer::StartRun(BonkTier const& tier, std::string& error, BonkRunChoic
     if (m_run)
     {
         error = GetString(BONK_STRING_YOU_ARE_ALREADY_IN_RUN);
+        return false;
+    }
+
+    if (m_fellInHardcore)
+    {
+        error = GetString(BONK_STRING_HARDCORE_FALLEN_RELOG);
         return false;
     }
 
@@ -2779,7 +2943,7 @@ uint32 BonkPlayer::GetBestLevel() const
 
 uint32 BonkPlayer::GetAccountBestLevel() const
 {
-    uint32 best = 0;
+    uint32 best = m_poolBestLevel;
     for (auto const& itr : m_levels)
         best = std::max(best, itr.second.best);
     return best;
@@ -2859,8 +3023,13 @@ bool BonkPlayer::RecordLevelClear(uint32 level, uint32 clearMs)
     if (firstClear)
         record.best = level;
     record.bestMs = clearMs;
+    if (record.best > m_poolBestLevel)
+    {
+        m_poolBestLevel = record.best;
+        RaisePoolBestLevel(GetProgressAccount(), record.best);
+    }
     CharacterDatabase.PExecute("REPLACE INTO `bonk_account_level` (`account`, `class`, `best_level`, `best_ms`, `best_finale`) VALUES (%u, %u, %u, %u, %u)",
-        GetProgressAccount(), uint32(m_player->GetClass()), record.best, record.bestMs, record.finale);
+        GetCharacterAccount(), uint32(m_player->GetClass()), record.best, record.bestMs, record.finale);
     BonkCoop::RecordLevel(m_player, m_player->GetClass(), record.best, record.bestMs, record.finale);
     if (!firstClear)
         return false;
@@ -2886,7 +3055,7 @@ void BonkPlayer::RecordFinale(uint32 score)
         return;
     record.finale = score;
     CharacterDatabase.PExecute("REPLACE INTO `bonk_account_level` (`account`, `class`, `best_level`, `best_ms`, `best_finale`) VALUES (%u, %u, %u, %u, %u)",
-        GetProgressAccount(), uint32(m_player->GetClass()), record.best, record.bestMs, record.finale);
+        GetCharacterAccount(), uint32(m_player->GetClass()), record.best, record.bestMs, record.finale);
     BonkCoop::RecordLevel(m_player, m_player->GetClass(), record.best, record.bestMs, record.finale);
 }
 
@@ -3017,7 +3186,7 @@ void BonkPlayer::RecordLevelBest(LevelRun const& run)
     uint8 const classId = m_player->GetClass();
     LevelBest& best = m_levelBests[{ classId, run.level }];
     MergeLevelBest(best, run);
-    SaveLevelBest(GetProgressAccount(), classId, run.level, best);
+    SaveLevelBest(GetCharacterAccount(), classId, run.level, best);
 }
 
 void BonkPlayer::RecordFinaleBest(uint32 level, uint32 score, uint32 seconds)
@@ -3025,7 +3194,7 @@ void BonkPlayer::RecordFinaleBest(uint32 level, uint32 score, uint32 seconds)
     uint8 const classId = m_player->GetClass();
     LevelBest& best = m_levelBests[{ classId, level }];
     if (MergeFinaleBest(best, score, seconds))
-        SaveLevelBest(GetProgressAccount(), classId, level, best);
+        SaveLevelBest(GetCharacterAccount(), classId, level, best);
 }
 
 void BonkPlayer::SetAddonReady()
@@ -3033,13 +3202,45 @@ void BonkPlayer::SetAddonReady()
     m_addonReady = true;
     m_zoneArtSent = false;
     SendProtocolHello();
+    SendAuraCatalog();
+    if (m_run)
+        m_run->ResendAuraTexts();
 }
 
 void BonkPlayer::SendProtocolHello() const
 {
     WorldPacket data(SMSG_HOA_MESSAGE);
-    HoAWriteHello(data, uint16(HOA_PROTOCOL_VERSION), HOA_CONTENT_HASH, BonkLocale::Tag(GetLocale()));
+    HoAWriteHello(data, uint16(HOA_PROTOCOL_VERSION), HOA_CONTENT_HASH, HOA_CONTENT_SECTIONS_TEXT,
+        BonkLocale::Tag(GetLocale()));
     m_player->GetSession()->SendPacket(&data);
+}
+
+void BonkPlayer::SendAuraCatalog() const
+{
+    if (!m_addonReady)
+        return;
+
+    uint32 total = 0;
+    for (BonkAuraEntry const& entry : sBonkAura.All())
+        if (entry.visible)
+            ++total;
+    total = std::min<uint32>(total, 0xFFFF);
+
+    uint16 index = 0;
+    for (BonkAuraEntry const& entry : sBonkAura.All())
+    {
+        if (!entry.visible)
+            continue;
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteAuraCatalogEntry(data, index++, uint16(total), entry.id,
+            sBonkAura.Name(entry, GetLocale()), entry.icon, sBonkAura.Description(entry, GetLocale()),
+            entry.stackMax, entry.durationIndex);
+        m_player->GetSession()->SendPacket(&data);
+    }
+
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteAuraCatalogEnd(end, uint16(total));
+    m_player->GetSession()->SendPacket(&end);
 }
 
 void BonkPlayer::SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) const
@@ -3051,6 +3252,15 @@ void BonkPlayer::SendAuraValue(uint32 spellId, uint32 value, uint32 maxValue) co
     m_player->GetSession()->SendPacket(&data);
 }
 
+void BonkPlayer::SendAuraText(uint32 spellId, std::string const& text) const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteAuraText(data, spellId, text);
+    m_player->GetSession()->SendPacket(&data);
+}
+
 void BonkPlayer::SendAuraPercent(uint32 spellId, float percent) const
 {
     if (!m_addonReady)
@@ -3058,14 +3268,6 @@ void BonkPlayer::SendAuraPercent(uint32 spellId, float percent) const
     WorldPacket data(SMSG_HOA_MESSAGE);
     HoAWriteAuraPercent(data, spellId, percent);
     m_player->GetSession()->SendPacket(&data);
-}
-
-void BonkPlayer::SendAddon(std::string const& line) const
-{
-    if (!m_addonReady)
-        return;
-
-    ChatHandler(m_player).SendSysMessage(("BONK~" + line).c_str());
 }
 
 std::vector<BonkPlayer::BanSource> BonkPlayer::GetBanSources(BonkQuestReward type) const
@@ -3113,12 +3315,16 @@ void BonkPlayer::TrimPoolToggles() const
 
 void BonkPlayer::SendGlyphInfo() const
 {
+    if (!m_addonReady)
+        return;
     for (auto const& itr : sBonkMgr.GetGlyphs())
     {
         BonkGlyph const& glyph = itr.second;
-        SendAddon("glyphinfo~" + std::to_string(glyph.id) + "~" + Localize(BONK_FIELD_GLYPH_NAME, glyph.id, glyph.name) + "~" + glyph.icon + "~" +
-            std::to_string(uint32(glyph.rarity)) + "~" + Localize(BONK_FIELD_GLYPH_DESCRIPTION, glyph.id, glyph.description) + "~" +
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGlyphInfo(data, glyph.id, Localize(BONK_FIELD_GLYPH_NAME, glyph.id, glyph.name), glyph.icon,
+            uint32(glyph.rarity), Localize(BONK_FIELD_GLYPH_DESCRIPTION, glyph.id, glyph.description),
             Localize(BONK_FIELD_GLYPH_DRAWBACK, glyph.id, glyph.drawback));
+        m_player->GetSession()->SendPacket(&data);
     }
 }
 
@@ -3166,6 +3372,13 @@ void BonkPlayer::ApplyLocale(LocaleConstant locale)
     m_locale = locale;
     m_player->GetSession()->SetSessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale));
     RefreshCreatureNames();
+    if (m_addonReady)
+    {
+        SendProtocolHello();
+        SendAuraCatalog();
+        if (m_run)
+            m_run->ResendAuraTexts();
+    }
 }
 
 void BonkPlayer::RefreshCreatureNames() const
@@ -3204,8 +3417,12 @@ std::string BonkPlayer::GetLocalName(WorldObject const* object) const
 void BonkPlayer::SendNpcName(WorldObject const* npc) const
 {
     std::string const name = GetLocalName(npc);
-    if (name != npc->GetName())
-        SendAddon("npcname~" + name + "~" + npc->GetName());
+    if (name != npc->GetName() && m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteNpcName(data, name, npc->GetName());
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 std::string BonkPlayer::GetItemName(ItemPrototype const* proto) const
@@ -3229,7 +3446,11 @@ std::string BonkPlayer::GetCreatureName(uint32 entry, std::string const& fallbac
 void BonkPlayer::Notify(std::string const& text) const
 {
     if (m_addonReady)
-        SendAddon("msg~" + text);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMessage(data, text);
+        m_player->GetSession()->SendPacket(&data);
+    }
     else
         ChatHandler(m_player).SendSysMessage(text.c_str());
 }
@@ -3237,29 +3458,56 @@ void BonkPlayer::Notify(std::string const& text) const
 void BonkPlayer::NotifyFind(std::string const& text) const
 {
     if (m_addonReady)
-        SendAddon("find~" + text);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteFind(data, text);
+        m_player->GetSession()->SendPacket(&data);
+    }
     else
         ChatHandler(m_player).SendSysMessage(text.c_str());
 }
 
 void BonkPlayer::SendGearInfo() const
 {
+    if (!m_addonReady)
+        return;
     for (auto const& itr : sBonkMgr.GetItemStats())
-        SendAddon("gear~" + std::to_string(itr.first) + "~" + FormatStatList(itr.second.stats));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGear(data, itr.first, FormatStatList(itr.second.stats));
+        m_player->GetSession()->SendPacket(&data);
+    }
     for (uint8 effect = 0; effect < MAX_BONK_TRINKET_EFFECT; ++effect)
-        SendAddon("trinkettip~" + std::to_string(BonkMgr::GetGearEntry(BONK_GEAR_FIRST_TRINKET + effect, BONK_GEAR_LOWEST_QUALITY, 1)) + "~" +
-            std::to_string(BONK_GEAR_QUALITIES * BONK_GEAR_TIERS) + "~" + GetString(BonkMgr::GetTrinket(BonkTrinketEffect(effect)).text));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteTrinketTip(data, BonkMgr::GetGearEntry(BONK_GEAR_FIRST_TRINKET + effect, BONK_GEAR_LOWEST_QUALITY, 1),
+            BONK_GEAR_QUALITIES * BONK_GEAR_TIERS, GetString(BonkMgr::GetTrinket(BonkTrinketEffect(effect)).text));
+        m_player->GetSession()->SendPacket(&data);
+    }
 
-    SendAddon("gearend");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteGearEnd(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
     SendFoundItems();
     if (m_run)
         m_run->SendEnchants();
     else
-    {
-        SendAddon("enchantclear");
-        SendAddon("enchantend");
-    }
+        SendNoEnchants();
     SendStats();
+}
+
+void BonkPlayer::SendNoEnchants() const
+{
+    if (!m_addonReady)
+        return;
+    WorldPacket clear(SMSG_HOA_MESSAGE);
+    HoAWriteEnchantClear(clear);
+    m_player->GetSession()->SendPacket(&clear);
+    WorldPacket end(SMSG_HOA_MESSAGE);
+    HoAWriteEnchantEnd(end);
+    m_player->GetSession()->SendPacket(&end);
 }
 
 void BonkPlayer::SendStats() const
@@ -3276,19 +3524,22 @@ void BonkPlayer::SendStats() const
 
 void BonkPlayer::SendStatTotals(float const* totals, bool inRun, float const* afterCaps) const
 {
-    std::string line = "stats~" + std::string(inRun ? "1" : "0") + "~";
+    std::string caps, after;
     for (uint8 effect = 0; effect < MAX_BONK_PASSIVE_EFFECT; ++effect)
     {
         float value = totals[effect];
         if (effect == BONK_PASSIVE_CRIT)
             value += BONK_BASE_CRIT;
-        line += (effect ? "," : "") + FormatStat(value);
+        caps += (effect ? "," : "") + FormatStat(value);
     }
-    line += "~";
     if (afterCaps)
         for (uint8 effect = 0; effect < MAX_BONK_PASSIVE_EFFECT; ++effect)
-            line += (effect ? "," : "") + FormatStat(afterCaps[effect]);
-    SendAddon(line);
+            after += (effect ? "," : "") + FormatStat(afterCaps[effect]);
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteStats(data, inRun, caps, after);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::WatchStats(bool watching)
@@ -3336,8 +3587,9 @@ void BonkPlayer::SendArena(std::string const& npc) const
         for (std::string const& perk : perks)
             perkText = perkText.empty() ? perk : GetString(BONK_STRING_LIST_ITEM, { perkText, perk });
 
-        SendAddon("arena~" + std::string(npc.empty() ? "0" : "1") + "~" + npc + "~" + std::to_string(uint32(bonuses.goldBonus + 0.5f)) + "~" +
-            challenges + "~" + perkText);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteArena(data, !npc.empty(), npc, uint32(bonuses.goldBonus + 0.5f), challenges, perkText);
+        m_player->GetSession()->SendPacket(&data);
     }
 
     if (m_addonReady)
@@ -3358,10 +3610,13 @@ void BonkPlayer::SendArena(std::string const& npc) const
             bool const cleared = IsTierCleared(tier);
             for (BonkMap const* dungeon : sBonkMgr.GetDungeons())
                 dungeons += (dungeons.empty() ? "" : ",") + dungeon->key + ":" + dungeon->icon + ":" + Localize(BONK_FIELD_MAP_NAME, dungeon->id, dungeon->name) + ":" + (cleared ? "1" : "0");
-            SendAddon("tier~" + std::to_string(tier.id) + "~" + tier.key + "~" + Localize(BONK_FIELD_TIER_NAME, tier.id, tier.name) + "~" + (unlocked ? "1" : "0") + "~" +
-                (unlocked ? "" : GetUnlockHint(tier)) + "~" + std::to_string(GetTierBest(tier)) + "~" + Localize(BONK_FIELD_TIER_DESCRIPTION, tier.id, tier.description) + "~" + tier.art + "~" + maps + "~" +
-                std::to_string(tier.levels) + "~" + std::to_string(unlocked ? tier.GetBandLevel(GetOpenLevel(tier)) : 0) + "~" + dungeons + "~" + Localize(BONK_FIELD_TIER_DETAILS, tier.id, tier.details) + "~" +
-                std::to_string(tier.firstLevel));
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteTier(data, tier.id, tier.key, Localize(BONK_FIELD_TIER_NAME, tier.id, tier.name), unlocked,
+                unlocked ? "" : GetUnlockHint(tier), GetTierBest(tier),
+                Localize(BONK_FIELD_TIER_DESCRIPTION, tier.id, tier.description), tier.art, maps, tier.levels,
+                unlocked ? tier.GetBandLevel(GetOpenLevel(tier)) : 0, dungeons,
+                Localize(BONK_FIELD_TIER_DETAILS, tier.id, tier.details), tier.firstLevel);
+            m_player->GetSession()->SendPacket(&data);
             SendLevelPreview(tier, GetRunBonuses());
         }
         else if (unlocked)
@@ -3374,7 +3629,12 @@ void BonkPlayer::SendArena(std::string const& npc) const
     if (m_addonReady)
         SendStarters();
     SendBoardChoice();
-    SendAddon("tierend");
+    if (m_addonReady)
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteTierEnd(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 namespace
@@ -3409,7 +3669,11 @@ void BonkPlayer::CountEpicLuck(bool epicDropped)
 
 void BonkPlayer::SendEpicLuck() const
 {
-    SendAddon("epicluck~" + std::to_string(GetEpicLuckBonus()));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteEpicLuck(data, GetEpicLuckBonus());
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BonkPlayer::SetBoardChoice(bool show)
@@ -3421,7 +3685,16 @@ void BonkPlayer::SetBoardChoice(bool show)
 
 void BonkPlayer::SendBoardChoice() const
 {
-    SendAddon("boardchoice~" + std::to_string(m_boardChoice) + "~" + std::to_string(GetBoardClimb()));
+    if (!m_addonReady)
+        return;
+    WorldPacket data(SMSG_HOA_MESSAGE);
+    HoAWriteBoardChoice(data, m_boardChoice, GetBoardClimb(), IsBoardGameMaster(), BonkIntegrity::IsServerModified());
+    m_player->GetSession()->SendPacket(&data);
+}
+
+bool BonkPlayer::IsBoardGameMaster() const
+{
+    return m_player->GetSession()->GetSecurity() > SEC_PLAYER;
 }
 
 uint32 BonkPlayer::GetBoardClimb() const
@@ -3436,6 +3709,11 @@ uint32 BonkPlayer::GetBoardClimb() const
 
 bool BonkPlayer::HasBoardGear(uint32 level) const
 {
+    return !FindOffBoardGear(level).item;
+}
+
+BonkPlayer::OffBoardGear BonkPlayer::FindOffBoardGear(uint32 level) const
+{
     for (uint32 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
     {
         Item const* item = m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
@@ -3444,10 +3722,12 @@ bool BonkPlayer::HasBoardGear(uint32 level) const
             continue;
         BonkFoundGear gear;
         sBonkFound.Get(item->GetGUIDLow(), gear);
-        if (gear.season != BONK_LEADERBOARD_SEASON || tier > level)
-            return false;
+        if (gear.season != BONK_LEADERBOARD_SEASON)
+            return { item, true };
+        if (tier > level)
+            return { item, false };
     }
-    return true;
+    return {};
 }
 
 void BonkPlayer::SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bonuses) const
@@ -3457,9 +3737,12 @@ void BonkPlayer::SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bo
     static BonkString const BOSS_ATTACKS[] = { BONK_STRING_BOSS_ATTACKS_NORMAL, BONK_STRING_BOSS_ATTACKS_MORE, BONK_STRING_BOSS_ATTACKS_RELENTLESS };
     uint32 const step = std::min(2u, tier.eliteAffixes ? tier.eliteAffixes - 1u : 0u);
     uint32 const carried = GetTierBand(tier, GetCarriedLevel());
-    SendAddon("tierinfo~" + std::to_string(tier.id) + "~" + GetString(CASTER_AIM[step]) + "~" + GetString(BOSS_ATTACKS[step]) + "~" +
-        std::to_string((tier.chargeIntervalMs + 500) / 1000) + "~" + std::to_string(tier.maxAlive) + "~" +
-        (carried ? GetLevelName(GetAccountBestLevel()) : ""));
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteTierInfo(data, tier.id, GetString(CASTER_AIM[step]), GetString(BOSS_ATTACKS[step]),
+            (tier.chargeIntervalMs + 500) / 1000, tier.maxAlive, carried ? GetLevelName(GetAccountBestLevel()) : "");
+        m_player->GetSession()->SendPacket(&data);
+    }
     uint32 const best = GetTierBest(tier);
     uint32 const shown = tier.IsEndlessLevels() ? std::max(best, carried) + 1 : tier.levels;
     for (uint32 band = 1; band <= shown; ++band)
@@ -3474,20 +3757,21 @@ void BonkPlayer::SendLevelPreview(BonkTier const& tier, BonkRunBonuses const& bo
         float const epic = rest * level.epicChance;
         float const blue = rest * level.blueChance;
         float const green = rest * level.greenChance;
-        SendAddon("level~" + std::to_string(tier.id) + "~" + std::to_string(band) + "~" + Percent((health - 1.0f) * 100.0f) + "~" +
-            Percent((damage - 1.0f) * 100.0f) + "~" + Percent(veterans) + "~" + std::to_string(affixes) + "~" + Percent((level.reward - 1.0f) * 100.0f) + "~" +
-            Chance(legendary) + "~" + Chance(epic) + "~" + Chance(blue) + "~" + Chance(green) + "~" + Chance(std::max(0.0f, 100.0f - legendary - epic - blue - green)) +
-            "~" + (band <= best ? "1" : band <= carried ? "2" : "0") + "~" + std::to_string(BonkRun::GetLevelDropTier(tier, band)) +
-            "~" + (band <= carried ? "1" : "0"));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteLevelPreview(data, tier.id, band, Percent((health - 1.0f) * 100.0f), Percent((damage - 1.0f) * 100.0f),
+            Percent(veterans), affixes, Percent((level.reward - 1.0f) * 100.0f), Chance(legendary), Chance(epic), Chance(blue),
+            Chance(green), Chance(std::max(0.0f, 100.0f - legendary - epic - blue - green)),
+            band <= best ? "1" : band <= carried ? "2" : "0", BonkRun::GetLevelDropTier(tier, band), band <= carried);
+        m_player->GetSession()->SendPacket(&data);
         auto const record = m_levelBests.find({ uint8(m_player->GetClass()), tier.firstLevel + band - 1 });
         if (record == m_levelBests.end())
             continue;
         LevelBest const& levelBest = record->second;
-        SendAddon("levelbest~" + std::to_string(tier.id) + "~" + std::to_string(band) + "~" + std::to_string(levelBest.clears) + "~" +
-            std::to_string(levelBest.firstClear) + "~" + std::to_string(levelBest.bestMs) + "~" + levelBest.bestMsBy + "~" +
-            std::to_string(levelBest.damagePerSecond) + "~" + levelBest.damageBy + "~" + std::to_string(levelBest.kills) + "~" + levelBest.killsBy + "~" +
-            std::to_string(levelBest.goldPerMinute) + "~" + levelBest.goldBy + "~" + std::to_string(levelBest.valorPerMinute) + "~" + levelBest.valorBy + "~" +
-            std::to_string(levelBest.finale) + "~" + std::to_string(levelBest.finaleSeconds));
+        WorldPacket bestData(SMSG_HOA_MESSAGE);
+        HoAWriteLevelBest(bestData, tier.id, band, levelBest.clears, levelBest.firstClear, levelBest.bestMs, levelBest.bestMsBy,
+            levelBest.damagePerSecond, levelBest.damageBy, levelBest.kills, levelBest.killsBy, levelBest.goldPerMinute,
+            levelBest.goldBy, levelBest.valorPerMinute, levelBest.valorBy, levelBest.finale, levelBest.finaleSeconds);
+        m_player->GetSession()->SendPacket(&bestData);
     }
 }
 
@@ -3522,8 +3806,12 @@ void BonkPlayer::SendZoneArt() const
     m_zoneArtSent = true;
     for (auto const& itr : sBonkMgr.GetZoneArts())
         for (BonkZoneOverlay const& overlay : itr.second.overlays)
-            SendAddon("zoneart~" + itr.second.file + "~" + overlay.texture + "~" + std::to_string(overlay.width) + "~" +
-                std::to_string(overlay.height) + "~" + std::to_string(overlay.x) + "~" + std::to_string(overlay.y));
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteZoneArt(data, itr.second.file, overlay.texture, overlay.width, overlay.height,
+                std::to_string(overlay.x), std::to_string(overlay.y));
+            m_player->GetSession()->SendPacket(&data);
+        }
 }
 
 void BonkPlayer::SendMapInfo() const
@@ -3532,17 +3820,21 @@ void BonkPlayer::SendMapInfo() const
     for (auto const& itr : sBonkMgr.GetMaps())
     {
         BonkMap const& map = itr.second;
-        std::string art = "~~~";
+        std::string zoneFile, uText, vText;
         if (BonkZoneArt const* zone = map.type == BONK_MAP_OPEN ? sBonkMgr.GetZoneArt(map.zoneId) : nullptr)
         {
             float x, y;
             PlayAreaCenter(map, x, y);
             float const u = (zone->left - y) / (zone->left - zone->right);
             float const v = (zone->top - x) / (zone->top - zone->bottom);
-            art = "~" + zone->file + "~" + MapFraction(u) + "~" + MapFraction(v);
+            zoneFile = zone->file;
+            uText = MapFraction(u);
+            vText = MapFraction(v);
         }
-        SendAddon("mapinfo~" + map.key + "~" + std::to_string(map.mapId) + "~" + Localize(BONK_FIELD_MAP_SUMMARY, map.id, map.summary) + "~" +
-            Localize(BONK_FIELD_MAP_DESCRIPTION, map.id, map.description) + art);
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMapInfo(data, map.key, map.mapId, Localize(BONK_FIELD_MAP_SUMMARY, map.id, map.summary),
+            Localize(BONK_FIELD_MAP_DESCRIPTION, map.id, map.description), zoneFile, uText, vText);
+        m_player->GetSession()->SendPacket(&data);
     }
 }
 

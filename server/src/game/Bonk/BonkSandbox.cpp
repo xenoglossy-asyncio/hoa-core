@@ -7,8 +7,10 @@
 #include "Chat.h"
 #include "Creature.h"
 #include "GossipDef.h"
+#include "HoaProtocol.h"
 #include "Map.h"
 #include "ObjectMgr.h"
+#include "BonkTransmog.h"
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "TemporarySummon.h"
@@ -553,8 +555,12 @@ void BonkRun::LeaveSandbox()
     if (m_state == STATE_RUNNING)
     {
         if (bonk->IsAddonReady())
-            bonk->SendAddon("end~1~" + std::to_string(m_totalMs / IN_MILLISECONDS) + "~" + std::to_string(m_kills) + "~0~" +
-                std::to_string(m_player->GetLevel()) + "~" + std::to_string(m_stage) + "~0~0");
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteRunEnd(data, true, m_totalMs / IN_MILLISECONDS, m_kills, 0, uint8(m_player->GetLevel()), m_stage, 0,
+                false, false, 0, 0, "", 0);
+            m_player->GetSession()->SendPacket(&data);
+        }
         else
             ChatHandler(m_player).SendSysMessage(GetString(BONK_STRING_SANDBOX_YOU_LEFT).c_str());
     }
@@ -1192,7 +1198,12 @@ void BonkRun::ClearSandboxEnemies()
     m_dotStacks.clear();
     m_crowdControl.clear();
     SetNecroticStacks(0);
-    m_player->GetBonkPlayer()->SendAddon("mobclear");
+    if (m_player->GetBonkPlayer()->IsAddonReady())
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteMobClear(data);
+        m_player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkRun::HealInSandbox()
@@ -1539,6 +1550,28 @@ bool BonkRun::OfferSandboxGear(uint32 entry, std::string& error)
     return true;
 }
 
+void BonkRun::QueueSandboxGearOffer(uint8 quality)
+{
+    PendingGear piece;
+    if (!MakeBagPiece(quality, piece))
+        return;
+    m_pendingGear.push_back(piece);
+    UpdateOffers();
+}
+
+void BonkRun::RollSandboxDrops(uint8 quality, uint32 count)
+{
+    for (uint32 roll = 0; roll < count; ++roll)
+    {
+        PendingGear piece;
+        if (!MakeBagPiece(quality, piece))
+            continue;
+        ItemPrototype const* proto = sObjectMgr.GetItemPrototype(piece.entry);
+        m_player->GetBonkPlayer()->Notify("droptest " + std::to_string(piece.entry) + " " + (proto ? proto->Name1 : "?") +
+            " challenge " + GetChallengeMapKey());
+    }
+}
+
 bool BonkRun::RunSandboxVerb(std::string const& verb, uint32 first, uint32 second, std::string& error)
 {
     if (m_state != STATE_RUNNING)
@@ -1552,6 +1585,15 @@ bool BonkRun::RunSandboxVerb(std::string const& verb, uint32 first, uint32 secon
         QueueSandboxPack(first ? first : BONK_SANDBOX_DEFAULT_PACK, second != 0);
     else if (verb == "dummies")
         SpawnSandboxDummies(std::max(1u, std::min(first, 20u)), BONK_SPAWN_NORMAL, float(second));
+    else if (verb == "challenge")
+        m_dungeonId = first;
+    else if (verb == "droptest")
+        RollSandboxDrops(uint8(first), std::max(1u, std::min(second, 20u)));
+    else if (verb == "gearoffer")
+        QueueSandboxGearOffer(uint8(first));
+    else if (verb == "tabardroll")
+        for (uint32 roll = 0; roll < first; ++roll)
+            BonkTransmog::RollTabardDrops(m_player, m_map.key);
     else if (verb == "crowddummies")
         SpawnSandboxDummies(std::max(1u, std::min(first, BONK_CROWD_DUMMY_MAX)), BONK_SPAWN_NORMAL, -1.0f);
     else if (verb == "spell")
@@ -1606,6 +1648,14 @@ bool BonkRun::RunSandboxVerb(std::string const& verb, uint32 first, uint32 secon
         ResetSandbox(RESET_COOLDOWNS);
     else if (verb == "god")
         ToggleSandbox(TOGGLE_GOD);
+    else if (verb == "necrotic")
+    {
+        if (!first)
+            SetNecroticStacks(0);
+        else
+            for (uint32 i = 0; i < first; ++i)
+                AddNecroticStack();
+    }
     else if (verb == "passive")
         ToggleSandbox(TOGGLE_PASSIVE);
     else if (verb == "unkillable")

@@ -17,8 +17,8 @@ local GREY = { 0.7, 0.7, 0.7 }
 local PHYSICAL_SCHOOL = 0
 
 local WORDS = {
-    MISS = L["Miss"], DODGE = L["Dodge"], PARRY = L["Parry"], BLOCK = L["Block"], RESIST = L["Resist"],
-    IMMUNE = L["Immune"], EVADE = L["Evade"], DEFLECT = L["Deflect"], ABSORB = L["Absorb"], REFLECT = L["Reflect"],
+    MISS = L["hoa.addon.miss"], DODGE = L["hoa.addon.dodge"], PARRY = L["hoa.addon.parry"], BLOCK = L["hoa.addon.block"], RESIST = L["hoa.addon.resist"],
+    IMMUNE = L["hoa.addon.immune"], EVADE = L["hoa.addon.evade"], DEFLECT = L["hoa.addon.deflect"], ABSORB = L["hoa.addon.absorb"], REFLECT = L["hoa.addon.reflect"],
 }
 
 local frame = CreateFrame("Frame", "VanillaBonkHurt", UIParent)

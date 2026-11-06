@@ -207,9 +207,12 @@ impl Plugin for ScreenshotPlugin {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use crate::local_state::test_env::{EnvGuard, ENV_LOCK};
     use benilla_ui::script::UiScript;
 
+    /// Windows ignores the `TZ` variable these naming tests set; the Linux CI job exercises them.
+    #[cfg(unix)]
     #[test]
     fn names_follow_the_reference_and_never_collide() {
         let _lock = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
@@ -231,7 +234,9 @@ mod tests {
     }
 
     /// The stamp is the local time (`0x429450`, `strftime` of `localtime`): 5:45 east of UTC,
-    /// 13:45:07Z is 19:30:07, and 20:00Z is past local midnight.
+    /// 13:45:07Z is 19:30:07, and 20:00Z is past local midnight. Windows ignores the `TZ`
+    /// variable this test sets; the Linux CI job is the one that exercises it.
+    #[cfg(unix)]
     #[test]
     fn names_stamp_the_local_time() {
         let _lock = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());

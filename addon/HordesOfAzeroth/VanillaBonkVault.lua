@@ -7,13 +7,17 @@ local CARD_GAP = 10
 local PER_ROW = 8
 local PER_PAGE = PER_ROW * 2
 local SLOT_SIZE = 52
+local VAULT_SLOT_SPACING = 104
+local VAULT_BOX_MARGIN = 92
+local VAULT_BOX_MIN_WIDTH = 220
+local WIDE_CAPTION, NARROW_CAPTION = 130, 100
 local WORN_SLOTS = 19
 local TOOLTIP_GAP = 4
 local COMPARE_DROP = -10
 local CARDS_TOP = 40
 local CARDS_ROOM = 320
 local WALK_AWAY = 3
-local SAVED_LABEL = L["Your saved piece"]
+local SAVED_LABEL = L["hoa.addon.your_saved_piece"]
 local RETRY, RETRIES = 0.25, 12
 local STONE_BORDER = { edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", edgeSize = 24 }
 
@@ -48,7 +52,7 @@ frame.title = frame:CreateFontString(nil, "OVERLAY")
 frame.title:SetFont(UI.TITLE_FONT, 40, "OUTLINE")
 frame.title:SetPoint("CENTER", frame, "CENTER", 0, 262)
 frame.title:SetTextColor(1, 0.82, 0)
-frame.title:SetText(L["Extraction Vault"])
+frame.title:SetText(L["hoa.addon.extraction_vault"])
 
 frame.subtitle = UI.Text(frame, 13)
 frame.subtitle:SetPoint("CENTER", frame, "CENTER", 0, 226)
@@ -79,7 +83,7 @@ frame.box:SetBackdrop({
 frame.box.label = UI.Text(frame.box, 12)
 frame.box.label:SetPoint("TOP", frame.box, "TOP", 0, -16)
 frame.box.label:SetTextColor(1, 0.82, 0)
-frame.box.label:SetText(L["Mailed to you when you leave"])
+frame.box.label:SetText(L["hoa.addon.mailed_to_you_when_you_leave"])
 frame.box.slots = {}
 
 local function CursorOnRightHalf()
@@ -248,7 +252,7 @@ local function ShowSaved(find, owner)
         end
         tooltip:AddLine(" ")
         tooltip:AddLine(SAVED_LABEL, 1, 0.82, 0)
-        tooltip:AddLine(L["You brought this into the run."], 0.7, 0.7, 0.7)
+        tooltip:AddLine(L["hoa.addon.you_brought_this_into_the_run"], 0.7, 0.7, 0.7)
         RebuildItemTooltip(tooltip, saved.entry, IsWorn(saved) and CURRENTLY_EQUIPPED or nil, ITEM_SOULBOUND)
         ShowItemFonts(tooltip)
         tinsert(tooltips, tooltip)
@@ -264,27 +268,27 @@ local function WorthText(find)
         tinsert(parts, UI.FormatGold(find.sell))
     end
     if find.scrap > 0 then
-        tinsert(parts, L("{1} Scrap", find.scrap))
+        tinsert(parts, L("hoa.addon.1_scrap", find.scrap))
     end
-    return table.concat(parts, L[" and "])
+    return table.concat(parts, L["hoa.addon.and"])
 end
 
 local function LeftOutText(gold, scrap, rest)
     if gold > 0 and scrap > 0 then
         if rest then
-            return L("The rest sell for {1} and give {2} Scrap.", UI.FormatGold(gold), scrap)
+            return L("hoa.addon.the_rest_sell_for_1_and_give_2_scrap", UI.FormatGold(gold), scrap)
         end
-        return L("Sells for {1} and gives {2} Scrap if you leave it out of the vault.", UI.FormatGold(gold), scrap)
+        return L("hoa.addon.sells_for_1_and_gives_2_scrap_if_you_leave_it_out_of_the_vau", UI.FormatGold(gold), scrap)
     elseif scrap > 0 then
         if rest then
-            return L("The rest give {1} Scrap.", scrap)
+            return L("hoa.addon.the_rest_give_1_scrap", scrap)
         end
-        return L("Gives {1} Scrap if you leave it out of the vault.", scrap)
+        return L("hoa.addon.gives_1_scrap_if_you_leave_it_out_of_the_vault", scrap)
     end
     if rest then
-        return L("The rest sell for {1}.", UI.FormatGold(gold))
+        return L("hoa.addon.the_rest_sell_for_1", UI.FormatGold(gold))
     end
-    return L("Sells for {1} if you leave it out of the vault.", UI.FormatGold(gold))
+    return L("hoa.addon.sells_for_1_if_you_leave_it_out_of_the_vault", UI.FormatGold(gold))
 end
 
 local function ShowItemTooltip(owner, find, line)
@@ -294,15 +298,15 @@ local function ShowItemTooltip(owner, find, line)
     GameTooltip:AddLine(" ")
     GameTooltip:AddLine(line, 1, 0.82, 0, 1)
     if find.owned then
-        GameTooltip:AddLine(L["You already own this piece at this tier."], 1, 0.5, 0.25, 1)
+        GameTooltip:AddLine(L["hoa.addon.you_already_own_this_piece_at_this_tier"], 1, 0.5, 0.25, 1)
     elseif find.tier > 0 and find.best > 0 then
-        GameTooltip:AddLine(L("Your best in this slot: Tier {1}.", find.best), 0.7, 0.7, 0.7, 1)
+        GameTooltip:AddLine(L("hoa.addon.your_best_in_this_slot_tier_1", find.best), 0.7, 0.7, 0.7, 1)
     end
     if not vault.hearth then
         GameTooltip:AddLine(LeftOutText(find.sell, find.scrap), 0.7, 0.7, 0.7, 1)
     end
     if getn(find.saved) == 0 then
-        GameTooltip:AddLine(L["You have nothing saved in this slot."], 0.7, 0.7, 0.7, 1)
+        GameTooltip:AddLine(L["hoa.addon.you_have_nothing_saved_in_this_slot"], 0.7, 0.7, 0.7, 1)
     end
     RebuildItemTooltip(GameTooltip, find.entry)
     ShowItemFonts(GameTooltip)
@@ -332,11 +336,11 @@ local function VaultSlot(index)
     end)
     slot:SetScript("OnEnter", function()
         if this.find then
-            ShowItemTooltip(this, this.find, L["Click to take it out of the vault."])
+            ShowItemTooltip(this, this.find, L["hoa.addon.click_to_take_it_out_of_the_vault"])
         else
             GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-            GameTooltip:AddLine(L["Empty"], 1, 1, 1)
-            GameTooltip:AddLine(L["Click an item below to put it in the vault."], 1, 0.82, 0, 1)
+            GameTooltip:AddLine(L["hoa.addon.empty_2"], 1, 1, 1)
+            GameTooltip:AddLine(L["hoa.addon.click_an_item_below_to_put_it_in_the_vault"], 1, 0.82, 0, 1)
             GameTooltip:Show()
         end
     end)
@@ -361,11 +365,11 @@ frame.sent:SetBackdrop({
 frame.sent.label = UI.Text(frame.sent, 12)
 frame.sent.label:SetPoint("TOP", frame.sent, "TOP", 0, -16)
 frame.sent.label:SetTextColor(1, 0.82, 0)
-frame.sent.label:SetText(L["Sent home this run"])
+frame.sent.label:SetText(L["hoa.addon.sent_home_this_run"])
 frame.sent.empty = UI.Text(frame.sent, 11)
 frame.sent.empty:SetPoint("CENTER", frame.sent, "CENTER", 0, -8)
 frame.sent.empty:SetTextColor(0.62, 0.62, 0.62)
-frame.sent.empty:SetText(L["Nothing yet. Each Hearthstone sends 1 piece."])
+frame.sent.empty:SetText(L["hoa.addon.nothing_yet_each_hearthstone_sends_1_piece"])
 frame.sent.slots = {}
 frame.sent.offset = 0
 frame.sent.maxOffset = 0
@@ -454,7 +458,7 @@ local function SentSlot(index)
             GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
             UI.nextFound = this.piece.found
             GameTooltip:SetHyperlink("item:" .. this.piece.entry .. ":0:0:0")
-            GameTooltip:AddLine(L("Sent home on stage {1}.", this.piece.stage), 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(L("hoa.addon.sent_home_on_stage_1", this.piece.stage), 0.7, 0.7, 0.7)
             GameTooltip:Show()
         end
     end)
@@ -485,7 +489,7 @@ local function ShowSent()
             local _, _, _, _, _, _, _, _, texture = GetItemInfo(piece.entry)
             slot.icon:SetTexture(texture or (UI.ICON_PATH .. "INV_Misc_QuestionMark"))
             slot.icon:Show()
-            slot.caption:SetText(L("Stage {1}", piece.stage))
+            slot.caption:SetText(L("hoa.addon.stage_1", piece.stage))
             slot:Show()
             slot.caption:Show()
         else
@@ -554,7 +558,7 @@ local function Card(index)
     card.owned = UI.Text(card, 10)
     card.owned:SetPoint("TOPRIGHT", card, "TOPRIGHT", -11, -10)
     card.owned:SetTextColor(1, 0.5, 0.25)
-    card.owned:SetText(L["Owned"])
+    card.owned:SetText(L["hoa.addon.owned"])
 
     card.ribbon = card:CreateTexture(nil, "OVERLAY")
     card.ribbon:SetTexture(UI.FLAT)
@@ -565,7 +569,7 @@ local function Card(index)
     card.ribbonText = UI.Text(card, 11)
     card.ribbonText:SetPoint("CENTER", card.ribbon, "CENTER", 0, 0)
     card.ribbonText:SetTextColor(1, 0.82, 0)
-    card.ribbonText:SetText(L["In the vault"])
+    card.ribbonText:SetText(L["hoa.addon.in_the_vault"])
 
     card.highlight = card:CreateTexture(nil, "HIGHLIGHT")
     card.highlight:SetTexture("Interface\\Buttons\\UI-Panel-Button-Highlight")
@@ -593,8 +597,8 @@ local function Card(index)
     card:SetScript("OnEnter", function()
         local find = this.find
         if find then
-            local line = vault.chosen[find.guid] and L["Click to take it out of the vault."] or L["Click to put it in the vault."]
-            ShowItemTooltip(this, find, vault.hearth and L["Click to send it home now."] or line)
+            local line = vault.chosen[find.guid] and L["hoa.addon.click_to_take_it_out_of_the_vault"] or L["hoa.addon.click_to_put_it_in_the_vault"]
+            ShowItemTooltip(this, find, vault.hearth and L["hoa.addon.click_to_send_it_home_now"] or line)
         end
     end)
     card:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -605,7 +609,7 @@ end
 frame.rest = UI.Text(frame, 12)
 frame.hint = UI.Text(frame, 11)
 frame.hint:SetTextColor(0.72, 0.72, 0.72)
-frame.done = UI.Button(frame, 100, L["Done"], function()
+frame.done = UI.Button(frame, 100, L["hoa.addon.done"], function()
     frame:Hide()
 end)
 frame.pageText = UI.Text(frame, 12)
@@ -613,7 +617,7 @@ frame.pageText:SetTextColor(1, 0.82, 0)
 
 local function SavedText(find)
     if getn(find.saved) == 0 then
-        return L["|cff9d9d9dYours: nothing|r"], true
+        return L["hoa.addon.cff9d9d9dyours_nothing_r"], true
     end
     local names = {}
     for _, saved in ipairs(find.saved) do
@@ -624,7 +628,7 @@ local function SavedText(find)
         local r, g, b = QualityColor(quality or 2)
         tinsert(names, format("|cff%02x%02x%02x%s|r", r * 255, g * 255, b * 255, name))
     end
-    return L("|cff9d9d9dYours:|r {1}", table.concat(names, ", ")), true
+    return L("hoa.addon.cff9d9d9dyours_r_1", table.concat(names, ", ")), true
 end
 
 local function FillCard(card, find)
@@ -634,7 +638,7 @@ local function FillCard(card, find)
     card.slot.icon:SetTexture(texture or (UI.ICON_PATH .. "INV_Misc_QuestionMark"))
     card.name:SetText(name or "")
     card.name:SetTextColor(r, g, b)
-    card.where:SetText(find.worn and L["Equipped"] or L["In bags"])
+    card.where:SetText(find.worn and L["hoa.addon.equipped"] or L["hoa.addon.in_bags"])
     local saved, savedKnown = SavedText(find)
     card.saved:SetText(saved)
     card.price:SetText(vault.hearth and "" or WorthText(find))
@@ -701,19 +705,19 @@ local function TurnPage(step)
     Refresh()
 end
 
-frame.prev = UI.Button(frame, 90, L["Previous"], function() TurnPage(-1) end)
-frame.next = UI.Button(frame, 90, L["page::Next"], function() TurnPage(1) end)
+frame.prev = UI.Button(frame, 90, L["hoa.addon.previous"], function() TurnPage(-1) end)
+frame.next = UI.Button(frame, 90, L["hoa.addon.page_next"], function() TurnPage(1) end)
 
 function Refresh()
     local slots = max(1, vault.slots)
-    frame.title:SetText(vault.hearth and L["Hearthstone"] or L["Extraction Vault"])
+    frame.title:SetText(vault.hearth and L["hoa.addon.hearthstone"] or L["hoa.addon.extraction_vault"])
     if vault.hearth then
-        frame.subtitle:SetText(L["Sends 1 piece home now. You lose it for the rest of the run."])
+        frame.subtitle:SetText(L["hoa.addon.sends_1_piece_home_now_you_lose_it_for_the_rest_of_the_run"])
         frame.box:Hide()
         ShowSent()
     else
         frame.sent:Hide()
-        frame.subtitle:SetText(slots == 1 and L["1 piece comes home with you."] or L("{1} pieces come home with you.", slots))
+        frame.subtitle:SetText(slots == 1 and L["hoa.addon.1_piece_comes_home_with_you"] or L("hoa.addon.1_pieces_come_home_with_you", slots))
         frame.box:Show()
     end
 
@@ -727,7 +731,7 @@ function Refresh()
             tinsert(inVault, byGuid[guid])
         end
     end
-    frame.box:SetWidth(slots == 1 and 220 or 300)
+    frame.box:SetWidth(max(VAULT_BOX_MIN_WIDTH, slots * VAULT_SLOT_SPACING + VAULT_BOX_MARGIN))
     for index = 1, max(slots, getn(frame.box.slots)) do
         local slot = VaultSlot(index)
         if index > slots then
@@ -736,7 +740,8 @@ function Refresh()
         else
             local find = inVault[index]
             slot:ClearAllPoints()
-            slot:SetPoint("TOP", frame.box, "TOP", (index - (slots + 1) / 2) * 104, -36)
+            slot:SetPoint("TOP", frame.box, "TOP", (index - (slots + 1) / 2) * VAULT_SLOT_SPACING, -36)
+            slot.caption:SetWidth(slots > 2 and NARROW_CAPTION or WIDE_CAPTION)
             slot.find = find
             if find then
                 local name, _, _, _, _, _, _, _, texture = GetItemInfo(find.entry)
@@ -750,7 +755,7 @@ function Refresh()
             else
                 slot.icon:Hide()
                 slot.glow:Hide()
-                slot.caption:SetText(index == 2 and L["Empty (Pack Mule)"] or L["Empty"])
+                slot.caption:SetText(index == 2 and L["hoa.addon.empty_pack_mule"] or L["hoa.addon.empty_2"])
                 slot.caption:SetTextColor(0.62, 0.62, 0.62)
             end
             slot:Show()
@@ -803,7 +808,7 @@ function Refresh()
 
     local anchor = frame.cards
     if pages > 1 then
-        frame.pageText:SetText(L("Page {1} of {2}  ({3} items)", vault.page, pages, total))
+        frame.pageText:SetText(L("hoa.addon.page_1_of_2_3_items", vault.page, pages, total))
         frame.pageText:ClearAllPoints()
         frame.pageText:SetPoint("TOP", frame.cards, "BOTTOM", 0, -12)
         frame.prev:ClearAllPoints()
@@ -825,9 +830,9 @@ function Refresh()
     frame.rest:ClearAllPoints()
     frame.rest:SetPoint("TOP", anchor, "BOTTOM", 0, -14)
     if count == 0 then
-        frame.rest:SetText(L["|cff9d9d9dNothing found this run yet.|r"])
+        frame.rest:SetText(L["hoa.addon.cff9d9d9dnothing_found_this_run_yet_r"])
     elseif vault.hearth then
-        frame.rest:SetText(L["The Hearthstone can send 1 piece."])
+        frame.rest:SetText(L["hoa.addon.the_hearthstone_can_send_1_piece"])
     else
         frame.rest:SetText(LeftOutText(rest, restScrap, true))
     end
@@ -836,9 +841,9 @@ function Refresh()
     frame.hint:ClearAllPoints()
     frame.hint:SetPoint("TOP", frame.rest, "BOTTOM", 0, -8)
     if vault.hearth then
-        frame.hint:SetText(L["Click an item to send it home now. You lose it for the rest of the run."])
+        frame.hint:SetText(L["hoa.addon.click_an_item_to_send_it_home_now_you_lose_it_for_the_rest_o"])
     else
-        frame.hint:SetText(L["Gear in the vault goes home when the run ends, even if you die."])
+        frame.hint:SetText(L["hoa.addon.gear_in_the_vault_goes_home_when_the_run_ends_even_if_you_di"])
     end
     frame.hint:Show()
     frame.done:SetPoint("TOP", frame.hint, "BOTTOM", 0, -12)
@@ -969,9 +974,34 @@ handlers["vaultclose"] = function()
     frame:Hide()
 end
 
-handlers["end"] = function()
-    frame:Hide()
-    vault.finds, vault.chosen, vault.order = {}, {}, {}
-end
+UI.ListenHoa({
+    HOA_RUN_END = function()
+        frame:Hide()
+        vault.finds, vault.chosen, vault.order = {}, {}, {}
+    end,
+})
 
-UI.Listen(handlers)
+UI.ListenHoa({
+    HOA_VAULT_CLEAR = function()
+        handlers["vaultclear"]()
+    end,
+    HOA_VAULT_SENT = function()
+        handlers["vaultsent"]()
+    end,
+    HOA_VAULT_SENT_ITEM = function(item)
+        handlers["vaultsentitem"]({ false, item.entry, item.stage, item.tier, item.lines, item.extra })
+    end,
+    HOA_VAULT_ITEM = function(item)
+        handlers["vaultitem"]({
+            false, tostring(item.guid), item.entry, item.quality, item.worn and "1" or "0", item.sell_copper, item.saved,
+            item.tier, item.best, item.owned and "1" or "0", item.scrap, item.lines, item.extra,
+        })
+    end,
+    HOA_VAULT_OPEN = function(open)
+        handlers["vaultopen"]({ false, open.slots, open.chosen, open.mode, open.scrap_bonus })
+    end,
+    HOA_VAULT_CLOSE = function()
+        handlers["vaultclose"]()
+    end,
+})
+

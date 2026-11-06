@@ -6,6 +6,21 @@ VMaNGOS 1.12.1 服务端（C++，GPL-2.0），HoA 游戏逻辑在 `src/game/Bonk
 
 **状态：已导入**，按 [架构文档](../../architecture/README_zh.md) 逐步调整目录。
 
+## BonkRun 拆分
+
+`BonkRun` 原来全在一个 14.8k 行的 `BonkRun.cpp` 里，现在按领域拆分，文件级常量和辅助函数放在 `BonkRunInternal.h`：
+
+- `BonkRunLifecycle.cpp`：构造、选关、进入跑团、路线学习。
+- `BonkRunUpdate.cpp`：每帧更新、选项、事件和编队。
+- `BonkRunSpawn.cpp`：刷怪目标、扇区、路线、怪群落位、出怪和寻路检查。
+- `BonkRunCombat.cpp`：伤害上限与减伤、死疽、Boss 压力、护盾、暴击、死亡与复活。
+- `BonkRunLoot.cpp`：刷怪、宝箱、光柱、勇气和强化道具。
+- `BonkRunStage.cpp`：清关、传送门、下一关和无尽切换。
+- `BonkRunWeapons.cpp`：武器攻击、飞弹、射击、关键词云雾、陷阱和投射物。
+- `BonkRun.cpp`：波次、缩放、属性、敌人攻击和其余跑团逻辑。
+
+`BonkRunInternal.h` 保存匿名命名空间的常量和辅助函数，并在 `BonkRunShared` 里声明可变文件状态；定义只在 `BonkRun.cpp` 出现一次，所以所有拆分文件共享同一份 `s_spawnKit`、`s_spawnLookLeadMs`、`s_nextHelperLevel` 和 `t_missileLookSource`。
+
 ## 计划中的分层
 
 ```

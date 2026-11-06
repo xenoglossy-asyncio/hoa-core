@@ -12,9 +12,9 @@ local FRAME_NUMBER_SIZE = 9
 local NUMBERED_PLATE = { width = 78, height = 14, name = 0, percent = 0 }
 
 UI.HEALTH_BAR_MODES = {
-    { value = "frame", label = L["Unit Frame"] },
-    { value = "plate", label = L["Nameplate"] },
-    { value = "both", label = L["Both"] },
+    { value = "frame", label = L["hoa.addon.unit_frame"] },
+    { value = "plate", label = L["hoa.addon.nameplate"] },
+    { value = "both", label = L["hoa.addon.both"] },
 }
 
 local shield = 0
@@ -190,18 +190,10 @@ driver:SetScript("OnEvent", function()
     end
 end)
 
-UI.Listen({
-    shield = function(f)
-        shield = tonumber(f[2]) or 0
-    end,
-})
-
 UI.ListenHoa({
     HOA_AURA_VALUE = function(spellId, value)
-        if tonumber(spellId) == 60005 then
+        if tonumber(spellId) == HOA_AURA_IDS.shield then
             shield = tonumber(value) or 0
         end
     end,
 })
-
-UI.SelfBar = plainBar

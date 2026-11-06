@@ -17,6 +17,8 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 
 **目标**：语言是账号/会话属性。客户端安装只需提供资源（模型、贴图、音频、基础 DBC），不决定显示语言。任何语言的 1.12.1 安装都能运行中文或英文。
 
+**进度（2026-11-04）**：客户端第一阶段已落地。`shared/i18n/ui` + `tools/i18n/gen_client_pack.py` 生成 enUS/zhCN 语言包；HoA 自有 UI 和 GlueXML 读取 `HOA_UI_*` 键；`GetLocale` 使用账号/启动器语言，安装 locale 仍用于 DBC 列和名字字符集。原生 FrameXML/GlobalStrings、DBC 名称覆盖、zhTW 和写死的 shaper locale 仍待后续。
+
 ### 2.2 buff/效果有三套表示
 
 - **真光环，但只做了一半**：移速/最大生命用 spell 17498/19255（`BonkRun.cpp:11365-11376`）；坏死有 aura 18951（`BonkRun.cpp:4411`），但治疗削减实际读的是 `m_necroticStacks`（`BonkRun.cpp:4439`）；护盾视觉 16051（`BonkRun.cpp:4754-4758`）；武器 buff 施放后又在 `m_buffs` 存了一份到期时间（`BonkRun.cpp:8071-8072,7913-7922`）。
@@ -24,7 +26,9 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 - **原生法术 + 插件副本**：剑刃乱舞/狂怒等复用原生 spell，但插件另有一套计时。
 - **卡牌 proc 横跨三套**：以 Zandalarian Hero Charm 为例，“每 30 秒获得 25% 力量，持续 10 秒”（`server/core/sql/migrations/20261027710000_world.sql:46-47`）。服务端用 `m_cardSurgeUntilMs` + 冷却记录（`BonkRunCards.cpp:486-493`），`GetCardPower` 把加成折进伤害和属性（`BonkRunCards.cpp:156-170`、`BonkRun.cpp:4867,6284`），没有 Unit aura。界面靠每秒 `cardnow~` 文本（`BonkRunCards.cpp:507-533,586-596`）和一次 `Notify`（`:491`），插件再在 tooltip 里拼出来（`VanillaBonkCards.lua:84-86,205,313-328`）。
 
-插件端只解析 `BONK~` 聊天行（`VanillaBonkUI.lua:231-243`），完全没有用 `UNIT_AURA`/`GetPlayerBuff`；客户端自带的 `C_UnitAuras` 只用于敌方姓名板 debuff（`VanillaBonkDebuffs.lua:62-78`），Boss debuff 仍走 BONK（`VanillaBonkBoss.lua:194`）。
+插件过去只解析 `BONK~` 聊天行，完全没有用 `UNIT_AURA`/`GetPlayerBuff`；现在它消费 Rust 客户端解码后的类型化 `HOA_*` 事件，`C_UnitAuras` 用于敌方姓名板和 Boss debuff。聊天解析器已不存在。
+
+**进度（2026-11-05）：** 阶段 3 已把效果集迁到真实光环，阶段 5 已把服务端所有展示/状态字符串换成类型化协议。上面的条目是重构前的基线，保留作背景。
 
 重复和轮询的例子：
 
@@ -49,10 +53,10 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 - **ID**：游戏对象 900001-900062（`BonkMgr.h:40-46` vs `VanillaBonkSettings.lua:9-11`、`VanillaBonkController.lua:1699`、`VanillaBonkTutorial.lua:4-8`）、炉石 900230（`BonkMgr.h:1054` vs `VanillaBonkHearth.lua:5`）。
 - **关键数量**：法术/被动槽位（`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`）、glyph 选项（`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`）、升级选项（`BonkMgr.h:1028` vs `VanillaBonk.lua:353`）、进化等级（`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`）。
 - **重复计算**：排行榜资格（`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`）。
-- **文本**：同一句中文同时出现在服务端迁移（`server/core/sql/migrations/20261104010444_world.sql:959-963,2143-2145`）和插件表（`VanillaBonkLocaleZhCN.lua:264,385,606,840,1137,490,694,728`）。
-- **自定义 spell id**：各 `.cpp` 匿名命名空间里的 `uint32 const`（`BonkRun.cpp:43` 等），没有共享注册表；插件和客户端各存一份显示用的 id 列表。
-- 法术/物品名称一半来自客户端 DBC，一半来自服务端查询响应；服务端 `locales_spell` 有中文名，客户端却只查安装的 `Spell.dbc`，自定义 spell 在客户端直接空白。
-- 文本以英文句子为键 + 源哈希（`BonkLocale`），英文一改翻译就“过期”，服务端回退英文。
+- **文本**：已解决。服务端、插件和客户端界面文本现在都由 `shared/i18n` 生成；插件只有一个生成的 `VanillaBonkLocaleData.lua`，不再手工维护中文表。
+- **自定义 spell id**：已解决。`shared/content/spells/spells.yaml` 生成 `BonkSpellIds.h` 和插件的 `VanillaBonkAuraIds.lua`；客户端从服务端接收已本地化的自定义光环行，不再自己维护 id 表。
+- 法术/物品名称：自定义 HoA 法术通过服务端下发的光环目录显示。原生法术/物品/生物名称仍来自安装的 DBC 列或服务端查询响应，因此在有 DBC 名称覆盖之前仍跟随安装语言，而不是账号语言。
+- **文本**：已解决。文本按 `shared/i18n` 里的稳定消息 ID 索引，所有产物都由目录生成。
 
 **目标**：内容只写在 `shared/content`，文本只写在 `shared/i18n`，各端产物由工具生成；服务端是运行时权威，客户端/插件不再保留业务副本。
 

@@ -219,9 +219,6 @@ void BonkPlayer::SendDash() const
     uint32 const available = maxCharges - std::min(m_dashSpent, maxCharges);
     uint32 const rechargeMs = m_dashSpent && int32(m_dashRechargeUntilMs - m_dashClockMs) > 0
         ? m_dashRechargeUntilMs - m_dashClockMs : 0;
-    SendAddon("dash~" + std::to_string(maxCharges) + "~" + std::to_string(rechargeMs) + "~" +
-        std::to_string(GetDashCooldownMs()) + "~" + (m_run && m_run->IsBlinkDash() ? "1" : "0") +
-        "~" + std::to_string(available));
     if (m_addonReady)
     {
         WorldPacket data(SMSG_HOA_MESSAGE);

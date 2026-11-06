@@ -525,20 +525,28 @@ void BonkRun::SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& unti
     holder->UpdateAuraDuration();
 }
 
-void BonkRun::SyncStackAura(uint32 spellId, uint32 stacks) const
+bool BonkRun::SyncStackAura(uint32 spellId, uint32 stacks) const
 {
     SpellAuraHolder* holder = m_player->GetSpellAuraHolder(spellId);
     if (!stacks)
     {
         if (holder)
             m_player->RemoveAurasDueToSpell(spellId);
-        return;
+        return holder != nullptr;
     }
     if (holder && holder->GetStackAmount() == stacks)
-        return;
-    holder = m_player->AddAura(spellId, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT);
+        return false;
+    if (!holder)
+        holder = m_player->AddAura(spellId, ADD_AURA_POSITIVE | ADD_AURA_PERMANENT);
     if (holder)
+    {
+        uint8 const slot = holder->GetAuraSlot();
         holder->SetStackAmount(stacks);
+        m_player->ForceValuesUpdateAtIndex(UNIT_FIELD_AURAAPPLICATIONS + (slot >> 2));
+        m_player->ExecuteDelayedActions();
+        m_player->SendForcedObjectUpdate();
+    }
+    return true;
 }
 
 void BonkRun::UpdateTalentAuras()
@@ -604,7 +612,10 @@ void BonkRun::OnTalentCastDone(OwnedWeapon& owned)
     if (m_castDamageBonus > 0.0f)
         m_clearcastBoostReady = false;
     if (m_castCritBonus > 0.0f && m_potencyCasts)
+    {
         --m_potencyCasts;
+        SyncStackAura(BONK_SPELL_ARCANE_POTENCY, m_potencyCasts);
+    }
 
     uint32 const spec = BonkMastery::GetSpec(owned.weapon.id);
     auto haste = m_mastery.castHaste.find(spec);
@@ -1007,7 +1018,10 @@ void BonkRun::OnTalentBlink()
 {
     float const potency = m_mastery.Special(BONK_SPECIAL_ARCANE_POTENCY);
     if (potency > 0.0f)
+    {
         m_potencyCasts = BONK_ARCANE_POTENCY_CASTS + uint32(m_mastery.Special(BONK_SPECIAL_ARCANE_POTENCY_LONG));
+        SyncStackAura(BONK_SPELL_ARCANE_POTENCY, m_potencyCasts);
+    }
 
     int32 const flux = int32(m_mastery.Special(BONK_SPECIAL_TEMPORAL_FLUX) * IN_MILLISECONDS);
     if (flux > 0)

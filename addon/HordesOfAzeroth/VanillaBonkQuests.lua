@@ -1,5 +1,4 @@
 local L = VanillaBonkL
-local PREFIX = "BONK~"
 local FLAT = "Interface\\Buttons\\WHITE8X8"
 local FONT = VanillaBonkUI.FONT
 local NUMBER_FONT = VanillaBonkUI.NUMBER_FONT
@@ -15,20 +14,6 @@ local incoming
 local pendingNpc
 local openRequested
 
-local function Split(text, separator)
-    local fields = {}
-    local start = 1
-    while true do
-        local found = strfind(text, separator, start, true)
-        if not found then
-            tinsert(fields, strsub(text, start))
-            return fields
-        end
-        tinsert(fields, strsub(text, start, found - 1))
-        start = found + 1
-    end
-end
-
 local function SetFont(fontString, font, size, flags)
     fontString:SetFont(font, size, flags or "")
 end
@@ -37,19 +22,19 @@ local UI = VanillaBonkUI
 
 local board = UI.Window("VanillaBonkQuestBoard", WIDTH, HEIGHT)
 board:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
-board.title:SetText(L["Quest Board"])
+board.title:SetText(L["hoa.addon.quest_board"])
 
 board.pane = UI.Pane(board, UI.CONTENT_LEFT, UI.CONTENT_TOP, WIDTH - UI.CONTENT_LEFT - UI.CONTENT_RIGHT,
     HEIGHT - UI.CONTENT_TOP - UI.CONTENT_BOTTOM, "Interface\\Glues\\LoadingScreens\\LoadScreenStormwindStockade", 0.65)
 board.pane:SetFrameLevel(board:GetFrameLevel() + 1)
 
 local CATEGORIES = {
-    { key = "slayer", label = L["Slayer"] },
-    { key = "victory", label = L["Victory"] },
-    { key = "mastery", label = L["Mastery"] },
-    { key = "challenge", label = L["Challenge"] },
-    { key = "discovery", label = L["Discovery"] },
-    { key = "collection", label = L["Collection"] },
+    { key = "slayer", label = L["hoa.addon.slayer"] },
+    { key = "victory", label = L["hoa.addon.victory"] },
+    { key = "mastery", label = L["hoa.addon.mastery_2"] },
+    { key = "challenge", label = L["hoa.addon.challenge"] },
+    { key = "discovery", label = L["hoa.addon.discovery"] },
+    { key = "collection", label = L["hoa.addon.collection"] },
 }
 board.tab = "all"
 board.tabKeys = {}
@@ -73,7 +58,7 @@ local function RewardTooltip()
         return
     end
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-    GameTooltip:AddLine(L["Reward"], 1, 0.82, 0)
+    GameTooltip:AddLine(L["hoa.addon.reward"], 1, 0.82, 0)
     GameTooltip:AddLine(this.reward, 1, 1, 1, 1)
     GameTooltip:Show()
 end
@@ -177,7 +162,7 @@ function RefreshBoard()
     local keys, labels = {}, {}
     if present["all"] then
         tinsert(keys, "all")
-        tinsert(labels, L["General"])
+        tinsert(labels, L["hoa.addon.general"])
     end
     for _, category in ipairs(CATEGORIES) do
         if present[category.key] then
@@ -187,11 +172,11 @@ function RefreshBoard()
     end
     if present["class"] then
         tinsert(keys, "class")
-        tinsert(labels, L("{1} quests", UI.PlayerClassName() or L["Class"]))
+        tinsert(labels, L("hoa.addon.1_quests", UI.PlayerClassName() or L["hoa.addon.class"]))
     end
     if table.getn(keys) == 0 then
         tinsert(keys, "all")
-        tinsert(labels, L["General"])
+        tinsert(labels, L["hoa.addon.general"])
     end
 
     local selected = 1
@@ -229,7 +214,7 @@ function RefreshBoard()
             row:SetBackdropColor(0.03, 0.12, 0.03, 0.7)
             row.name:SetTextColor(0.4, 1, 0.4)
             row.bar:SetVertexColor(0.25, 0.8, 0.25)
-            row.progress:SetText(L["Complete"])
+            row.progress:SetText(L["hoa.addon.complete"])
             row.rewardText:SetTextColor(0.6, 0.6, 0.6)
             row.check:Show()
             SetDesaturation(row.rewardIcon, 1)
@@ -250,14 +235,14 @@ function RefreshBoard()
 
     board.list:SetHeight(max(LIST_HEIGHT, table.getn(list) * ROW_HEIGHT))
     board.scroll:UpdateScrollChildRect()
-    board.headerRight:SetText("|cffffffff" .. L("{1} / {2} done", done, table.getn(list)) .. "|r")
+    board.headerRight:SetText("|cffffffff" .. L("hoa.addon.1_2_done", done, table.getn(list)) .. "|r")
     board.scroll:SetVerticalScroll(0)
 end
 
 board:SetScript("OnShow", function()
     PlaySound("igQuestLogOpen")
     UI.SetPortrait(board)
-    board.header:SetText(UnitExists("npc") and UnitName("npc") or L["Quest Board"])
+    board.header:SetText(UnitExists("npc") and UnitName("npc") or L["hoa.addon.quest_board"])
 end)
 
 board:SetScript("OnHide", function()
@@ -329,7 +314,7 @@ toast.header = toast:CreateFontString(nil, "OVERLAY")
 SetFont(toast.header, FONT, 11)
 toast.header:SetPoint("TOPLEFT", toast, "TOPLEFT", 64, -9)
 toast.header:SetTextColor(1, 0.82, 0)
-toast.header:SetText(L["QUEST COMPLETE"])
+toast.header:SetText(L["hoa.addon.quest_complete"])
 
 toast.name = toast:CreateFontString(nil, "OVERLAY")
 SetFont(toast.name, FONT, TOAST_NAME_SIZE, "OUTLINE")
@@ -448,15 +433,20 @@ handlers["questdone"] = function(f)
     end
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("CHAT_MSG_SYSTEM")
-events:SetScript("OnEvent", function()
-    if not arg1 or strsub(arg1, 1, strlen(PREFIX)) ~= PREFIX then
-        return
-    end
-    local f = Split(strsub(arg1, strlen(PREFIX) + 1), "~")
-    local handler = handlers[f[1]]
-    if handler then
-        handler(f)
-    end
-end)
+VanillaBonkUI.ListenHoa({
+    HOA_QUEST_LOG_OPEN = function(open)
+        handlers["qlog"]({ false, open.npc })
+    end,
+    HOA_QUEST_ENTRY = function(quest)
+        handlers["q"]({
+            false, quest.id, quest.name, quest.description, quest.icon, quest.progress, quest.amount,
+            quest.completed and "1" or "0", quest.reward, quest.reward_icon, quest.class_only and "1" or "0", quest.category,
+        })
+    end,
+    HOA_QUEST_LOG_END = function()
+        handlers["qlogend"]()
+    end,
+    HOA_QUEST_DONE = function(done)
+        handlers["questdone"]({ false, done.id, done.name, done.reward, done.icon })
+    end,
+})

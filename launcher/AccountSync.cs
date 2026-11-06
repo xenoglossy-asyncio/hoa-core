@@ -25,7 +25,7 @@ namespace HordesOfAzeroth.Launcher
                 return;
             await m_server.RunConsoleAsync($"account create {selected.Login} {selected.Password}");
             if (await IdOfAsync(selected.Login) == null)
-                throw new InvalidOperationException(Loc.T("The account {0} couldn't be created. See server/logs/Server.log.", selected.Name));
+                throw new InvalidOperationException(Loc.T("hoa.launcher.the_account_0_couldn_t_be_created_see_server_logs_server_log", selected.Name));
         }
 
         async Task DeleteAsync(Accounts accounts, string login)

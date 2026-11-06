@@ -4,8 +4,8 @@ local UI = VanillaBonkUI
 local DASH = "VANILLABONK_DASH"
 local SHIFT = "SHIFT"
 local HEADER = "HEADER_VANILLABONK"
-BINDING_NAME_VANILLABONK_DASH = L["Dash"]
-KEY_SHIFT = KEY_SHIFT or L["Shift"]
+BINDING_NAME_VANILLABONK_DASH = L["hoa.addon.dash"]
+KEY_SHIFT = KEY_SHIFT or L["hoa.addon.shift"]
 
 local DASH_KEYS = { "SHIFT", "CTRL-SHIFT", "ALT-SHIFT", "ALT-CTRL-SHIFT" }
 local PLAIN_KEYS = { "SPACE", "UP", "DOWN", "MOUSEWHEELUP", "MOUSEWHEELDOWN" }
@@ -14,8 +14,8 @@ local CHOICE_KEYS = {
     ["4"] = "VANILLABONK_CHOICE4", ["5"] = "VANILLABONK_CHOICE5", ["6"] = "VANILLABONK_CHOICE6",
     ["R"] = "VANILLABONK_REROLL", ["X"] = "VANILLABONK_SKIP",
 }
-local MODIFIER_NAMES = { { "ALT-", L["Alt-"] }, { "CTRL-", L["Ctrl-"] }, { "SHIFT-", L["Shift-"] } }
-local KEY_NAMES = { SHIFT = L["Shift"], CTRL = L["Ctrl"], ALT = L["Alt"] }
+local MODIFIER_NAMES = { { "ALT-", L["hoa.addon.alt_2"] }, { "CTRL-", L["hoa.addon.ctrl_2"] }, { "SHIFT-", L["hoa.addon.shift_2"] } }
+local KEY_NAMES = { SHIFT = L["hoa.addon.shift"], CTRL = L["hoa.addon.ctrl"], ALT = L["hoa.addon.alt"] }
 local SEND_INTERVAL = 0.25
 local NPC_WINDOWS = {
     "MailFrame", "OpenMailFrame", "MerchantFrame", "GossipFrame", "QuestFrame", "TradeFrame", "BankFrame",
@@ -122,7 +122,7 @@ local function SyncKeys()
         WatchShift(onShift)
         if onShift and not warned then
             warned = true
-            DEFAULT_CHAT_FRAME:AddMessage(L["Hordes of Azeroth: Shift can't be bound to Dash. Choose another key in Key Bindings."])
+            DEFAULT_CHAT_FRAME:AddMessage(L["hoa.addon.hordes_of_azeroth_shift_can_t_be_bound_to_dash_choose_anothe"])
         end
         return
     end
@@ -130,19 +130,6 @@ local function SyncKeys()
     if onShift then
         OverrideShiftKeys()
     end
-end
-
-function UI.DashOnShift()
-    return onShift
-end
-
-function UI.SetDashOnShift(on)
-    if on then
-        SetBinding(SHIFT, DASH)
-    else
-        SetBinding(SHIFT)
-    end
-    VanillaBonkDashShift = onShift
 end
 
 function SetBinding(key, command)
@@ -319,16 +306,6 @@ owner:SetScript("OnEvent", function()
         HookBindingWindow()
     end
 end)
-
-UI.Listen({
-    dash = function(f)
-        charges = tonumber(f[6]) or 0
-        if not active then
-            active = true
-            SyncKeys()
-        end
-    end,
-})
 
 UI.ListenHoa({
     HOA_DASH = function(_, _, _, _, available)

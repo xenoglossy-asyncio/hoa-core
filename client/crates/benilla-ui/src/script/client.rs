@@ -355,6 +355,17 @@ impl UiScript {
         };
     }
 
+    /// The language-pack locale that overrides `GetLocale`, leaving the install `locale` that DBC
+    /// columns and the name charsets read untouched.
+    pub fn ui_locale(&self) -> Option<usize> {
+        self.model_ref().ui_locale
+    }
+
+    /// Seat the language-pack locale; `None` falls back to the install locale.
+    pub fn set_ui_locale(&mut self, index: Option<usize>) {
+        self.model_mut().ui_locale = index.filter(|i| *i < crate::toc::LOCALES.len());
+    }
+
     /// `Wow.ini`'s `Region` as seated, 0 until the host seats the install's.
     pub fn client_region(&self) -> i32 {
         self.model_ref().client_region
@@ -375,7 +386,9 @@ impl UiScript {
 
 /// The locale name table `0x8558a4` at the VM's locale index, `GetLocale`'s answer in either state.
 pub(super) fn locale_name(lua: &Lua) -> &'static str {
-    let index = lua.app_data_ref::<Model>().map_or(0, |m| m.locale);
+    let index = lua
+        .app_data_ref::<Model>()
+        .map_or(0, |m| m.ui_locale.unwrap_or(m.locale));
     crate::toc::LOCALES[index]
 }
 
@@ -416,6 +429,19 @@ mod tests {
             s.set_locale(8);
             assert_eq!((s.locale(), locale(&s).as_str()), (0, "enUS"), "{kind}");
         }
+    }
+
+    /// The language-pack locale overrides `GetLocale` without touching the install locale the DBC
+    /// columns and name charsets read.
+    #[test]
+    fn get_locale_reads_the_ui_locale_override() {
+        let mut s = UiScript::new().unwrap();
+        s.set_locale(0);
+        s.set_ui_locale(Some(4));
+        assert_eq!(s.eval::<String>("return GetLocale()").unwrap(), "zhCN");
+        assert_eq!(s.locale(), 0, "the install locale is untouched");
+        s.set_ui_locale(None);
+        assert_eq!(s.eval::<String>("return GetLocale()").unwrap(), "enUS");
     }
 
     /// Never nil: addons index with it at file scope, and a nil index errors far from the cause.

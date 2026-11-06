@@ -10,6 +10,7 @@
 #include "Database/DBCFileLoader.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "HoaProtocol.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
@@ -18,6 +19,7 @@
 #include "TemporarySummon.h"
 #include "Timer.h"
 #include "World.h"
+#include "WorldSession.h"
 
 #include <algorithm>
 
@@ -218,20 +220,28 @@ namespace
         return hit.source + "~" + hit.spell;
     }
 
-    void SendLines(BonkPlayer* bonk, std::string const& prefix, std::vector<std::string> const& items)
+    void SendLines(BonkPlayer* bonk, std::vector<std::string> const& items)
     {
+        auto send = [bonk](std::string const& text)
+        {
+            if (!bonk->IsAddonReady())
+                return;
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteDeathEvents(data, text);
+            bonk->GetPlayer()->GetSession()->SendPacket(&data);
+        };
         std::string line;
         for (std::string const& item : items)
         {
             if (!line.empty() && line.size() + item.size() + 1 > BONK_RECAP_LINE_CHARS)
             {
-                bonk->SendAddon(prefix + line);
+                send(line);
                 line.clear();
             }
             line += (line.empty() ? "" : ",") + item;
         }
         if (!line.empty())
-            bonk->SendAddon(prefix + line);
+            send(line);
     }
 
     std::vector<RecapSource*> RankSources(std::map<std::string, RecapSource>& byKey, RecapSource* killer)
@@ -317,8 +327,12 @@ namespace
         uint32 const startHealth = std::min(maxHealth, first.heal ? first.healthAfter - std::min(first.healthAfter, first.amount) : first.healthAfter + first.amount);
 
         BonkPlayer* bonk = player->GetBonkPlayer();
-        bonk->SendAddon("dr~" + std::to_string(maxHealth) + "~" + std::to_string(startHealth * 1000 / maxHealth) + "~" + std::to_string(killer->index) + "~" +
-            std::to_string(last.amount) + "~" + std::to_string(overkill) + "~" + std::to_string(taken) + "~" + std::to_string(healed));
+        if (bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteDeathRecap(data, maxHealth, startHealth * 1000 / maxHealth, killer->index, last.amount, overkill, taken, healed);
+            player->GetSession()->SendPacket(&data);
+        }
 
         uint64 othersDamage = 0;
         for (RecapSource const* source : ranked)
@@ -328,14 +342,21 @@ namespace
                 othersDamage += source->damage;
                 continue;
             }
+            if (!bonk->IsAddonReady())
+                continue;
             BonkRecentHit const& sample = *source->sample;
-            bonk->SendAddon("drs~" + std::to_string(source->index) + "~" + sample.icon + "~" + sample.source + "~" + sample.spell + "~" +
-                KindTag(sample.kind) + "~" + std::to_string(source->damage));
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteDeathSource(data, source->index, sample.icon, sample.source, sample.spell, KindTag(sample.kind), source->damage);
+            player->GetSession()->SendPacket(&data);
         }
-        if (othersDamage)
-            bonk->SendAddon("drs~" + std::to_string(BONK_RECAP_MAX_SOURCES + 1) + "~" + BONK_UNKNOWN_ICON + "~Others~~~" + std::to_string(othersDamage));
+        if (othersDamage && bonk->IsAddonReady())
+        {
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteDeathSource(data, BONK_RECAP_MAX_SOURCES + 1, BONK_UNKNOWN_ICON, "Others", "", "", othersDamage);
+            player->GetSession()->SendPacket(&data);
+        }
 
-        SendLines(bonk, "dre~", RecapEvents(hits, byKey, last.ms - BONK_RECAP_WINDOW_MS, maxHealth));
+        SendLines(bonk, RecapEvents(hits, byKey, last.ms - BONK_RECAP_WINDOW_MS, maxHealth));
     }
 }
 
@@ -481,8 +502,14 @@ void BonkStats::SendSummary(Player* player, std::vector<BonkSummaryWeapon> const
     }
 
     BonkPlayer* bonk = player->GetBonkPlayer();
-    bonk->SendAddon("sum~" + std::to_string(stats.damageTaken) + "~" + std::to_string(stats.kindKills[BONK_SPAWN_ELITE]) + "~" +
-        std::to_string(stats.kindKills[BONK_SPAWN_MINIBOSS]) + "~" + std::to_string(stats.kindKills[BONK_SPAWN_BOSS]));
+    if (!bonk->IsAddonReady())
+        return;
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteRunSummary(data, stats.damageTaken, stats.kindKills[BONK_SPAWN_ELITE], stats.kindKills[BONK_SPAWN_MINIBOSS],
+            stats.kindKills[BONK_SPAWN_BOSS]);
+        player->GetSession()->SendPacket(&data);
+    }
 
     std::set<uint32> sent;
     for (BonkSummaryWeapon const& weapon : weapons)
@@ -502,8 +529,10 @@ void BonkStats::SendSummary(Player* player, std::vector<BonkSummaryWeapon> const
             damage += itr->second.damage;
             kills += itr->second.kills;
         }
-        bonk->SendAddon("sumw~" + weapon.icon + "~" + weapon.name + "~" + std::to_string(weapon.level) + "~" + std::to_string(weapon.maxLevel) + "~" +
-            (weapon.evolved ? "1" : "0") + "~" + std::to_string(damage) + "~" + std::to_string(kills) + "~" + SchoolType(weapon.spellId));
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteSummaryWeapon(data, weapon.icon, weapon.name, weapon.level, weapon.maxLevel, weapon.evolved, damage, kills,
+            SchoolType(weapon.spellId));
+        player->GetSession()->SendPacket(&data);
 
         std::map<uint32, BonkRunStats::Spell> dots;
         for (uint32 spellId : spellIds)
@@ -526,14 +555,24 @@ void BonkStats::SendSummary(Player* player, std::vector<BonkSummaryWeapon> const
                 SpellNameFor(spellInfo, player->GetSession()->GetSessionDbLocaleIndex());
             if (name.empty())
                 name = bonk->GetString(BONK_STRING_SPELL_NUMBERED, { std::to_string(dot.first) });
-            bonk->SendAddon("sums~" + icon + "~" + name + "~" + std::to_string(dot.second.damage) + "~" + std::to_string(dot.second.kills));
+            WorldPacket data(SMSG_HOA_MESSAGE);
+            HoAWriteSummarySpell(data, icon, name, dot.second.damage, dot.second.kills);
+            player->GetSession()->SendPacket(&data);
         }
     }
 
     for (BonkOtherSource const& other : GetOtherSources(player, sent))
-        bonk->SendAddon("sumw~" + other.icon + "~" + other.name + "~0~0~0~" + std::to_string(other.damage) + "~" + std::to_string(other.kills) + "~" + other.type);
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteSummaryWeapon(data, other.icon, other.name, 0, 0, false, other.damage, other.kills, other.type);
+        player->GetSession()->SendPacket(&data);
+    }
 
-    bonk->SendAddon("sumend");
+    {
+        WorldPacket data(SMSG_HOA_MESSAGE);
+        HoAWriteSummaryEnd(data);
+        player->GetSession()->SendPacket(&data);
+    }
 }
 
 void BonkStats::UpdateBossBar(Player* player, uint32 diff)
@@ -583,23 +622,27 @@ void BonkStats::UpdateBossBar(Player* player, uint32 diff)
             shown.resize(BONK_BOSS_BAR_MAX);
     }
 
-    std::string line = "boss~";
+    std::string data;
     if (!shown.empty())
     {
-        line += std::to_string(shown.size());
+        data += std::to_string(shown.size());
         for (ShownBoss const& entry : shown)
         {
             Creature* creature = entry.creature;
             BonkMobAI const* ai = static_cast<BonkMobAI const*>(creature->AI());
-            line += "~" + player->GetBonkPlayer()->GetLocalName(creature) + "~" + std::to_string(ai->GetTrueHealth(creature->GetHealth())) + "~" +
+            data += "~" + player->GetBonkPlayer()->GetLocalName(creature) + "~" + std::to_string(ai->GetTrueHealth(creature->GetHealth())) + "~" +
                 std::to_string(ai->GetTrueHealth(creature->GetMaxHealth())) + "~" + (entry.isBoss ? "boss" : "mini") + "~" +
                 ai->GetAffixNames(player->GetBonkPlayer()->GetLocale()) + "~" + KeywordStacksText(player, creature) + "~" + BonkMobAI::GetUnitGuidText(creature);
         }
     }
-    if (line == bar->lastLine)
+    if (data == bar->lastLine)
         return;
-    bar->lastLine = line;
-    player->GetBonkPlayer()->SendAddon(line);
+    bar->lastLine = data;
+    if (!player->GetBonkPlayer()->IsAddonReady())
+        return;
+    WorldPacket packet(SMSG_HOA_MESSAGE);
+    HoAWriteBossBar(packet, data);
+    player->GetSession()->SendPacket(&packet);
 }
 
 void BonkOnDamage(Unit* attacker, Unit* victim, uint32 damage, SpellEntry const* spellProto)

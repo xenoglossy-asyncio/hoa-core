@@ -315,6 +315,9 @@ mod tests {
         let mut app = crate::game_plugins::schedule_tests::headless_client_unrun();
         let table = app.world_mut().resource::<NetHandlers>().census();
         let unowned: Vec<String> = SessionEventKind::all()
+            // The typed HoA stream is owned by the `hoa` crate's plugin, which this app-only
+            // headless client does not build.
+            .filter(|k| *k != SessionEventKind::HoaMessage)
             .filter(|k| !table.contains_key(k))
             .map(|k| format!("{k:?}: decoded and dropped — no handler in the table"))
             .collect();
