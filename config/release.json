@@ -37,7 +37,7 @@
   "packages": [
     { "name": "launcher", "os": "windows", "build": "launcher", "changesWith": "launcher/*.*", "files": [{ "from": "release/build/launcher/HoALauncher.exe", "to": "HoALauncher.exe" }] },
     { "name": "addon", "git": [{ "from": "addon/HordesOfAzeroth", "to": "Interface/AddOns/HordesOfAzeroth" }] },
-    { "name": "glue", "git": [{ "from": "glue/GlueXML", "to": "Interface/GlueXML" }] },
+    { "name": "glue", "git": [{ "from": "glue/GlueXML", "to": "Data/Interface/GlueXML" }] },
     { "name": "launcher", "os": "linux", "build": "linux-launcher", "changesWith": "launcher/*.*", "files": [{ "from": "release/build/linux/launcher/HoALauncher", "to": "HoALauncher" }] },
     { "name": "client", "os": "windows", "build": "client", "files": [{ "from": "release/build/client/HordesOfAzeroth.exe", "to": "HordesOfAzeroth.exe" }, { "from": "release/build/client/CLIENT-LICENSES.md", "to": "CLIENT-LICENSES.md" }, { "from": "THIRD-PARTY-NOTICES.md" }] },
     { "name": "client", "os": "linux", "build": "linux-client", "files": [{ "from": "release/build/linux/client/HordesOfAzeroth", "to": "HordesOfAzeroth.x86_64" }, { "from": "release/build/client/CLIENT-LICENSES.md", "to": "CLIENT-LICENSES.md" }, { "from": "THIRD-PARTY-NOTICES.md" }] },

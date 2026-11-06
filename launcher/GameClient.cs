@@ -38,6 +38,7 @@ namespace HordesOfAzeroth.Launcher
             if (!File.Exists(m_folder.GameExe))
                 throw new FileNotFoundException(Loc.T("hoa.launcher.0_is_missing_1", m_folder.GameExeName, LocalServer.RepairAdvice));
 
+            InstallGlueOverlay();
             Directory.CreateDirectory(m_folder.GlueXml);
             File.WriteAllLines(Path.Combine(m_folder.GlueXml, "BonkAccount.lua"), new[]
             {
@@ -54,6 +55,16 @@ namespace HordesOfAzeroth.Launcher
             CarryOverSavedVariables();
             CarryOverBindings();
             GameConfig.EnsureDefaults(m_folder, RealmName);
+        }
+
+        void InstallGlueOverlay()
+        {
+            string legacy = Path.Combine(m_folder.Root, "Interface", "GlueXML");
+            if (!Directory.Exists(legacy) || IsLink(m_folder.GlueXml))
+                return;
+            if (File.Exists(Path.Combine(m_folder.GlueXml, "BonkGlue.lua")))
+                return;
+            CopyTree(legacy, m_folder.GlueXml);
         }
 
         void ClearObjectCache()
