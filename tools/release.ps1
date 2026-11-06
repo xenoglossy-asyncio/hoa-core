@@ -7,7 +7,10 @@ param(
     [string]$NotesFile,
     [switch]$OwnNotesOnly,
     [switch]$RepostDiscord,
-    [int]$Hotfix = 0
+    [int]$Hotfix = 0,
+    [switch]$WindowsOnly,
+    [switch]$SkipNavTiles,
+    [switch]$SkipWorldDump
 )
 . "$PSScriptRoot\common.ps1"
 Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
@@ -222,28 +225,21 @@ function Copy-Runtime([string]$Instance, [string[]]$Targets, [string]$Architectu
 function Save-ServerSymbols([string]$Commit) {
     $symbols = Join-Path $releaseRoot "symbols\$($Commit.Substring(0, 9))"
     New-Item -ItemType Directory -Force $symbols | Out-Null
-    $pdb = Get-ChildItem @($serverBuild, (Join-Path $serverSource 'bin')) -Recurse -Filter 'mangosd.pdb' -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -like '*Release*' } | Select-Object -First 1
+    $pdb = Get-ChildItem $serverBuild -Recurse -Filter 'mangosd.pdb' -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -like '*Release*' } | Select-Object -First 1
     if (-not $pdb) { throw 'mangosd.pdb was not built; crash dumps from this release could not be read.' }
     Copy-Item $pdb.FullName $symbols -Force
     Copy-Item (Join-Path $serverInstall 'mangosd.exe') $symbols -Force
 }
 
 function Invoke-ServerBuild {
-    $commit = (git -C $RepoRoot rev-parse HEAD:server/core).Trim()
+    $commit = (git -C $RepoRoot rev-parse HEAD).Trim()
     $stamp = Join-Path $serverInstall 'commit.txt'
     if ((Test-Path $stamp) -and (Get-Content $stamp -Raw).Trim() -eq $commit) { return }
 
-    $fork = Join-Path $ServerDir 'core'
-    if (-not (Test-Path (Join-Path $serverSource '.git'))) {
-        Invoke-Quiet 'git worktree add' 'git' @('-C', $fork, 'worktree', 'add', '--detach', $serverSource, $commit)
-    } else {
-        Invoke-Quiet 'git checkout' 'git' @('-C', $serverSource, 'checkout', '--quiet', '--force', '--detach', $commit)
-    }
-
-    Write-Host "Building the server from fork commit $($commit.Substring(0, 9)) (portable, not tuned to this CPU)..."
+    Write-Host "Building the server from commit $($commit.Substring(0, 9)) (portable, not tuned to this CPU)..."
     $cmake = Get-CMake
     Invoke-Native 'CMake configure' $cmake.Exe @(
-        '-S', $serverSource, '-B', $serverBuild, '-G', 'Visual Studio 17 2022', '-A', 'x64',
+        '-S', (Join-Path $RepoRoot 'server'), '-B', $serverBuild, '-G', 'Visual Studio 17 2022', '-A', 'x64',
         "-DCMAKE_GENERATOR_INSTANCE=$($cmake.Instance)",
         '-DBUILD_EXTRACTORS=1', '-DBUILD_FOR_HOST_CPU=OFF', "-DCMAKE_INSTALL_PREFIX=$serverInstall",
         '-DCMAKE_CXX_FLAGS_RELEASE=/MD /O2 /Ob2 /DNDEBUG /Zi', '-DCMAKE_C_FLAGS_RELEASE=/MD /O2 /Ob2 /DNDEBUG /Zi',
@@ -259,27 +255,20 @@ function Invoke-ServerBuild {
 
 function Write-ClientLicenses {
     if (-not (Get-Command cargo-about -ErrorAction SilentlyContinue)) { throw 'cargo-about is needed for the client licence list: cargo install cargo-about --locked --features cli' }
-    $hoa = Join-Path $clientSource 'crates\hoa'
+    $hoa = Join-Path $RepoRoot 'client\crates\hoa'
     Invoke-Native 'Client licence list' 'cargo' @('about', 'generate', '-c', (Join-Path $hoa 'about.toml'), '-m', (Join-Path $hoa 'Cargo.toml'), '--no-default-features', '--locked', '-o', (Join-Path $clientOut 'CLIENT-LICENSES.md'), (Join-Path $hoa 'about.hbs'))
 }
 
 function Invoke-ClientBuild {
-    $commit = (git -C $RepoRoot rev-parse HEAD:client).Trim()
+    $commit = (git -C $RepoRoot rev-parse HEAD).Trim()
     $stamp = Join-Path $clientOut 'commit.txt'
     if ((Test-Path $stamp) -and (Get-Content $stamp -Raw).Trim() -eq $commit) { return }
 
-    $fork = Join-Path $RepoRoot 'client'
-    if (-not (Test-Path (Join-Path $clientSource '.git'))) {
-        Invoke-Quiet 'git worktree add' 'git' @('-C', $fork, 'worktree', 'add', '--detach', $clientSource, $commit)
-    } else {
-        Invoke-Quiet 'git checkout' 'git' @('-C', $clientSource, 'checkout', '--quiet', '--force', '--detach', $commit)
-    }
-
-    Write-Host "Building the client from fork commit $($commit.Substring(0, 9)) (player build)..."
+    Write-Host "Building the client from commit $($commit.Substring(0, 9)) (player build)..."
     $env:CARGO_TARGET_DIR = $clientTarget
     $env:RUSTFLAGS = '-C target-feature=+crt-static'
     try {
-        Invoke-Native 'Client build' 'cargo' @('build', '--manifest-path', (Join-Path $clientSource 'Cargo.toml'), '--profile', 'ship', '--locked', '-p', 'hoa', '--no-default-features')
+        Invoke-Native 'Client build' 'cargo' @('build', '--manifest-path', (Join-Path $RepoRoot 'client\Cargo.toml'), '--profile', 'ship', '--locked', '-p', 'hoa', '--no-default-features')
     } finally {
         Remove-Item Env:CARGO_TARGET_DIR, Env:RUSTFLAGS -ErrorAction SilentlyContinue
     }
@@ -322,11 +311,11 @@ function Invoke-PackageBuild([string]$Name) {
         'client' { Invoke-ClientBuild }
         'version' { [System.IO.File]::WriteAllText((Join-Path $buildDir 'VERSION'), "$version`n") }
         'launcher' {
-            $project = Join-Path (Get-CommittedTree) 'tools\launcher\HordesOfAzerothLauncher.csproj'
+            $project = Join-Path (Get-CommittedTree) 'launcher\HordesOfAzerothLauncher.csproj'
             Invoke-Native 'Launcher build' 'dotnet' @('publish', $project, '-c', 'Release', '-r', 'win-x64', '-nologo', "-p:Repository=$repository", "-p:StatsUrl=$statsUrl", "-p:LobbyUrl=$lobbyUrl", "-p:MirrorUrl=$mirrorUrl", "-p:GiteeRepository=$giteeRepository", '-o', (Join-Path $buildDir 'launcher'))
         }
         'linux-launcher' {
-            $project = Join-Path (Get-CommittedTree) 'tools\launcher\HordesOfAzerothLauncher.csproj'
+            $project = Join-Path (Get-CommittedTree) 'launcher\HordesOfAzerothLauncher.csproj'
             Invoke-Native 'Linux launcher build' 'dotnet' @('publish', $project, '-c', 'Release', '-r', 'linux-x64', '-nologo', "-p:Repository=$repository", "-p:StatsUrl=$statsUrl", "-p:LobbyUrl=$lobbyUrl", "-p:MirrorUrl=$mirrorUrl", "-p:GiteeRepository=$giteeRepository", '-o', (Join-Path $linuxOut 'launcher'))
         }
         'linux-server' { Invoke-LinuxBuild 'server' }
@@ -344,7 +333,7 @@ function Invoke-PackageBuild([string]$Name) {
 
 function Assert-WorldDumpMatchesServer {
     $dump = Join-Path $buildDir 'world.sql'
-    $migrations = Join-Path $serverSource 'sql\migrations'
+    $migrations = Join-Path $RepoRoot 'server\sql\migrations'
     if (-not (Test-Path $dump) -or -not (Test-Path $migrations)) { return }
     $needed = Get-ChildItem $migrations -Filter '*_world.sql' | ForEach-Object { $_.BaseName.Substring(0, 14) }
     $text = [System.IO.File]::ReadAllText($dump)
@@ -378,20 +367,7 @@ function Get-CommittedCopy([string]$Relative, [string]$WorkingCopy) {
     Join-Path (Get-CommittedTree) $path
 }
 
-function Get-CommittedCore {
-    if (-not $script:committedCoreReady) {
-        $commit = (git -C $RepoRoot rev-parse HEAD:server/core).Trim()
-        Sync-ReleaseSource (Join-Path $ServerDir 'core') $serverSource $commit
-        $script:committedCoreReady = $true
-    }
-    $serverSource
-}
-
 function Resolve-PackageSource([string]$From) {
-    $relative = $From -replace '\\', '/'
-    if ($relative.StartsWith('server/core/')) {
-        return [pscustomobject]@{ Root = Get-CommittedCore; Path = $relative.Substring('server/core/'.Length); Committed = $true }
-    }
     [pscustomobject]@{ Root = $RepoRoot; Path = $From; Committed = $false }
 }
 
@@ -399,10 +375,17 @@ function Resolve-PackageFiles($Package) {
     $files = [System.Collections.Generic.List[object]]::new()
     foreach ($path in @($Package.git)) {
         if (-not $path) { continue }
+        $source = if ($path -is [string]) { $path } else { $path.from }
+        $targetRoot = if ($path -is [string]) { $path } else { $path.to }
+        if (-not $source) { continue }
+        $source = $source -replace '\\', '/'
         $tree = Get-CommittedTree
-        foreach ($tracked in git -C $RepoRoot ls-tree -r --name-only HEAD -- $path) {
-            $source = Join-Path $tree $tracked
-            if (Test-Path $source -PathType Leaf) { $files.Add([pscustomobject]@{ Source = $source; Target = $tracked }) }
+        foreach ($tracked in git -C $RepoRoot ls-tree -r --name-only HEAD -- $source) {
+            $file = Join-Path $tree $tracked
+            if (-not (Test-Path $file -PathType Leaf)) { continue }
+            $relative = $tracked.Substring($source.Length).TrimStart('/')
+            $target = if ($targetRoot) { ($targetRoot.TrimEnd('/') + '/' + $relative) } else { $tracked }
+            $files.Add([pscustomobject]@{ Source = $file; Target = $target })
         }
     }
     foreach ($entry in @($Package.files)) {
@@ -505,10 +488,9 @@ function Get-NavGroupFiles($Group) {
 function Get-NavFilesProblem($Group, $Files) {
     $headers = @($Files | Where-Object { $_.Target -like '*.mmap' }).Count
     if ($headers -lt @($Group.maps.PSObject.Properties).Count) { return "they aren't built in $(Join-Path $DataDir 'mmaps')" }
-    $commit = (git -C $RepoRoot rev-parse HEAD:server/core).Trim()
-    $generatorChanged = [DateTimeOffset]::Parse((git -C (Join-Path $ServerDir 'core') log -1 --format=%cI $commit -- contrib/mmap contrib/vmap_extractor contrib/vmap_assembler contrib/extractor).Trim())
+    $generatorChanged = [DateTimeOffset]::Parse((git -C $RepoRoot log -1 --format=%cI -- server/contrib/mmap server/contrib/vmap_extractor server/contrib/vmap_assembler server/contrib/extractor).Trim())
     $stale = @($Files | Where-Object { (Get-Item $_.Source).LastWriteTimeUtc -lt $generatorChanged.UtcDateTime })
-    if ($stale.Count) { return "$($stale.Count) files are older than the last map generator change in server/core ($($generatorChanged.ToString('yyyy-MM-dd')))" }
+    if ($stale.Count) { return "$($stale.Count) files are older than the last map generator change in server ($($generatorChanged.ToString('yyyy-MM-dd')))" }
 }
 
 function Get-NavGroups($Previous) {
@@ -538,10 +520,12 @@ function Get-NavGroups($Previous) {
     }
 }
 
-if (-not (Test-DbUp)) { throw 'MariaDB is not running. Start it with tools\start-server.ps1 -DatabaseOnly.' }
-& (Join-Path $PSScriptRoot 'build-navtiles.ps1') | Out-Null
-git -C $RepoRoot update-index -q --refresh -- config/navtiles.json
-if (git -C $RepoRoot status --porcelain -- config/navtiles.json) { throw 'config/navtiles.json did not match the run zones and has been rebuilt: commit it, then release again.' }
+if (-not $SkipNavTiles) {
+    if (-not (Test-DbUp)) { throw 'MariaDB is not running. Start it with tools\start-server.ps1 -DatabaseOnly.' }
+    & (Join-Path $PSScriptRoot 'build-navtiles.ps1') | Out-Null
+    git -C $RepoRoot update-index -q --refresh -- config/navtiles.json
+    if (git -C $RepoRoot status --porcelain -- config/navtiles.json) { throw 'config/navtiles.json did not match the run zones and has been rebuilt: commit it, then release again.' }
+}
 
 if ($Publish -and -not $testChannel -and (git -C $RepoRoot status --porcelain --ignore-submodules=all)) { throw 'Commit or stash every change before publishing: the release is built from the working tree.' }
 
@@ -552,6 +536,7 @@ $operatingSystems = @(
     [pscustomobject]@{ Name = 'windows'; Manifest = 'manifest.json'; ZipSuffix = ''; Launcher = 'HoALauncher.exe'; Download = 'HoALauncher.exe' },
     [pscustomobject]@{ Name = 'linux'; Manifest = 'manifest-linux.json'; ZipSuffix = '-linux'; Launcher = 'HoALauncher'; Download = 'HoALauncher-linux.tar.gz' }
 )
+if ($WindowsOnly) { $operatingSystems = @($operatingSystems | Where-Object { $_.Name -eq 'windows' }) }
 $previousByOs = @{}
 foreach ($os in $operatingSystems) {
     $previousByOs[$os.Name] = @{}
@@ -568,7 +553,7 @@ $sharedEntries = @{}
 $packagesByOs = @{}
 foreach ($os in $operatingSystems) {
     $packages = [System.Collections.Generic.List[object]]::new()
-    foreach ($package in $releaseConfig.packages | Where-Object { -not $_.os -or $_.os -eq $os.Name }) {
+    foreach ($package in $releaseConfig.packages | Where-Object { (-not $_.os -or $_.os -eq $os.Name) -and -not ($SkipWorldDump -and $_.name -eq 'world-db') }) {
         $shared = -not $package.os
         if ($shared -and $sharedEntries.ContainsKey($package.name)) {
             if ($sharedEntries[$package.name]) { $packages.Add($sharedEntries[$package.name]) }
@@ -622,7 +607,7 @@ foreach ($os in $operatingSystems) {
     $packagesByOs[$os.Name] = $packages
 }
 
-$navGroups = @(Get-NavGroups $previous)
+$navGroups = if ($SkipNavTiles) { @() } else { @(Get-NavGroups $previous) }
 
 Assert-WorldDumpMatchesServer
 
