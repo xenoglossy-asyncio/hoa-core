@@ -30,65 +30,42 @@ list:SetHeight(80)
 list:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -10, -196)
 list:Hide()
 
-local rows = {}
-local function Row(index, label, icon, tooltip)
-    local row = CreateFrame("Frame", nil, list)
-    row:SetWidth(200)
-    row:SetHeight(19)
-    row:SetPoint("TOPRIGHT", list, "TOPRIGHT", 0, -(index - 1) * 19)
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetTexture(UI.ICON_PATH .. icon)
-    row.icon:SetWidth(15)
-    row.icon:SetHeight(15)
-    row.icon:SetPoint("RIGHT", row, "RIGHT", 0, 0)
-    row.value = UI.Text(row, 12)
-    row.value:SetPoint("RIGHT", row.icon, "LEFT", -6, 0)
-    row.label = UI.Text(row, 12)
-    row.label:SetPoint("RIGHT", row.value, "LEFT", -5, 0)
-    row.label:SetTextColor(1, 0.82, 0)
-    row.label:SetText(label)
-    row:EnableMouse(true)
-    row.tooltip = tooltip
-    UI.Hover(row, function()
-        GameTooltip:SetOwner(this, "ANCHOR_LEFT")
-        this.tooltip()
-        GameTooltip:Show()
-    end)
-    rows[index] = row
-    return row
-end
+local rewards = UI.List(list, {})
+local trackerPanel = UI.PanelObject("tracker", { tracker, list })
+trackerPanel.rewards = rewards
 
-local kills = Row(1, L["hoa.addon.kills_2"], "INV_Misc_Bone_HumanSkull_01", function()
+local kills = rewards:Add("kills", { label = L["hoa.addon.kills_2"], icon = UI.ICON_PATH .. "INV_Misc_Bone_HumanSkull_01", tooltip = function()
     GameTooltip:AddDoubleLine(L["hoa.addon.kills_2"], run.kills or 0, 1, 1, 1, 1, 1, 1)
     GameTooltip:AddLine(L["hoa.addon.enemies_killed_this_run"], 1, 0.82, 0)
-end)
-local valor = Row(2, L["hoa.addon.valor"], "INV_Misc_Coin_04", function()
+end })
+local valor = rewards:Add("valor", { label = L["hoa.addon.valor"], icon = UI.ICON_PATH .. "INV_Misc_Coin_04", tooltip = function()
     GameTooltip:AddDoubleLine(L["hoa.addon.valor"], run.valor or 0, 1, 1, 1, 1, 0.9, 0.45)
     GameTooltip:AddLine(L["hoa.addon.spent_on_chests_and_shops_during_the_run"], 1, 0.82, 0, 1)
     GameTooltip:AddLine(L("hoa.addon.next_chest_1_valor", run.chest or "?"), 1, 1, 1)
     GameTooltip:AddLine(L["hoa.addon.lost_when_the_run_ends"], 0.6, 0.6, 0.6)
-end)
-local shards = Row(3, L["hoa.addon.tickets_2"], "INV_Misc_Ticket_Darkmoon_01", function()
+end })
+local shards = rewards:Add("shards", { label = L["hoa.addon.tickets_2"], icon = UI.ICON_PATH .. "INV_Misc_Ticket_Darkmoon_01", tooltip = function()
     GameTooltip:AddDoubleLine(L["hoa.addon.darkmoon_tickets_2"], "+" .. (run.shards or 0), 1, 1, 1, 0.75, 0.5, 1)
     GameTooltip:AddLine(L["hoa.addon.spend_them_with_sayge_at_the_inn"], 1, 0.82, 0)
-end)
-local gold = Row(4, L["hoa.addon.gold"], "INV_Misc_Coin_02", function()
+end })
+local gold = rewards:Add("gold", { label = L["hoa.addon.gold"], icon = UI.ICON_PATH .. "INV_Misc_Coin_02", tooltip = function()
     GameTooltip:AddDoubleLine(L["hoa.addon.gold_earned"], UI.FormatGold(run.gold or 0), 1, 1, 1, 1, 1, 1)
     GameTooltip:AddLine(L["hoa.addon.yours_to_keep_even_if_you_die"], 1, 0.82, 0)
-end)
-local greed = Row(5, L["hoa.addon.greed"], "Spell_Nature_EarthBindTotem", function()
+end })
+local greed = rewards:Add("greed", { label = L["hoa.addon.greed"], icon = UI.ICON_PATH .. "Spell_Nature_EarthBindTotem", tooltip = function()
     GameTooltip:AddDoubleLine(L["hoa.addon.greed"], L(run.greed == 1 and "hoa.addon.1_stack" or "hoa.addon.1_stacks", run.greed or 0), 1, 1, 1, 1, 0.82, 0)
     GameTooltip:AddLine(L("hoa.addon.1_gold_and_darkmoon_tickets", run.greedReward or 0), 0.25, 1, 0.25)
     GameTooltip:AddLine(L("hoa.addon.1_more_enemies", run.greedMobs or 0), 1, 0.4, 0.4)
     GameTooltip:AddLine(L["hoa.addon.every_greed_totem_taken_this_run_adds_a_stack"], 1, 0.82, 0, 1)
-end)
+end })
 greed:Hide()
-local revives = Row(6, L["hoa.addon.revives"], "Spell_Holy_Resurrection", function()
+local revives = rewards:Add("revives", { label = L["hoa.addon.revives"], icon = UI.ICON_PATH .. "Spell_Holy_Resurrection", tooltip = function()
     GameTooltip:AddDoubleLine(L["hoa.addon.party_revives"], (run.revives or 0) .. " / " .. (run.revivesCap or 0), 1, 1, 1, 0.4, 1, 0.4)
     GameTooltip:AddLine(L["hoa.addon.shared_by_your_party_stand_near_a_fallen_ally_to_revive_them"], 1, 0.82, 0, 1)
     GameTooltip:AddLine(L["hoa.addon.clearing_a_stage_gives_one_back"], 0.6, 0.6, 0.6, 1)
-end)
+end })
 revives:Hide()
+rewards:Layout()
 
 local function Refresh()
     local elapsed = run.elapsed or 0
@@ -108,27 +85,24 @@ local function Refresh()
     end
     tracker.stage:SetText(stage)
 
-    kills.value:SetText(run.kills or 0)
-    valor.value:SetText("|cffffe873" .. (run.valor or 0) .. "|r |cff9d9d9d/ " .. (run.chest or "?") .. "|r")
-    shards.value:SetText("|cffd6b0ff" .. (run.shards or 0) .. "|r")
-    gold.value:SetText(UI.FormatGold(run.gold or 0))
+    kills:SetValue(run.kills or 0)
+    valor:SetValue("|cffffe873" .. (run.valor or 0) .. "|r |cff9d9d9d/ " .. (run.chest or "?") .. "|r")
+    shards:SetValue("|cffd6b0ff" .. (run.shards or 0) .. "|r")
+    gold:SetValue(UI.FormatGold(run.gold or 0))
     if (run.greed or 0) > 0 then
-        greed.value:SetText("|cffffd100x" .. run.greed .. "|r |cff9d9d9d+" .. (run.greedReward or 0) .. "%|r")
+        greed:SetValue("|cffffd100x" .. run.greed .. "|r |cff9d9d9d+" .. (run.greedReward or 0) .. "%|r")
         greed:Show()
     else
         greed:Hide()
     end
     if (run.revivesCap or 0) > 0 then
         local color = run.revives == 0 and "ff5a4a" or "66ff66"
-        revives.value:SetText("|cff" .. color .. run.revives .. "|r |cff9d9d9d/ " .. run.revivesCap .. "|r")
-        revives:SetPoint("TOPRIGHT", list, "TOPRIGHT", 0, -(greed:IsShown() and 5 or 4) * 19)
+        revives:SetValue("|cff" .. color .. run.revives .. "|r |cff9d9d9d/ " .. run.revivesCap .. "|r")
         revives:Show()
     else
         revives:Hide()
     end
-    for _, row in ipairs(rows) do
-        row:SetWidth(row.label:GetStringWidth() + row.value:GetStringWidth() + 15 + 11 + 4)
-    end
+    rewards:Layout()
 end
 
 tracker:SetScript("OnUpdate", function()
@@ -252,8 +226,7 @@ UI.ListenHoa({
         end
         Refresh()
         if not tracker:IsShown() then
-            tracker:Show()
-            list:Show()
+            trackerPanel:Show()
         end
     end,
 })
@@ -269,14 +242,12 @@ UI.Module("tracker"):OnRunStart(function(start)
     HideCallout()
     run.boss, run.portal = false, false
     Refresh()
-    tracker:Show()
-    list:Show()
+    trackerPanel:Show()
 end):OnRunEnd(function()
     run.greed, run.greedReward, run.greedMobs = 0, 0, 0
     run.revives, run.revivesCap = 0, 0
     HideCallout()
-    tracker:Hide()
-    list:Hide()
+    trackerPanel:Hide()
 end)
 
 handlers["greed"] = function(f)

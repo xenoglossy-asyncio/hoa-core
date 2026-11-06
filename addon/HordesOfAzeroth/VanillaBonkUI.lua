@@ -323,6 +323,32 @@ function UI.ListenHoa(handlers)
     return UI.Listen(handlers)
 end
 
+-- A tiny class helper: Class(parent) returns a metatable-ready table and New constructs it.
+-- The 1.12 client grammar has no function varargs, so constructors take four explicit values.
+function UI.Class(parent)
+    local class = parent or {}
+    class.__index = class
+    return class
+end
+
+function UI.New(class, a, b, c, d)
+    local object = setmetatable({}, class)
+    if object.Construct then
+        object:Construct(a, b, c, d)
+    end
+    return object
+end
+
+-- Copy mixin methods onto a target object (oUF/FrameXML-style composition).
+function UI.Mixin(target, mixins)
+    for _, mixin in ipairs(mixins) do
+        for key, value in pairs(mixin) do
+            target[key] = value
+        end
+    end
+    return target
+end
+
 -- Named modules: each owns one event frame and shows up in UI.modules for diagnostics.
 -- Lifecycle hooks run in file load order; one dispatcher frame owns the world and run events.
 UI.modules = {}
@@ -387,6 +413,64 @@ lifecycle:SetScript("OnEvent", function()
     end
 end)
 
+-- A panel object owns one or more frames and registers itself in UI.panels; subclasses/instances
+-- can add OnShow/OnHide/OnRefresh methods.
+local Panel = UI.Class()
+function Panel:Construct(name, frames)
+    self.name = name
+    if frames.SetScript then
+        frames = { frames }
+    end
+    self.frames = frames
+    UI.panels = UI.panels or {}
+    UI.panels[name] = self
+end
+
+function Panel:Show()
+    for _, frame in ipairs(self.frames) do
+        frame:Show()
+    end
+    if self.OnShow then
+        self:OnShow()
+    end
+end
+
+function Panel:Hide()
+    for _, frame in ipairs(self.frames) do
+        frame:Hide()
+    end
+    if self.OnHide then
+        self:OnHide()
+    end
+end
+
+function Panel:Toggle()
+    if self:IsShown() then
+        self:Hide()
+    else
+        self:Show()
+    end
+end
+
+function Panel:IsShown()
+    for _, frame in ipairs(self.frames) do
+        if frame:IsShown() then
+            return true
+        end
+    end
+    return false
+end
+
+function Panel:Refresh()
+    if self.OnRefresh then
+        self:OnRefresh()
+    end
+end
+
+function UI.PanelObject(name, frames)
+    return UI.New(Panel, name, frames)
+end
+
 -- Show a tooltip while the pointer is over `frames` (one frame or a list). `show` runs with
 -- `this` set to the hovered frame; the default leave hides the game tooltip.
 function UI.Hover(frames, show, hide)
@@ -435,6 +519,117 @@ function UI.IconButton(parent, size, onClick)
         button:SetScript("OnClick", onClick)
     end
     return button
+end
+
+-- A row object for UI.List: right-aligned icon, value and label, with an optional tooltip.
+local Row = UI.Class()
+function Row:Construct(list, name, opts)
+    self.list = list
+    self.name = name
+    self.opts = opts or {}
+    local frame = CreateFrame("Frame", nil, list.parent)
+    frame:SetWidth(self.opts.width or 200)
+    frame:SetHeight(self.opts.height or 19)
+    self.frame = frame
+    frame.icon = frame:CreateTexture(nil, "ARTWORK")
+    frame.icon:SetTexture(self.opts.icon or (UI.ICON_PATH .. "INV_Misc_QuestionMark"))
+    frame.icon:SetWidth(self.opts.iconSize or 15)
+    frame.icon:SetHeight(self.opts.iconSize or 15)
+    frame.icon:SetPoint("RIGHT", frame, "RIGHT", self.opts.iconX or 0, 0)
+    frame.value = UI.Text(frame, self.opts.valueSize or 12)
+    frame.value:SetPoint("RIGHT", frame.icon, "LEFT", -6, 0)
+    frame.label = UI.Text(frame, self.opts.labelSize or 12)
+    frame.label:SetPoint("RIGHT", frame.value, "LEFT", -5, 0)
+    frame.label:SetTextColor(1, 0.82, 0)
+    frame.label:SetText(self.opts.label or "")
+    if self.opts.tooltip then
+        frame.tooltip = self.opts.tooltip
+        UI.Hover(frame, function()
+            GameTooltip:SetOwner(this, "ANCHOR_LEFT")
+            this.tooltip()
+            GameTooltip:Show()
+        end)
+    end
+    self:Fit()
+    return self
+end
+
+function Row:SetValue(text)
+    self.frame.value:SetText(text)
+    self:Fit()
+end
+
+function Row:SetLabel(text)
+    self.frame.label:SetText(text)
+    self:Fit()
+end
+
+function Row:SetIcon(texture)
+    self.frame.icon:SetTexture(texture)
+end
+
+function Row:SetTooltip(tooltip)
+    self.frame.tooltip = tooltip
+end
+
+function Row:Fit()
+    self.frame:SetWidth(self.frame.label:GetStringWidth() + self.frame.value:GetStringWidth() + self.frame.icon:GetWidth() + 15)
+end
+
+function Row:Show() self.frame:Show() end
+function Row:Hide() self.frame:Hide() end
+function Row:IsShown() return self.frame:IsShown() end
+
+function Row:Place(y)
+    self.frame:ClearAllPoints()
+    self.frame:SetPoint("TOPRIGHT", self.list.parent, "TOPRIGHT", 0, -y)
+end
+
+-- A list object owns named rows and lays the visible ones out top to bottom.
+local List = UI.Class()
+function List:Construct(parent, opts)
+    self.parent = parent
+    self.opts = opts or {}
+    self.rows = {}
+    self.order = {}
+end
+
+function List:Add(name, opts)
+    local row = UI.New(Row, self, name, opts)
+    self.rows[name] = row
+    tinsert(self.order, name)
+    return row
+end
+
+function List:Row(name)
+    return self.rows[name]
+end
+
+function List:ShowAll()
+    for _, row in pairs(self.rows) do
+        row:Show()
+    end
+end
+
+function List:HideAll()
+    for _, row in pairs(self.rows) do
+        row:Hide()
+    end
+end
+
+function List:Layout()
+    local y = 0
+    for _, name in ipairs(self.order) do
+        local row = self.rows[name]
+        if row:IsShown() then
+            row:Place(y)
+            y = y + row.frame:GetHeight() + (self.opts.gap or 0)
+        end
+    end
+end
+
+function UI.List(parent, opts)
+    return UI.New(List, parent, opts)
 end
 
 local GENERAL = "Interface\\PaperDollInfoFrame\\UI-Character-General-"
