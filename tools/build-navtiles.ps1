@@ -126,7 +126,7 @@ foreach ($group in $groups) {
     $output.Add([ordered]@{ name = $group.Name; maps = $maps })
 }
 
-$json = [ordered]@{ groups = $output } | ConvertTo-Json -Depth 5
+$json = ([ordered]@{ groups = $output } | ConvertTo-Json -Depth 5) -replace "`r`n", "`n"
 [System.IO.File]::WriteAllText($OutFile, $json + "`n")
 foreach ($group in $output) {
     $parts = foreach ($key in $group.maps.Keys) {
