@@ -36,6 +36,7 @@ namespace HordesOfAzeroth.Launcher
     {
         public string Name;
         public string Url;
+        public List<string> Mirrors = new List<string>();
         public string Sha256;
         public long Size;
         public string UnzipTo;
@@ -162,6 +163,9 @@ namespace HordesOfAzeroth.Launcher
                     {
                         Name = item["name"] as string,
                         Url = item["url"] as string,
+                        Mirrors = item.TryGetValue("mirrors", out object mirrors) && mirrors is object[] mirrorList
+                            ? mirrorList.OfType<string>().ToList()
+                            : new List<string>(),
                         Sha256 = item["sha256"] as string,
                         Size = Convert.ToInt64(item["size"]),
                         UnzipTo = install != null && install.TryGetValue("unzipTo", out object unzip) ? unzip as string : null,

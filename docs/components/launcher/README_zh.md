@@ -20,7 +20,19 @@ Avalonia C# 启动器。
 ## 待改
 
 - 语言选择改为账号级，启动前按 `(locale, contentVersion)` 失效缓存。
-- 清理 `Repository`/`StatsUrl`/`MirrorUrl` 等上游地址，换成新仓库或留空。
+- 保持 `config/release.json` 与本仓库的 GitHub、Gitee 地址同步。
+
+## 更新源
+
+`config/release.json` 指定 GitHub 仓库、对应的 Gitee 镜像（`giteeRepository`）和第三方下载。
+启动器从 `https://github.com/<repository>/releases/latest/download/` 读取
+`manifest.json` / `manifest-linux.json`；在中国大陆（或 GitHub 失败后）改用
+`https://gitee.com/<giteeRepository>/releases/download/<tag>/<asset>`，最新 tag 通过 Gitee API
+（`/releases/latest`）解析。两个仓库上的包 zip 使用相同 tag 和文件名，因此
+`tools/publish-gitee.ps1 -Version x.y.z` 可以镜像一次发布：创建或复用 `packages-vX` 和 `vX`
+两个 release，并上传 `release/<version>/assets`（需要设置 `HOA_GITEE_TOKEN`，token 要有仓库写权限）。
+MariaDB 在 `thirdParty[].mirrors` 里配置清华、阿里云、中科大镜像；启动器在中国大陆优先使用它们，
+其它地区在主源失败后回退。可选的 R2 私有镜像（`HOA_MIRROR_URL`）仍然保留。
 
 ## 直连联机
 

@@ -386,7 +386,7 @@ namespace HordesOfAzeroth.Launcher
 
             foreach (ThirdPartyEntry item in thirdParty)
             {
-                string file = await FetchAsync(item.Url, item.Sha256, report, cancel);
+                string file = await FetchAsync(item.Url, item.Sha256, report, cancel, item.Mirrors);
                 if (item.CopyTo != null)
                     File.Copy(file, Path.Combine(m_folder.Root, item.CopyTo), true);
                 else if (Platform.IsTarball(file))
@@ -451,7 +451,7 @@ namespace HordesOfAzeroth.Launcher
             return false;
         }
 
-        public async Task<string> FetchAsync(string url, string sha256, Action<long> report, CancellationToken cancel)
+        public async Task<string> FetchAsync(string url, string sha256, Action<long> report, CancellationToken cancel, IEnumerable<string> alternates = null)
         {
             Directory.CreateDirectory(Downloads);
             DeleteOldPartials();
@@ -474,20 +474,20 @@ namespace HordesOfAzeroth.Launcher
             string partial = PartialPath(name, sha256);
             DeleteOtherPartials(name, partial);
             bool resuming = File.Exists(partial);
-            await DownloadToTargetAsync(url, name, partial, target, report, cancel);
+            await DownloadToTargetAsync(url, name, partial, target, report, cancel, alternates);
             if (resuming && Sha256(target) != sha256)
             {
                 File.Delete(target);
-                await DownloadToTargetAsync(url, name, partial, target, report, cancel);
+                await DownloadToTargetAsync(url, name, partial, target, report, cancel, alternates);
             }
             return CheckedDownload(target, name, sha256);
         }
 
-        async Task DownloadToTargetAsync(string url, string name, string partial, string target, Action<long> report, CancellationToken cancel)
+        async Task DownloadToTargetAsync(string url, string name, string partial, string target, Action<long> report, CancellationToken cancel, IEnumerable<string> alternates)
         {
             try
             {
-                await Mirror.TryEachAsync(url, cancel, source => Web.DownloadAsync(source, partial, report, cancel));
+                await Mirror.TryEachAsync(url, alternates, cancel, source => Web.DownloadAsync(source, partial, report, cancel));
             }
             catch (Exception e) when (Web.IsProblem(e) && !cancel.IsCancellationRequested)
             {
