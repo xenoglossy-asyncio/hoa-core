@@ -38,7 +38,7 @@ Each imported directory keeps its original license files:
 
 - `server/LICENSE` (GPL-2.0)
 - `client/LICENSE-MIT`, `client/LICENSE-APACHE`
-- Root `LICENSE-GPL-3.0` and `THIRD-PARTY-NOTICES.md` cover the addon/glue/launcher/tools parts from the main repository
+- Root `LICENSE` and `THIRD-PARTY-NOTICES.md` cover the addon/glue/launcher/tools parts from the main repository
 - New `shared/`, `scripts/`, `docs/` and new parts of `tools/` use GPL-2.0-or-later
 
 See [LICENSE-NOTICE.md](../../LICENSE-NOTICE.md).

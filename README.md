@@ -63,6 +63,10 @@ The repository aggregates code from several projects; each part keeps its own li
 | `client/` | MIT or Apache-2.0 | benilla / hordes-of-azeroth-client |
 | `addon/`, `glue/`, `launcher/`, `config/`, `localization/` | GPL-3.0 | hordes-of-azeroth |
 | Imported parts of `tools/` | GPL-3.0 | hordes-of-azeroth |
-| New `shared/`, `scripts/`, `docs/` and new `tools/` code | GPL-2.0-or-later | this repository |
+| New `shared/`, `scripts/`, `docs/` and new `tools/` code | GPL-3.0, except `shared/` (GPL-2.0-or-later) | this repository |
+
+The repository stays a monorepo: per-directory `LICENSE` and `UPSTREAM.md` files plus
+`LICENSE-NOTICE.md` are authoritative, and a release tag is the corresponding source. Submodules
+are not required by the licenses and are not used.
 
 See [LICENSE-NOTICE.md](LICENSE-NOTICE.md) and the license audit plus monorepo/submodule plan in [docs/licensing](docs/licensing/README.md). World of Warcraft is a trademark of Blizzard Entertainment, Inc.; this project does not ship any game assets.

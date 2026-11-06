@@ -24,49 +24,46 @@ documentation, not legal advice; a final distribution should be reviewed by coun
 - MIT cannot be the license of the repository as a whole: the addon, Glue and launcher are GPL-3.0
   derivatives. MIT can only cover original, standalone code.
 
-**Recommendation:** license the repository's original code under **GPL-3.0**, keep the addon,
-Glue, launcher and config under GPL-3.0, keep the server as a separate GPL-2.0 program, and keep
-the client under MIT/Apache-2.0. If the server must also be GPL-3.0, replace the bundled MySQL
-client with MariaDB Connector/C (LGPL-2.1) and OpenSSL 1.0.2 with OpenSSL 3 (Apache-2.0) or another
-compatible TLS library; the VMaNGOS core headers are already "or later".
+**Decision (2026-11-06):** the repository's original code is **GPL-3.0**; `shared/` and
+`shared/content` stay **GPL-2.0-or-later** because the GPL-2.0 server and the GPL-3.0 addon both
+use them; the server stays **GPL-2.0**, the client stays **MIT OR Apache-2.0**, and the addon,
+Glue, launcher, config and localization stay **GPL-3.0**.
 
-MIT for the top-level repository is possible only if the GPL parts stay in separate submodules and
-the top-level repository contains just original MIT code. That is a valid mixed-license aggregate,
-but users must not read the top-level MIT as covering the game.
+**The repository stays a monorepo and does not use submodules.** A license is satisfied by
+keeping its text and copyright notices, naming the source and the local modifications, and
+providing the corresponding source; Git structure is not a license requirement. Submodules are
+only an optional upstream-tracking tool and would make contributions, atomic cross-directory
+changes, CI and Gitee mirroring harder. Each imported directory keeps its `LICENSE` and
+`UPSTREAM.md`; `LICENSE-NOTICE.md` and `provenance.yaml` record the rest, and a release tag is the
+corresponding source.
 
 ## Proposed layout
 
 ```
-hoa-core                     GPL-3.0 (original code + GPL-3.0 directories)
-  shared/ tools/ docs/ scripts/ config/
-  addon/ glue/ launcher/      (GPL-3.0; can stay in the monorepo)
-  server/ -> submodule hoa-server   GPL-2.0-or-later / GPL-2.0 as shipped
-  client/ -> submodule hoa-client   MIT OR Apache-2.0
+hoa-core                     GPL-3.0 (top-level LICENSE for original code)
+  LICENSES/                  GPL-2.0, GPL-3.0, MIT, Apache-2.0, OFL-1.1 texts
+  shared/                    GPL-2.0-or-later (used by the server and the addon)
+  server/                    GPL-2.0 + LICENSE + UPSTREAM.md
+  client/                    MIT OR Apache-2.0 + LICENSE-MIT/LICENSE-APACHE + UPSTREAM.md
+  addon/ glue/ launcher/     GPL-3.0 + UPSTREAM.md
+  config/ localization/      GPL-3.0 + UPSTREAM.md
+  tools/ docs/ scripts/      GPL-3.0 original code (imported tools keep their notices)
 ```
 
-Use relative submodule URLs (`../hoa-server.git`) so a clone of either GitHub or Gitee resolves the
-submodule on the same host. Mirror the fork repositories to both hosts.
-
-If provenance isolation is wanted for every upstream, add `addon/`, `glue/` and `launcher/` as
-submodules too; then the monorepo holds only `shared/`, `tools/`, `docs/`, `scripts/` and `config/`.
+If upstream tracking ever becomes painful, `server/` and `client/` can become submodules of their
+own fork repositories; that is a maintenance choice, not a licensing one. In that case use relative
+URLs (`../hoa-server.git`) so GitHub and Gitee clones resolve on the same host, mirror the fork
+repositories, and update the release tooling first: `git archive` does not include submodule
+content.
 
 ## Steps
 
-1. Choose the top-level license (GPL-3.0 recommended; MIT only for original standalone code).
-2. Create fork repositories for the parts that become submodules (`hoa-server`, `hoa-client`, and
-   optionally `hoa-addon`, `hoa-glue`, `hoa-launcher`) on GitHub and Gitee; preserve history with
-   `git filter-repo --subdirectory-filter` or `git subtree split`.
-3. `git submodule add ../hoa-server server` and `git submodule add ../hoa-client client`; commit
-   `.gitmodules`.
-4. CI checkout gains `submodules: recursive`; the Gitee mirror includes the submodule repositories.
-5. Release tooling: `git archive` of the superproject does **not** contain submodule files. Update
-   `Get-CommittedTree` and package resolution in `tools/release.ps1` to archive each submodule or to
-   read the checked-out submodule tree; addon/glue/launcher packages would need the same treatment
-   if they become submodules.
-6. For a GPL-3.0 server, replace the GPL-2.0-only MySQL client and the OpenSSL 1.0.2 bundle with
+1. Keep the top-level `LICENSE` (GPL-3.0) and the per-directory licenses; the decision above is
+   recorded here and in `LICENSE-NOTICE.md`.
+2. Keep a `LICENSE`/`LICENSE-MIT`/`LICENSE-APACHE` and an `UPSTREAM.md` in every imported
+   directory, with the upstream URL, commit, base and local changes.
+3. Keep `LICENSES/` with the full texts and `THIRD-PARTY-NOTICES.md` for dependencies.
+4. For a GPL-3.0 server, replace the GPL-2.0-only MySQL client and the OpenSSL 1.0.2 bundle with
    compatible dependencies; otherwise keep the server GPL-2.0 as a separate program.
-7. Normalize the license files: `LICENSES/` with GPL-2.0, GPL-3.0, MIT, Apache-2.0 and OFL-1.1,
-   an accurate `LICENSE-NOTICE.md`, and a regenerated `THIRD-PARTY-NOTICES.md`.
-
-Until the split is done, the per-directory licenses and `LICENSE-NOTICE.md` remain the source of
-truth; do not relicense a GPL-2.0-only part as GPL-3.0 or MIT.
+5. Do not relicense a GPL-2.0-only part as GPL-3.0 or MIT. If submodules are introduced later,
+   update CI (`submodules: recursive`) and release packaging in the same change.
