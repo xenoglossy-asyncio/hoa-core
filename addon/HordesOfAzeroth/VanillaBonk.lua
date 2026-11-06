@@ -295,8 +295,8 @@ UI.ListenHoa({
         VB.duration = tonumber(start.duration_s) or 0
         VB.results:Hide()
         arena:Hide()
-        if VB.shop then
-            VB.shop:Hide()
+        if VB.shopFrame then
+            VB.shopFrame:Hide()
         end
     end,
     HOA_RUN_STATE = function()
@@ -535,8 +535,8 @@ UI.ListenHoa({
     HOA_RUN_END = function(ending)
         VB.inRun = false
         VB.sideOffers = false
-        if VanillaBonkUI.InspectShown() and VB.shop then
-            VB.shop:Hide()
+        if VanillaBonkUI.InspectShown() and VB.shopFrame then
+            VB.shopFrame:Hide()
         end
         SetCombatLogQuiet(false)
         VB.offer = {}
@@ -619,7 +619,7 @@ UI.Module("enterWorld"):OnEnterWorld(function()
 end)
 UI.Module("enterWorld"):OnMoney(function()
     VB.PlayPurchaseSound()
-    if VB.shop and VB.shop:IsShown() then
+    if VB.shopFrame and VB.shopFrame:IsShown() then
         VB.RefreshShop()
     end
 end)

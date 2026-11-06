@@ -8,6 +8,7 @@ local Notice = VB.Notice
 local SetFont = VB.SetFont
 local GossipWindowHidden = VB.GossipWindowHidden
 local ReplaceNextGossip = VB.ReplaceNextGossip
+local Shop = UI.Module("shop")
 
 local SHOP_TITLES = { ["1"] = L["hoa.addon.upgrades"], ["2"] = L["hoa.addon.sayge_s_fortunes"], ["3"] = L["hoa.addon.talents"] }
 local SHOP_HINTS = {
@@ -38,7 +39,8 @@ local SHOP_FOOTER = 40
 local SHOP_NODE_SIZE = 36
 local SHOP_NODE_HALF = SHOP_NODE_SIZE / 2
 
-local shop = VanillaBonkUI.Window("VanillaBonkShop", 400, 400)
+Shop.frame = VanillaBonkUI.Window("VanillaBonkShop", 400, 400)
+local shop = Shop.frame
 shop:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
 
 shop.gold = shop.headerRight
@@ -121,7 +123,7 @@ do
         button:SetScript("OnClick", function()
             PlaySound("igMainMenuOptionCheckBoxOn")
             shop.presetSlot = this.slot
-            shop.Refresh()
+            Shop:Refresh()
         end)
         UI.Hover(button, function()
             local points = shop.presets and shop.presets.points[this.slot] or 0
@@ -139,7 +141,7 @@ do
     bar.label:SetPoint("RIGHT", bar.slots[1], "LEFT", -6, 0)
     bar.label:SetText(L["hoa.addon.presets"])
 
-    shop.PreviewSlot = function(data)
+    function Shop:PreviewSlot(data)
         local presets = not data.inspect and data.presets
         local slot = presets and (shop.presetSlot or presets.active)
         if not slot or slot == presets.active then
@@ -148,7 +150,7 @@ do
         return slot
     end
 
-    shop.PreviewData = function(data, slot)
+    function Shop:PreviewData(data, slot)
         local ranks = data.presets.ranks[slot]
         local view = {}
         for key, value in pairs(data) do
@@ -181,7 +183,7 @@ do
         return view
     end
 
-    shop.RefreshPresets = function()
+    function Shop:RefreshPresets()
         local presets = shop.presets
         if not presets then
             bar:Hide()
@@ -216,31 +218,36 @@ end
 
 shop.panels = {}
 
-local function ShopBalance()
+function Shop:Balance()
+    local shop = self.frame
     if VB.shop.currency == "shards" or VB.shop.currency == "points" then
         return VB.shop.balance
     end
     return GetMoney()
 end
 
-local function FormatPoints(count)
+function Shop:FormatPoints(count)
+    local shop = self.frame
     return "|cff80d0ff" .. (count == 1 and L("hoa.addon.1_talent_point_2", count) or L("hoa.addon.1_talent_points", count)) .. "|r"
 end
 
-local function FormatShards(count)
+function Shop:FormatShards(count)
+    local shop = self.frame
     return "|cffc080ff" .. (count == 1 and L("hoa.addon.1_darkmoon_ticket", count) or L("hoa.addon.1_darkmoon_tickets", count)) .. "|r"
 end
 
-local function FormatCost(amount)
+function Shop:FormatCost(amount)
+    local shop = self.frame
     if VB.shop.currency == "shards" then
-        return FormatShards(amount)
+        return self:FormatShards(amount)
     elseif VB.shop.currency == "points" then
-        return FormatPoints(amount)
+        return self:FormatPoints(amount)
     end
     return FormatGold(amount)
 end
 
-local function TreeSpent(treeId)
+function Shop:TreeSpent(treeId)
+    local shop = self.frame
     local spent = 0
     for _, other in pairs(VB.shop.nodes) do
         if other.tree == treeId then
@@ -250,7 +257,8 @@ local function TreeSpent(treeId)
     return spent
 end
 
-local function TreeName(treeId)
+function Shop:TreeName(treeId)
+    local shop = self.frame
     for _, tree in ipairs(VB.shop.trees) do
         if tree.id == treeId then
             return tree.name
@@ -259,7 +267,8 @@ local function TreeName(treeId)
     return ""
 end
 
-local function MissingRequirement(node)
+function Shop:MissingRequirement(node)
+    local shop = self.frame
     if node.locked then
         if node.questDescription ~= "" then
             local what = gsub(node.questDescription, "%.$", "")
@@ -276,8 +285,8 @@ local function MissingRequirement(node)
         return L("hoa.addon.requires_1_darkmoon_tickets_spent_in_the_rows_above", gate.need)
     end
     local perRow = VB.shop.pointsPerRow or 0
-    if perRow > 0 and node.row > 1 and TreeSpent(node.tree) < (node.row - 1) * perRow then
-        return L("hoa.addon.requires_1_points_in_2", (node.row - 1) * perRow, TreeName(node.tree))
+    if perRow > 0 and node.row > 1 and self:TreeSpent(node.tree) < (node.row - 1) * perRow then
+        return L("hoa.addon.requires_1_points_in_2", (node.row - 1) * perRow, self:TreeName(node.tree))
     end
     local required = VB.shop.nodes[node.requiredId]
     if not required or node.requiredRank < 1 or required.rank >= node.requiredRank then
@@ -294,7 +303,8 @@ function VB.IsEndless(node)
 end
 VB.ENDLESS_RANKS = 255
 
-local function DescribeRanks(node, ranks)
+function Shop:DescribeRanks(node, ranks)
+    local shop = self.frame
     local perRank = tonumber(node.valuePerRank)
     if not perRank or perRank == 0 then
         return nil
@@ -327,7 +337,8 @@ local function DescribeRanks(node, ranks)
     return out .. strsub(text, start), value
 end
 
-local function RefundBlocker(node)
+function Shop:RefundBlocker(node)
+    local shop = self.frame
     local perRow = VB.shop.pointsPerRow or 0
     for _, other in pairs(VB.shop.nodes) do
         if other ~= node and other.rank > 0 then
@@ -346,7 +357,7 @@ local function RefundBlocker(node)
                     end
                 end
                 if above - 1 < (other.row - 1) * perRow then
-                    return L("hoa.addon.refund_1_first_it_needs_the_points_you_spent_in_2", other.name, TreeName(node.tree))
+                    return L("hoa.addon.refund_1_first_it_needs_the_points_you_spent_in_2", other.name, self:TreeName(node.tree))
                 end
             end
         end
@@ -354,7 +365,8 @@ local function RefundBlocker(node)
     return nil
 end
 
-local function ShowNodeTooltip(button)
+function Shop:ShowNodeTooltip(button)
+    local shop = self.frame
     local node = button.node
     GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
     GameTooltip:AddLine(node.name, 1, 1, 1)
@@ -364,17 +376,17 @@ local function ShowNodeTooltip(button)
         GameTooltip:AddLine(VB.IsEndless(node) and L("hoa.addon.rank_1", node.rank) or L("hoa.addon.rank_1_2_2", node.rank, node.maxRank), 1, 1, 1)
     end
 
-    local missing = MissingRequirement(node)
+    local missing = self:MissingRequirement(node)
     if missing and node.rank < node.maxRank then
         GameTooltip:AddLine(missing, 1, 0.1, 0.1, 1)
     end
     local nextRank, nextValue = nil, nil
     if node.maxRank > 1 then
-        nextRank, nextValue = DescribeRanks(node, node.rank + 1)
+        nextRank, nextValue = self:DescribeRanks(node, node.rank + 1)
     end
     if nextRank then
         if node.rank > 0 then
-            GameTooltip:AddLine(DescribeRanks(node, node.rank), 1, 0.82, 0, 1)
+            GameTooltip:AddLine(self:DescribeRanks(node, node.rank), 1, 0.82, 0, 1)
             if VB.IsEndless(node) then
                 GameTooltip:AddLine(L("hoa.addon.next_rank_cff20ff20_1_r", nextRank), 1, 1, 1, 1)
             elseif node.rank < node.maxRank then
@@ -402,9 +414,9 @@ local function ShowNodeTooltip(button)
         return
     end
     if node.rank < node.maxRank then
-        GameTooltip:AddLine(L("hoa.addon.cost_1", FormatCost(node.cost)), 1, 1, 1)
-        if ShopBalance() < node.cost then
-            GameTooltip:AddLine(L("hoa.addon.you_have_1", FormatCost(ShopBalance())), 1, 0.1, 0.1)
+        GameTooltip:AddLine(L("hoa.addon.cost_1", self:FormatCost(node.cost)), 1, 1, 1)
+        if self:Balance() < node.cost then
+            GameTooltip:AddLine(L("hoa.addon.you_have_1", self:FormatCost(self:Balance())), 1, 0.1, 0.1)
         elseif not missing then
             GameTooltip:AddLine(L["hoa.addon.click_to_learn"], 0.1, 1, 0.1)
         end
@@ -420,11 +432,11 @@ local function ShowNodeTooltip(button)
         GameTooltip:AddLine(L["hoa.addon.fully_learned"], 1, 0.82, 0)
     end
     if node.rank > 0 then
-        local blocker = RefundBlocker(node)
+        local blocker = self:RefundBlocker(node)
         if blocker then
             GameTooltip:AddLine(blocker, 0.6, 0.6, 0.6, 1)
         elseif node.refund > 0 then
-            GameTooltip:AddLine(L("hoa.addon.right_click_to_refund_1", FormatCost(node.refund)), 0.7, 0.7, 0.7)
+            GameTooltip:AddLine(L("hoa.addon.right_click_to_refund_1", self:FormatCost(node.refund)), 0.7, 0.7, 0.7)
         else
             GameTooltip:AddLine(L["hoa.addon.right_click_to_refund"], 0.7, 0.7, 0.7)
         end
@@ -432,7 +444,8 @@ local function ShowNodeTooltip(button)
     GameTooltip:Show()
 end
 
-local function ShopNode_OnClick()
+function Shop:NodeOnClick()
+    local shop = self.frame
     local node = this.node
     if VB.shopBusy or (VB.shop.coopGuest and node.toggle) then
         return
@@ -442,7 +455,7 @@ local function ShopNode_OnClick()
         if node.rank < 1 then
             return
         end
-        local blocker = RefundBlocker(node)
+        local blocker = self:RefundBlocker(node)
         if blocker then
             Notice(blocker)
             return
@@ -456,13 +469,13 @@ local function ShopNode_OnClick()
     if node.toggle and node.rank > 0 then
         command = "toggle " .. node.id
     elseif node.rank < node.maxRank then
-        local missing = MissingRequirement(node)
+        local missing = self:MissingRequirement(node)
         if missing then
             Notice(missing)
             return
         end
-        if ShopBalance() < node.cost then
-            Notice(L("hoa.addon.you_need_1", FormatCost(node.cost)))
+        if self:Balance() < node.cost then
+            Notice(L("hoa.addon.you_need_1", self:FormatCost(node.cost)))
             return
         end
         command = "learn " .. node.id
@@ -474,7 +487,8 @@ local function ShopNode_OnClick()
     Command(command)
 end
 
-local function CreateNodeButton(panel, index)
+function Shop:CreateNodeButton(panel, index)
+    local shop = self.frame
     local name = panel.name .. "Node" .. index
     local button = CreateFrame("Button", name, panel)
     button:SetWidth(SHOP_NODE_SIZE)
@@ -482,20 +496,21 @@ local function CreateNodeButton(panel, index)
     button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
     VanillaBonkTalents.StyleButton(button)
 
-    UI.Hover(button, function() ShowNodeTooltip(this) end)
+    UI.Hover(button, function() self:ShowNodeTooltip(this) end)
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    button:SetScript("OnClick", ShopNode_OnClick)
+    button:SetScript("OnClick", function() Shop:NodeOnClick() end)
 
     panel.buttons[index] = button
     return button
 end
 
-local function SetNode(button, node)
+function Shop:SetNode(button, node)
+    local shop = self.frame
     button.node = node
     button:ClearAllPoints()
     button:SetPoint("TOPLEFT", button:GetParent(), "TOPLEFT",
         treeLayout.left + (node.column - 1) * treeLayout.column, -(TREE_OFFSET_Y + (node.row - 1) * TREE_SPACING))
-    local missing = MissingRequirement(node)
+    local missing = self:MissingRequirement(node)
     local which, text, colour = "locked", VB.IsEndless(node) and tostring(node.rank) or (node.rank .. "/" .. node.maxRank), nil
     if node.toggle and node.rank > 0 then
         which = node.enabled and "on" or "off"
@@ -503,7 +518,7 @@ local function SetNode(button, node)
         colour = node.enabled and { 0.1, 1, 0.1 } or { 0.8, 0.8, 0.8 }
     elseif not missing and node.rank >= node.maxRank then
         which = "max"
-    elseif not missing and ShopBalance() >= node.cost then
+    elseif not missing and self:Balance() >= node.cost then
         which = node.rank > 0 and "part" or "open"
     elseif not missing and node.rank > 0 then
         which = "max"
@@ -516,11 +531,12 @@ local function SetNode(button, node)
     button:Show()
 
     if GameTooltip:IsOwned(button) then
-        ShowNodeTooltip(button)
+        self:ShowNodeTooltip(button)
     end
 end
 
-local function CreateTreePanel(index)
+function Shop:CreateTreePanel(index)
+    local shop = self.frame
     local panel = CreateFrame("Frame", "VanillaBonkShopTree" .. index, shop)
     panel.name = "VanillaBonkShopTree" .. index
     panel.buttons = {}
@@ -560,7 +576,8 @@ local function CreateTreePanel(index)
     return panel
 end
 
-local function LayoutArt(panel, background, height)
+function Shop:LayoutArt(panel, background, height)
+    local shop = self.frame
     local width = treeLayout.width
     local scale = width / 256
     local topHeight, bottomHeight = 256 * scale, 128 * scale
@@ -591,7 +608,8 @@ local function LayoutArt(panel, background, height)
     art.BottomRight:Hide()
 end
 
-local function DrawTree(panel, tree)
+function Shop:DrawTree(panel, tree)
+    local shop = self.frame
     local nodes = VB.shop.nodes
     for _, list in ipairs({ panel.buttons, panel.branches }) do
         for _, region in ipairs(list) do
@@ -603,7 +621,7 @@ local function DrawTree(panel, tree)
     for _, node in pairs(nodes) do
         if node.tree == tree.id then
             count = count + 1
-            SetNode(panel.buttons[count] or CreateNodeButton(panel, count), node)
+            self:SetNode(panel.buttons[count] or self:CreateNodeButton(panel, count), node)
             spent = spent + node.rank
         end
     end
@@ -628,7 +646,7 @@ local function DrawTree(panel, tree)
         if node.tree == tree.id and required and required.tree == tree.id then
             local sx, sy = Centre(required)
             local ex, ey = Centre(node)
-            local kind = MissingRequirement(node) and "dark" or node.rank > 0 and "lit" or "open"
+            local kind = self:MissingRequirement(node) and "dark" or node.rank > 0 and "lit" or "open"
             lines = lines + 1
             VanillaBonkTalents.ShopLine(panel, panel.branches, lines, sx, sy, ex, ey, kind)
         end
@@ -649,23 +667,23 @@ local function DrawTree(panel, tree)
     end
 end
 
-local RefreshShop
-
-local function UpdateShopTabs(data)
+function Shop:UpdateShopTabs(data)
+    local shop = self.frame
     shop.tab = nil
     UI.Tabs(shop, {}, nil)
 end
 
-RefreshShop = function()
+function Shop:Refresh()
+    local shop = self.frame
     local data = VB.shop
-    local previewSlot = shop.PreviewSlot(data)
+    local previewSlot = self:PreviewSlot(data)
     if previewSlot then
-        data = shop.PreviewData(data, previewSlot)
+        data = self:PreviewData(data, previewSlot)
     end
     if VanillaBonkTalents then
         VanillaBonkTalents.muted = previewSlot ~= nil
     end
-    UpdateShopTabs(data)
+    self:UpdateShopTabs(data)
     TREE_SPACING = data.gates and 84 or 63
     local rows = TREE_MIN_ROWS
     for _, node in pairs(data.nodes) do
@@ -688,13 +706,13 @@ RefreshShop = function()
         treeLayout = count >= 4 and TREE_LAYOUTS.narrow or TREE_LAYOUTS.wide
         local width = treeLayout.width
         for index, tree in ipairs(data.trees) do
-            local panel = shop.panels[index] or CreateTreePanel(index)
+            local panel = shop.panels[index] or self:CreateTreePanel(index)
             panel:ClearAllPoints()
             panel:SetPoint("TOPLEFT", shop, "TOPLEFT", 20 + (index - 1) * (width + TREE_GAP), -TREE_TOP)
             panel:SetWidth(width)
             panel:SetHeight(height)
-            LayoutArt(panel, tree.background, height)
-            DrawTree(panel, tree)
+            self:LayoutArt(panel, tree.background, height)
+            self:DrawTree(panel, tree)
             panel:Show()
         end
 
@@ -710,13 +728,13 @@ RefreshShop = function()
         VanillaBonkTalents.readOnly = data.inspect or previewSlot ~= nil
     end
     if data.currency == "shards" then
-        shop.gold:SetText(FormatShards(data.balance))
+        shop.gold:SetText(self:FormatShards(data.balance))
     elseif data.currency == "points" then
         local level = L("hoa.addon.cffffffffmastery_1_2_r", data.level, data.maxLevel)
         if data.xpNext > 0 then
             level = level .. " |cff9d9d9d(" .. data.xp .. "/" .. data.xpNext .. ")|r"
         end
-        shop.gold:SetText(level .. "   " .. FormatPoints(data.balance))
+        shop.gold:SetText(level .. "   " .. self:FormatPoints(data.balance))
     else
         shop.gold:SetText(FormatGold(GetMoney()))
     end
@@ -729,10 +747,8 @@ RefreshShop = function()
         shop.respec:Hide()
     end
     shop.presets = not data.inspect and data.presets or nil
-    shop.RefreshPresets()
+    self:RefreshPresets()
 end
-
-shop.Refresh = RefreshShop
 
 shop:SetScript("OnShow", function()
     PlaySound("TalentScreenOpen")
@@ -752,7 +768,7 @@ shop:SetScript("OnUpdate", function()
     end
 end)
 
-handlers["shop"] = function(f)
+function Shop:ApplyShop(f)
     VB.shopIncoming = { kind = f[2], open = f[3] == "1", npc = f[4] or "", currency = f[5] or "gold", balance = tonumber(f[6]) or 0,
         trees = {}, nodes = {} }
     if f[2] == MASTERY_SHOP then
@@ -778,7 +794,7 @@ handlers["shop"] = function(f)
     end
 end
 
-handlers["tree"] = function(f)
+function Shop:ApplyTree(f)
     if VB.shopIncoming then
         local tree = { id = f[2], name = f[3] or "", background = f[4] or "MageFire" }
         if VB.shopIncoming.kind == FORTUNE_SHOP then
@@ -791,14 +807,14 @@ handlers["tree"] = function(f)
     end
 end
 
-handlers["presets"] = function(f)
+function Shop:ApplyPresets(f)
     if VB.shopIncoming then
         VB.shopIncoming.presets = { active = tonumber(f[2]) or 0, points = { tonumber(f[3]) or 0, tonumber(f[4]) or 0, tonumber(f[5]) or 0 },
             ranks = { {}, {}, {} } }
     end
 end
 
-handlers["presetranks"] = function(f)
+function Shop:ApplyPresetRanks(f)
     local presets = VB.shopIncoming and VB.shopIncoming.presets
     local ranks = presets and presets.ranks[tonumber(f[2])]
     if not ranks then
@@ -809,7 +825,7 @@ handlers["presetranks"] = function(f)
     end
 end
 
-handlers["node"] = function(f)
+function Shop:ApplyNode(f)
     if not VB.shopIncoming then
         return
     end
@@ -840,7 +856,8 @@ handlers["node"] = function(f)
     end
 end
 
-local function ShopChanges(before, after)
+function Shop:Changes(before, after)
+    local shop = self.frame
     local changes = {}
     for id, node in pairs(after.nodes) do
         local old = before.nodes[id]
@@ -855,8 +872,9 @@ local function ShopChanges(before, after)
     return changes
 end
 
-local function PlayShopChangeSound(before, after)
-    local changes = ShopChanges(before, after)
+function Shop:PlayShopChangeSound(before, after)
+    local shop = self.frame
+    local changes = self:Changes(before, after)
     if changes.learned then
         PlaySoundFile("Sound\\Interface\\uSpellIconDrop.wav")
     elseif changes.refunded and after.kind == MASTERY_SHOP then
@@ -870,7 +888,8 @@ local function PlayShopChangeSound(before, after)
     end
 end
 
-local function PlayPurchaseSound()
+function Shop:PlayPurchaseSound()
+    local shop = self.frame
     local money = GetMoney()
     local spent = VB.lastMoney and money < VB.lastMoney
     VB.lastMoney = money
@@ -883,7 +902,7 @@ local function PlayPurchaseSound()
     PlaySound("LOOTWINDOWCOINSOUND")
 end
 
-handlers["shopend"] = function()
+function Shop:EndShop()
     local incoming = VB.shopIncoming
     VB.shopIncoming = nil
     if not incoming then
@@ -894,26 +913,34 @@ handlers["shopend"] = function()
     if incoming.inspect then
         shop.tab = nil
         VB.shop = incoming
-        RefreshShop()
+        self:Refresh()
         shop:Show()
     elseif incoming.open then
         shop.tab = nil
         VB.shop = incoming
-        ReplaceNextGossip(shop, incoming.npc, RefreshShop)
+        ReplaceNextGossip(shop, incoming.npc, function() Shop:Refresh() end)
     elseif shop:IsShown() and VB.shop and VB.shop.kind == incoming.kind then
         local before = VB.shop
         VB.shop = incoming
-        RefreshShop()
-        PlayShopChangeSound(before, incoming)
+        self:Refresh()
+        self:PlayShopChangeSound(before, incoming)
     end
 end
 
-handlers["shopclose"] = function()
+function Shop:CloseShop()
     VB.shopBusy = nil
     shop:Hide()
 end
 
 
-VB.shop = shop
-VB.RefreshShop = RefreshShop
-VB.PlayPurchaseSound = PlayPurchaseSound
+VB.shopFrame = Shop.frame
+VB.RefreshShop = function() Shop:Refresh() end
+VB.PlayPurchaseSound = function() Shop:PlayPurchaseSound() end
+
+handlers["shop"] = function(f) Shop:ApplyShop(f) end
+handlers["tree"] = function(f) Shop:ApplyTree(f) end
+handlers["presets"] = function(f) Shop:ApplyPresets(f) end
+handlers["presetranks"] = function(f) Shop:ApplyPresetRanks(f) end
+handlers["node"] = function(f) Shop:ApplyNode(f) end
+handlers["shopend"] = function() Shop:EndShop() end
+handlers["shopclose"] = function() Shop:CloseShop() end
