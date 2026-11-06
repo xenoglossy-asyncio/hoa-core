@@ -13,6 +13,7 @@ VanillaBonkSpellTip.lua
 VanillaBonkDebuffs.lua
 VanillaBonk.lua
 VanillaBonkGearStats.lua
+VanillaBonkShop.lua
 VanillaBonkChatFilter.lua
 VanillaBonkRunMaster.lua
 VanillaBonkBars.lua
