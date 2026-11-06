@@ -38,6 +38,7 @@ build_server() {
     cmake --install "$work/cache/server" >/dev/null
     local bin="$work/install/server/bin"
     cp -L "$(ldconfig -p | awk '/libmariadb\.so\.3 /{print $NF; exit}')" "$bin/"
+    cp -L "$(ldconfig -p | awk '/libcrypto\.so\.3 /{print $NF; exit}')" "$bin/"
     for binary in "$bin/mangosd" "$bin/realmd"; do patchelf --set-rpath '$ORIGIN' "$binary"; done
     strip "$bin/mangosd" "$bin/realmd" "$bin"/Extractors/*Extractor "$bin/Extractors/VMapAssembler" "$bin/Extractors/MoveMapGenerator"
     rm -rf "$out/server"
@@ -74,4 +75,4 @@ case "$part" in
 esac
 
 echo "glibc floor: $(ldd --version | head -1 | awk '{print $NF}')"
-find "$out" -maxdepth 3 -type f \( -name HordesOfAzeroth -o -name mangosd -o -name realmd -o -name 'libmariadb*' \) -printf '%P %s\n'
+find "$out" -maxdepth 3 -type f \( -name HordesOfAzeroth -o -name mangosd -o -name realmd -o -name 'libmariadb*' -o -name 'libcrypto*' \) -printf '%P %s\n'
