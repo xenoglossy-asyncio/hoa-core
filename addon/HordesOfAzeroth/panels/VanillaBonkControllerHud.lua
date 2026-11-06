@@ -24,6 +24,7 @@ local ITEMS = {
 }
 
 local hud = CreateFrame("Frame", "VanillaBonkControllerHud", UIParent)
+Controller.hud = hud
 hud:SetFrameStrata("BACKGROUND")
 hud:SetHeight(HUD_HEIGHT)
 hud:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -HUD_RIGHT, HUD_BOTTOM)
@@ -68,9 +69,10 @@ local function KeyText(item)
     return UI.BindingText and UI.BindingText(item.command) or ""
 end
 
-hud.items = {}
+Controller.hudItems = {}
+hud.items = Controller.hudItems
 for index, item in ipairs(ITEMS) do
-    hud.items[index] = MakeItem(item)
+    Controller.hudItems[index] = MakeItem(item)
 end
 
 local function ShowPair(frame, shown)
@@ -107,7 +109,7 @@ end
 
 local function Layout()
     local width = 0
-    for _, frame in ipairs(hud.items) do
+    for _, frame in ipairs(Controller.hudItems) do
         if frame.shown then
             local icon = frame.icon
             frame.label:ClearAllPoints()
@@ -115,21 +117,24 @@ local function Layout()
             local itemWidth = IconWidth(frame) + LABEL_GAP + frame.label:GetStringWidth()
             frame:SetWidth(itemWidth)
             frame:ClearAllPoints()
-            frame:SetPoint("LEFT", hud, "LEFT", width + (width > 0 and ITEM_GAP or 0), 0)
+            frame:SetPoint("LEFT", Controller.hud, "LEFT", width + (width > 0 and ITEM_GAP or 0), 0)
             width = width + itemWidth + (width > 0 and ITEM_GAP or 0)
         end
     end
-    hud:SetWidth(math.max(1, width))
+    Controller.hud:SetWidth(math.max(1, width))
 end
 
 local function InRun()
     return UI.InRun ~= nil and UI.InRun() == true
 end
 
-local function RefreshIcons()
-    local keyboard = Controller.kind == nil
-    local signature = keyboard and "keys" or Controller.PadSignature()
-    for _, frame in ipairs(hud.items) do
+local PlaceMeter
+local HideMenuBar
+
+function Controller:RefreshHudIcons()
+    local keyboard = self.kind == nil
+    local signature = keyboard and "keys" or self.PadSignature()
+    for _, frame in ipairs(self.hudItems) do
         local item = frame.item
         frame.icon = ShowIcon(frame, keyboard)
         frame.shown = not (item.padOnly and keyboard)
@@ -153,11 +158,31 @@ local function RefreshIcons()
             frame:Hide()
         end
     end
-    hud.signature = signature
+    self.hudSignature = signature
     Layout()
 end
 
-local function PlaceMeter(lifted)
+function Controller:RefreshHud(delta)
+    HideMenuBar()
+    local shownHere = not InRun() and self.kind ~= nil
+    PlaceMeter(shownHere)
+    local hidden = not shownHere or (self.PromptsVisible and self.PromptsVisible())
+    if hidden and self.hud:IsShown() then
+        self.hud:Hide()
+    elseif not hidden and not self.hud:IsShown() then
+        self.hud:Show()
+    end
+    self.hudKeysAt = (self.hudKeysAt or 0) + (delta or 0)
+    local keyboard = self.kind == nil
+    local changed = self.hudKeyboard ~= keyboard
+    if changed or (not keyboard and self.PadSignature() ~= self.hudSignature) or (keyboard and self.hudKeysAt >= KEY_REFRESH) then
+        self.hudKeysAt = 0
+        self.hudKeyboard = keyboard
+        self:RefreshHudIcons()
+    end
+end
+
+function PlaceMeter(lifted)
     local meter = getglobal("VanillaBonkMeter")
     if not meter or meter.lifted == lifted then
         return
@@ -167,7 +192,7 @@ local function PlaceMeter(lifted)
     meter:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -METER_EDGE, METER_EDGE + (lifted and METER_LIFT or 0))
 end
 
-local function HideMenuBar()
+function HideMenuBar()
     local bar = getglobal("VanillaBonkMenuBar")
     if bar and bar:IsShown() then
         bar:Hide()
@@ -176,21 +201,5 @@ end
 
 local watcher = CreateFrame("Frame")
 watcher:SetScript("OnUpdate", function()
-    HideMenuBar()
-    local shownHere = not InRun() and Controller.kind ~= nil
-    PlaceMeter(shownHere)
-    local hidden = not shownHere or (Controller.PromptsVisible and Controller.PromptsVisible())
-    if hidden and hud:IsShown() then
-        hud:Hide()
-    elseif not hidden and not hud:IsShown() then
-        hud:Show()
-    end
-    hud.keysAt = (hud.keysAt or 0) + arg1
-    local keyboard = Controller.kind == nil
-    local changed = hud.keyboard ~= keyboard
-    if changed or (not keyboard and Controller.PadSignature() ~= hud.signature) or (keyboard and hud.keysAt >= KEY_REFRESH) then
-        hud.keysAt = 0
-        hud.keyboard = keyboard
-        RefreshIcons()
-    end
+    Controller:RefreshHud(arg1)
 end)
