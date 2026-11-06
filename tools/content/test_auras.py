@@ -201,7 +201,7 @@ class UsageAuditTests(unittest.TestCase):
 
 
     def test_addon_uses_generated_aura_ids(self) -> None:
-        for path in (ROOT / "addon/HordesOfAzeroth").glob("*.lua"):
+        for path in (ROOT / "addon/HordesOfAzeroth").rglob("*.lua"):
             if path.name == "VanillaBonkAuraIds.lua":
                 continue
             for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):

@@ -42,9 +42,12 @@ helpers from it.
 ```
 addon/
   HordesOfAzeroth/
-    *.lua            UI and interaction
-    generated/       generated from shared/i18n and shared/content (never hand-edited)
+    core/            core state, UI kit, locale, options text, chat filter
+    run/             run mechanics and their panels (offer, shop, gear, hero bar, ...)
+    panels/          menus, codex, map, quests, settings, controller, co-op, ...
     Fonts/           language font fallbacks (Noto Sans SC / Noto Sans TC)
+    VanillaBonkAuraIds.lua       generated content ids (root)
+    VanillaBonkLocaleData.lua    generated language data (root)
     HordesOfAzeroth.toc
 ```
 
