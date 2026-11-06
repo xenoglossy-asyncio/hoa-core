@@ -498,9 +498,10 @@ mod tests {
         }
     }
 
-    /// The dword after the locale is `OsGetTimeZoneBias` (`0x4297c0`, stored at `0x5b2127`):
-    /// the zone's bias negated, minutes east of UTC, without daylight saving's.
+    /// The Windows CRT ignores POSIX zone names, so the named-zone assertions run only where
+    /// `tzset` honours them; Windows still checks that the challenge carries the host's bias.
     #[test]
+    #[cfg(unix)]
     fn the_challenge_carries_the_time_zone_bias() {
         let bias = |tz: &str| {
             let _zone = Zone::set(tz);
@@ -509,13 +510,19 @@ mod tests {
             i32::from_le_bytes(out[25..29].try_into().unwrap())
         };
         assert_eq!(bias("NPT-05:45"), 345);
-        let east_coast = if cfg!(windows) {
-            "EST5EDT"
-        } else {
-            "EST5EDT,M3.2.0,M11.1.0"
-        };
-        assert_eq!(bias(east_coast), -300);
+        assert_eq!(bias("EST5EDT,M3.2.0,M11.1.0"), -300);
         assert_eq!(bias("UTC0"), 0);
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn the_challenge_carries_the_host_time_zone_bias() {
+        let mut out = Vec::new();
+        write_logon_challenge(&mut out, "AB", 5875, LOCALE_TAG_EN_US).unwrap();
+        assert_eq!(
+            i32::from_le_bytes(out[25..29].try_into().unwrap()),
+            os_time_zone_bias()
+        );
     }
 
     /// The whole challenge for account `AB` on an enGB install: the locale tag as `0x5b2115` loads
@@ -536,7 +543,10 @@ mod tests {
         want.extend_from_slice(&client_os().to_le_bytes());
         want.extend_from_slice(&[
             b'B', b'G', b'n', b'e', // locale "enGB"
-            0, 0, 0, 0, // time zone
+        ]);
+        // Windows ignores the POSIX zone name, so the expected field follows the host there.
+        want.extend_from_slice(&os_time_zone_bias().to_le_bytes());
+        want.extend_from_slice(&[
             127, 0, 0, 1, // address
             2, b'A', b'B', // account
         ]);
