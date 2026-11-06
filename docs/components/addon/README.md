@@ -22,6 +22,21 @@ start/end fields. `UI.modules` / `UI.moduleOrder` list the modules for diagnosti
 `UI.RunLifecycle(field, ...)` dispatches a lifecycle manually. The core run state in
 `VanillaBonk.lua` still handles the two run messages directly.
 
+## UI objects
+
+`UI.Class(parent)` / `UI.New` / `UI.Mixin` are plain-table classes (frames are userdata and keep
+using the factory functions). `UI.PanelObject(name, frames)` wraps one or more frames, registers
+in `UI.panels`, and exposes `Show/Hide/Toggle/IsShown/Refresh` with optional `OnShow`, `OnHide` and
+`OnRefresh`; `UI.RefreshPanels()` refreshes them all. `UI.List(parent, opts)` owns named `UI.Row`
+objects with `SetValue`, `SetLabel`, `Show`, `Hide` and `Layout`, so list placement is computed in
+one place. The tracker is the first panel/list pilot.
+
+`VanillaBonk.lua` is split by domain: `VanillaBonkOffer.lua` (rarities, banishing, keywords, offer
+cards, results), `VanillaBonkStarters.lua` (run-master loadout starters), `VanillaBonkShop.lua`
+(shop window, trees, presets), `VanillaBonkGearStats.lua` (gear, stat sheet, tooltips) and
+`VanillaBonkChatFilter.lua`. The shared run table is `VanillaBonkRun`; split files read state and
+helpers from it.
+
 ## Planned layout
 
 ```

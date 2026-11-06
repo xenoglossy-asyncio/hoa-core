@@ -21,6 +21,19 @@
 `UI.modules` / `UI.moduleOrder` 可用于诊断，`UI.RunLifecycle(field, ...)` 可手动分发。
 `VanillaBonk.lua` 的核心跑团状态仍直接处理这两个跑团消息。
 
+## UI 对象
+
+`UI.Class(parent)` / `UI.New` / `UI.Mixin` 是纯 Lua 表的类（frame 是 userdata，仍用工厂函数创建）。
+`UI.PanelObject(name, frames)` 包住一个或多个 frame，注册进 `UI.panels`，提供
+`Show/Hide/Toggle/IsShown/Refresh`，可挂 `OnShow`/`OnHide`/`OnRefresh`；`UI.RefreshPanels()`
+统一刷新。`UI.List(parent, opts)` 管理具名 `UI.Row` 对象，行提供 `SetValue`、`SetLabel`、
+`Show`、`Hide`，由 `Layout` 统一计算位置。Tracker 是第一个面板/列表试点。
+
+`VanillaBonk.lua` 已按领域拆分：`VanillaBonkOffer.lua`（稀有度、放逐、关键词、报价卡、结算）、
+`VanillaBonkStarters.lua`（跑团大师的初始选择）、`VanillaBonkShop.lua`（商店、天赋树、预设）、
+`VanillaBonkGearStats.lua`（装备、属性面板、提示）和 `VanillaBonkChatFilter.lua`。共享跑团表是
+`VanillaBonkRun`，拆分文件从它读取状态和辅助函数。
+
 ## 计划目录
 
 ```

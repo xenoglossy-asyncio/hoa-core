@@ -487,6 +487,13 @@ function UI.PanelObject(name, frames)
     return UI.New(Panel, name, frames)
 end
 
+-- Refresh every registered panel that defines OnRefresh.
+function UI.RefreshPanels()
+    for _, panel in pairs(UI.panels or {}) do
+        panel:Refresh()
+    end
+end
+
 -- Show a tooltip while the pointer is over `frames` (one frame or a list). `show` runs with
 -- `this` set to the hovered frame; the default leave hides the game tooltip.
 function UI.Hover(frames, show, hide)
