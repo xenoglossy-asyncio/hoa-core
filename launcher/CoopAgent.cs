@@ -76,6 +76,8 @@ namespace HordesOfAzeroth.Launcher
             public string Best;
             public string Seconds;
             public string Punch;
+            public string Version;
+            public string Protocol;
         }
 
         sealed class HostState
@@ -1654,9 +1656,28 @@ namespace HordesOfAzeroth.Launcher
                         Best = r?["best"]?.ToString(),
                         Seconds = r?["seconds"]?.ToString(),
                         Punch = r?["punch"]?.ToString() ?? "",
+                        Version = r?["version"]?.ToString() ?? "",
+                        Protocol = r?["protocol"]?.ToString() ?? "",
                     }).Where(r => !host.Answered.Contains(r.Ask)).ToList();
+                    List<Request> incompatible = requests
+                        .Where(r => r.Version.Length > 0 && (r.Version != Version || (r.Protocol.Length > 0 && r.Protocol != CoopProtocol.ToString())))
+                        .ToList();
                     lock (m_lock)
                         host.Requests = requests;
+                    if (incompatible.Count > 0)
+                    {
+                        host.Notice = "Version mismatch: that game runs a different version of Hordes of Azeroth.";
+                        foreach (Request request in incompatible)
+                        {
+                            try
+                            {
+                                Answer(request.Ask, false);
+                            }
+                            catch (CoopError)
+                            {
+                            }
+                        }
+                    }
                     if (host.Settings.GetValueOrDefault("auto") == "1")
                         foreach (Request request in requests)
                             Answer(request.Ask, true);
