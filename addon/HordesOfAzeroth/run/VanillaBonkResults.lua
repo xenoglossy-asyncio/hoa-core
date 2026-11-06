@@ -1,6 +1,13 @@
 local L = VanillaBonkL
 local UI = VanillaBonkUI
 
+local Summary = UI.Module("summary")
+Summary.run = {}
+Summary.weapons = {}
+Summary.passives = {}
+Summary.support = {}
+Summary.recap = {}
+
 local PANEL_WIDTH = 720
 local PAD_X = 30
 local PAD_TOP = 24
@@ -60,6 +67,8 @@ local function Percent(part, total)
 end
 
 local screen = CreateFrame("Frame", "VanillaBonkSummary", UIParent)
+Summary.frame = screen
+Summary.screen = screen
 screen:SetAllPoints(UIParent)
 screen:SetFrameStrata("DIALOG")
 screen:EnableMouse(true)
@@ -79,6 +88,7 @@ screen.wound:SetAllPoints(screen.dim)
 screen.wound:SetAlpha(0.6)
 
 local panel = CreateFrame("Frame", nil, screen)
+Summary.panel = panel
 screen.panel = panel
 panel:SetWidth(PANEL_WIDTH)
 panel:SetHeight(300)
@@ -127,8 +137,7 @@ panel.dividerLow:SetWidth(1)
 panel.dividerLow:SetPoint("TOP", panel.divider, "BOTTOM", 0, 0)
 panel.dividerLow:SetGradientAlpha("VERTICAL", 1, 0.82, 0, 0, 1, 0.82, 0, 0.5)
 
-local mode = MODE_DAMAGE
-local Render
+Summary.mode = MODE_DAMAGE
 
 panel.tabs = {}
 for index, label in ipairs({ L["hoa.addon.damage_done"], L["hoa.addon.healing_done"] }) do
@@ -146,18 +155,18 @@ for index, label in ipairs({ L["hoa.addon.damage_done"], L["hoa.addon.healing_do
     tab.underline:SetPoint("TOPRIGHT", tab, "BOTTOMRIGHT", 0, 1)
     tab.underline:SetVertexColor(1, 0.82, 0, 0.8)
     tab:SetScript("OnClick", function()
-        if mode ~= this.mode then
-            mode = this.mode
+        if Summary.mode ~= this.mode then
+            Summary.mode = this.mode
             PlaySound("igCharacterInfoTab")
-            Render()
+            Summary:Render()
         end
     end)
     UI.Hover(tab, function()
-        if mode ~= this.mode then
+        if Summary.mode ~= this.mode then
             this.text:SetTextColor(1, 1, 1)
         end
     end, function()
-        if mode ~= this.mode then
+        if Summary.mode ~= this.mode then
             this.text:SetTextColor(0.6, 0.6, 0.6)
         end
     end)
@@ -189,9 +198,9 @@ panel.empty = UI.Text(panel, 11)
 panel.empty:SetPoint("TOPLEFT", panel, "TOPLEFT", RIGHT_X, -PAD_TOP - HEADER_HEIGHT - 4)
 panel.empty:SetTextColor(0.6, 0.6, 0.6)
 
-local function ShowTabs()
+function Summary:ShowTabs()
     for _, tab in ipairs(panel.tabs) do
-        if tab.mode == mode then
+        if tab.mode == self.mode then
             tab.text:SetTextColor(1, 0.82, 0)
             tab.underline:Show()
         else
@@ -202,7 +211,7 @@ local function ShowTabs()
     for index, label in ipairs(panel.columns) do
         label:ClearAllPoints()
         label:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -PAD_X - COLUMN_OFFSETS[label.slot], -PAD_TOP - 1)
-        label:SetText(COLUMNS[mode][index])
+        label:SetText(COLUMNS[self.mode][index])
     end
 end
 
@@ -349,6 +358,7 @@ panel.footerRuleRight:SetPoint("LEFT", panel.footerRule, "RIGHT", 0, 0)
 panel.footerRuleRight:SetGradientAlpha("HORIZONTAL", 1, 0.82, 0, 0.55, 1, 0.82, 0, 0)
 
 local build = CreateFrame("Frame", nil, panel)
+Summary.build = build
 panel.build = build
 build:SetHeight(FOOTER_HEIGHT)
 build.glyphLabel = UI.Text(build, 10)
@@ -416,8 +426,8 @@ local RECAP_SOURCE_COLORS = {
     { 0.55, 0.55, 0.55 },
 }
 
-local recap = {}
 local recapFrame = CreateFrame("Frame", nil, panel)
+Summary.recapFrame = recapFrame
 recapFrame:SetWidth(RECAP_WIDTH)
 recapFrame:Hide()
 
@@ -443,6 +453,7 @@ recapFrame.summary:SetPoint("LEFT", recapFrame.title, "RIGHT", 10, 0)
 recapFrame.summary:SetTextColor(0.8, 0.8, 0.8)
 
 local graph = CreateFrame("Frame", nil, recapFrame)
+Summary.graph = graph
 graph:SetWidth(RECAP_WIDTH)
 graph:SetHeight(RECAP_GRAPH_HEIGHT)
 graph:SetPoint("TOPLEFT", recapFrame, "TOPLEFT", 0, -RECAP_GRAPH_TOP)
@@ -542,9 +553,9 @@ local function RecapSlotX(slot)
     return 1 + graph.inner * min(RECAP_SLOTS, slot) / RECAP_SLOTS
 end
 
-local function HealthAtSlot(slot)
-    local health = recap.startHealth
-    for _, event in ipairs(recap.events) do
+function Summary:HealthAtSlot(slot)
+    local health = self.recap.startHealth
+    for _, event in ipairs(self.recap.events) do
         if event.slot > slot then
             break
         end
@@ -553,12 +564,12 @@ local function HealthAtSlot(slot)
     return health
 end
 
-local function DrawRecapLine()
+function Summary:DrawRecapLine()
     local count = getn(graph.columns)
     local previous
     for index, column in ipairs(graph.columns) do
         local slot = (index - 0.5) / count * RECAP_SLOTS
-        local y = RecapLineY(index == count and 0 or HealthAtSlot(slot))
+        local y = RecapLineY(index == count and 0 or self:HealthAtSlot(slot))
         local x = 1 + (index - 1) * RECAP_COLUMN
         column.area:ClearAllPoints()
         column.area:SetPoint("BOTTOMLEFT", graph, "BOTTOMLEFT", x, 1)
@@ -577,27 +588,27 @@ local function DrawRecapLine()
     end
 end
 
-local function DrawRecapTicks()
+function Summary:DrawRecapTicks()
     local biggest = 1
-    for _, event in ipairs(recap.events) do
+    for _, event in ipairs(self.recap.events) do
         if event.source > 0 then
             biggest = max(biggest, event.amount)
         end
     end
-    for index, event in ipairs(recap.events) do
+    for index, event in ipairs(self.recap.events) do
         local tick = RecapTick(index)
-        local color = event.source == 0 and RECAP_GREEN or RecapColor(recap.sources[event.source])
+        local color = event.source == 0 and RECAP_GREEN or RecapColor(self.recap.sources[event.source])
         tick:SetVertexColor(color[1], color[2], color[3], 1)
         tick:SetHeight(max(RECAP_TICK_MIN, min(RECAP_TICK_MAX, RECAP_TICK_MAX * event.amount / biggest)))
         tick:ClearAllPoints()
         tick:SetPoint("BOTTOM", graph, "BOTTOMLEFT", RecapSlotX(event.slot), 2)
         tick:Show()
     end
-    for index = getn(recap.events) + 1, getn(graph.ticks) do
+    for index = getn(self.recap.events) + 1, getn(graph.ticks) do
         graph.ticks[index]:Hide()
     end
-    local count = getn(recap.events)
-    local lastAlive = count > 1 and recap.events[count - 1].health or recap.startHealth
+    local count = getn(self.recap.events)
+    local lastAlive = count > 1 and self.recap.events[count - 1].health or self.recap.startHealth
     graph.skull:ClearAllPoints()
     graph.skull:SetPoint("CENTER", graph, "BOTTOMLEFT", RecapSlotX(RECAP_SLOTS) - RECAP_SKULL / 2 - 3, RecapLineY(lastAlive) + RECAP_SKULL / 2 + 3)
 end
@@ -609,8 +620,8 @@ local function BlowText(source)
     return source.spell ~= "" and L("hoa.addon.1_s_2", source.name, source.spell) or source.name
 end
 
-local function HealthPoints(permille)
-    return floor(recap.maxHealth * max(0, permille) / 1000 + 0.5)
+function Summary:HealthPoints(permille)
+    return floor(self.recap.maxHealth * max(0, permille) / 1000 + 0.5)
 end
 
 local function SecondsBeforeDeath(slot)
@@ -620,13 +631,13 @@ local function SecondsBeforeDeath(slot)
     return format(L["hoa.addon.1fs_before_death"], (RECAP_SLOTS - slot) * RECAP_SECONDS / RECAP_SLOTS)
 end
 
-local function HealthLine(permille)
-    return format(L["hoa.addon.health_s_s_d"], Thousands(HealthPoints(permille)), Thousands(recap.maxHealth), floor(max(0, permille) / 10 + 0.5))
+function Summary:HealthLine(permille)
+    return format(L["hoa.addon.health_s_s_d"], Thousands(self:HealthPoints(permille)), Thousands(self.recap.maxHealth), floor(max(0, permille) / 10 + 0.5))
 end
 
-local function EventsNearX(x)
+function Summary:EventsNearX(x)
     local nearest, distance
-    for _, event in ipairs(recap.events) do
+    for _, event in ipairs(self.recap.events) do
         local gap = abs(RecapSlotX(event.slot) - x)
         if gap <= RECAP_HOVER_REACH and (not distance or gap < distance) then
             nearest, distance = event.slot, gap
@@ -636,7 +647,7 @@ local function EventsNearX(x)
     if not nearest then
         return found, nil
     end
-    for index, event in ipairs(recap.events) do
+    for index, event in ipairs(self.recap.events) do
         if event.slot == nearest then
             tinsert(found, index)
         end
@@ -644,22 +655,22 @@ local function EventsNearX(x)
     return found, nearest
 end
 
-local function AddEventLines(indexes)
-    local count = getn(recap.events)
+function Summary:AddEventLines(indexes)
+    local count = getn(self.recap.events)
     for _, index in ipairs(indexes) do
-        local event = recap.events[index]
+        local event = self.recap.events[index]
         if event.source == 0 then
             GameTooltip:AddDoubleLine(L["hoa.addon.healed"], "+" .. Thousands(event.amount), 0.85, 0.85, 0.85, RECAP_GREEN[1], RECAP_GREEN[2], RECAP_GREEN[3])
         else
-            local source = recap.sources[event.source]
+            local source = self.recap.sources[event.source]
             local color = RecapColor(source)
             GameTooltip:AddDoubleLine(source and BlowText(source) or L["hoa.addon.unknown"], "-" .. Thousands(event.amount), color[1] + 0.25, color[2] + 0.25, color[3] + 0.25, 1, 0.42, 0.31)
         end
-        if index == count and recap.overkill > 0 then
-            GameTooltip:AddLine(L("hoa.addon.killing_blow_1_overkill", Thousands(recap.overkill)), 1, 0.42, 0.31)
+        if index == count and self.recap.overkill > 0 then
+            GameTooltip:AddLine(L("hoa.addon.killing_blow_1_overkill", Thousands(self.recap.overkill)), 1, 0.42, 0.31)
         end
     end
-    GameTooltip:AddLine(HealthLine(recap.events[indexes[getn(indexes)]].health), 1, 1, 1)
+    GameTooltip:AddLine(self:HealthLine(self.recap.events[indexes[getn(indexes)]].health), 1, 1, 1)
 end
 
 local function HighlightTicks(indexes)
@@ -700,10 +711,10 @@ local function PlaceRecapTooltip(x, y)
     end
 end
 
-local function ShowRecapHover(x)
-    local indexes, eventSlot = EventsNearX(x)
+function Summary:ShowRecapHover(x)
+    local indexes, eventSlot = self:EventsNearX(x)
     local slot = eventSlot or max(0, min(RECAP_SLOTS, (x - 1) * RECAP_SLOTS / graph.inner))
-    local permille = eventSlot and recap.events[indexes[getn(indexes)]].health or HealthAtSlot(slot)
+    local permille = eventSlot and self.recap.events[indexes[getn(indexes)]].health or self:HealthAtSlot(slot)
     local key = eventSlot and ("e" .. eventSlot) or ("s" .. floor(slot))
     local lineX = eventSlot and RecapSlotX(eventSlot) or x
     graph.cursor:ClearAllPoints()
@@ -719,9 +730,9 @@ local function ShowRecapHover(x)
         GameTooltip:SetOwner(graph.hover, "ANCHOR_NONE")
         GameTooltip:AddLine(SecondsBeforeDeath(slot), 1, 0.82, 0)
         if eventSlot then
-            AddEventLines(indexes)
+            self:AddEventLines(indexes)
         else
-            GameTooltip:AddLine(HealthLine(permille), 1, 1, 1)
+            GameTooltip:AddLine(self:HealthLine(permille), 1, 1, 1)
         end
         GameTooltip:Show()
     end
@@ -744,29 +755,29 @@ graph.hover:SetScript("OnUpdate", function()
         return
     end
     local cursorX = GetCursorPosition() / graph:GetEffectiveScale()
-    ShowRecapHover(cursorX - graph:GetLeft())
+    Summary:ShowRecapHover(cursorX - graph:GetLeft())
 end)
 
 graph.hover:SetScript("OnHide", HideRecapHover)
 
-local function KillerText()
-    local killer = recap.sources[recap.killer]
+function Summary:KillerText()
+    local killer = self.recap.sources[self.recap.killer]
     if not killer then
         return ""
     end
     local blow = BlowText(killer)
-    local numbers = Thousands(recap.killAmount)
-    if recap.overkill > 0 then
-        numbers = L("hoa.addon.1_2_overkill", numbers, Thousands(recap.overkill))
+    local numbers = Thousands(self.recap.killAmount)
+    if self.recap.overkill > 0 then
+        numbers = L("hoa.addon.1_2_overkill", numbers, Thousands(self.recap.overkill))
     end
     return L("hoa.addon.killed_by_cffff6a50_1_2_r", blow, numbers)
 end
 
-local function FillRecapLegend()
+function Summary:FillRecapLegend()
     local x, row = 0, 0
     local shown = 0
     for index = 1, 5 do
-        local source = recap.sources[index]
+        local source = self.recap.sources[index]
         if source then
             shown = shown + 1
             local entry = RecapLegend(shown)
@@ -793,12 +804,12 @@ local function FillRecapLegend()
     return row + 1
 end
 
-local function LayoutRecap(y)
-    recapFrame.summary:SetText(L("hoa.addon.took_cffffffff_1_r_healed_cffffffff_2_r", Thousands(recap.taken), Thousands(recap.healed)) .. KillerText())
-    graph.maxLabel:SetText(Thousands(recap.maxHealth))
-    DrawRecapLine()
-    DrawRecapTicks()
-    local rows = FillRecapLegend()
+function Summary:LayoutRecap(y)
+    recapFrame.summary:SetText(L("hoa.addon.took_cffffffff_1_r_healed_cffffffff_2_r", Thousands(self.recap.taken), Thousands(self.recap.healed)) .. self:KillerText())
+    graph.maxLabel:SetText(Thousands(self.recap.maxHealth))
+    self:DrawRecapLine()
+    self:DrawRecapTicks()
+    local rows = self:FillRecapLegend()
     local height = RECAP_GRAPH_TOP + RECAP_GRAPH_HEIGHT + RECAP_LEGEND_GAP + rows * RECAP_LEGEND_LINE
     recapFrame:SetHeight(height)
     recapFrame:ClearAllPoints()
@@ -807,20 +818,15 @@ local function LayoutRecap(y)
     return y + height
 end
 
-local run = {}
-local weapons = {}
-local passives = {}
-local support = {}
-
-local function Close()
-    if screen.closing or not screen:IsShown() then
+function Summary:Close()
+    if self.screen.closing or not self.screen:IsShown() then
         return
     end
-    screen.closing = true
+    self.screen.closing = true
     PlaySound("igMainMenuOptionCheckBoxOn")
 end
 
-panel.done:SetScript("OnClick", Close)
+panel.done:SetScript("OnClick", function() Summary:Close() end)
 
 screen:SetScript("OnUpdate", function()
     local want = this.closing and 0 or 1
@@ -947,9 +953,9 @@ local function FillLine(line, entry, top, total, y)
     return height + (sub and SUB_GAP or ROW_GAP)
 end
 
-local function TypeTotals()
+function Summary:TypeTotals()
     local byKey, list = {}, {}
-    for _, weapon in ipairs(weapons) do
+    for _, weapon in ipairs(self.weapons) do
         for _, part in ipairs(WeaponParts(weapon)) do
             if not byKey[part.key] then
                 byKey[part.key] = { key = part.key, damage = 0 }
@@ -967,9 +973,9 @@ local function TypeTotals()
     return list
 end
 
-local function SupportTotals()
+function Summary:SupportTotals()
     local healed, absorbed = 0, 0
-    for _, source in ipairs(support) do
+    for _, source in ipairs(self.support) do
         healed = healed + source.healed
         absorbed = absorbed + source.absorbed
     end
@@ -1027,7 +1033,7 @@ local function FillTypes(y, total, types)
     return legendY + LEGEND_LINE
 end
 
-local function FillBuild()
+function Summary:FillBuild()
     local x = build.glyphLabel:GetStringWidth() + 6
     local taken = VanillaBonk_GlyphsTaken and VanillaBonk_GlyphsTaken() or {}
     local shown = 0
@@ -1054,15 +1060,15 @@ local function FillBuild()
     end
     build.passiveLabel:ClearAllPoints()
     build.passiveLabel:SetPoint("LEFT", build, "LEFT", x, 0)
-    if getn(passives) > 0 then
+    if getn(self.passives) > 0 then
         build.passiveLabel:Show()
         x = x + build.passiveLabel:GetStringWidth() + 6
     else
         build.passiveLabel:Hide()
     end
     for index, slot in ipairs(build.passives) do
-        if passives[index] then
-            slot.icon:SetTexture(UI.ICON_PATH .. passives[index])
+        if self.passives[index] then
+            slot.icon:SetTexture(UI.ICON_PATH .. self.passives[index])
             slot:ClearAllPoints()
             slot:SetPoint("LEFT", build, "LEFT", x, 0)
             slot:Show()
@@ -1075,16 +1081,16 @@ local function FillBuild()
     return x
 end
 
-local function FillStats()
+function Summary:FillStats()
     local _, class = UnitClass("player")
     local stats = {
-        { "INV_Misc_PocketWatch_01", L["hoa.addon.time"], UI.FormatTime(run.seconds) },
-        { nil, L["hoa.addon.level"], run.level or "1" },
-        { "INV_Misc_Bone_HumanSkull_01", L["hoa.addon.kills_2"], Thousands(run.kills) },
-        { "Ability_Warrior_Challange", L["hoa.addon.elites"], Thousands(run.elites) },
-        { "Ability_Rogue_Eviscerate", L["hoa.addon.mini_bosses"], Thousands(run.minis) },
-        { "INV_Misc_Head_Dragon_01", L["hoa.addon.stage_bosses"], Thousands(run.bosses) },
-        { "INV_Shield_06", L["hoa.addon.damage_taken"], "|cffff5a4a" .. Thousands(run.damageTaken) .. "|r" },
+        { "INV_Misc_PocketWatch_01", L["hoa.addon.time"], UI.FormatTime(self.run.seconds) },
+        { nil, L["hoa.addon.level"], self.run.level or "1" },
+        { "INV_Misc_Bone_HumanSkull_01", L["hoa.addon.kills_2"], Thousands(self.run.kills) },
+        { "Ability_Warrior_Challange", L["hoa.addon.elites"], Thousands(self.run.elites) },
+        { "Ability_Rogue_Eviscerate", L["hoa.addon.mini_bosses"], Thousands(self.run.minis) },
+        { "INV_Misc_Head_Dragon_01", L["hoa.addon.stage_bosses"], Thousands(self.run.bosses) },
+        { "INV_Shield_06", L["hoa.addon.damage_taken"], "|cffff5a4a" .. Thousands(self.run.damageTaken) .. "|r" },
     }
     for index, stat in ipairs(panel.stats) do
         local data = stats[index]
@@ -1101,54 +1107,54 @@ local function FillStats()
     UI.TalentArtCoords(panel.art, PANEL_WIDTH - 10, panel:GetHeight() - 10)
 end
 
-local function Place()
-    local level = (run.levelName and run.levelName ~= "") and run.levelName or run.difficulty
+function Summary:Place()
+    local level = (self.run.levelName and self.run.levelName ~= "") and self.run.levelName or self.run.difficulty
     if level and level ~= "" then
-        return run.map .. " (" .. level .. ")"
+        return self.run.map .. " (" .. level .. ")"
     end
-    return run.map ~= "" and run.map or L["hoa.addon.the_arena"]
+    return self.run.map ~= "" and self.run.map or L["hoa.addon.the_arena"]
 end
 
-local function FillBestLevel()
-    local best = tonumber(run.bestLevel or "") or 0
-    if run.victory and best > (tonumber(run.bestBefore or "") or 0) then
-        panel.best:SetText(L("hoa.addon.cff40ff40new_best_1_r", run.levelName or ""))
+function Summary:FillBestLevel()
+    local best = tonumber(self.run.bestLevel or "") or 0
+    if self.run.victory and best > (tonumber(self.run.bestBefore or "") or 0) then
+        panel.best:SetText(L("hoa.addon.cff40ff40new_best_1_r", self.run.levelName or ""))
     else
         panel.best:SetText("")
     end
 end
 
-local function FillHeading()
+function Summary:FillHeading()
     local color
-    if run.victory then
+    if self.run.victory then
         color = TITLE_VICTORY
         panel.title:SetText(L["hoa.addon.victory"])
-        local finale = tonumber(run.finaleSeconds or "") or 0
-        panel.subtitle:SetText(finale > 0 and L("hoa.addon.you_cleared_1_and_survived_2_in_the_finale", Place(), UI.FormatTime(finale)) or
-            L("hoa.addon.you_cleared_1_in_2", Place(), UI.FormatTime(run.seconds)))
-    elseif run.wentHome then
+        local finale = tonumber(self.run.finaleSeconds or "") or 0
+        panel.subtitle:SetText(finale > 0 and L("hoa.addon.you_cleared_1_and_survived_2_in_the_finale", self:Place(), UI.FormatTime(finale)) or
+            L("hoa.addon.you_cleared_1_in_2", self:Place(), UI.FormatTime(self.run.seconds)))
+    elseif self.run.wentHome then
         color = TITLE_HOME
         panel.title:SetText(L["hoa.addon.run_complete"])
-        panel.subtitle:SetText(L("hoa.addon.you_left_1_on_stage_2_after_3", Place(), run.stage or "1", UI.FormatTime(run.seconds)))
+        panel.subtitle:SetText(L("hoa.addon.you_left_1_on_stage_2_after_3", self:Place(), self.run.stage or "1", UI.FormatTime(self.run.seconds)))
     else
         color = TITLE_DEFEAT
         panel.title:SetText(L["hoa.addon.defeat"])
-        panel.subtitle:SetText(L("hoa.addon.you_fell_on_stage_1_in_2_after_3", run.stage or "1", Place(), UI.FormatTime(run.seconds)))
+        panel.subtitle:SetText(L("hoa.addon.you_fell_on_stage_1_in_2_after_3", self.run.stage or "1", self:Place(), UI.FormatTime(self.run.seconds)))
     end
     panel.title:SetTextColor(color[1], color[2], color[3])
-    FillBestLevel()
-    if run.victory or run.wentHome then
+    self:FillBestLevel()
+    if self.run.victory or self.run.wentHome then
         screen.wound:Hide()
     else
         screen.wound:Show()
     end
 
-    local shards = tonumber(run.shards or "") or 0
+    local shards = tonumber(self.run.shards or "") or 0
     local tickets = "|cffc080ff" .. shards .. (shards == 1 and L["hoa.addon.darkmoon_ticket"] or L["hoa.addon.darkmoon_tickets"]) .. "|r"
-    if run.wentHome then
-        panel.earned:SetText(L("hoa.addon.you_earned_1_2_and_the_gear_in_the_extraction_vault", UI.FormatGold(run.gold), tickets))
+    if self.run.wentHome then
+        panel.earned:SetText(L("hoa.addon.you_earned_1_2_and_the_gear_in_the_extraction_vault", UI.FormatGold(self.run.gold), tickets))
     else
-        panel.earned:SetText(L("hoa.addon.you_earned_1_and_2", UI.FormatGold(run.gold), tickets))
+        panel.earned:SetText(L("hoa.addon.you_earned_1_and_2", UI.FormatGold(self.run.gold), tickets))
     end
 end
 
@@ -1168,15 +1174,15 @@ local function LayoutFooter(y, buildWidth)
     return y + FOOTER_HEIGHT
 end
 
-local function ModeEntries()
+function Summary:ModeEntries()
     local entries = {}
-    if mode == MODE_HEALING then
-        for _, source in ipairs(support) do
+    if self.mode == MODE_HEALING then
+        for _, source in ipairs(self.support) do
             tinsert(entries, source)
         end
         return entries
     end
-    for _, weapon in ipairs(weapons) do
+    for _, weapon in ipairs(self.weapons) do
         tinsert(entries, weapon)
         for _, sub in ipairs(weapon.subs) do
             tinsert(entries, sub)
@@ -1185,8 +1191,8 @@ local function ModeEntries()
     return entries
 end
 
-local function RenderLines()
-    local entries = ModeEntries()
+function Summary:RenderLines()
+    local entries = self:ModeEntries()
     local total, top = 0, 0
     for _, entry in ipairs(entries) do
         if not entry.parent then
@@ -1208,13 +1214,13 @@ local function RenderLines()
 
     local empty = getn(entries) == 0
     if empty then
-        panel.empty:SetText(mode == MODE_HEALING and L["hoa.addon.no_healing_or_absorbs_this_run"] or L["hoa.addon.no_damage_this_run"])
+        panel.empty:SetText(self.mode == MODE_HEALING and L["hoa.addon.no_healing_or_absorbs_this_run"] or L["hoa.addon.no_damage_this_run"])
         panel.empty:Show()
         y = y + 20
     else
         panel.empty:Hide()
     end
-    local types = mode == MODE_HEALING and SupportTotals() or TypeTotals()
+    local types = self.mode == MODE_HEALING and self:SupportTotals() or self:TypeTotals()
     if empty then
         panel.typeBar:Hide()
     else
@@ -1223,46 +1229,46 @@ local function RenderLines()
     return FillTypes(y + 3, total, types)
 end
 
-Render = function()
-    ShowTabs()
-    RenderLines()
+function Summary:Render()
+    self:ShowTabs()
+    self:RenderLines()
 end
 
-local function ShowSummary()
+function Summary:ShowSummary()
     if VanillaBonkResults then
         VanillaBonkResults:Hide()
     end
 
-    FillHeading()
+    self:FillHeading()
 
-    table.sort(weapons, function(a, b) return a.damage > b.damage end)
-    for _, weapon in ipairs(weapons) do
+    table.sort(self.weapons, function(a, b) return a.damage > b.damage end)
+    for _, weapon in ipairs(self.weapons) do
         table.sort(weapon.subs, function(a, b) return a.damage > b.damage end)
         for _, sub in ipairs(weapon.subs) do
             sub.parent = weapon
         end
     end
-    table.sort(support, function(a, b) return a.damage > b.damage end)
+    table.sort(self.support, function(a, b) return a.damage > b.damage end)
 
-    mode = MODE_HEALING
-    local tallest = RenderLines()
-    mode = MODE_DAMAGE
-    tallest = max(tallest, RenderLines())
-    ShowTabs()
+    self.mode = MODE_HEALING
+    local tallest = self:RenderLines()
+    self.mode = MODE_DAMAGE
+    tallest = max(tallest, self:RenderLines())
+    self:ShowTabs()
 
     local columnBottom = max(tallest, PAD_TOP + STATS_TOP + 7 * STAT_ROW)
     local divider = columnBottom - PAD_TOP
     panel.divider:SetHeight(divider / 2)
     panel.dividerLow:SetHeight(divider / 2)
     local y = columnBottom + 12
-    if not run.victory and not run.wentHome and recap.events and getn(recap.events) > 0 then
-        y = LayoutRecap(y) + 10
+    if not self.run.victory and not self.run.wentHome and self.recap.events and getn(self.recap.events) > 0 then
+        y = self:LayoutRecap(y) + 10
     else
         recapFrame:Hide()
     end
-    y = LayoutFooter(y, FillBuild())
+    y = LayoutFooter(y, self:FillBuild())
     panel:SetHeight(y + PAD_BOTTOM)
-    FillStats()
+    self:FillStats()
 
     screen.closing = false
     screen.alpha = 0
@@ -1274,63 +1280,62 @@ local function DamageTypeFor(name, icon)
     return UI.DAMAGE_TYPE_BY_KEYWORD[name or ""] or UI.DamageTypeFromIcon(icon)
 end
 
-local handlers = {}
-
 UI.ListenHoa({
     HOA_LOADOUT = function(loadout)
-        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+        Summary:ApplyLoadout({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
     end,
     HOA_DEATH_RECAP = function(recap)
-        handlers["dr"]({
+        Summary:ApplyDeathRecap({
             false, recap.max_health, recap.start_health, recap.killer, recap.kill_amount, recap.overkill, recap.taken,
             recap.healed,
         })
     end,
     HOA_DEATH_SOURCE = function(source)
-        handlers["drs"]({ false, source.index, source.icon, source.name, source.spell, source.kind, source.damage })
+        Summary:ApplyDeathSource({ false, source.index, source.icon, source.name, source.spell, source.kind, source.damage })
     end,
     HOA_DEATH_EVENTS = function(events)
-        handlers["dre"]({ false, events.text })
+        Summary:ApplyDeathEvents({ false, events.text })
     end,
     HOA_RUN_SUMMARY = function(summary)
-        handlers["sum"]({ false, summary.damage_taken, summary.elites, summary.minis, summary.bosses })
+        Summary:ApplyRunSummary({ false, summary.damage_taken, summary.elites, summary.minis, summary.bosses })
     end,
     HOA_SUMMARY_WEAPON = function(weapon)
-        handlers["sumw"]({
+        Summary:ApplySummaryWeapon({
             false, weapon.icon, weapon.name, weapon.level, weapon.max_level, weapon.evolved and "1" or "0",
             weapon.damage, weapon.kills, weapon.school,
         })
     end,
     HOA_SUMMARY_SPELL = function(spell)
-        handlers["sums"]({ false, spell.icon, spell.name, spell.damage, spell.kills })
+        Summary:ApplySummarySpell({ false, spell.icon, spell.name, spell.damage, spell.kills })
     end,
     HOA_SUMMARY_END = function()
-        handlers["sumend"]()
+        Summary:ShowSummary()
     end,
     HOA_RUN_SUPPORT = function(state)
-        handlers["support"]({ false, state.text })
+        Summary:ApplySupport({ false, state.text })
     end,
 })
-UI.Module("results"):OnRunStart(function(start)
-    run.map = start.map_name or ""
-    run.difficulty = start.difficulty or ""
-    passives = {}
-    support = {}
-    recap = {}
-    screen:Hide()
+
+Summary:OnRunStart(function(start)
+    Summary.run.map = start.map_name or ""
+    Summary.run.difficulty = start.difficulty or ""
+    Summary.passives = {}
+    Summary.support = {}
+    Summary.recap = {}
+    Summary.screen:Hide()
 end):OnRunEnd(function(ending)
-    run = {
-        map = run.map or "", difficulty = run.difficulty or "",
+    Summary.run = {
+        map = Summary.run.map or "", difficulty = Summary.run.difficulty or "",
         wentHome = ending.went_home, seconds = ending.seconds, kills = ending.kills, gold = ending.gold,
         level = ending.player_level, stage = ending.stage, shards = ending.shards,
         victory = ending.victory, bestLevel = ending.best_level, bestBefore = ending.best_before,
         levelName = ending.level_name, finaleSeconds = ending.finale_seconds,
     }
-    weapons = {}
+    Summary.weapons = {}
 end)
 
-handlers["dr"] = function(f)
-    recap = {
+function Summary:ApplyDeathRecap(f)
+    self.recap = {
         maxHealth = tonumber(f[2]) or 0,
         startHealth = tonumber(f[3]) or 1000,
         killer = tonumber(f[4]) or 0,
@@ -1343,12 +1348,12 @@ handlers["dr"] = function(f)
     }
 end
 
-handlers["drs"] = function(f)
+function Summary:ApplyDeathSource(f)
     local index = tonumber(f[2])
-    if not recap.sources or not index then
+    if not self.recap.sources or not index then
         return
     end
-    recap.sources[index] = {
+    self.recap.sources[index] = {
         index = index,
         icon = f[3] ~= "" and f[3] or "INV_Misc_QuestionMark",
         name = f[4] or "",
@@ -1358,26 +1363,26 @@ handlers["drs"] = function(f)
     }
 end
 
-handlers["dre"] = function(f)
-    if not recap.events then
+function Summary:ApplyDeathEvents(f)
+    if not self.recap.events then
         return
     end
     for _, item in ipairs(UI.Split(f[2] or "", ",")) do
         local parts = UI.Split(item, ":")
         local slot, source, amount, health = tonumber(parts[1]), tonumber(parts[2]), tonumber(parts[3]), tonumber(parts[4])
         if slot and source and amount and health then
-            tinsert(recap.events, { slot = slot, source = source, amount = amount, health = health })
+            tinsert(self.recap.events, { slot = slot, source = source, amount = amount, health = health })
         end
     end
 end
 
-handlers["support"] = function(f)
-    support = {}
+function Summary:ApplySupport(f)
+    self.support = {}
     for _, item in ipairs(UI.Split(f[2] or "", ",")) do
         local _, _, icon, healed, absorbed, name = strfind(item, "^([^:]*):(%d+):(%d+):(.+)$")
         healed, absorbed = tonumber(healed or "") or 0, tonumber(absorbed or "") or 0
         if name and healed + absorbed > 0 then
-            tinsert(support, {
+            tinsert(self.support, {
                 icon = icon ~= "" and icon or "INV_Misc_QuestionMark", name = name,
                 healed = healed, absorbed = absorbed, damage = healed + absorbed,
             })
@@ -1385,28 +1390,28 @@ handlers["support"] = function(f)
     end
 end
 
-handlers["loadout"] = function(f)
-    passives = {}
+function Summary:ApplyLoadout(f)
+    self.passives = {}
     for _, item in ipairs(UI.Split(f[2] or "", ",")) do
         local parts = UI.Split(item, ":")
         if parts[1] == "p" and parts[2] and parts[2] ~= "" then
-            tinsert(passives, parts[2])
+            tinsert(self.passives, parts[2])
         end
     end
 end
 
-handlers["sum"] = function(f)
-    run.damageTaken = tonumber(f[2]) or 0
-    run.elites = tonumber(f[3]) or 0
-    run.minis = tonumber(f[4]) or 0
-    run.bosses = tonumber(f[5]) or 0
+function Summary:ApplyRunSummary(f)
+    self.run.damageTaken = tonumber(f[2]) or 0
+    self.run.elites = tonumber(f[3]) or 0
+    self.run.minis = tonumber(f[4]) or 0
+    self.run.bosses = tonumber(f[5]) or 0
 end
 
-handlers["sumw"] = function(f)
+function Summary:ApplySummaryWeapon(f)
     local icon = f[2] ~= "" and f[2] or "INV_Misc_QuestionMark"
     local name = f[3] == "Melee" and L["hoa.addon.melee"] or f[3] or ""
     local school = UI.DAMAGE_TYPES[f[9] or ""] and f[9] or DamageTypeFor(name, icon)
-    tinsert(weapons, {
+    tinsert(self.weapons, {
         icon = icon,
         name = name,
         level = tonumber(f[4]) or 1,
@@ -1419,8 +1424,8 @@ handlers["sumw"] = function(f)
     })
 end
 
-handlers["sums"] = function(f)
-    local weapon = weapons[getn(weapons)]
+function Summary:ApplySummarySpell(f)
+    local weapon = self.weapons[getn(self.weapons)]
     if not weapon then
         return
     end
@@ -1433,6 +1438,4 @@ handlers["sums"] = function(f)
         school = DamageTypeFor(f[3], icon),
     })
 end
-
-handlers["sumend"] = ShowSummary
 

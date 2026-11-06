@@ -2,11 +2,11 @@
 
 ## Addon object refactor (phase D)
 
-Controllers now exist for the shop, offer/results, gear, starters and the hero bar; the tracker
-is the panel/list/row pilot. Remaining work:
+Controllers now exist for the shop, offer/results, gear, starters, the hero bar, the scoreboard
+and the codex; the tracker is the panel/list/row pilot. Remaining work:
 
 - [x] Convert `run/VanillaBonkHeroBar.lua` to a `UI.Module("heroBar")` controller with explicit state.
-- [ ] Convert `run/VanillaBonkResults.lua` and `panels/VanillaBonkCodex.lua` to controllers.
+- [x] Convert `run/VanillaBonkResults.lua` and `panels/VanillaBonkCodex.lua` to controllers.
 - [ ] Convert `run/VanillaBonkMeter.lua`, `run/VanillaBonkQuartermaster.lua`, `run/VanillaBonkVault.lua`
       and `run/VanillaBonkTransmog.lua` to controllers.
 - [ ] Convert the controller panels (`panels/VanillaBonkController*.lua`) to one controller object.
