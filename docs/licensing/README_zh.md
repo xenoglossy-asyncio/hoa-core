@@ -20,32 +20,31 @@
 - 当前服务端二进制受 GPL-2.0-only 的 MySQL 客户端和 OpenSSL 1.0.2 约束；除非替换这两个依赖，否则应按 GPL-2.0 分发。
 - MIT 不能作为整个仓库的许可证：插件、Glue、启动器都是 GPL-3.0 衍生物。MIT 只能覆盖原创且独立的代码。
 
-**建议**：仓库原创代码用 **GPL-3.0**；插件、Glue、启动器、config 保持 GPL-3.0；服务端作为独立的 GPL-2.0 程序保留；客户端保持 MIT/Apache-2.0。如果服务端也要 GPL-3.0，需要把 MySQL 客户端换成 MariaDB Connector/C（LGPL-2.1），把 OpenSSL 1.0.2 换成 OpenSSL 3（Apache-2.0）或其他兼容 TLS 库；VMaNGOS 核心的源码头已经是“or later”。
+**决定（2026-11-06）**：仓库原创代码采用 **GPL-3.0**；`shared/` 和 `shared/content` 保持
+**GPL-2.0-or-later**，因为 GPL-2.0 服务端和 GPL-3.0 插件都要用；服务端保持 **GPL-2.0**，
+客户端保持 **MIT 或 Apache-2.0**，插件、Glue、启动器、config、localization 保持 **GPL-3.0**。
 
-只有在 GPL 部分全部拆成子模块、顶层仓库只放原创 MIT 代码时，顶层 MIT 才成立。这属于混合许可证聚合，不能让读者误以为 MIT 覆盖整个游戏。
+**仓库继续使用 monorepo，不引入 submodule。** 许可证义务靠保留许可证和版权声明、标明来源与本地修改、提供对应源码来满足，Git 结构不是许可证要求。submodule 只是可选的来源追踪工具，会增加贡献、跨目录原子修改、CI 和 Gitee 镜像的成本。每个导入目录保留 `LICENSE` 和 `UPSTREAM.md`；`LICENSE-NOTICE.md` 与 `provenance.yaml` 记录其余信息，发布 tag 就是对应源码。
 
 ## 建议结构
 
 ```
-hoa-core                     GPL-3.0（原创代码 + GPL-3.0 目录）
-  shared/ tools/ docs/ scripts/ config/
-  addon/ glue/ launcher/      （GPL-3.0，可以继续留在 monorepo）
-  server/ -> submodule hoa-server   GPL-2.0-or-later / 按分发实际为 GPL-2.0
-  client/ -> submodule hoa-client   MIT 或 Apache-2.0
+hoa-core                     GPL-3.0（顶层 LICENSE 覆盖原创代码）
+  LICENSES/                  GPL-2.0、GPL-3.0、MIT、Apache-2.0、OFL-1.1 全文
+  shared/                    GPL-2.0-or-later（服务端和插件共用）
+  server/                    GPL-2.0 + LICENSE + UPSTREAM.md
+  client/                    MIT 或 Apache-2.0 + LICENSE-MIT/LICENSE-APACHE + UPSTREAM.md
+  addon/ glue/ launcher/     GPL-3.0 + UPSTREAM.md
+  config/ localization/      GPL-3.0 + UPSTREAM.md
+  tools/ docs/ scripts/      GPL-3.0 原创代码（导入的工具保留原声明）
 ```
 
-子模块 URL 用相对路径（`../hoa-server.git`），这样从 GitHub 或 Gitee 克隆时都会落到同一主机；两个平台都要镜像 fork 仓库。
-
-如果希望所有上游都有独立来源，可以把 `addon/`、`glue/`、`launcher/` 也做成子模块，顶层只留 `shared/`、`tools/`、`docs/`、`scripts/`、`config/`。
+如果以后上游追踪成本太高，可以把 `server/`、`client/` 改成各自 fork 仓库的子模块；那是维护选择，不是许可证要求。届时用相对 URL（`../hoa-server.git`），让 GitHub 和 Gitee 克隆都落到同一主机；同时镜像 fork 仓库，并先修发布工具——`git archive` 不包含子模块内容。
 
 ## 步骤
 
-1. 选定顶层许可证（建议 GPL-3.0；MIT 只用于原创独立代码）。
-2. 为要变成子模块的部分创建 fork 仓库（`hoa-server`、`hoa-client`，可选 `hoa-addon`、`hoa-glue`、`hoa-launcher`），在 GitHub 和 Gitee 各推一份；用 `git filter-repo --subdirectory-filter` 或 `git subtree split` 保留历史。
-3. `git submodule add ../hoa-server server`、`git submodule add ../hoa-client client`，提交 `.gitmodules`。
-4. CI checkout 增加 `submodules: recursive`；Gitee 镜像也包含子模块仓库。
-5. 发布工具：超级仓库的 `git archive` **不包含**子模块内容。`tools/release.ps1` 的 `Get-CommittedTree` 和包解析要改成逐个归档子模块或读取已 checkout 的工作树；如果 addon/glue/launcher 也变成子模块，同样处理。
-6. 如果服务端要 GPL-3.0：替换 GPL-2.0-only 的 MySQL 客户端和 OpenSSL 1.0.2；否则让服务端作为独立的 GPL-2.0 程序。
-7. 规范许可证文件：`LICENSES/` 放 GPL-2.0、GPL-3.0、MIT、Apache-2.0、OFL-1.1；更新 `LICENSE-NOTICE.md` 和 `THIRD-PARTY-NOTICES.md`。
-
-在拆分完成前，各目录的许可证和 `LICENSE-NOTICE.md` 是唯一依据；不要把 GPL-2.0-only 的部分改标成 GPL-3.0 或 MIT。
+1. 保留顶层 `LICENSE`（GPL-3.0）和各目录许可证；决定记录在本页和 `LICENSE-NOTICE.md`。
+2. 每个导入目录保留 `LICENSE`/`LICENSE-MIT`/`LICENSE-APACHE` 和 `UPSTREAM.md`，写明上游 URL、提交、基准和本地修改。
+3. 保留 `LICENSES/` 全文和 `THIRD-PARTY-NOTICES.md` 依赖清单。
+4. 如果服务端要 GPL-3.0：替换 GPL-2.0-only 的 MySQL 客户端和 OpenSSL 1.0.2；否则服务端按 GPL-2.0 作为独立程序。
+5. 不要把 GPL-2.0-only 的部分改标成 GPL-3.0 或 MIT。以后若引入 submodule，必须同轮更新 CI（`submodules: recursive`）和发布打包。

@@ -38,7 +38,7 @@
 
 - `server/LICENSE`（GPL-2.0）
 - `client/LICENSE-MIT`、`client/LICENSE-APACHE`
-- 根目录 `LICENSE-GPL-3.0`、`THIRD-PARTY-NOTICES.md` 覆盖 addon/glue/launcher/tools 等来自主仓库的部分
+- 根目录 `LICENSE`、`THIRD-PARTY-NOTICES.md` 覆盖 addon/glue/launcher/tools 等来自主仓库的部分
 - 新写的 `shared/`、`scripts/`、`docs/`、部分 `tools/` 使用 GPL-2.0-or-later
 
 详见 [LICENSE-NOTICE.md](../../LICENSE-NOTICE.md)。

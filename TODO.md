@@ -15,13 +15,15 @@ panel/list/row pilot. Remaining work:
 
 ## Licensing and repository structure
 
-- [ ] Pick the repository license: GPL-3.0 is recommended (the addon, Glue and launcher are
-      GPL-3.0 derivatives); MIT can only cover original standalone code.
-- [ ] Move `server/` and `client/` to submodules of their own fork repositories.
-- [ ] Update CI checkout and `tools/release.ps1` for submodules (`git archive` does not include
-      submodule contents).
-- [ ] Replace or isolate the bundled Windows MySQL client and OpenSSL 1.0.2 before distributing
-      the server under GPL-3.0.
-- [ ] Normalize `LICENSES/`, `LICENSE-NOTICE.md` and `THIRD-PARTY-NOTICES.md`.
+- [x] Pick the repository license: GPL-3.0 for original code; `shared/` stays GPL-2.0-or-later so
+      the GPL-2.0 server and GPL-3.0 addon can both use it.
+- [x] Keep the repository a monorepo; add `LICENSES/` and per-directory `UPSTREAM.md` files instead
+      of submodules.
+- [ ] Regenerate `THIRD-PARTY-NOTICES.md` from the verified dependency list and add SPDX headers to
+      new files where practical.
+- [ ] Replace or isolate the bundled Windows MySQL client and OpenSSL 1.0.2 before distributing the
+      server under GPL-3.0.
+- [ ] Optional: if upstream tracking later needs submodules, update CI checkout and
+      `tools/release.ps1` first (`git archive` does not include submodule contents).
 
 See [docs/licensing](docs/licensing/README.md) for the audit and the proposed layout.
