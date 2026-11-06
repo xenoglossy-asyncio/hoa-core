@@ -12,6 +12,7 @@ VanillaBonkFound.lua
 VanillaBonkSpellTip.lua
 VanillaBonkDebuffs.lua
 VanillaBonk.lua
+VanillaBonkOffer.lua
 VanillaBonkStarters.lua
 VanillaBonkGearStats.lua
 VanillaBonkShop.lua
