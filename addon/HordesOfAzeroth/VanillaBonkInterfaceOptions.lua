@@ -222,8 +222,7 @@ local function BuildInteractKey(box)
     function row:Refresh()
         UI.SetKeyCap(self.cap, UI.KeyText(binding))
     end
-    row:RegisterEvent("UPDATE_BINDINGS")
-    row:SetScript("OnEvent", function() this:Refresh() end)
+    UI.Listen({ UPDATE_BINDINGS = function() row:Refresh() end }, row)
     return row
 end
 

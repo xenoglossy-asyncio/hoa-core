@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 local CHECK_DELAY = 0.5
 local CAPTURE_DELAY = 1
 local MODIFIERS = { "", "SHIFT-", "CTRL-", "ALT-", "CTRL-SHIFT-", "ALT-SHIFT-", "ALT-CTRL-", "ALT-CTRL-SHIFT-" }
@@ -117,20 +118,17 @@ local function Check()
 end
 
 local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("UPDATE_BINDINGS")
-events:RegisterEvent("PLAYER_LOGOUT")
-events:SetScript("OnEvent", function()
-    if event == "PLAYER_ENTERING_WORLD" then
+UI.Module("bindingGuard"):Listen({
+    PLAYER_ENTERING_WORLD = function()
         if not checked then
             checkAt = GetTime() + CHECK_DELAY
         end
-    elseif event == "UPDATE_BINDINGS" then
+    end,
+    UPDATE_BINDINGS = function()
         captureAt = GetTime() + CAPTURE_DELAY
-    elseif event == "PLAYER_LOGOUT" then
-        Store()
-    end
-end)
+    end,
+    PLAYER_LOGOUT = Store,
+}, events)
 events:SetScript("OnUpdate", function()
     local now = GetTime()
     if checkAt and now >= checkAt then

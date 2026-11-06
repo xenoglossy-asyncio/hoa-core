@@ -225,22 +225,26 @@ function CloseAllBags()
     CloseBags()
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("BAG_UPDATE")
-events:RegisterEvent("ITEM_LOCK_CHANGED")
-events:RegisterEvent("BAG_UPDATE_COOLDOWN")
-events:RegisterEvent("PLAYER_MONEY")
-events:SetScript("OnEvent", function()
+local function RefreshAll()
     if not frame:IsShown() then
         return
     end
-    if event == "BAG_UPDATE" then
-        Layout()
-    elseif event == "PLAYER_MONEY" then
-        MoneyFrame_Update("VanillaBonkBagsMoney", GetMoney())
-    else
-        for _, bag in ipairs(BAGS) do
-            UpdateBag(bag)
-        end
+    for _, bag in ipairs(BAGS) do
+        UpdateBag(bag)
     end
-end)
+end
+
+UI.Module("bags"):Listen({
+    BAG_UPDATE = function()
+        if frame:IsShown() then
+            Layout()
+        end
+    end,
+    ITEM_LOCK_CHANGED = RefreshAll,
+    BAG_UPDATE_COOLDOWN = RefreshAll,
+    PLAYER_MONEY = function()
+        if frame:IsShown() then
+            MoneyFrame_Update("VanillaBonkBagsMoney", GetMoney())
+        end
+    end,
+})

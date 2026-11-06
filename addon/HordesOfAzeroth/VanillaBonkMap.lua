@@ -405,13 +405,14 @@ window:SetScript("OnHide", function()
     PlaySound("igQuestLogClose")
 end)
 
-window:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-window:SetScript("OnEvent", function()
-    if this:IsShown() then
-        LoadZone()
-        Refresh()
-    end
-end)
+UI.Listen({
+    ZONE_CHANGED_NEW_AREA = function()
+        if window:IsShown() then
+            LoadZone()
+            Refresh()
+        end
+    end,
+}, window)
 
 local StockToggleWorldMap = ToggleWorldMap
 

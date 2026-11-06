@@ -22,9 +22,7 @@ UIErrorsFrame:SetScript("OnEvent", function()
     end
 end)
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_TARGET_CHANGED")
-events:SetScript("OnEvent", DropEnemyTarget)
+UI.Module("targeting"):Listen({ PLAYER_TARGET_CHANGED = DropEnemyTarget })
 
 local function EnterRun()
     inRun = true

@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 
 local OPEN_STEP = 0.3
 local STUCK_STEPS = 12
@@ -34,21 +35,24 @@ end
 
 local runner = CreateFrame("Frame")
 runner:Hide()
-runner:RegisterEvent("UI_ERROR_MESSAGE")
-runner:RegisterEvent("MAIL_INBOX_UPDATE")
-runner:RegisterEvent("MAIL_SHOW")
 
-runner:SetScript("OnEvent", function()
-    if event == "UI_ERROR_MESSAGE" then
-        if this:IsShown() and arg1 == ERR_INV_FULL then
-            this:Hide()
+UI.Listen({
+    UI_ERROR_MESSAGE = function(message)
+        if runner:IsShown() and message == ERR_INV_FULL then
+            runner:Hide()
         end
-        return
-    end
-    if not this:IsShown() then
-        RefreshButton()
-    end
-end)
+    end,
+    MAIL_INBOX_UPDATE = function()
+        if not runner:IsShown() then
+            RefreshButton()
+        end
+    end,
+    MAIL_SHOW = function()
+        if not runner:IsShown() then
+            RefreshButton()
+        end
+    end,
+}, runner)
 
 runner:SetScript("OnUpdate", function()
     this.wait = this.wait - arg1

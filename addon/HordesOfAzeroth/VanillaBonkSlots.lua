@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 local LOCKED_SLOTS = {
     WARRIOR = { "Ranged", "Ammo" },
     PALADIN = { "Ranged", "Ammo" },
@@ -98,18 +99,18 @@ PaperDollItemSlotButton_UpdateLock = function()
     ShowLock(this)
 end
 
-local loader = CreateFrame("Frame")
-loader:RegisterEvent("PLAYER_ENTERING_WORLD")
-loader:SetScript("OnEvent", function()
-    this:UnregisterEvent("PLAYER_ENTERING_WORLD")
-    local _, class = UnitClass("player")
-    slots.why = CLASS_WEAPONS[class]
-    for _, slot in ipairs(LOCKED_SLOTS[class] or {}) do
-        local button = getglobal("Character" .. slot .. "Slot")
-        if button then
-            slots.locked[button:GetName()] = true
-            Guard(button)
-            ShowLock(button)
+UI.Module("slots"):Listen({
+    PLAYER_ENTERING_WORLD = function()
+        this:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        local _, class = UnitClass("player")
+        slots.why = CLASS_WEAPONS[class]
+        for _, slot in ipairs(LOCKED_SLOTS[class] or {}) do
+            local button = getglobal("Character" .. slot .. "Slot")
+            if button then
+                slots.locked[button:GetName()] = true
+                Guard(button)
+                ShowLock(button)
+            end
         end
-    end
-end)
+    end,
+})

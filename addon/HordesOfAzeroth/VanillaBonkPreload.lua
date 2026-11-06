@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 
 local MISSILES = {
     "Spells\\Frostbolt.mdx",
@@ -33,27 +34,28 @@ local function Preload(path)
 end
 
 local loaded = false
-holder:RegisterEvent("PLAYER_ENTERING_WORLD")
-holder:SetScript("OnEvent", function()
-    if loaded then
-        return
-    end
-    loaded = true
-    this:UnregisterEvent("PLAYER_ENTERING_WORLD")
-    local ok, err = pcall(function()
-        for i = 1, table.getn(MISSILES) do
-            Preload(MISSILES[i])
+UI.Module("preload"):Listen({
+    PLAYER_ENTERING_WORLD = function()
+        if loaded then
+            return
         end
-    end)
-    if not ok then
-        DEFAULT_CHAT_FRAME:AddMessage(L("hoa.addon.hordes_of_azeroth_missile_models_were_not_preloaded_1", tostring(err)))
-    end
-    this.shownFor = 0
-    this:SetScript("OnUpdate", function()
-        this.shownFor = this.shownFor + arg1
-        if this.shownFor >= PRELOAD_SHOWN_SECONDS then
-            this:SetScript("OnUpdate", nil)
-            this:Hide()
+        loaded = true
+        this:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        local ok, err = pcall(function()
+            for i = 1, table.getn(MISSILES) do
+                Preload(MISSILES[i])
+            end
+        end)
+        if not ok then
+            DEFAULT_CHAT_FRAME:AddMessage(L("hoa.addon.hordes_of_azeroth_missile_models_were_not_preloaded_1", tostring(err)))
         end
-    end)
-end)
+        this.shownFor = 0
+        this:SetScript("OnUpdate", function()
+            this.shownFor = this.shownFor + arg1
+            if this.shownFor >= PRELOAD_SHOWN_SECONDS then
+                this:SetScript("OnUpdate", nil)
+                this:Hide()
+            end
+        end)
+    end,
+}, holder)

@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 local ICON_PATH = "Interface\\Icons\\"
 local FONT = VanillaBonkUI.FONT
 
@@ -99,11 +100,11 @@ local function RarityText(rarity, text)
     return format("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text)
 end
 
-local buffTimers = CreateFrame("Frame")
-buffTimers:RegisterEvent("VARIABLES_LOADED")
-buffTimers:SetScript("OnEvent", function()
-    SHOW_BUFF_DURATIONS = "1"
-end)
+UI.Module("buffTimers"):Listen({
+    VARIABLES_LOADED = function()
+        SHOW_BUFF_DURATIONS = "1"
+    end,
+})
 
 local offerFrame = CreateFrame("Frame", "VanillaBonkOffer", UIParent)
 offerFrame:SetAllPoints(UIParent)
@@ -322,9 +323,7 @@ do
         end)
     end
 
-    local watcher = CreateFrame("Frame")
-    watcher:RegisterEvent("UPDATE_BINDINGS")
-    watcher:SetScript("OnEvent", offerFrame.RefreshKeyPrompts)
+    UI.Module("offerKeyPrompts"):Listen({ UPDATE_BINDINGS = offerFrame.RefreshKeyPrompts })
 end
 
 local CardArt = VanillaBonkUI.CardArt
@@ -934,10 +933,10 @@ function VanillaBonk_ChoiceKey(key)
     end
 end
 
-local choiceKeys = CreateFrame("Frame")
-choiceKeys:RegisterEvent("VARIABLES_LOADED")
-choiceKeys:RegisterEvent("PLAYER_LOGOUT")
-choiceKeys:SetScript("OnEvent", GiveBackChoiceKeys)
+UI.Module("choiceKeys"):Listen({
+    VARIABLES_LOADED = GiveBackChoiceKeys,
+    PLAYER_LOGOUT = GiveBackChoiceKeys,
+})
 
 local CARD_TEXT_WIDTH = 220
 local function LayoutDamageRow(card, option, hasLock)
@@ -3695,13 +3694,13 @@ do
     end)
 end
 
-local gearEvents = CreateFrame("Frame")
-gearEvents:RegisterEvent("UNIT_INVENTORY_CHANGED")
-gearEvents:SetScript("OnEvent", function()
-    if arg1 == "player" and PaperDollFrame:IsVisible() then
-        RefreshHeroStats()
-    end
-end)
+UI.Module("gearEvents"):Listen({
+    UNIT_INVENTORY_CHANGED = function(unit)
+        if unit == "player" and PaperDollFrame:IsVisible() then
+            RefreshHeroStats()
+        end
+    end,
+})
 
 handlers["gear"] = function(f)
     VB.gear[tonumber(f[2])] = { stats = ParseStats(f[3]) }
@@ -3762,13 +3761,13 @@ UI.ListenHoa({
     end,
 })
 
-local shieldEvents = CreateFrame("Frame")
-shieldEvents:RegisterEvent("UNIT_MAXHEALTH")
-shieldEvents:SetScript("OnEvent", function()
-    if arg1 == "player" then
-        RefreshShield()
-    end
-end)
+UI.Module("shieldEvents"):Listen({
+    UNIT_MAXHEALTH = function(unit)
+        if unit == "player" then
+            RefreshShield()
+        end
+    end,
+})
 
 local function LinePattern(text)
     if not text then
@@ -3808,23 +3807,21 @@ function ChatFrame_OnEvent(event)
     OriginalChatFrameOnEvent(event)
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("PLAYER_MONEY")
-events:SetScript("OnEvent", function()
-    if event == "PLAYER_MONEY" then
+UI.Module("enterWorld"):Listen({
+    PLAYER_MONEY = function()
         PlayPurchaseSound()
         if shop:IsShown() then
             RefreshShop()
         end
-    elseif event == "PLAYER_ENTERING_WORLD" then
+    end,
+    PLAYER_ENTERING_WORLD = function()
         VB.lastMoney = GetMoney()
         if not VB.helloSent then
             VB.helloSent = true
             Command("hello " .. UI.Language())
         end
-    end
-end)
+    end,
+})
 
 function UI.NavPrompt(box, primary, second)
     box.navButtons = { primary, second }

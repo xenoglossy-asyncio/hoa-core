@@ -321,8 +321,7 @@ end
 
 window.Refresh = Refresh
 UI.WatchSettings(Refresh)
-window:RegisterEvent("UPDATE_BINDINGS")
-window:SetScript("OnEvent", Refresh)
+UI.Module("innkeeper"):Listen({ UPDATE_BINDINGS = Refresh }, window)
 
 window:SetScript("OnShow", function()
     PlaySound("igCharacterInfoOpen")

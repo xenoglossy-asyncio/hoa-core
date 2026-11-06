@@ -161,20 +161,33 @@ refresh:SetScript("OnUpdate", function()
 end)
 
 local inWorld = false
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("BAG_UPDATE")
-events:RegisterEvent("UNIT_INVENTORY_CHANGED")
-events:RegisterEvent("BANKFRAME_OPENED")
-events:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
-events:SetScript("OnEvent", function()
-    if event == "PLAYER_ENTERING_WORLD" then
-        inWorld = true
-        return
-    end
-    if not inWorld or (event == "UNIT_INVENTORY_CHANGED" and arg1 ~= "player") then
-        return
-    end
+local function ScheduleRefresh()
     refresh.wait = REFRESH_DELAY
     refresh:Show()
-end)
+end
+
+UI.Module("found"):Listen({
+    PLAYER_ENTERING_WORLD = function()
+        inWorld = true
+    end,
+    BAG_UPDATE = function()
+        if inWorld then
+            ScheduleRefresh()
+        end
+    end,
+    UNIT_INVENTORY_CHANGED = function(unit)
+        if inWorld and unit == "player" then
+            ScheduleRefresh()
+        end
+    end,
+    BANKFRAME_OPENED = function()
+        if inWorld then
+            ScheduleRefresh()
+        end
+    end,
+    PLAYERBANKSLOTS_CHANGED = function()
+        if inWorld then
+            ScheduleRefresh()
+        end
+    end,
+})

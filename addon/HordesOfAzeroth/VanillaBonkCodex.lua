@@ -1528,10 +1528,10 @@ VanillaBonkUI.ListenHoa({
     end,
 })
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_MONEY")
-events:SetScript("OnEvent", function()
-    if event == "PLAYER_MONEY" and window:IsShown() then
-        Refresh(true)
-    end
-end)
+UI.Module("codex"):Listen({
+    PLAYER_MONEY = function()
+        if window:IsShown() then
+            Refresh(true)
+        end
+    end,
+})

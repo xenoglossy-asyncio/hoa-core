@@ -672,14 +672,14 @@ function partyFrame.Refresh()
     partyFrame:Show()
 end
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("VARIABLES_LOADED")
-events:SetScript("OnEvent", function()
-    if VanillaBonkMeterMode == MODE_TYPES or VanillaBonkMeterMode == MODE_HEALING then
-        mode = VanillaBonkMeterMode
-    end
-    meter.title:SetText(ModeLabel(mode))
-end)
+UI.Module("meter"):Listen({
+    VARIABLES_LOADED = function()
+        if VanillaBonkMeterMode == MODE_TYPES or VanillaBonkMeterMode == MODE_HEALING then
+            mode = VanillaBonkMeterMode
+        end
+        meter.title:SetText(ModeLabel(mode))
+    end,
+})
 
 local handlers = {}
 
