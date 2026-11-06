@@ -28,8 +28,10 @@ local LEVEL_PLATE_RAISE = 1
 local DASH_SIZE = 32
 local BAR_SCALE = 0.85
 
-local run = { spells = {}, passives = {}, info = {}, stats = {} }
-local inRun = false
+local HeroBar = UI.Module("heroBar")
+
+HeroBar.run = { spells = {}, passives = {}, info = {}, stats = {} }
+HeroBar.inRun = false
 
 local root = CreateFrame("Frame", "VanillaBonkHeroBar", UIParent)
 root:SetWidth(1)
@@ -41,6 +43,10 @@ local runFrame = CreateFrame("Frame", nil, root)
 runFrame:SetAllPoints(root)
 local campFrame = CreateFrame("Frame", nil, root)
 campFrame:SetAllPoints(root)
+
+HeroBar.root = root
+HeroBar.runFrame = runFrame
+HeroBar.campFrame = campFrame
 
 local function BarTexture(parent, layer, left, right, top, bottom)
     local texture = parent:CreateTexture(nil, layer)
@@ -202,6 +208,8 @@ local runCenterY = RUN_PLATE_HEIGHT / 2
 
 local runPlate = CreatePlate(runFrame, runWidth, RUN_PLATE_HEIGHT)
 local spellBar = runPlate
+HeroBar.runPlate = runPlate
+HeroBar.spellBar = spellBar
 
 local runLayout = {}
 do
@@ -221,15 +229,20 @@ end
 
 local runDashDock = AddDock(runPlate, runLayout.dash.x, runCenterY, PASSIVE_SIZE)
 UI.HearthDock = AddDock(runPlate, runLayout.hearth.x, runCenterY, PASSIVE_SIZE)
+HeroBar.runDashDock = runDashDock
 
 local xpBar = AddRailBar(runPlate, RUN_PLATE_HEIGHT, 0.58, 0.0, 0.55)
 local xpText = UI.Text(runPlate.rail, 10, UI.NUMBER_FONT, "OUTLINE")
 xpText:SetPoint("CENTER", runPlate, "TOP", runWidth / 4, -RAIL_HEIGHT / 2)
 local xpHover = AddRailHover(runPlate)
+HeroBar.xpBar = xpBar
+HeroBar.xpText = xpText
+HeroBar.xpHover = xpHover
 
 local levelRing = AddLevelPlate(runPlate, RUN_PLATE_HEIGHT)
 root.levelPlate = levelRing
 VanillaBonkLevelRing = levelRing
+HeroBar.levelRing = levelRing
 
 UI.GlyphAnchor = CreateFrame("Frame", nil, runPlate)
 UI.GlyphAnchor:SetWidth(1)
@@ -237,6 +250,8 @@ UI.GlyphAnchor:SetHeight(1)
 UI.GlyphAnchor:SetPoint("BOTTOMLEFT", runPlate, "TOPLEFT", ceil(GryphonInset(RUN_PLATE_HEIGHT, GRYPHON_HEAD_EDGE)) + 8, 3)
 
 local spellSlots, passiveSlots = {}, {}
+HeroBar.spellSlots = spellSlots
+HeroBar.passiveSlots = passiveSlots
 
 local LOCKED_SLOTS = {
     spell = { talent = L["hoa.addon.spell_slot"], start = 3, ranks = {
@@ -247,8 +262,8 @@ local LOCKED_SLOTS = {
     } },
 }
 
-local function AddPassiveLines(entry)
-    local info = run.info[entry.index] or {}
+function HeroBar:AddPassiveLines(entry)
+    local info = self.run.info[entry.index] or {}
     GameTooltip:AddDoubleLine(info.name or "?", (entry.max > 0 and L("hoa.addon.rank_1_2", entry.rank, entry.max) or L("hoa.addon.rank_1", entry.rank)), 1, 1, 1, 0.6, 0.6, 0.6)
     GameTooltip:AddLine(L["hoa.addon.passive"], 0.6, 0.6, 0.6)
     if info.description and info.description ~= "" then
@@ -264,9 +279,9 @@ local function BestRarity(ranks)
     return best
 end
 
-local function ShowSpellTip(owner, anchor, entry, stat)
+function HeroBar:ShowSpellTip(owner, anchor, entry, stat)
     local Tip = VanillaBonkSpellTip
-    local info = run.info[entry.index] or {}
+    local info = self.run.info[entry.index] or {}
     local evolved = entry.kind == "e"
     local rarity = UI.RARITY[evolved and 4 or BestRarity(info.ranks)]
     Tip:SetOwner(owner, anchor)
@@ -292,7 +307,7 @@ local function ShowSpellTip(owner, anchor, entry, stat)
     Tip:AddFooter(info.spec, info.school, info.aoe)
     if stat and (stat.damage or 0) > 0 then
         local total = 0
-        for _, other in pairs(run.stats) do
+        for _, other in pairs(self.run.stats) do
             total = total + other.damage
         end
         local share = total > 0 and floor(stat.damage / total * 100 + 0.5) or 0
@@ -303,18 +318,17 @@ local function ShowSpellTip(owner, anchor, entry, stat)
     Tip:Show()
 end
 
-local function ShowEntry(owner, anchor, entry, stat)
+function HeroBar:ShowEntry(owner, anchor, entry, stat)
     if entry.kind == "p" then
         GameTooltip:SetOwner(owner, anchor)
-        AddPassiveLines(entry)
+        self:AddPassiveLines(entry)
         GameTooltip:Show()
     else
-        ShowSpellTip(owner, anchor, entry, stat)
+        self:ShowSpellTip(owner, anchor, entry, stat)
     end
 end
 
-local function ShowSlotTooltip()
-    local slot = this
+function HeroBar:ShowSlotTooltip(slot)
     GameTooltip:SetOwner(slot, "ANCHOR_TOP")
     local entry = slot.entry
     if slot.locked then
@@ -347,18 +361,18 @@ local function ShowSlotTooltip()
         return
     end
 
-    ShowEntry(slot, "ANCHOR_TOP", entry, run.stats[slot.spellIndex])
+    self:ShowEntry(slot, "ANCHOR_TOP", entry, self.run.stats[slot.spellIndex])
 end
 
-local function ShowEntryTooltip(owner, entry, stat)
-    ShowEntry(owner, "ANCHOR_RIGHT", entry, stat)
+function HeroBar:ShowEntryTooltip(owner, entry, stat)
+    self:ShowEntry(owner, "ANCHOR_RIGHT", entry, stat)
 end
 
 function VanillaBonk_LoadoutTooltip(owner, name, stat)
-    for _, entry in ipairs(run.spells) do
-        local info = run.info[entry.index]
+    for _, entry in ipairs(HeroBar.run.spells) do
+        local info = HeroBar.run.info[entry.index]
         if info and info.name == name then
-            ShowEntryTooltip(owner, entry, stat)
+            HeroBar:ShowEntryTooltip(owner, entry, stat)
             return true
         end
     end
@@ -366,20 +380,20 @@ function VanillaBonk_LoadoutTooltip(owner, name, stat)
 end
 
 function VanillaBonk_SpellTooltip(owner, index)
-    local entry = run.spells[index]
+    local entry = HeroBar.run.spells[index]
     if not entry then
         return false
     end
-    ShowEntryTooltip(owner, entry, run.stats[index])
+    HeroBar:ShowEntryTooltip(owner, entry, HeroBar.run.stats[index])
     return true
 end
 
 function VanillaBonk_PassiveTooltip(owner, index)
-    local entry = run.passives[index]
+    local entry = HeroBar.run.passives[index]
     if not entry then
         return false
     end
-    ShowEntryTooltip(owner, entry)
+    HeroBar:ShowEntryTooltip(owner, entry)
     return true
 end
 
@@ -508,7 +522,9 @@ local function CreateSlot(parent, size, isSpell)
         slot.countdown:SetPoint("CENTER", slot, "CENTER", 1, 0)
     end
 
-    UI.Hover(slot, ShowSlotTooltip)
+    UI.Hover(slot, function()
+        HeroBar:ShowSlotTooltip(this)
+    end)
     return slot
 end
 
@@ -532,8 +548,8 @@ for index = 1, PASSIVE_SLOTS do
     passiveSlots[index] = slot
 end
 
-local function RestartCooldown(slot)
-    local info = slot.entry and run.info[slot.entry.index]
+function HeroBar:RestartCooldown(slot)
+    local info = slot.entry and self.run.info[slot.entry.index]
     if not info or not info.interval or info.interval <= 0 or info.held then
         slot.cooldown:Hide()
         slot.cycleStart = nil
@@ -549,8 +565,8 @@ local function RestartCooldown(slot)
     CooldownFrame_SetTimer(slot.cooldown, slot.cycleStart, interval, 1)
 end
 
-local function UpdateCountdown(slot)
-    local info = slot.entry and run.info[slot.entry.index]
+function HeroBar:UpdateCountdown(slot)
+    local info = slot.entry and self.run.info[slot.entry.index]
     local interval = info and info.interval and info.interval / 1000 or 0
     local remaining = slot.cycleStart and interval - (GetTime() - slot.cycleStart) or 0
     if info and not info.held and UI.Option("cooldownNumbers", true) and interval >= COUNTDOWN_MIN_INTERVAL and remaining >= COUNTDOWN_HIDE_BELOW then
@@ -562,11 +578,11 @@ local function UpdateCountdown(slot)
     end
 end
 
-local function RefreshReachMark(slot)
+function HeroBar:RefreshReachMark(slot)
     if not slot.reachMark then
         return
     end
-    if slot.entry and run.reachSlot and slot.entry.index == run.reachSlot then
+    if slot.entry and self.run.reachSlot and slot.entry.index == self.run.reachSlot then
         local color = UI.ReachRingColor()
         slot.reachMark:SetVertexColor(color.r, color.g, color.b)
         slot.reachMark:Show()
@@ -575,9 +591,9 @@ local function RefreshReachMark(slot)
     end
 end
 
-local function UpdateSlot(slot, entry)
+function HeroBar:UpdateSlot(slot, entry)
     slot.entry = entry
-    RefreshReachMark(slot)
+    self:RefreshReachMark(slot)
     if not entry then
         slot.icon:Hide()
         slot.badge:Hide()
@@ -601,7 +617,7 @@ local function UpdateSlot(slot, entry)
         return
     end
 
-    local info = run.info[entry.index] or {}
+    local info = self.run.info[entry.index] or {}
     local best = 0
     if entry.kind == "e" then
         best = 4
@@ -628,10 +644,10 @@ local function UpdateSlot(slot, entry)
         slot.ready:Hide()
     end
     slot.cycleStart = nil
-    RestartCooldown(slot)
+    self:RestartCooldown(slot)
 end
 
-local function SetLocked(slot, locked)
+function HeroBar:SetLocked(slot, locked)
     slot.locked = locked
     if locked then
         slot.shade:Show()
@@ -642,29 +658,32 @@ local function SetLocked(slot, locked)
     end
 end
 
-local function RefreshSlots()
+function HeroBar:RefreshSlots()
     for index = 1, SPELL_SLOTS do
-        UpdateSlot(spellSlots[index], run.spells[index])
-        SetLocked(spellSlots[index], not run.spells[index] and index > (run.spellSlots or SPELL_SLOTS))
+        self:UpdateSlot(spellSlots[index], self.run.spells[index])
+        self:SetLocked(spellSlots[index], not self.run.spells[index] and index > (self.run.spellSlots or SPELL_SLOTS))
         spellSlots[index].spellIndex = index
         spellSlots[index].slotIndex = index
     end
     for index = 1, PASSIVE_SLOTS do
-        UpdateSlot(passiveSlots[index], run.passives[index])
-        SetLocked(passiveSlots[index], not run.passives[index] and index > (run.passiveSlots or PASSIVE_SLOTS))
+        self:UpdateSlot(passiveSlots[index], self.run.passives[index])
+        self:SetLocked(passiveSlots[index], not self.run.passives[index] and index > (self.run.passiveSlots or PASSIVE_SLOTS))
         passiveSlots[index].slotIndex = index
     end
 end
 
-local function RunHeld()
+function HeroBar:RunHeld()
     local offer, vendor, gear = getglobal("VanillaBonkOffer"), getglobal("VanillaBonkVendor"), getglobal("VanillaBonkGear")
     return (offer and offer.open) or (vendor and vendor.open) or (gear and gear.open) or (UI.MenuPaused and UI.MenuPaused())
 end
-UI.RunHeld = RunHeld
 
-local function HoldCooldowns(elapsed)
-    for _, slot in ipairs(spellSlots) do
-        local info = slot.entry and run.info[slot.entry.index]
+function UI.RunHeld()
+    return HeroBar:RunHeld()
+end
+
+function HeroBar:HoldCooldowns(elapsed)
+    for _, slot in ipairs(self.spellSlots) do
+        local info = slot.entry and self.run.info[slot.entry.index]
         if slot.cycleStart and info and info.interval then
             slot.cycleStart = slot.cycleStart + elapsed
             CooldownFrame_SetTimer(slot.cooldown, slot.cycleStart, info.interval / 1000, 1)
@@ -673,8 +692,8 @@ local function HoldCooldowns(elapsed)
 end
 
 spellBar:SetScript("OnUpdate", function()
-    if RunHeld() then
-        HoldCooldowns(arg1)
+    if HeroBar:RunHeld() then
+        HeroBar:HoldCooldowns(arg1)
         return
     end
     this.elapsed = (this.elapsed or 0) + arg1
@@ -682,12 +701,12 @@ spellBar:SetScript("OnUpdate", function()
         return
     end
     this.elapsed = 0
-    for _, slot in ipairs(spellSlots) do
-        local info = slot.entry and run.info[slot.entry.index]
+    for _, slot in ipairs(HeroBar.spellSlots) do
+        local info = slot.entry and HeroBar.run.info[slot.entry.index]
         if slot.cycleStart and info and info.interval and GetTime() - slot.cycleStart >= info.interval / 1000 then
-            RestartCooldown(slot)
+            HeroBar:RestartCooldown(slot)
         end
-        UpdateCountdown(slot)
+        HeroBar:UpdateCountdown(slot)
     end
 end)
 
@@ -696,6 +715,8 @@ local campCenterY = CAMP_PLATE_HEIGHT / 2
 local campMargin = ceil(GryphonInset(CAMP_PLATE_HEIGHT, GRYPHON_BODY_EDGE)) + 4
 AddRecess(campPlate, campMargin, campCenterY, DASH_SIZE, DASH_SIZE)
 local campDashDock = AddDock(campPlate, campMargin, campCenterY, DASH_SIZE)
+HeroBar.campPlate = campPlate
+HeroBar.campDashDock = campDashDock
 
 local masteryBar = AddRailBar(campPlate, CAMP_PLATE_HEIGHT, 0.95, 0.65, 0.15)
 local masteryText = UI.Text(campPlate.rail, 10, UI.NUMBER_FONT, "OUTLINE")
@@ -710,10 +731,16 @@ local masteryPoints = UI.Text(campPlate, 13)
 masteryPoints:SetPoint("LEFT", campPlate, "BOTTOM", LEVEL_PLATE_WIDTH / 2 + 10, campCenterY)
 masteryPoints:SetTextColor(0.25, 1, 0.25)
 
-local mastery
+HeroBar.masteryBar = masteryBar
+HeroBar.masteryText = masteryText
+HeroBar.masteryHover = masteryHover
+HeroBar.masteryLevel = masteryLevel
+HeroBar.masteryName = masteryName
+HeroBar.masteryPoints = masteryPoints
 
-local function ShowMasteryTooltip()
-    GameTooltip:SetOwner(this, "ANCHOR_TOP")
+function HeroBar:ShowMasteryTooltip(owner)
+    GameTooltip:SetOwner(owner, "ANCHOR_TOP")
+    local mastery = self.mastery
     if not mastery then
         GameTooltip:AddLine(L["hoa.addon.class_mastery"], 1, 1, 1)
         GameTooltip:Show()
@@ -733,34 +760,37 @@ local function ShowMasteryTooltip()
     GameTooltip:Show()
 end
 
-UI.Hover({ masteryHover, masteryLevel }, ShowMasteryTooltip)
+UI.Hover({ masteryHover, masteryLevel }, function()
+    HeroBar:ShowMasteryTooltip(this)
+end)
 
-local function RefreshMastery()
+function HeroBar:RefreshMastery()
+    local mastery = self.mastery
     if not mastery then
-        masteryBar:SetValue(0)
-        masteryText:SetText("")
-        masteryLevel.text:SetText("")
-        masteryName:SetText(L["hoa.addon.cffffd100class_mastery_r"])
-        masteryPoints:SetText("")
+        self.masteryBar:SetValue(0)
+        self.masteryText:SetText("")
+        self.masteryLevel.text:SetText("")
+        self.masteryName:SetText(L["hoa.addon.cffffd100class_mastery_r"])
+        self.masteryPoints:SetText("")
         return
     end
     if mastery.next > 0 then
-        masteryBar:SetMinMaxValues(0, mastery.next)
-        masteryBar:SetValue(min(mastery.xp, mastery.next))
-        masteryText:SetText(mastery.xp .. " / " .. mastery.next)
+        self.masteryBar:SetMinMaxValues(0, mastery.next)
+        self.masteryBar:SetValue(min(mastery.xp, mastery.next))
+        self.masteryText:SetText(mastery.xp .. " / " .. mastery.next)
     else
-        masteryBar:SetMinMaxValues(0, 1)
-        masteryBar:SetValue(1)
-        masteryText:SetText(L["hoa.addon.max_level"])
+        self.masteryBar:SetMinMaxValues(0, 1)
+        self.masteryBar:SetValue(1)
+        self.masteryText:SetText(L["hoa.addon.max_level"])
     end
-    masteryName:SetText("|cffffd100" .. L("hoa.addon.1_mastery", mastery.class) .. "|r")
-    masteryLevel.text:SetText(mastery.level)
+    self.masteryName:SetText("|cffffd100" .. L("hoa.addon.1_mastery", mastery.class) .. "|r")
+    self.masteryLevel.text:SetText(mastery.level)
     if not mastery.trees then
-        masteryPoints:SetText(L["hoa.addon.cffaaaaaatrees_coming_soon_r"])
+        self.masteryPoints:SetText(L["hoa.addon.cffaaaaaatrees_coming_soon_r"])
     elseif mastery.unspent > 0 then
-        masteryPoints:SetText(L(mastery.unspent == 1 and "hoa.addon.1_talent_point_to_spend" or "hoa.addon.1_talent_points_to_spend", mastery.unspent))
+        self.masteryPoints:SetText(L(mastery.unspent == 1 and "hoa.addon.1_talent_point_to_spend" or "hoa.addon.1_talent_points_to_spend", mastery.unspent))
     else
-        masteryPoints:SetText("")
+        self.masteryPoints:SetText("")
     end
 end
 
@@ -772,24 +802,25 @@ wallet:SetScale(1 / BAR_SCALE)
 wallet.text = UI.Text(wallet, 13)
 wallet.text:SetPoint("RIGHT", wallet, "RIGHT", 0, 0)
 wallet.text:SetJustifyH("RIGHT")
+HeroBar.wallet = wallet
 UI.Hover(wallet, function()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     GameTooltip:AddLine(L["hoa.addon.account"], 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.gold"], UI.FormatGold(GetMoney()), 1, 0.82, 0, 1, 1, 1)
-    if run.shards then
-        GameTooltip:AddDoubleLine(L["hoa.addon.darkmoon_tickets_2"], "|cffc080ff" .. run.shards .. "|r", 1, 0.82, 0, 1, 1, 1)
+    if HeroBar.run.shards then
+        GameTooltip:AddDoubleLine(L["hoa.addon.darkmoon_tickets_2"], "|cffc080ff" .. HeroBar.run.shards .. "|r", 1, 0.82, 0, 1, 1, 1)
     end
     GameTooltip:AddLine(L["hoa.addon.shared_by_all_your_characters"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end)
 
-local function RefreshWallet()
+function HeroBar:RefreshWallet()
     local text = UI.FormatGold(GetMoney())
-    if run.shards then
-        text = text .. "    |cffc080ff" .. L(run.shards == 1 and "hoa.addon.1_darkmoon_ticket" or "hoa.addon.1_darkmoon_tickets", run.shards) .. "|r"
+    if self.run.shards then
+        text = text .. "    |cffc080ff" .. L(self.run.shards == 1 and "hoa.addon.1_darkmoon_ticket" or "hoa.addon.1_darkmoon_tickets", self.run.shards) .. "|r"
     end
-    wallet.text:SetText(text)
-    wallet:SetWidth(wallet.text:GetStringWidth() + 4)
+    self.wallet.text:SetText(text)
+    self.wallet:SetWidth(self.wallet.text:GetStringWidth() + 4)
 end
 
 local DASH_ICON = "Ability_Rogue_Sprint"
@@ -799,7 +830,7 @@ local DASH_ARC_FRAMES = 32
 local DASH_ARC_COLUMNS = 8
 local DASH_ARC_ROWS = 4
 local DASH_ARC_SCALE = 1.3
-local dash = { charges = 0, max = 0, cooldown = 0, key = L["hoa.addon.shift"] }
+HeroBar.dash = { charges = 0, max = 0, cooldown = 0, key = L["hoa.addon.shift"] }
 
 local dashButton = UI.Slot(root, DASH_SIZE)
 dashButton:Hide()
@@ -826,13 +857,16 @@ dashButton.arc:SetPoint("CENTER", dashButton, "CENTER", 0, 0)
 dashButton.arc:Hide()
 dashButton.count = UI.Text(dashText, 14, UI.NUMBER_FONT, "THICKOUTLINE")
 dashButton.count:SetPoint("BOTTOMRIGHT", dashButton, "BOTTOMRIGHT", -1, 1)
+HeroBar.dashButton = dashButton
+HeroBar.dashText = dashText
 UI.DashButton = dashButton
 
 function UI.SetDashKey(text)
-    dash.key = text
+    HeroBar.dash.key = text
 end
 
 UI.Hover(dashButton, function()
+    local dash = HeroBar.dash
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     GameTooltip:AddDoubleLine(dash.blink and L["hoa.addon.blink"] or L["hoa.addon.dash"], dash.key ~= "" and dash.key or NOT_BOUND, 1, 1, 1, 0.6, 0.6, 0.6)
     GameTooltip:AddDoubleLine(L("hoa.addon.1_2_charges", dash.charges, dash.max),
@@ -845,33 +879,36 @@ UI.Hover(dashButton, function()
     GameTooltip:Show()
 end)
 
-local function SetDashArc(done)
+function HeroBar:SetDashArc(done)
     if not done then
-        dashButton.arc:Hide()
+        self.dashButton.arc:Hide()
         return
     end
     local frame = max(0, min(DASH_ARC_FRAMES - 1, floor(DASH_ARC_FRAMES * done)))
     local column, row = mod(frame, DASH_ARC_COLUMNS), floor(frame / DASH_ARC_COLUMNS)
-    dashButton.arc:SetTexCoord(column / DASH_ARC_COLUMNS, (column + 1) / DASH_ARC_COLUMNS, row / DASH_ARC_ROWS, (row + 1) / DASH_ARC_ROWS)
-    dashButton.arc:Show()
+    self.dashButton.arc:SetTexCoord(column / DASH_ARC_COLUMNS, (column + 1) / DASH_ARC_COLUMNS, row / DASH_ARC_ROWS, (row + 1) / DASH_ARC_ROWS)
+    self.dashButton.arc:Show()
 end
 
 local DASH_TIMER_DRIFT = 0.05
 
-local function SetDashTimer(duration)
+function HeroBar:SetDashTimer(duration)
+    local dash = self.dash
     if not duration then
-        dashButton.cooldown:Hide()
+        self.dashButton.cooldown:Hide()
         dash.timerStart = nil
         return
     end
     local start = GetTime() - (duration - dash.left)
     if not dash.timerStart or abs(start - dash.timerStart) > DASH_TIMER_DRIFT then
         dash.timerStart = start
-        CooldownFrame_SetTimer(dashButton.cooldown, start, duration, 1)
+        CooldownFrame_SetTimer(self.dashButton.cooldown, start, duration, 1)
     end
 end
 
-local function RefreshDash()
+function HeroBar:RefreshDash()
+    local dash = self.dash
+    local dashButton = self.dashButton
     if dash.max <= 0 then
         dashButton:Hide()
         return
@@ -889,22 +926,23 @@ local function RefreshDash()
     end
     if dash.left and dash.cooldown > 0 then
         local duration = dash.cooldown / 1000
-        SetDashTimer(duration)
-        SetDashArc(1 - dash.left / duration)
+        self:SetDashTimer(duration)
+        self:SetDashArc(1 - dash.left / duration)
     else
-        SetDashTimer(nil)
-        SetDashArc(nil)
+        self:SetDashTimer(nil)
+        self:SetDashArc(nil)
     end
     dashButton.count:SetText(dash.max > 1 and dash.charges or "")
     dashButton:Show()
 end
 
 dashButton:SetScript("OnUpdate", function()
+    local dash = HeroBar.dash
     if not dash.left then
         return
     end
-    if RunHeld() then
-        RefreshDash()
+    if HeroBar:RunHeld() then
+        HeroBar:RefreshDash()
         return
     end
     dash.left = dash.left - arg1
@@ -912,70 +950,72 @@ dashButton:SetScript("OnUpdate", function()
         dash.charges = min(dash.max, dash.charges + 1)
         dash.left = dash.charges < dash.max and dash.cooldown / 1000 or nil
     end
-    RefreshDash()
+    HeroBar:RefreshDash()
 end)
 
-local function PlaceDash(running)
+function HeroBar:PlaceDash(running)
+    local dashButton = self.dashButton
     dashButton:ClearAllPoints()
-    dashButton:SetPoint("CENTER", running and runDashDock or campDashDock, "CENTER", 0, 0)
-    dashButton:SetFrameLevel((running and runPlate or campPlate):GetFrameLevel() + 5)
+    dashButton:SetPoint("CENTER", running and self.runDashDock or self.campDashDock, "CENTER", 0, 0)
+    dashButton:SetFrameLevel((running and self.runPlate or self.campPlate):GetFrameLevel() + 5)
     dashButton.cooldown:SetFrameLevel(dashButton:GetFrameLevel() + 1)
-    dashText:SetFrameLevel(dashButton:GetFrameLevel() + 3)
+    self.dashText:SetFrameLevel(dashButton:GetFrameLevel() + 3)
 end
 
 if UIPARENT_MANAGED_FRAME_POSITIONS and UIPARENT_MANAGED_FRAME_POSITIONS["CastingBarFrame"] then
     UIPARENT_MANAGED_FRAME_POSITIONS["CastingBarFrame"].baseY = 140
 end
 
-local function RunXp(level)
-    if run.xp then
-        return run.xp.level, run.xp.xp, run.xp.next
+function HeroBar:RunXp(level)
+    local xp = self.run.xp
+    if xp then
+        return xp.level, xp.xp, xp.next
     end
     return level or UnitLevel("player"), UnitXP("player"), UnitXPMax("player")
 end
 
-local function RefreshXp(level)
+function HeroBar:RefreshXp(level)
     local current, maximum
-    level, current, maximum = RunXp(level)
+    level, current, maximum = self:RunXp(level)
     if maximum and maximum > 0 then
-        xpBar:SetMinMaxValues(0, maximum)
-        xpBar:SetValue(min(current, maximum))
-        xpText:SetText(current .. " / " .. maximum)
+        self.xpBar:SetMinMaxValues(0, maximum)
+        self.xpBar:SetValue(min(current, maximum))
+        self.xpText:SetText(current .. " / " .. maximum)
     else
-        xpBar:SetMinMaxValues(0, 1)
-        xpBar:SetValue(1)
-        xpText:SetText("")
+        self.xpBar:SetMinMaxValues(0, 1)
+        self.xpBar:SetValue(1)
+        self.xpText:SetText("")
     end
-    levelRing.text:SetText(level)
+    self.levelRing.text:SetText(level)
 end
 
-local function ShowXpTooltip()
-    GameTooltip:SetOwner(this, "ANCHOR_TOP")
-    local level, current, maximum = RunXp()
+function HeroBar:ShowXpTooltip(owner)
+    GameTooltip:SetOwner(owner, "ANCHOR_TOP")
+    local level, current, maximum = self:RunXp()
     GameTooltip:AddLine(L("hoa.addon.level_1", level), 1, 1, 1)
     GameTooltip:AddLine(L("hoa.addon.1_2_experience", current, maximum), 1, 1, 1)
     GameTooltip:AddLine(L["hoa.addon.every_level_brings_a_choice_of_3_upgrades"], 1, 0.82, 0, 1)
     GameTooltip:AddLine(L["hoa.addon.each_run_starts_again_at_level_1"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end
-UI.Hover({ xpHover, levelRing }, ShowXpTooltip)
+UI.Hover({ xpHover, levelRing }, function()
+    HeroBar:ShowXpTooltip(this)
+end)
 
-local function SetMode(running)
-    inRun = running
-    PlaceDash(running)
+function HeroBar:SetMode(running)
+    self.inRun = running
+    self:PlaceDash(running)
     if running then
-        campFrame:Hide()
-        runFrame:Show()
-        RefreshXp()
+        self.campFrame:Hide()
+        self.runFrame:Show()
+        self:RefreshXp()
     else
-        runFrame:Hide()
-        campFrame:Show()
-        RefreshMastery()
-        RefreshWallet()
+        self.runFrame:Hide()
+        self.campFrame:Show()
+        self:RefreshMastery()
+        self:RefreshWallet()
     end
 end
-
-local handlers = {}
 
 local XP_STREAK_SOUND = "Interface\\AddOns\\HordesOfAzeroth\\Sounds\\XpStreak%d_%d.wav"
 local XP_SOUND_GAP = 0.08
@@ -988,16 +1028,18 @@ xpSounds.steps = 8
 xpSounds.streakAt = 0
 xpSounds.streakReset = 1.0
 xpSounds.coin = 2
+HeroBar.xpSounds = xpSounds
 
-local function PlayXpPickupSound()
+function HeroBar:PlayXpPickupSound()
+    local sounds = self.xpSounds
     local now = GetTime()
-    if now - xpSounds.streakAt > xpSounds.streakReset then
-        xpSounds.step = 0
+    if now - sounds.streakAt > sounds.streakReset then
+        sounds.step = 0
     end
-    xpSounds.streakAt = now
-    xpSounds.step = min(xpSounds.step + 1, xpSounds.steps)
-    xpSounds.coin = xpSounds.coin == 2 and 4 or 2
-    PlaySoundFile(format(XP_STREAK_SOUND, xpSounds.coin, xpSounds.step))
+    sounds.streakAt = now
+    sounds.step = min(sounds.step + 1, sounds.steps)
+    sounds.coin = sounds.coin == 2 and 4 or 2
+    PlaySoundFile(format(XP_STREAK_SOUND, sounds.coin, sounds.step))
 end
 
 xpSounds:SetScript("OnUpdate", function()
@@ -1010,19 +1052,19 @@ xpSounds:SetScript("OnUpdate", function()
     end
     this.queued = this.queued - 1
     this.wait = XP_SOUND_GAP
-    PlayXpPickupSound()
+    HeroBar:PlayXpPickupSound()
 end)
 
-local function QueueXpPickupSounds(orbs)
+function HeroBar:QueueXpPickupSounds(orbs)
     if orbs <= 0 or not UI.Option("xpSounds", true) then
         return
     end
-    xpSounds.queued = min(xpSounds.queued + orbs, XP_SOUND_MAX_QUEUED)
+    self.xpSounds.queued = min(self.xpSounds.queued + orbs, XP_SOUND_MAX_QUEUED)
 end
 
 UI.ListenHoa({
     HOA_LOADOUT = function(loadout)
-        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
+        HeroBar:ApplyLoadout({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
     end,
     HOA_WEAPON_INFO = function(weapon)
         local f = {
@@ -1035,84 +1077,59 @@ UI.ListenHoa({
         for _, part in ipairs(UI.Split(weapon.radius or "", "~")) do
             tinsert(f, part)
         end
-        handlers["pw"](f)
+        HeroBar:ApplyWeapon(f)
     end,
     HOA_WEAPON_EVOLUTION = function(evolution)
-        handlers["pwe"]({
+        HeroBar:ApplyWeaponEvolution({
             false, evolution.index, evolution.evolution, evolution.evolution_text, evolution.evolved_from,
             evolution.chance_text, evolution.chance,
         })
     end,
     HOA_WEAPON_EVOLUTION_OPTION = function(option)
-        handlers["pwev"]({ false, option.index, option.name, option.text })
+        HeroBar:ApplyWeaponEvolutionOption({ false, option.index, option.name, option.text })
     end,
     HOA_COOLDOWN_PIE = function(pie)
-        handlers["pcd"]({ false, pie.index, pie.pie_ms, pie.timer, pie.held and "1" or "0" })
+        HeroBar:ApplyCooldownPie({ false, pie.index, pie.pie_ms, pie.timer, pie.held and "1" or "0" })
     end,
     HOA_REACH_RING = function(ring)
-        handlers["reachring"]({ false, ring.spell_id, ring.slot })
+        HeroBar:ApplyReachRing({ false, ring.spell_id, ring.slot })
     end,
     HOA_MASTERY_STATE = function(mastery)
-        handlers["mastery"]({
+        HeroBar:ApplyMastery({
             false, mastery.class_name, mastery.level, mastery.xp, mastery.next, mastery.max_level, mastery.unspent,
             mastery.trees and "1" or "0",
         })
     end,
     HOA_WALLET = function(wallet)
-        handlers["wallet"]({ false, wallet.shards })
+        HeroBar:ApplyWallet({ false, wallet.shards })
     end,
     HOA_SHARD = function(shard)
-        handlers["shard"]({ false, shard.count, shard.total })
+        HeroBar:ApplyShard({ false, shard.count, shard.total })
     end,
     HOA_RUN_XP = function(xp)
-        run.xp = { level = tonumber(xp.level) or 1, xp = tonumber(xp.xp) or 0, next = tonumber(xp.next) or 0 }
-        if inRun then
-            QueueXpPickupSounds(tonumber(xp.orbs) or 0)
-            RefreshXp()
-        end
+        HeroBar:ApplyRunXp(xp)
     end,
     HOA_RUN_STATE = function(state)
-        if not inRun then
-            SetMode(true)
-        end
-        local stats = state.weapon_stats
-        if stats and stats ~= "" then
-            run.stats = {}
-            for index, item in ipairs(UI.Split(stats, ",")) do
-                local parts = UI.Split(item, ":")
-                run.stats[index] = { damage = tonumber(parts[1]) or 0, kills = tonumber(parts[2]) or 0 }
-            end
-        end
+        HeroBar:ApplyRunState(state)
     end,
 })
-UI.Module("heroBar"):OnRunStart(function()
-    run.info = {}
-    run.stats = {}
-    run.xp = nil
-    SetMode(true)
+
+HeroBar:OnRunStart(function()
+    HeroBar:StartRun()
 end):OnRunEnd(function()
-    run.xp = nil
-    dash.max = 0
-    RefreshDash()
-    SetMode(false)
+    HeroBar:EndRun()
 end)
 
 UI.ListenHoa({
     HOA_DASH = function(maxCharges, rechargeMs, cooldownMs, blink, available)
-        dash.max = tonumber(maxCharges) or 0
-        dash.untilNext = tonumber(rechargeMs) or 0
-        dash.cooldown = tonumber(cooldownMs) or 0
-        dash.blink = blink and true or false
-        dash.charges = tonumber(available) or 0
-        dash.left = (dash.charges < dash.max and dash.untilNext > 0) and dash.untilNext / 1000 or nil
-        RefreshDash()
+        HeroBar:ApplyDash(maxCharges, rechargeMs, cooldownMs, blink, available)
     end,
 })
 
-handlers["loadout"] = function(f)
-    run.spells, run.passives = {}, {}
-    run.spellSlots = tonumber(f[3] or "")
-    run.passiveSlots = tonumber(f[4] or "")
+function HeroBar:ApplyLoadout(f)
+    self.run.spells, self.run.passives = {}, {}
+    self.run.spellSlots = tonumber(f[3] or "")
+    self.run.passiveSlots = tonumber(f[4] or "")
     local index = 0
     for _, item in ipairs(UI.Split(f[2] or "", ",")) do
         if item ~= "" then
@@ -1121,21 +1138,21 @@ handlers["loadout"] = function(f)
             local entry = { index = index, kind = parts[1], icon = parts[2] ~= "" and parts[2] or "INV_Misc_QuestionMark",
                 rank = tonumber(parts[3]) or 1, max = tonumber(parts[4]) or 0 }
             if entry.kind == "p" then
-                tinsert(run.passives, entry)
+                tinsert(self.run.passives, entry)
             else
-                tinsert(run.spells, entry)
+                tinsert(self.run.spells, entry)
             end
         end
     end
-    RefreshSlots()
+    self:RefreshSlots()
 end
 
-handlers["pw"] = function(f)
+function HeroBar:ApplyWeapon(f)
     local index = tonumber(f[2])
     if not index then
         return
     end
-    local info = run.info[index] or {}
+    local info = self.run.info[index] or {}
     info.name = f[3]
     info.ranks = f[4] or ""
     info.interval = tonumber(f[5]) or 0
@@ -1153,63 +1170,60 @@ handlers["pw"] = function(f)
     info.range = tonumber(f[16]) or 0
     info.currentRadius = tonumber(f[17]) or 0
     info.currentRange = tonumber(f[18]) or 0
-    run.info[index] = info
-    RefreshSlots()
-    local slot = spellSlots[index]
+    self.run.info[index] = info
+    self:RefreshSlots()
+    local slot = self.spellSlots[index]
     if slot and VanillaBonkSpellTip:IsOwned(slot) then
-        local previous = this
-        this = slot
-        ShowSlotTooltip()
-        this = previous
+        self:ShowSlotTooltip(slot)
     end
 end
 
-handlers["pcd"] = function(f)
+function HeroBar:ApplyCooldownPie(f)
     local index = tonumber(f[2])
-    local info = index and run.info[index]
+    local info = index and self.run.info[index]
     if not info then
         return
     end
     info.interval = tonumber(f[3]) or info.interval
     info.nextCast = tonumber(f[4]) or 0
     info.held = f[5] == "1" or nil
-    for _, slot in ipairs(spellSlots) do
+    for _, slot in ipairs(self.spellSlots) do
         if slot.entry and slot.entry.index == index then
             slot.cycleStart = nil
-            RestartCooldown(slot)
+            self:RestartCooldown(slot)
         end
     end
 end
 
-handlers["pwe"] = function(f)
+function HeroBar:ApplyWeaponEvolution(f)
     local index = tonumber(f[2])
     if not index then
         return
     end
-    local info = run.info[index] or {}
+    local info = self.run.info[index] or {}
     info.evolution = f[3] or ""
     info.evolutionText = f[4] or ""
     info.evolutions = nil
     info.evolvedFrom = f[5] or ""
     info.chance = f[6] or ""
     info.chanceValue = f[7] or "0"
-    run.info[index] = info
-    RefreshSlots()
+    self.run.info[index] = info
+    self:RefreshSlots()
 end
 
-handlers["pwev"] = function(f)
+function HeroBar:ApplyWeaponEvolutionOption(f)
     local index = tonumber(f[2])
     if not index then
         return
     end
-    local info = run.info[index] or {}
+    local info = self.run.info[index] or {}
     info.evolutions = info.evolutions or {}
     tinsert(info.evolutions, { name = f[3] or "", text = f[4] or "" })
-    run.info[index] = info
+    self.run.info[index] = info
 end
 
-handlers["mastery"] = function(f)
-    mastery = {
+function HeroBar:ApplyMastery(f)
+    self.mastery = {
         class = f[2] or L["hoa.addon.class"],
         level = tonumber(f[3]) or 0,
         xp = tonumber(f[4]) or 0,
@@ -1218,65 +1232,126 @@ handlers["mastery"] = function(f)
         unspent = tonumber(f[7]) or 0,
         trees = f[8] == "1",
     }
-    RefreshMastery()
+    self:RefreshMastery()
 end
 
-handlers["wallet"] = function(f)
-    run.shards = tonumber(f[2])
-    RefreshWallet()
+function HeroBar:ApplyWallet(f)
+    self.run.shards = tonumber(f[2])
+    self:RefreshWallet()
 end
 
-handlers["shop"] = function(f)
+function HeroBar:ApplyShop(f)
     if f[5] == "shards" then
-        run.shards = tonumber(f[6]) or run.shards
-        RefreshWallet()
+        self.run.shards = tonumber(f[6]) or self.run.shards
+        self:RefreshWallet()
     end
 end
-handlers["shard"] = function(f)
-    run.shards = tonumber(f[3]) or run.shards
+
+function HeroBar:ApplyShard(f)
+    self.run.shards = tonumber(f[3]) or self.run.shards
+end
+
+function HeroBar:RefreshReachMarks()
+    for _, slot in ipairs(self.spellSlots) do
+        self:RefreshReachMark(slot)
+    end
 end
 
 function UI.RefreshReachMarks()
-    for _, slot in ipairs(spellSlots) do
-        RefreshReachMark(slot)
-    end
+    HeroBar:RefreshReachMarks()
 end
 
-handlers["reachring"] = function(f)
+function HeroBar:ApplyReachRing(f)
     UI.SetReachRingSpell(tonumber(f[2]) or 0)
-    run.reachSlot = tonumber(f[3]) or 0
+    self.run.reachSlot = tonumber(f[3]) or 0
     UI.RefreshReachMarks()
 end
 
+function HeroBar:ApplyRunXp(xp)
+    self.run.xp = { level = tonumber(xp.level) or 1, xp = tonumber(xp.xp) or 0, next = tonumber(xp.next) or 0 }
+    if self.inRun then
+        self:QueueXpPickupSounds(tonumber(xp.orbs) or 0)
+        self:RefreshXp()
+    end
+end
 
-UI.Module("heroBar"):OnEnterWorld(function()
-    SetMode(inRun)
+function HeroBar:ApplyRunState(state)
+    if not self.inRun then
+        self:SetMode(true)
+    end
+    local stats = state.weapon_stats
+    if stats and stats ~= "" then
+        self.run.stats = {}
+        for index, item in ipairs(UI.Split(stats, ",")) do
+            local parts = UI.Split(item, ":")
+            self.run.stats[index] = { damage = tonumber(parts[1]) or 0, kills = tonumber(parts[2]) or 0 }
+        end
+    end
+end
+
+function HeroBar:ApplyDash(maxCharges, rechargeMs, cooldownMs, blink, available)
+    local dash = self.dash
+    dash.max = tonumber(maxCharges) or 0
+    dash.untilNext = tonumber(rechargeMs) or 0
+    dash.cooldown = tonumber(cooldownMs) or 0
+    dash.blink = blink and true or false
+    dash.charges = tonumber(available) or 0
+    dash.left = (dash.charges < dash.max and dash.untilNext > 0) and dash.untilNext / 1000 or nil
+    self:RefreshDash()
+end
+
+function HeroBar:StartRun()
+    self.run.info = {}
+    self.run.stats = {}
+    self.run.xp = nil
+    self:SetMode(true)
+end
+
+function HeroBar:EndRun()
+    self.run.xp = nil
+    self.dash.max = 0
+    self:RefreshDash()
+    self:SetMode(false)
+end
+
+function HeroBar:EnterWorld()
+    self:SetMode(self.inRun)
     if UIParent_ManageFramePositions then
         UIParent_ManageFramePositions()
     end
-    RefreshXp()
+    self:RefreshXp()
+end
+
+HeroBar:OnEnterWorld(function()
+    HeroBar:EnterWorld()
 end)
-local events = UI.Module("heroBar"):Listen({
+HeroBar:Listen({
     PLAYER_XP_UPDATE = function()
-        RefreshXp()
+        HeroBar:RefreshXp()
     end,
     PLAYER_LEVEL_UP = function(level)
-        RefreshXp(level)
+        HeroBar:RefreshXp(level)
     end,
 })
-UI.Module("heroBar"):OnMoney(RefreshWallet)
+HeroBar:OnMoney(function()
+    HeroBar:RefreshWallet()
+end)
 
-SetMode(false)
+HeroBar:SetMode(false)
 
-function UI.HeroSpellSlot(name)
-    for index, slot in ipairs(spellSlots) do
-        local info = run.info[index]
-        if info and info.name == name and run.spells[index] then
+function HeroBar:SpellSlot(name)
+    for index, slot in ipairs(self.spellSlots) do
+        local info = self.run.info[index]
+        if info and info.name == name and self.run.spells[index] then
             return slot
         end
     end
 end
 
+function UI.HeroSpellSlot(name)
+    return HeroBar:SpellSlot(name)
+end
+
 function UI.HeroSpellSlotAt(index)
-    return run.spells[index] and spellSlots[index]
+    return HeroBar.run.spells[index] and HeroBar.spellSlots[index]
 end

@@ -2,10 +2,10 @@
 
 ## Addon object refactor (phase D)
 
-Controllers now exist for the shop, offer/results, gear and starters; the tracker is the
-panel/list/row pilot. Remaining work:
+Controllers now exist for the shop, offer/results, gear, starters and the hero bar; the tracker
+is the panel/list/row pilot. Remaining work:
 
-- [ ] Convert `run/VanillaBonkHeroBar.lua` to a `UI.Module("heroBar")` controller with explicit state.
+- [x] Convert `run/VanillaBonkHeroBar.lua` to a `UI.Module("heroBar")` controller with explicit state.
 - [ ] Convert `run/VanillaBonkResults.lua` and `panels/VanillaBonkCodex.lua` to controllers.
 - [ ] Convert `run/VanillaBonkMeter.lua`, `run/VanillaBonkQuartermaster.lua`, `run/VanillaBonkVault.lua`
       and `run/VanillaBonkTransmog.lua` to controllers.
@@ -19,8 +19,8 @@ panel/list/row pilot. Remaining work:
       the GPL-2.0 server and GPL-3.0 addon can both use it.
 - [x] Keep the repository a monorepo; add `LICENSES/` and per-directory `UPSTREAM.md` files instead
       of submodules.
-- [ ] Regenerate `THIRD-PARTY-NOTICES.md` from the verified dependency list and add SPDX headers to
-      new files where practical.
+- [x] Regenerate `THIRD-PARTY-NOTICES.md` from the verified dependency list.
+- [ ] Add SPDX headers to new files where practical.
 - [ ] Replace or isolate the bundled Windows MySQL client and OpenSSL 1.0.2 before distributing the
       server under GPL-3.0.
 - [ ] Optional: if upstream tracking later needs submodules, update CI checkout and
