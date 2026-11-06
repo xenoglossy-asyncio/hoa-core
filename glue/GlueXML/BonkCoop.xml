@@ -317,7 +317,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="BonkCoopFindButton" inherits="GlueButtonTemplate" text="HOA_UI_GLUE_BROWSE_GAMES">
+			<Button name="BonkCoopFindButton" inherits="GlueButtonTemplate" text="HOA_UI_GLUE_JOIN_WITH_ADDRESS">
 				<Size>
 					<AbsDimension x="230" y="60"/>
 				</Size>
@@ -330,7 +330,7 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						BonkCoop_OpenBrowser();
+						BonkCoop_ShowCodeDialog();
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -1047,7 +1047,7 @@
 					</OnEditFocusGained>
 				</Scripts>
 			</EditBox>
-			<CheckButton name="BonkCoopWhoCode" inherits="BonkCoopCheckTemplate" id="3">
+			<CheckButton name="BonkCoopWhoCode" inherits="BonkCoopCheckTemplate" id="3" hidden="true">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="BonkCoopWhoPassword" relativePoint="BOTTOMLEFT">
 						<Offset>
