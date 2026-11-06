@@ -1,3 +1,9 @@
+## 0.1.2
+
+- Package and navmesh entries in the manifest now list a Gitee mirror next to their GitHub URL; the launcher prefers the mirror in China and falls back to the other host on failure.
+- Linux builds run in Docker (`ubuntu:22.04`) when WSL 22.04 is not installed, so this release ships the Linux client, server and extractors again.
+- `tools/release.ps1` builds from the monorepo layout and tolerates a regenerated `config/navtiles.json` whose content did not change.
+
 ## 0.1.1
 
 - Simplified Chinese and Traditional Chinese across the client, addon, launcher and server text; the account language drives `GetLocale`, and stock GlobalStrings and DBC names load from an installed language pack.

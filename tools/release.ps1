@@ -525,8 +525,8 @@ function Get-NavGroups($Previous) {
 if (-not $SkipNavTiles) {
     if (-not (Test-DbUp)) { throw 'MariaDB is not running. Start it with tools\start-server.ps1 -DatabaseOnly.' }
     & (Join-Path $PSScriptRoot 'build-navtiles.ps1') | Out-Null
-    git -C $RepoRoot update-index -q --refresh -- config/navtiles.json
-    if (git -C $RepoRoot status --porcelain -- config/navtiles.json) { throw 'config/navtiles.json did not match the run zones and has been rebuilt: commit it, then release again.' }
+    if (git -C $RepoRoot diff --name-only -- config/navtiles.json) { throw 'config/navtiles.json did not match the run zones and has been rebuilt: commit it, then release again.' }
+    git -C $RepoRoot checkout -- config/navtiles.json
 }
 
 if ($Publish -and -not $testChannel -and (git -C $RepoRoot status --porcelain --ignore-submodules=all)) { throw 'Commit or stash every change before publishing: the release is built from the working tree.' }
