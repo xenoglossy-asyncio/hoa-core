@@ -59,10 +59,10 @@ The repository aggregates code from several projects; each part keeps its own li
 
 | Path | License | Source |
 | --- | --- | --- |
-| `server/` | GPL-2.0 | VMaNGOS / hordes-of-azeroth-server |
+| `server/` | GPL-2.0 (see the bundled MySQL/OpenSSL note) | VMaNGOS / hordes-of-azeroth-server |
 | `client/` | MIT or Apache-2.0 | benilla / hordes-of-azeroth-client |
 | `addon/`, `glue/`, `launcher/`, `config/`, `localization/` | GPL-3.0 | hordes-of-azeroth |
 | Imported parts of `tools/` | GPL-3.0 | hordes-of-azeroth |
 | New `shared/`, `scripts/`, `docs/` and new `tools/` code | GPL-2.0-or-later | this repository |
 
-See [LICENSE-NOTICE.md](LICENSE-NOTICE.md). World of Warcraft is a trademark of Blizzard Entertainment, Inc.; this project does not ship any game assets.
+See [LICENSE-NOTICE.md](LICENSE-NOTICE.md) and the license audit plus monorepo/submodule plan in [docs/licensing](docs/licensing/README.md). World of Warcraft is a trademark of Blizzard Entertainment, Inc.; this project does not ship any game assets.
