@@ -36,7 +36,7 @@ function Invoke-Gitee([string]$Method, [string]$Path, $Form, [switch]$Multipart)
         'Delete' { return Invoke-RestMethod -Method Delete -Uri "$uri$(if ($uri.Contains('?')) { '&' } else { '?' })$tokenQuery" }
         default {
             if ($Multipart) {
-                return Invoke-RestMethod -Method $Method -Uri $uri -Form $Form
+                return Invoke-RestMethod -Method $Method -Uri "$uri$(if ($uri.Contains('?')) { '&' } else { '?' })$tokenQuery" -Form $Form
             }
             return Invoke-RestMethod -Method $Method -Uri $uri -Body $Form
         }
@@ -112,7 +112,7 @@ function Send-Assets($Release, [string[]]$Files, [string[]]$Skip) {
             Write-Host "  would upload $($item.Name) ($([math]::Round($item.Length / 1MB, 1)) MB)"
             continue
         }
-        $form = @{ access_token = $Token; file = $item }
+        $form = @{ file = $item }
         Invoke-Gitee 'Post' "/releases/$($Release.id)/attach_files" $form -Multipart | Out-Null
         Write-Host "  uploaded $($item.Name) ($([math]::Round($item.Length / 1MB, 1)) MB)"
     }
