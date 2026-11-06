@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-only
 # Configure the required status checks on main. Requires GitHub Pro (or a public
 # repository): GitHub returns 403 for branch protection on a private repository
 # on the free plan.

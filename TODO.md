@@ -20,10 +20,11 @@ layout/text utilities or the public `VanillaBonkRun` API. The tracker remains th
 - [x] Keep the repository a monorepo; add `LICENSES/` and per-directory `UPSTREAM.md` files instead
       of submodules.
 - [x] Regenerate `THIRD-PARTY-NOTICES.md` from the verified dependency list.
-- [ ] Add SPDX headers to new files where practical.
-- [ ] Replace or isolate the bundled Windows MySQL client and OpenSSL 1.0.2 before distributing the
-      server under GPL-3.0.
-- [ ] Optional: if upstream tracking later needs submodules, update CI checkout and
+- [x] Add SPDX headers to repository-owned scripts: `scripts/` is GPL-3.0-only and `tools/` is
+      GPL-2.0-or-later; imported and derived files keep their upstream notices.
+- [ ] Only before a GPL-3.0 server release: replace or isolate the bundled Windows MySQL client and
+      OpenSSL 1.0.2. The server remains GPL-2.0 while they are bundled.
+- Not planned unless upstream tracking changes: use submodules and update CI checkout plus
       `tools/release.ps1` first (`git archive` does not include submodule contents).
 
 See [docs/licensing](docs/licensing/README.md) for the audit and the proposed layout.
