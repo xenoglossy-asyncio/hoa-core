@@ -63,15 +63,15 @@ function MerchantFrame_Update()
 end
 
 local lastMoney = GetMoney()
+UI.Module("gearTabs"):OnMoney(function()
+    local money = GetMoney()
+    if money > lastMoney and (MerchantFrame:IsShown() or (VanillaBonkQuartermasterFrame and VanillaBonkQuartermasterFrame:IsShown())) then
+        PlaySound("LOOTWINDOWCOINSOUND")
+    end
+    lastMoney = money
+end)
 UI.Module("gearTabs"):Listen({
     MERCHANT_SHOW = function()
         lastMoney = GetMoney()
-    end,
-    PLAYER_MONEY = function()
-        local money = GetMoney()
-        if money > lastMoney and (MerchantFrame:IsShown() or (VanillaBonkQuartermasterFrame and VanillaBonkQuartermasterFrame:IsShown())) then
-            PlaySound("LOOTWINDOWCOINSOUND")
-        end
-        lastMoney = money
     end,
 })

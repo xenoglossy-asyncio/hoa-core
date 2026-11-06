@@ -165,7 +165,5 @@ end
 UI.RefreshHearthKey = Refresh
 
 UI.Module("hearth"):OnEnterWorld(Refresh)
-UI.Module("hearth"):Listen({
-    BAG_UPDATE = Refresh,
-    UPDATE_BINDINGS = Refresh,
-})
+UI.Module("hearth"):OnBags(Refresh)
+UI.Module("hearth"):OnBindings(Refresh)

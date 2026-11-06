@@ -1098,17 +1098,17 @@ UI.Module("quartermaster"):Listen({
             Refresh()
         end
     end,
-    PLAYER_MONEY = function()
-        if frame:IsShown() then
-            Refresh()
-        end
-    end,
-    UNIT_INVENTORY_CHANGED = function()
-        if frame:IsShown() then
-            Refresh()
-        end
-    end,
 })
+UI.Module("quartermaster"):OnMoney(function()
+    if frame:IsShown() then
+        Refresh()
+    end
+end)
+UI.Module("quartermaster"):OnInventory(function()
+    if frame:IsShown() then
+        Refresh()
+    end
+end)
 
 local function Receive(pending)
     qm.pending = pending

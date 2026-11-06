@@ -1528,10 +1528,8 @@ VanillaBonkUI.ListenHoa({
     end,
 })
 
-UI.Module("codex"):Listen({
-    PLAYER_MONEY = function()
-        if window:IsShown() then
-            Refresh(true)
-        end
-    end,
-})
+UI.Module("codex"):OnMoney(function()
+    if window:IsShown() then
+        Refresh(true)
+    end
+end)

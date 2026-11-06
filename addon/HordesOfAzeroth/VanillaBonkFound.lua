@@ -169,17 +169,17 @@ end
 UI.Module("found"):OnEnterWorld(function()
     inWorld = true
 end)
+UI.Module("found"):OnBags(function()
+    if inWorld then
+        ScheduleRefresh()
+    end
+end)
+UI.Module("found"):OnInventory(function(unit)
+    if inWorld and unit == "player" then
+        ScheduleRefresh()
+    end
+end)
 UI.Module("found"):Listen({
-    BAG_UPDATE = function()
-        if inWorld then
-            ScheduleRefresh()
-        end
-    end,
-    UNIT_INVENTORY_CHANGED = function(unit)
-        if inWorld and unit == "player" then
-            ScheduleRefresh()
-        end
-    end,
     BANKFRAME_OPENED = function()
         if inWorld then
             ScheduleRefresh()

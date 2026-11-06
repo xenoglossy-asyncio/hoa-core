@@ -123,10 +123,10 @@ UI.Module("bindingGuard"):OnEnterWorld(function()
         checkAt = GetTime() + CHECK_DELAY
     end
 end)
+UI.Module("bindingGuard"):OnBindings(function()
+    captureAt = GetTime() + CAPTURE_DELAY
+end)
 UI.Module("bindingGuard"):Listen({
-    UPDATE_BINDINGS = function()
-        captureAt = GetTime() + CAPTURE_DELAY
-    end,
     PLAYER_LOGOUT = Store,
 }, events)
 events:SetScript("OnUpdate", function()
