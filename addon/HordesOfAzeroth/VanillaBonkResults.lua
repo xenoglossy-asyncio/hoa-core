@@ -108,21 +108,11 @@ panel.subtitle:SetTextColor(0.9, 0.83, 0.64)
 
 panel.stats = {}
 for index = 1, 7 do
-    local stat = CreateFrame("Frame", nil, panel)
-    stat:SetWidth(LEFT_WIDTH)
-    stat:SetHeight(STAT_ROW - 2)
+    local stat = UI.IconRow(panel, {
+        width = LEFT_WIDTH, height = STAT_ROW - 2, iconSize = 13, labelSize = 11, valueSize = 13,
+    })
     stat:SetPoint("TOPLEFT", panel, "TOPLEFT", PAD_X, -PAD_TOP - STATS_TOP - (index - 1) * STAT_ROW)
-    stat.icon = stat:CreateTexture(nil, "ARTWORK")
-    stat.icon:SetWidth(13)
-    stat.icon:SetHeight(13)
-    stat.icon:SetPoint("LEFT", stat, "LEFT", 0, 0)
-    stat.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    stat.label = UI.Text(stat, 11)
-    stat.label:SetPoint("LEFT", stat.icon, "RIGHT", 7, 0)
     stat.label:SetTextColor(0.9, 0.83, 0.64)
-    stat.value = UI.Text(stat, 13, UI.NUMBER_FONT)
-    stat.value:SetPoint("RIGHT", stat, "RIGHT", 0, 0)
-    stat.value:SetJustifyH("RIGHT")
     panel.stats[index] = stat
 end
 
@@ -162,12 +152,11 @@ for index, label in ipairs({ L["hoa.addon.damage_done"], L["hoa.addon.healing_do
             Render()
         end
     end)
-    tab:SetScript("OnEnter", function()
+    UI.Hover(tab, function()
         if mode ~= this.mode then
             this.text:SetTextColor(1, 1, 1)
         end
-    end)
-    tab:SetScript("OnLeave", function()
+    end, function()
         if mode ~= this.mode then
             this.text:SetTextColor(0.6, 0.6, 0.6)
         end
@@ -289,7 +278,7 @@ for index = 1, MAX_LINES do
     local line = CreateFrame("Frame", nil, panel)
     line:SetWidth(RIGHT_WIDTH)
     line.icon = line:CreateTexture(nil, "ARTWORK")
-    line.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    UI.CropIcon(line.icon)
     line.track = line:CreateTexture(nil, "BACKGROUND")
     line.track:SetTexture(UI.FLAT)
     line.track:SetVertexColor(0, 0, 0, 0.55)
@@ -304,9 +293,7 @@ for index = 1, MAX_LINES do
     line.damage = ColumnText(line, 1)
     line.share = ColumnText(line, 2)
     line.kills = ColumnText(line, 3)
-    line:EnableMouse(true)
-    line:SetScript("OnEnter", function() ShowLineTooltip(this) end)
-    line:SetScript("OnLeave", HideLineTooltip)
+    UI.Hover(line, function() ShowLineTooltip(this) end, HideLineTooltip)
     line:Hide()
     panel.lines[index] = line
 end
@@ -372,13 +359,11 @@ build.glyphs = {}
 for index = 1, 3 do
     local ring = UI.Ring(build, 20, true)
     ring.icon = UI.RingArt(ring, "")
-    ring:EnableMouse(true)
-    ring:SetScript("OnEnter", function()
+    UI.Hover(ring, function()
         if VanillaBonk_GlyphTooltip then
             VanillaBonk_GlyphTooltip(this, this.glyphId)
         end
     end)
-    ring:SetScript("OnLeave", function() GameTooltip:Hide() end)
     build.glyphs[index] = ring
 end
 build.passiveLabel = UI.Text(build, 10)
@@ -386,20 +371,13 @@ build.passiveLabel:SetTextColor(0.78, 0.72, 0.56)
 build.passiveLabel:SetText(L["hoa.addon.passives"])
 build.passives = {}
 for index = 1, 6 do
-    local slot = CreateFrame("Frame", nil, build)
-    slot:SetWidth(17)
-    slot:SetHeight(17)
-    slot.icon = slot:CreateTexture(nil, "ARTWORK")
-    slot.icon:SetAllPoints(slot)
-    slot.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    local slot = UI.IconButton(build, 17)
     slot.index = index
-    slot:EnableMouse(true)
-    slot:SetScript("OnEnter", function()
+    UI.Hover(slot, function()
         if VanillaBonk_PassiveTooltip then
             VanillaBonk_PassiveTooltip(this, this.index)
         end
     end)
-    slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
     build.passives[index] = slot
 end
 
@@ -538,7 +516,7 @@ local function RecapLegend(index)
         entry.icon:SetWidth(13)
         entry.icon:SetHeight(13)
         entry.icon:SetPoint("LEFT", entry.swatch, "RIGHT", 4, 0)
-        entry.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        UI.CropIcon(entry.icon)
         entry.text = UI.Text(entry, 10)
         entry.text:SetPoint("LEFT", entry.icon, "RIGHT", 4, 0)
         entry.text:SetTextColor(0.85, 0.85, 0.85)
@@ -1112,7 +1090,7 @@ local function FillStats()
         local data = stats[index]
         if data[1] then
             stat.icon:SetTexture(UI.ICON_PATH .. data[1])
-            stat.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            UI.CropIcon(stat.icon)
         else
             UI.SetRoundClassCrest(stat.icon, class)
         end

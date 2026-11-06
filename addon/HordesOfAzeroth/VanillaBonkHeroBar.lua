@@ -508,8 +508,7 @@ local function CreateSlot(parent, size, isSpell)
         slot.countdown:SetPoint("CENTER", slot, "CENTER", 1, 0)
     end
 
-    slot:SetScript("OnEnter", ShowSlotTooltip)
-    slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(slot, ShowSlotTooltip)
     return slot
 end
 
@@ -734,11 +733,7 @@ local function ShowMasteryTooltip()
     GameTooltip:Show()
 end
 
-for _, frame in ipairs({ masteryHover, masteryLevel }) do
-    frame:EnableMouse(true)
-    frame:SetScript("OnEnter", ShowMasteryTooltip)
-    frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
-end
+UI.Hover({ masteryHover, masteryLevel }, ShowMasteryTooltip)
 
 local function RefreshMastery()
     if not mastery then
@@ -777,8 +772,7 @@ wallet:SetScale(1 / BAR_SCALE)
 wallet.text = UI.Text(wallet, 13)
 wallet.text:SetPoint("RIGHT", wallet, "RIGHT", 0, 0)
 wallet.text:SetJustifyH("RIGHT")
-wallet:EnableMouse(true)
-wallet:SetScript("OnEnter", function()
+UI.Hover(wallet, function()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     GameTooltip:AddLine(L["hoa.addon.account"], 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.gold"], UI.FormatGold(GetMoney()), 1, 0.82, 0, 1, 1, 1)
@@ -788,7 +782,6 @@ wallet:SetScript("OnEnter", function()
     GameTooltip:AddLine(L["hoa.addon.shared_by_all_your_characters"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end)
-wallet:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 local function RefreshWallet()
     local text = UI.FormatGold(GetMoney())
@@ -839,7 +832,7 @@ function UI.SetDashKey(text)
     dash.key = text
 end
 
-dashButton:SetScript("OnEnter", function()
+UI.Hover(dashButton, function()
     GameTooltip:SetOwner(this, "ANCHOR_TOP")
     GameTooltip:AddDoubleLine(dash.blink and L["hoa.addon.blink"] or L["hoa.addon.dash"], dash.key ~= "" and dash.key or NOT_BOUND, 1, 1, 1, 0.6, 0.6, 0.6)
     GameTooltip:AddDoubleLine(L("hoa.addon.1_2_charges", dash.charges, dash.max),
@@ -851,7 +844,6 @@ dashButton:SetScript("OnEnter", function()
     end
     GameTooltip:Show()
 end)
-dashButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 local function SetDashArc(done)
     if not done then
@@ -966,11 +958,7 @@ local function ShowXpTooltip()
     GameTooltip:AddLine(L["hoa.addon.each_run_starts_again_at_level_1"], 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end
-for _, frame in ipairs({ xpHover, levelRing }) do
-    frame:EnableMouse(true)
-    frame:SetScript("OnEnter", ShowXpTooltip)
-    frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
-end
+UI.Hover({ xpHover, levelRing }, ShowXpTooltip)
 
 local function SetMode(running)
     inRun = running
@@ -1262,26 +1250,24 @@ handlers["reachring"] = function(f)
 end
 
 
-local events = CreateFrame("Frame")
-events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:RegisterEvent("PLAYER_XP_UPDATE")
-events:RegisterEvent("PLAYER_LEVEL_UP")
-events:RegisterEvent("PLAYER_MONEY")
-events:SetScript("OnEvent", function()
-    if event == "PLAYER_LEVEL_UP" then
-        RefreshXp(arg1)
-    elseif event == "PLAYER_MONEY" then
-        RefreshWallet()
-    else
-        if event == "PLAYER_ENTERING_WORLD" then
-            SetMode(inRun)
-            if UIParent_ManageFramePositions then
-                UIParent_ManageFramePositions()
-            end
+local events = UI.Listen({
+    PLAYER_ENTERING_WORLD = function()
+        SetMode(inRun)
+        if UIParent_ManageFramePositions then
+            UIParent_ManageFramePositions()
         end
         RefreshXp()
-    end
-end)
+    end,
+    PLAYER_XP_UPDATE = function()
+        RefreshXp()
+    end,
+    PLAYER_LEVEL_UP = function(level)
+        RefreshXp(level)
+    end,
+    PLAYER_MONEY = function()
+        RefreshWallet()
+    end,
+})
 
 SetMode(false)
 
