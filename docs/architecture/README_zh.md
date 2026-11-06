@@ -54,9 +54,9 @@ Hordes of Azeroth 目前由三个独立仓库组成：主仓库（插件、GlueX
 - **关键数量**：法术/被动槽位（`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`）、glyph 选项（`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`）、升级选项（`BonkMgr.h:1028` vs `VanillaBonk.lua:353`）、进化等级（`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`）。
 - **重复计算**：排行榜资格（`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`）。
 - **文本**：已解决。服务端、插件和客户端界面文本现在都由 `shared/i18n` 生成；插件只有一个生成的 `VanillaBonkLocaleData.lua`，不再手工维护中文表。
-- **自定义 spell id**：各 `.cpp` 匿名命名空间里的 `uint32 const`（`BonkRun.cpp:43` 等），没有共享注册表；插件和客户端各存一份显示用的 id 列表。
-- 法术/物品名称一半来自客户端 DBC，一半来自服务端查询响应；服务端 `locales_spell` 有中文名，客户端却只查安装的 `Spell.dbc`，自定义 spell 在客户端直接空白。
-- 文本以英文句子为键 + 源哈希（`BonkLocale`），英文一改翻译就“过期”，服务端回退英文。
+- **自定义 spell id**：已解决。`shared/content/spells/spells.yaml` 生成 `BonkSpellIds.h` 和插件的 `VanillaBonkAuraIds.lua`；客户端从服务端接收已本地化的自定义光环行，不再自己维护 id 表。
+- 法术/物品名称：自定义 HoA 法术通过服务端下发的光环目录显示。原生法术/物品/生物名称仍来自安装的 DBC 列或服务端查询响应，因此在有 DBC 名称覆盖之前仍跟随安装语言，而不是账号语言。
+- **文本**：已解决。文本按 `shared/i18n` 里的稳定消息 ID 索引，所有产物都由目录生成。
 
 **目标**：内容只写在 `shared/content`，文本只写在 `shared/i18n`，各端产物由工具生成；服务端是运行时权威，客户端/插件不再保留业务副本。
 

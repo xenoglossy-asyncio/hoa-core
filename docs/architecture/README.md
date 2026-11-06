@@ -54,9 +54,9 @@ Survey results (server = `server/core/src/game/Bonk/`, addon = `Interface/AddOns
 - **Key counts:** spell/passive slots (`BonkRun.cpp:248-251` vs `VanillaBonkHeroBar.lua:4-5`), glyph offers (`BonkRunGlyphs.cpp:20` vs `VanillaBonkGlyphs.lua:9`), level-up offers (`BonkMgr.h:1028` vs `VanillaBonk.lua:353`), evolve rank (`BonkMgr.h:464` vs `VanillaBonkCodex.lua:21`).
 - **Duplicated computation:** leaderboard eligibility (`BonkPlayer.cpp:3388-3401` vs `VanillaBonkRunMaster.lua:1354-1378`).
 - **Text:** resolved. Server text, addon text and client UI text now come from `shared/i18n`; the addon's single generated `VanillaBonkLocaleData.lua` replaces the old hand-kept ZH table.
-- **Custom spell IDs:** file-local `uint32 const`s in anonymous namespaces (`BonkRun.cpp:43` and kin), with no shared registry; the addon and client each keep their own display ID lists.
-- Spell/item names come half from client DBCs and half from server query responses; the server has zhCN names in `locales_spell`, but the client only reads the installed `Spell.dbc`, so custom spells are blank.
-- Text is keyed by English sentences plus a source hash (`BonkLocale`); when the English changes, the translation goes "out of date" and the server falls back to English.
+- **Custom spell IDs:** resolved. `shared/content/spells/spells.yaml` generates `BonkSpellIds.h` and the addon's `VanillaBonkAuraIds.lua`; the client receives the localized custom aura rows from the server instead of keeping its own ID table.
+- Spell/item names: custom HoA spells display through the server-sent aura catalog. Stock spell/item/creature names still come from the installed DBC columns or the server's query response, so they follow the install locale rather than the account language until a DBC name overlay exists.
+- **Text:** resolved. Text is keyed by stable message IDs in `shared/i18n` and every artifact is generated from it.
 
 **Goal:** content is written only in `shared/content`, text only in `shared/i18n`, and tools generate each artifact. The server is authoritative at runtime; the client/addon keep no business copies.
 
