@@ -405,7 +405,7 @@ window:SetScript("OnHide", function()
     PlaySound("igQuestLogClose")
 end)
 
-UI.Listen({
+UI.Module("map"):Listen({
     ZONE_CHANGED_NEW_AREA = function()
         if window:IsShown() then
             LoadZone()
