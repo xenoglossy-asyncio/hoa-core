@@ -14,7 +14,7 @@ namespace HordesOfAzeroth.Launcher
     {
         const int LoginPort = 3724;
         const int WorldPort = 8085;
-        const int LineLimit = 128;
+        const int LineLimit = 1024;
         const int MaxFailures = 10;
         static readonly TimeSpan LineTimeout = TimeSpan.FromSeconds(5);
         static readonly TimeSpan BlockTime = TimeSpan.FromMinutes(1);
@@ -49,6 +49,15 @@ namespace HordesOfAzeroth.Launcher
         public Func<string, Task> Leave { get; set; }
 
         public Func<string, bool> IsOffline { get; set; }
+
+        /// A direct join request, base64 JSON, answered with `HOA1 WAIT <id>` or `HOA1 DECLINE <reason>`.
+        public Func<string, Task<string>> DirectAsk { get; set; }
+
+        /// A direct join poll by id: `HOA1 WAIT <seconds>`, `HOA1 ACCEPT <token> <user> <password>` or
+        /// `HOA1 DECLINE <reason>`.
+        public Func<string, string> DirectPoll { get; set; }
+
+        public Action<string> DirectCancel { get; set; }
 
         public void Start(int port)
         {
@@ -143,6 +152,28 @@ namespace HordesOfAzeroth.Launcher
                 if (line == "HOA1 PING")
                 {
                     await WriteAsync(stream, "HOA1 PONG\n");
+                    return;
+                }
+                if (line != null && line.StartsWith("HOA1 ASK ", StringComparison.Ordinal))
+                {
+                    string answer = DirectAsk == null
+                        ? "HOA1 DECLINE The host is not accepting requests."
+                        : await DirectAsk(line.Substring("HOA1 ASK ".Length));
+                    await WriteAsync(stream, answer + "\n");
+                    return;
+                }
+                if (line != null && line.StartsWith("HOA1 POLL ", StringComparison.Ordinal))
+                {
+                    string answer = DirectPoll == null
+                        ? "HOA1 DECLINE The host is not accepting requests."
+                        : DirectPoll(line.Substring("HOA1 POLL ".Length).Trim());
+                    await WriteAsync(stream, answer + "\n");
+                    return;
+                }
+                if (line != null && line.StartsWith("HOA1 CANCEL ", StringComparison.Ordinal))
+                {
+                    DirectCancel?.Invoke(line.Substring("HOA1 CANCEL ".Length).Trim());
+                    await WriteAsync(stream, "HOA1 OK\n");
                     return;
                 }
                 string[] parts = line?.Split(' ') ?? Array.Empty<string>();

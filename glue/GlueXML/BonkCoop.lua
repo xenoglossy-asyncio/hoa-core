@@ -82,7 +82,7 @@ BONK_COOP_TEXTS = {
 	{ "BonkCoopHideFullText", L["hoa.ui.glue.hide_full_games"] },
 	{ "BonkCoopHideLockedText", L["hoa.ui.glue.hide_password_protected_games"] },
 	{ "BonkCoopHideUnfitText", L["hoa.ui.glue.hide_unjoinable_games"] },
-	{ "BonkCoopCodeButton", L["hoa.ui.glue.join_with_code"] },
+	{ "BonkCoopCodeButton", L["hoa.ui.glue.join_with_address"] },
 	{ "BonkCoopRefreshButton", L["hoa.ui.glue.refresh"] },
 	{ "BonkCoopAskButton", L["hoa.ui.glue.join"] },
 	{ "BonkCoopCloseButton", L["hoa.ui.glue.close"] },
@@ -431,7 +431,7 @@ function BonkCoop_HostLine()
 	if ( host.state == "starting" ) then
 		return L["hoa.ui.glue.opening_lobby"];
 	end
-	return L("hoa.ui.glue.lobby_1_2_3_players_code_4", host.name or "", table.getn(host.members or {}), host.max or "4", host.code or "");
+	return L("hoa.ui.glue.host_1_2_3_players_address_4", host.name or "", table.getn(host.members or {}), host.max or "4", host.address or "");
 end
 
 local OriginalUpdateControls = BonkHero_UpdateControls;
@@ -451,7 +451,10 @@ end
 
 function BonkCoop_RefreshList()
 	BonkCoop.listTimer = 0;
-	BonkCoop_CallLater("GET", "/lobbies", nil, "lobbies", BonkCoop_ShowLobbies);
+	BonkCoop.lobbies = {};
+	BonkCoop.loading = nil;
+	BonkCoop.listError = L["hoa.ui.glue.the_public_game_list_is_gone_ask_the_host_for_their_address"];
+	BonkCoop_UpdateList();
 end
 
 function BonkCoop_ShowLobbies(lines, problem)
@@ -719,7 +722,7 @@ function BonkCoop_AskSelected()
 end
 
 function BonkCoop_ShowCodeDialog()
-	BonkCoop_ShowPopup("code", L["hoa.ui.glue.enter_your_friend_s_game_code"], nil, L["hoa.ui.glue.join"], L["hoa.ui.glue.cancel"], {});
+	BonkCoop_ShowPopup("address", L["hoa.ui.glue.enter_the_host_s_address"], nil, L["hoa.ui.glue.join"], L["hoa.ui.glue.cancel"], {});
 end
 
 function BonkCoop_Ask(target, hostName)
@@ -879,7 +882,7 @@ function BonkCoop_ShowPopup(kind, text, sub, first, second, data)
 	BonkCoopPopupText:SetText(text or "");
 	BonkCoopPopupSub:SetText(sub or "");
 	BonkCoopPopupEdit:SetText("");
-	if ( kind == "password" or kind == "code" ) then
+	if ( kind == "password" or kind == "code" or kind == "address" ) then
 		BonkCoopPopupEdit:Show();
 		BonkCoopPopupEdit:SetFocus();
 	else
@@ -935,6 +938,8 @@ function BonkCoop_PopupButton(index)
 		BonkCoop_Ask({ id = data.lobby.id, password = BonkCoopPopupEdit:GetText() }, data.lobby.host);
 	elseif ( kind == "code" and index == 1 ) then
 		BonkCoop_Ask({ code = strupper(BonkCoopPopupEdit:GetText()) }, nil);
+	elseif ( kind == "address" and index == 1 ) then
+		BonkCoop_Ask({ address = BonkCoopPopupEdit:GetText() }, nil);
 	elseif ( kind == "waiting" or kind == "asking" or kind == "transferring" ) then
 		BonkCoop.joining = nil;
 		BonkCoop_Call("POST", "/join/cancel?who="..BonkCoop_Encode(BonkCoop_Who()));
@@ -1108,6 +1113,8 @@ function BonkCoop_ReadHost(lines)
 			host.code = fields[3];
 			host.max = fields[4];
 			host.difficulty = fields[5];
+		elseif ( fields[1] == "address" ) then
+			host.address = fields[2];
 		elseif ( fields[1] == "member" ) then
 			table.insert(host.members, { name = fields[2], class = fields[3], mastery = fields[4] });
 		elseif ( fields[1] == "request" ) then

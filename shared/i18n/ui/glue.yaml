@@ -1518,6 +1518,22 @@
   enUS: 'Lobby "{1}" · {2}/{3} players · Code: {4}'
   zhCN: 房间“{1}” · {2}/{3}名玩家 · 房间码：{4}
   zhTW: "房間“{1}” · {2}/{3}名玩家 · 房間碼：{4}"
+- id: hoa.ui.glue.host_1_2_3_players_address_4
+  enUS: '{1}''s game · {2}/{3} players · Address: {4}'
+  zhCN: “{1}”的游戏 · {2}/{3}名玩家 · 地址：{4}
+  zhTW: "「{1}」的遊戲 · {2}/{3} 名玩家 · 地址：{4}"
+- id: hoa.ui.glue.enter_the_host_s_address
+  enUS: Enter the host's address (ip:port) and, if the game has one, its password after a space.
+  zhCN: 输入房主地址（IP:端口）；如果游戏设了密码，在地址后空一格再输入密码。
+  zhTW: "輸入房主地址（IP:連接埠）；如果遊戲設了密碼，在地址後空一格再輸入密碼。"
+- id: hoa.ui.glue.the_public_game_list_is_gone_ask_the_host_for_their_address
+  enUS: The public game list is gone. Ask the host for their address (ip:port) and use Join with address.
+  zhCN: 公网房间列表已移除。请向房主索取地址（IP:端口），再用“按地址加入”。
+  zhTW: "公網房間列表已移除。請向房主索取地址（IP:連接埠），再用「按地址加入」。"
+- id: hoa.ui.glue.join_with_address
+  enUS: Join with Address
+  zhCN: 按地址加入
+  zhTW: "按地址加入"
 - id: hoa.ui.glue.lobby_badge_lan
   enUS: lobby badge::LAN
   zhCN: 局域网

@@ -30,7 +30,7 @@
 
 ## 当前种子
 
-目录现在有 995 条服务端消息（`messages/server.yaml`）、1558 条插件文本（`addon/addon.yaml`）、1324 条客户端界面文本（`ui/options.yaml`、`ui/glue.yaml`、`ui/keybindings.yaml`）和 304 条启动器文本（`launcher/launcher.yaml`），都包含 enUS、zhCN 和 zhTW。`BonkStrings.h/.cpp`、`addon/HordesOfAzeroth/VanillaBonkLocaleData.lua` 和客户端语言包都由它生成。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
+目录现在有 995 条服务端消息（`messages/server.yaml`）、1558 条插件文本（`addon/addon.yaml`）、1328 条客户端界面文本（`ui/options.yaml`、`ui/glue.yaml`、`ui/keybindings.yaml`）和 304 条启动器文本（`launcher/launcher.yaml`），都包含 enUS、zhCN 和 zhTW。`BonkStrings.h/.cpp`、`addon/HordesOfAzeroth/VanillaBonkLocaleData.lua` 和客户端语言包都由它生成。旧消息里的数字占位符（`{1}`、`{2}`）暂时保留，等服务器调用点迁移为命名参数后再改。
 
 ```bash
 python tools/i18n/gen_server_strings.py       # 从目录生成 BonkStrings.h/.cpp

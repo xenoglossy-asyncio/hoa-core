@@ -31,7 +31,7 @@ Language is a **session/account property** decided by the server at login. The i
 
 ## Current seed
 
-The catalogue now holds 995 server messages (`messages/server.yaml`), 1558 addon entries (`addon/addon.yaml`), 1324 client UI entries (`ui/options.yaml`, `ui/glue.yaml`, `ui/keybindings.yaml`) and 304 launcher entries (`launcher/launcher.yaml`), all with enUS, zhCN and zhTW. `BonkStrings.h/.cpp`, `addon/HordesOfAzeroth/VanillaBonkLocaleData.lua` and the client language packs are generated from it. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
+The catalogue now holds 995 server messages (`messages/server.yaml`), 1558 addon entries (`addon/addon.yaml`), 1328 client UI entries (`ui/options.yaml`, `ui/glue.yaml`, `ui/keybindings.yaml`) and 304 launcher entries (`launcher/launcher.yaml`), all with enUS, zhCN and zhTW. `BonkStrings.h/.cpp`, `addon/HordesOfAzeroth/VanillaBonkLocaleData.lua` and the client language packs are generated from it. The legacy numeric placeholders (`{1}`, `{2}`) are kept until the server call sites move to named arguments.
 
 ```bash
 python tools/i18n/gen_server_strings.py       # write BonkStrings.h/.cpp from the catalogue

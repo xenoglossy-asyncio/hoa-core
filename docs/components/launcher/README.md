@@ -10,7 +10,7 @@ Avalonia C# launcher.
 - No longer requires an English 1.12.1 install: accept any language's 1.12.1 build 5875 (file version), with the English MD5 as a fast path only. The upstream PR #25 experiment validated this.
 - Clear/expire client caches by `(locale, content version)` before launch (keep and upgrade the current `*.bin` cleanup).
 - Keep the server, database and realmlist start/stop logic.
-- Co-op supports only two modes: LAN auto-discovery (same-subnet broadcast) and `ip/domain:port` direct connect. No public lobby, room registration or central notification service; NAT traversal is the player's responsibility (port forwarding, ZeroTier/Tailscale, etc.).
+- Co-op is direct only: the host shows its LAN/VPN address as `ip:port`, and a guest joins by entering that address (plus the host's optional password). There is no public lobby, room registration or central notification service; NAT traversal is the player's responsibility (port forwarding, ZeroTier/Tailscale, etc.).
 - Launcher text uses i18n resources and follows the language setting.
 
 ## Build
@@ -19,6 +19,14 @@ See [BUILDING.md](../../../BUILDING.md). `dotnet build` passes; publishing and p
 
 ## To change
 
-- Remove public lobby/registration code (`CoopAgent`'s `/host` registration, `LobbyUrl` metadata, related network probes); keep LAN discovery and `ip/domain:port` direct connect.
 - Make language selection account-level; expire caches by `(locale, contentVersion)` before launch.
 - Clean up upstream URLs in `Repository`/`StatsUrl`/`MirrorUrl`; point them at the new repository or leave them empty.
+
+## Direct co-op
+
+`CoopAgent` no longer contacts a lobby service. The host listens on the gate port (3725 by
+default) and answers `HOA1 ASK`, `HOA1 POLL` and `HOA1 CANCEL` on that port; the guest enters the
+host's `ip:port` in the Glue co-op screen. The host checks version and protocol before showing the
+request, and the existing token gate still carries `LOGIN`, `WORLD`, `UPLOAD`, `LEDGER`, `ANSWERS`
+and `LEAVE`. The host advertises every usable LAN address, with VPN/proxy addresses after the LAN
+ones, and can show a manually entered public address instead.

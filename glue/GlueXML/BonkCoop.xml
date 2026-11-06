@@ -767,7 +767,7 @@
 					</Anchor>
 				</Anchors>
 			</Frame>
-			<Button name="BonkCoopCodeButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_JOIN_WITH_CODE">
+			<Button name="BonkCoopCodeButton" inherits="GlueButtonSmallTemplate" text="HOA_UI_GLUE_JOIN_WITH_ADDRESS">
 				<Size>
 					<AbsDimension x="140" y="28"/>
 				</Size>
