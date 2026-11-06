@@ -610,6 +610,25 @@ foreach ($os in $operatingSystems) {
 
 $navGroups = if ($SkipNavTiles) { @() } else { @(Get-NavGroups $previous) }
 
+function Copy-PackageEntry($Entry) {
+    $mirrors = @()
+    if ($giteeRepository -and $Entry.url -match '^https://github\.com/[^/]+/[^/]+/releases/(.+)$') {
+        $mirrors = @("https://gitee.com/$giteeRepository/releases/$($Matches[1])")
+    }
+    $existing = @()
+    if ($Entry.PSObject.Properties.Name -contains 'mirrors' -and $Entry.mirrors) { $existing = @($Entry.mirrors) }
+    [ordered]@{
+        name = $Entry.name
+        release = $Entry.release
+        url = $Entry.url
+        mirrors = @(@($existing) + $mirrors | Where-Object { $_ } | Select-Object -Unique)
+        size = $Entry.size
+        sha256 = $Entry.sha256
+        contentHash = $Entry.contentHash
+        files = $Entry.files
+    }
+}
+
 Assert-WorldDumpMatchesServer
 
 $notes = @(Get-ReleaseNotes)
@@ -634,9 +653,14 @@ foreach ($os in $operatingSystems) {
         realmName = $releaseConfig.realmName
         clientDlls = $releaseConfig.clientDlls
         releaseNotes = $notes
-        navTiles = $navGroups
+        navTiles = @($navGroups | ForEach-Object {
+            $group = $_
+            $copy = [ordered]@{ name = $group.name; maps = $group.maps }
+            if ($group.download) { $copy.download = Copy-PackageEntry $group.download }
+            $copy
+        })
         thirdParty = @($releaseConfig.thirdParty | Where-Object { -not $_.os -or $_.os -eq $os.Name } | ForEach-Object { Get-ThirdPartyEntry $_ })
-        packages = $packagesByOs[$os.Name]
+        packages = @($packagesByOs[$os.Name] | ForEach-Object { Copy-PackageEntry $_ })
     }
     $manifestPath = Join-Path $assetsDir $os.Manifest
     [System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 8) + "`n")

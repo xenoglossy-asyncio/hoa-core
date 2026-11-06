@@ -969,7 +969,7 @@ namespace HordesOfAzeroth.Launcher
 
         async Task DownloadPathsAsync(NavGroup group, IProgress<long> progress, CancellationToken cancel)
         {
-            string zip = await m_installer.FetchAsync(group.Download.Url, group.Download.Sha256, progress.Report, cancel);
+            string zip = await m_installer.FetchAsync(group.Download.Url, group.Download.Sha256, progress.Report, cancel, group.Download.Mirrors);
             await Task.Run(() => m_nav.InstallDownloaded(group, zip), cancel);
             File.Delete(zip);
         }
