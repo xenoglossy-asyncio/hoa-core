@@ -24,7 +24,10 @@ install_packages() {
 
 sync_source() {
     mkdir -p "$2"
-    rsync -a --delete --exclude=.git --exclude=/target "$1/" "$2/"
+    rsync -a --delete --exclude=.git --exclude=/target \
+        --exclude=/build --exclude='/build-*' --exclude=/bin --exclude=/obj \
+        --exclude=/data --exclude=/run --exclude=/logs \
+        --exclude=/mariadb --exclude=/mariadb-data --exclude=/downloads "$1/" "$2/"
 }
 
 build_server() {
