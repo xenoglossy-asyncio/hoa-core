@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive

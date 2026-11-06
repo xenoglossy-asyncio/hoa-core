@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
 """Generate the server's BonkStrings table from the shared i18n catalogue."""
 
 from __future__ import annotations

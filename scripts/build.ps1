@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-only
 param(
     [ValidateSet('all', 'server', 'client', 'launcher', 'addon', 'i18n', 'content', 'check')]
     [string]$Component = 'all',

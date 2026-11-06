@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 """Load and validate the shared i18n message catalogue."""
 
 from __future__ import annotations

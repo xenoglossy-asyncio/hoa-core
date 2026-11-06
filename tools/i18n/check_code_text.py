@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-2.0-or-later
 """Fail on English-sentence keys left in addon/Glue Lua call sites."""
 
 from __future__ import annotations
