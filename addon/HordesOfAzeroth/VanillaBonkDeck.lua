@@ -273,8 +273,7 @@ local function GridCard(index)
             Deck.Refresh()
         end
     end)
-    card:SetScript("OnEnter", function() ShowCardTooltip(this) end)
-    card:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(card, function() ShowCardTooltip(this) end)
     grid.cards[index] = card
     return card
 end
@@ -582,8 +581,7 @@ local function BuildFrame()
     side.detail:SetHeight(262)
     side.big = CreateCardFace(side.detail, BIG_W, BIG_H)
     side.big:SetPoint("TOPLEFT", side.detail, "TOPLEFT", 14, -14)
-    side.big:SetScript("OnEnter", function() ShowCardTooltip(this) end)
-    side.big:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(side.big, function() ShowCardTooltip(this) end)
     local textX = 14 + BIG_W + 12
     local textWidth = SIDE_WIDTH - textX - 14
     side.name = UI.Text(side.detail, 14)
@@ -629,8 +627,7 @@ local function BuildFrame()
     side.help:SetHeight(18)
     side.help:SetPoint("LEFT", side.slotLabel, "RIGHT", 5, 0)
     side.help:SetNormalTexture("Interface\\GossipFrame\\ActiveQuestIcon")
-    side.help:SetScript("OnEnter", function() ShowHelp(this) end)
-    side.help:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(side.help, function() ShowHelp(this) end)
     side.slots = CreateFrame("Frame", nil, frame)
     side.slots:SetPoint("TOPLEFT", side.slotLabel, "BOTTOMLEFT", 0, -8)
     side.slots:SetWidth(SIDE_WIDTH)

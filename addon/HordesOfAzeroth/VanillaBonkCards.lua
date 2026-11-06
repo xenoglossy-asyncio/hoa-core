@@ -151,7 +151,6 @@ local function StyledButton()
     button.value = UI.Text(top, 10, UI.NUMBER_FONT, "OUTLINE")
     button.value:SetPoint("BOTTOM", button, "BOTTOM", 0, -2)
     button.value:SetTextColor(0.1, 1, 0.1)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
     return button
 end
 
@@ -159,7 +158,7 @@ local function Button(index)
     local button = StyledButton()
     PlaceInGrid(button, index, 0)
     button.index = index
-    button:SetScript("OnEnter", function() ShowTooltip(this) end)
+    UI.Hover(button, function() ShowTooltip(this) end)
     buttons[index] = button
     return button
 end
@@ -179,7 +178,7 @@ end
 local function LeyButton(index)
     local button = StyledButton()
     button.index = index
-    button:SetScript("OnEnter", function() LeyTooltip(this) end)
+    UI.Hover(button, function() LeyTooltip(this) end)
     leyButtons[index] = button
     return button
 end

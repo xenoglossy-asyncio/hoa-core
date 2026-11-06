@@ -334,7 +334,7 @@ local function VaultSlot(index)
             Command("take " .. this.find.guid)
         end
     end)
-    slot:SetScript("OnEnter", function()
+    UI.Hover(slot, function()
         if this.find then
             ShowItemTooltip(this, this.find, L["hoa.addon.click_to_take_it_out_of_the_vault"])
         else
@@ -344,7 +344,6 @@ local function VaultSlot(index)
             GameTooltip:Show()
         end
     end)
-    slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
     frame.box.slots[index] = slot
     return slot
 end
@@ -453,7 +452,7 @@ local function SentSlot(index)
     slot:SetScript("OnMouseDown", StartSentDrag)
     slot:SetScript("OnMouseUp", StopSentDrag)
     slot:SetScript("OnMouseWheel", ScrollSentByWheel)
-    slot:SetScript("OnEnter", function()
+    UI.Hover(slot, function()
         if this.piece then
             GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
             UI.nextFound = this.piece.found
@@ -462,7 +461,6 @@ local function SentSlot(index)
             GameTooltip:Show()
         end
     end)
-    slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
     frame.sent.slots[index] = slot
     return slot
 end
@@ -594,14 +592,13 @@ local function Card(index)
             Command("put " .. find.guid)
         end
     end)
-    card:SetScript("OnEnter", function()
+    UI.Hover(card, function()
         local find = this.find
         if find then
             local line = vault.chosen[find.guid] and L["hoa.addon.click_to_take_it_out_of_the_vault"] or L["hoa.addon.click_to_put_it_in_the_vault"]
             ShowItemTooltip(this, find, vault.hearth and L["hoa.addon.click_to_send_it_home_now"] or line)
         end
     end)
-    card:SetScript("OnLeave", function() GameTooltip:Hide() end)
     frame.cards.list[index] = card
     return card
 end

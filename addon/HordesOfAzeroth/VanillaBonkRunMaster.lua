@@ -215,7 +215,7 @@ local function Plaque(index)
             onTierClick(this.tier)
         end
     end)
-    plaque:SetScript("OnEnter", function()
+    UI.Hover(plaque, function()
         local shown = this.tier
         if not shown then
             return
@@ -231,7 +231,6 @@ local function Plaque(index)
         end
         GameTooltip:Show()
     end)
-    plaque:SetScript("OnLeave", function() GameTooltip:Hide() end)
     ladder[index] = plaque
     return plaque
 end
@@ -329,12 +328,11 @@ local function ListRow(index)
         this.pick()
         RunMaster.Refresh()
     end)
-    row:SetScript("OnEnter", function()
+    UI.Hover(row, function()
         if this.tooltip then
             this.tooltip(this)
         end
     end)
-    row:SetScript("OnLeave", function() GameTooltip:Hide() end)
     list.rows[index] = row
     return row
 end
@@ -1115,7 +1113,7 @@ local function BuildBanner()
     banner.name:SetTextColor(1, 0.82, 0)
     banner.tag = UI.Text(overlay, 9)
     banner.tag:SetPoint("BOTTOMLEFT", banner.name, "TOPLEFT", 1, 2)
-    banner:SetScript("OnEnter", function()
+    UI.Hover(banner, function()
         if not this.risk then
             return
         end
@@ -1124,7 +1122,6 @@ local function BuildBanner()
         GameTooltip:AddLine(this.risk, 0.25, 1, 0.25, 1)
         GameTooltip:Show()
     end)
-    banner:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
 local function BuildPreview()

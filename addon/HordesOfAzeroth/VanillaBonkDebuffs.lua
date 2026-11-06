@@ -132,8 +132,7 @@ local function CreateEntry(row)
     entry.count = entry:CreateFontString(nil, "OVERLAY")
     entry.count:SetPoint("LEFT", entry.icon, "RIGHT", 2, 0)
 
-    entry:SetScript("OnEnter", ShowEntryTooltip)
-    entry:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UI.Hover(entry, ShowEntryTooltip)
     tinsert(row.entries, entry)
     return entry
 end

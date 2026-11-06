@@ -222,11 +222,10 @@ for index, class in ipairs(CLASSES) do
         ScrollToTop()
         window.Refresh()
     end)
-    button:SetScript("OnEnter", function()
+    UI.Hover(button, function()
         GameTooltip:SetOwner(this, "ANCHOR_TOP")
         GameTooltip:SetText(this.label)
     end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
     window.classIcons[class.id] = button
 end
 
@@ -290,11 +289,10 @@ window.join:SetScript("OnClick", function()
     PlaySound(this:GetChecked() and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff")
     Command("joinboard " .. (this:GetChecked() and "1" or "0"))
 end)
-window.join:SetScript("OnEnter", function()
+UI.Hover(window.join, function()
     GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
     GameTooltip:SetText(L["hoa.addon.when_enabled_your_mythic_clears_are_listed_with_your_charact"], 1, 1, 1, 1, 1)
 end)
-window.join:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 window.soon = UI.Text(window, 11)
 window.soon:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -LEFT - 10, 50)

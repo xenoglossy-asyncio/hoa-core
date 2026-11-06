@@ -49,12 +49,11 @@ local function Row(index, label, icon, tooltip)
     row.label:SetText(label)
     row:EnableMouse(true)
     row.tooltip = tooltip
-    row:SetScript("OnEnter", function()
+    UI.Hover(row, function()
         GameTooltip:SetOwner(this, "ANCHOR_LEFT")
         this.tooltip()
         GameTooltip:Show()
     end)
-    row:SetScript("OnLeave", function() GameTooltip:Hide() end)
     rows[index] = row
     return row
 end

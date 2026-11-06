@@ -118,7 +118,7 @@ local function SlotButton(info, x, y)
         state.page = 1
         window.Refresh()
     end)
-    button:SetScript("OnEnter", function()
+    UI.Hover(button, function()
         GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
         local current = SlotEntry(this.info.slot)
         if current.worn and current.worn > 0 then
@@ -128,7 +128,6 @@ local function SlotButton(info, x, y)
         end
         GameTooltip:Show()
     end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
     tinsert(slotButtons, button)
 end
 
@@ -258,12 +257,11 @@ local function LookButton(index)
     button.check:SetWidth(22)
     button.check:SetHeight(22)
     button.check:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 4, -4)
-    button:SetScript("OnEnter", function()
+    UI.Hover(button, function()
         if this.look then
             ShowLookTip(this)
         end
     end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
     button:SetScript("OnClick", function()
         if not this.look then
             return
@@ -434,7 +432,7 @@ for outfit = 1, OUTFITS do
     row.delete.outfit = outfit
     row.delete:SetPoint("LEFT", row.save, "RIGHT", 4, 0)
     for _, button in ipairs({ row.apply, row.save, row.delete }) do
-        button:SetScript("OnEnter", function()
+        UI.Hover(button, function()
             GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
             if this == window.outfitRows[this.outfit].save then
                 GameTooltip:SetText(L["hoa.addon.saves_your_current_looks_as_this_outfit"], 1, 1, 1, 1, 1)
@@ -447,7 +445,6 @@ for outfit = 1, OUTFITS do
             end
             GameTooltip:Show()
         end)
-        button:SetScript("OnLeave", function() GameTooltip:Hide() end)
     end
     window.outfitRows[outfit] = row
 end

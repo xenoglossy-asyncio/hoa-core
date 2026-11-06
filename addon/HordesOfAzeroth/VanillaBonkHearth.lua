@@ -52,7 +52,7 @@ button.keyGlyph:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -1)
 button.keyGlyph:Hide()
 
 button:SetScript("OnClick", VanillaBonk_UseHearthstone)
-button:SetScript("OnEnter", function()
+UI.Hover(button, function()
     local bag, slot = FindHearthstone()
     GameTooltip:SetOwner(this, "ANCHOR_TOPLEFT")
     if not bag then
@@ -68,7 +68,6 @@ button:SetScript("OnEnter", function()
     end
     GameTooltip:Show()
 end)
-button:SetScript("OnLeave", function() GameTooltip:Hide() end)
 button:SetScript("OnUpdate", function()
     this.glow:SetAlpha(0.55 + 0.45 * math.sin(GetTime() * PULSE_SPEED))
 end)
