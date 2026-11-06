@@ -153,6 +153,15 @@ impl Default for UiLanguage {
 }
 
 impl UiLanguage {
+    /// The BCP-47 tag cosmic-text shapes with.
+    pub(crate) fn shaping_locale(&self) -> &'static str {
+        match self.selected.as_str() {
+            "zhCN" => "zh-CN",
+            "zhTW" => "zh-TW",
+            _ => "en-US",
+        }
+    }
+
     /// The supported code, or enUS for an unknown one.
     pub(crate) fn normalize(code: &str) -> String {
         SUPPORTED

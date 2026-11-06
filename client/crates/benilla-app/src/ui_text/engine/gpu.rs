@@ -72,6 +72,7 @@ fn init(
     images: Res<Assets<Image>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     existing: Option<Res<UiFontAtlas>>,
+    language: Option<Res<crate::client_language::UiLanguage>>,
 ) {
     if existing.is_some() {
         return;
@@ -79,7 +80,11 @@ fn init(
     let (Some(world_assets), Ok(window)) = (world_assets, windows.single()) else {
         return;
     };
-    let Some(engine) = TextEngine::load(&world_assets, &images, window.scale_factor()) else {
+    let shaping = language
+        .as_deref()
+        .map(crate::client_language::UiLanguage::shaping_locale)
+        .unwrap_or("en-US");
+    let Some(engine) = TextEngine::load(&world_assets, &images, window.scale_factor(), shaping) else {
         return;
     };
     commands.insert_resource(UiFontAtlas {

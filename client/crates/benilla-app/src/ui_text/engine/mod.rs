@@ -165,15 +165,15 @@ pub(crate) struct TextEngine {
 /// face. A character its own face's charmap lacks draws and measures nothing, as in the reference
 /// ([`TextEngine::ensure_char`]). The locale only picks which language's family name a face
 /// answers to.
-fn client_font_system() -> FontSystem {
-    FontSystem::new_with_locale_and_db("en-US".to_string(), fontdb::Database::new())
+fn client_font_system(locale: &str) -> FontSystem {
+    FontSystem::new_with_locale_and_db(locale.to_string(), fontdb::Database::new())
 }
 
 impl TextEngine {
     /// Register the client TTFs, each read as a font face opens ([`read_font_bytes`]); `None`, and
     /// no text, without Friz Quadrata.
-    fn load(world_assets: &WorldAssets, images: &Assets<Image>, dpi: f32) -> Option<Self> {
-        let mut font_system = client_font_system();
+    fn load(world_assets: &WorldAssets, images: &Assets<Image>, dpi: f32, shaping_locale: &str) -> Option<Self> {
+        let mut font_system = client_font_system(shaping_locale);
         let mut faces: Vec<Face> = Vec::new();
         let mut path_to_face = HashMap::new();
         let source = FontSource {
@@ -789,7 +789,7 @@ fn read_font_bytes(source: &FontSource, path: &str) -> Option<Vec<u8>> {
 pub(super) fn test_engine(dpi: f32) -> Option<TextEngine> {
     let data = benilla_formats::wow_data()?;
     let chain = benilla_formats::open_chain(&data).ok()?;
-    let mut font_system = client_font_system();
+    let mut font_system = client_font_system("en-US");
     let mut faces: Vec<Face> = Vec::new();
     let mut path_to_face = HashMap::new();
     for &path in CLIENT_FONTS {
