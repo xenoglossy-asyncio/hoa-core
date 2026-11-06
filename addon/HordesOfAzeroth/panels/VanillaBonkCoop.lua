@@ -281,6 +281,7 @@ do
 		local host = Read(lines);
 		Coop.host = host;
 		if ( host.state ~= "hosting" ) then
+			Coop.host = nil;
 			line:Hide();
 			room:Hide();
 			Coop.roomShown = nil;
