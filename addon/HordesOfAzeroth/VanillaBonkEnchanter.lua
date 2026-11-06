@@ -293,7 +293,7 @@ UI.ListenHoa({
 })
 
 
-UI.Module("enchanter"):Listen({ UNIT_INVENTORY_CHANGED = Refresh }, window)
+UI.Module("enchanter"):OnInventory(Refresh)
 
 function UI.EnchantLine(inventorySlot)
     local enchant = UI.enchants[inventorySlot]

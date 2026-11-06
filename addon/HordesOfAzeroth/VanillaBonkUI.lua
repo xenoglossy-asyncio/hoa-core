@@ -350,7 +350,7 @@ function UI.Mixin(target, mixins)
 end
 
 -- Named modules: each owns one event frame and shows up in UI.modules for diagnostics.
--- Lifecycle hooks run in file load order; one dispatcher frame owns the world and run events.
+-- Lifecycle and common-event hooks run in file load order; one dispatcher frame owns them.
 UI.modules = {}
 UI.moduleOrder = {}
 local Module = {}
@@ -371,6 +371,10 @@ function Module:OnEnterWorld(hook) return AddHook(self, "enterWorldHooks", hook)
 function Module:OnLeaveWorld(hook) return AddHook(self, "leaveWorldHooks", hook) end
 function Module:OnRunStart(hook) return AddHook(self, "runStartHooks", hook) end
 function Module:OnRunEnd(hook) return AddHook(self, "runEndHooks", hook) end
+function Module:OnMoney(hook) return AddHook(self, "moneyHooks", hook) end
+function Module:OnBags(hook) return AddHook(self, "bagHooks", hook) end
+function Module:OnInventory(hook) return AddHook(self, "inventoryHooks", hook) end
+function Module:OnBindings(hook) return AddHook(self, "bindingHooks", hook) end
 
 function UI.Module(name)
     local module = UI.modules[name]
@@ -401,6 +405,10 @@ lifecycle:RegisterEvent("PLAYER_ENTERING_WORLD")
 lifecycle:RegisterEvent("PLAYER_LEAVING_WORLD")
 lifecycle:RegisterEvent("HOA_RUN_START")
 lifecycle:RegisterEvent("HOA_RUN_END")
+lifecycle:RegisterEvent("PLAYER_MONEY")
+lifecycle:RegisterEvent("BAG_UPDATE")
+lifecycle:RegisterEvent("UNIT_INVENTORY_CHANGED")
+lifecycle:RegisterEvent("UPDATE_BINDINGS")
 lifecycle:SetScript("OnEvent", function()
     if event == "PLAYER_ENTERING_WORLD" then
         Dispatch("enterWorldHooks", arg1, arg2, arg3, arg4)
@@ -410,6 +418,14 @@ lifecycle:SetScript("OnEvent", function()
         Dispatch("runStartHooks", arg1, arg2, arg3, arg4)
     elseif event == "HOA_RUN_END" then
         Dispatch("runEndHooks", arg1, arg2, arg3, arg4)
+    elseif event == "PLAYER_MONEY" then
+        Dispatch("moneyHooks", arg1, arg2, arg3, arg4)
+    elseif event == "BAG_UPDATE" then
+        Dispatch("bagHooks", arg1, arg2, arg3, arg4)
+    elseif event == "UNIT_INVENTORY_CHANGED" then
+        Dispatch("inventoryHooks", arg1, arg2, arg3, arg4)
+    elseif event == "UPDATE_BINDINGS" then
+        Dispatch("bindingHooks", arg1, arg2, arg3, arg4)
     end
 end)
 

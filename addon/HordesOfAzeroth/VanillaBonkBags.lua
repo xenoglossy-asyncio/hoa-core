@@ -242,9 +242,9 @@ UI.Module("bags"):Listen({
     end,
     ITEM_LOCK_CHANGED = RefreshAll,
     BAG_UPDATE_COOLDOWN = RefreshAll,
-    PLAYER_MONEY = function()
-        if frame:IsShown() then
-            MoneyFrame_Update("VanillaBonkBagsMoney", GetMoney())
-        end
-    end,
 })
+UI.Module("bags"):OnMoney(function()
+    if frame:IsShown() then
+        MoneyFrame_Update("VanillaBonkBagsMoney", GetMoney())
+    end
+end)

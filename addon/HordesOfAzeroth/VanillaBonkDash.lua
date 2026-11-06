@@ -294,8 +294,8 @@ if IsAddOnLoaded("Blizzard_BindingUI") then
     HookBindingWindow()
 end
 
+UI.Module("dash"):OnBindings(SyncKeys)
 UI.Module("dash"):Listen({
-    UPDATE_BINDINGS = SyncKeys,
     ADDON_LOADED = function(name)
         if name == "HordesOfAzeroth" then
             onShift = SavedOnShift()

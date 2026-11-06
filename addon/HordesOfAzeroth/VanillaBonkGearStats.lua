@@ -538,13 +538,11 @@ do
     end)
 end
 
-UI.Module("gearEvents"):Listen({
-    UNIT_INVENTORY_CHANGED = function(unit)
-        if unit == "player" and PaperDollFrame:IsVisible() then
-            RefreshHeroStats()
-        end
-    end,
-})
+UI.Module("gearEvents"):OnInventory(function(unit)
+    if unit == "player" and PaperDollFrame:IsVisible() then
+        RefreshHeroStats()
+    end
+end)
 
 handlers["gear"] = function(f)
     VB.gear[tonumber(f[2])] = { stats = ParseStats(f[3]) }

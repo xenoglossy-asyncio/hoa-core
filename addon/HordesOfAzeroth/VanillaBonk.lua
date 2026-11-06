@@ -331,7 +331,7 @@ do
         end)
     end
 
-    UI.Module("offerKeyPrompts"):Listen({ UPDATE_BINDINGS = offerFrame.RefreshKeyPrompts })
+    UI.Module("offerKeyPrompts"):OnBindings(offerFrame.RefreshKeyPrompts)
 end
 
 local CardArt = VanillaBonkUI.CardArt
@@ -2310,14 +2310,12 @@ UI.Module("enterWorld"):OnEnterWorld(function()
         Command("hello " .. UI.Language())
     end
 end)
-UI.Module("enterWorld"):Listen({
-    PLAYER_MONEY = function()
-        VB.PlayPurchaseSound()
-        if VB.shop and VB.shop:IsShown() then
-            VB.RefreshShop()
-        end
-    end,
-})
+UI.Module("enterWorld"):OnMoney(function()
+    VB.PlayPurchaseSound()
+    if VB.shop and VB.shop:IsShown() then
+        VB.RefreshShop()
+    end
+end)
 
 function UI.NavPrompt(box, primary, second)
     box.navButtons = { primary, second }

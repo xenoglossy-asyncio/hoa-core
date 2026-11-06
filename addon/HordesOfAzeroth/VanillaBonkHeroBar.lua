@@ -1263,10 +1263,8 @@ local events = UI.Module("heroBar"):Listen({
     PLAYER_LEVEL_UP = function(level)
         RefreshXp(level)
     end,
-    PLAYER_MONEY = function()
-        RefreshWallet()
-    end,
 })
+UI.Module("heroBar"):OnMoney(RefreshWallet)
 
 SetMode(false)
 
