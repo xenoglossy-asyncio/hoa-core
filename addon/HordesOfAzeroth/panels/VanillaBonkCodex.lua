@@ -1,4 +1,5 @@
 local L = VanillaBonkL
+local UI = VanillaBonkUI
 local FLAT = "Interface\\Buttons\\WHITE8X8"
 local FONT = VanillaBonkUI.FONT
 local NUMBER_FONT = VanillaBonkUI.NUMBER_FONT
@@ -34,13 +35,13 @@ local CLASSES = {
 
 VanillaBonkCodex = {}
 
-local book
-local incoming
-local pendingNpc
-local atKeeper = false
-local openRequested
-local currentTab = "spells"
-local classFilter = 0
+local Codex = UI.Module("codex")
+Codex.currentTab = "spells"
+Codex.classFilter = 0
+Codex.eliteAffixes = {}
+Codex.shownTabs = {}
+Codex.tooltip = GameTooltip
+Codex.atKeeper = false
 
 local function Split(text, separator)
     local fields = {}
@@ -67,11 +68,11 @@ end
 
 local POOL_KINDS = { c = true, g = true }
 
-local function CanSwitch(entry)
-    if not book or not entry or not entry.owned or not POOL_KINDS[entry.kind] then
+function Codex:CanSwitch(entry)
+    if not self.book or not entry or not entry.owned or not POOL_KINDS[entry.kind] then
         return false
     end
-    local pool = book.pool[entry.kind]
+    local pool = self.book.pool[entry.kind]
     return entry.off or pool.used < pool.slots
 end
 
@@ -101,16 +102,16 @@ local function FirstClassIndex(mask)
     return table.getn(CLASSES) + 1
 end
 
-local function SpellClasses(spell)
-    if spell.evolvesFrom > 0 and book.weapons[spell.evolvesFrom] then
-        return book.weapons[spell.evolvesFrom].classMask
+function Codex:SpellClasses(spell)
+    if spell.evolvesFrom > 0 and self.book.weapons[spell.evolvesFrom] then
+        return self.book.weapons[spell.evolvesFrom].classMask
     end
     return spell.classMask
 end
 
-local function MatchesFilter(spell)
-    local mask = SpellClasses(spell)
-    return classFilter == 0 or mask == 0 or HasFlag(mask, classFilter)
+function Codex:MatchesFilter(spell)
+    local mask = self:SpellClasses(spell)
+    return self.classFilter == 0 or mask == 0 or HasFlag(mask, self.classFilter)
 end
 
 local function EvolutionNames(evolutions)
@@ -125,34 +126,32 @@ local function EvolutionNames(evolutions)
     return text
 end
 
-local tooltip = GameTooltip
-
-local function AddLock(lock)
-    tooltip:AddLine(" ")
-    tooltip:AddLine(L["hoa.addon.locked"], 1, 0.3, 0.3)
+function Codex:AddLock(lock)
+    self.tooltip:AddLine(" ")
+    self.tooltip:AddLine(L["hoa.addon.locked"], 1, 0.3, 0.3)
     if lock then
-        tooltip:AddLine(L("hoa.addon.quest_1", lock.name), 1, 0.6, 0.6)
-        tooltip:AddLine(lock.description, 0.9, 0.9, 0.9, 1)
-        VanillaBonkUI.AddQuestProgress(tooltip, lock)
+        self.tooltip:AddLine(L("hoa.addon.quest_1", lock.name), 1, 0.6, 0.6)
+        self.tooltip:AddLine(lock.description, 0.9, 0.9, 0.9, 1)
+        VanillaBonkUI.AddQuestProgress(self.tooltip, lock)
     end
 end
 
-local function AddState(entry)
+function Codex:AddState(entry)
     if entry.locked then
-        AddLock(book.locks[entry.kind .. entry.id])
+        self:AddLock(self.book.locks[entry.kind .. entry.id])
     end
 end
 
-local function ShowSpellTooltip(owner, spell)
+function Codex:ShowSpellTooltip(owner, spell)
     local Tip = VanillaBonkSpellTip
     local evolved = spell.evolvesFrom > 0
-    tooltip = Tip
+    self.tooltip = Tip
     Tip:SetOwner(owner, "ANCHOR_RIGHT")
     Tip:SetLegendary(evolved)
     Tip:Title(spell.name, evolved and Tip.ORANGE or Tip.WHITE)
-    local classes = ClassNames(evolved and SpellClasses(spell) or spell.classMask)
+    local classes = ClassNames(evolved and self:SpellClasses(spell) or spell.classMask)
     Tip:AddDoubleLine(spell.spec or "", classes, Tip.SPEC[1], Tip.SPEC[2], Tip.SPEC[3], 0.62, 0.62, 0.62)
-    local base = evolved and book.weapons[spell.evolvesFrom]
+    local base = evolved and self.book.weapons[spell.evolvesFrom]
     if base then
         Tip:AddDoubleLine(L("hoa.addon.evolved_from_1", base.name), "", 1, 0.5, 0, 1, 1, 1, 11)
     end
@@ -166,7 +165,7 @@ local function ShowSpellTooltip(owner, spell)
     if base then
         Tip:AddSmallLine(L("hoa.addon.evolves_from_1_through_a_legendary_rank_offered_at_rank_2_or", base.name, EVOLVE_RANK), Tip.ORANGE)
     else
-        local evolutions = book.evolutionOf[spell.id]
+        local evolutions = self.book.evolutionOf[spell.id]
         if evolutions then
             Tip:AddSmallLine(L("hoa.addon.can_evolve_into_2_through_a_legendary_rank_offered_at_rank_1", EVOLVE_RANK, EvolutionNames(evolutions)), Tip.ORANGE)
         end
@@ -174,96 +173,96 @@ local function ShowSpellTooltip(owner, spell)
     if spell.starterMask > 0 then
         Tip:AddSmallLine(format(L["hoa.addon.s_can_choose_it_as_their_starter_spell_at_the_run_master"], ClassNames(spell.starterMask, true)), { 0.6, 0.8, 1 })
     end
-    AddState(spell)
-    tooltip:Show()
+    self:AddState(spell)
+    self.tooltip:Show()
 end
 
-local function ShowPassiveTooltip(owner, passive)
-    tooltip = GameTooltip
+function Codex:ShowPassiveTooltip(owner, passive)
+    self.tooltip = GameTooltip
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-    tooltip:AddLine(passive.name, 1, 0.82, 0)
-    tooltip:AddLine(L["hoa.addon.passive_all_classes"], 0.7, 0.7, 0.7)
-    tooltip:AddLine(passive.description, 1, 1, 1, 1)
+    self.tooltip:AddLine(passive.name, 1, 0.82, 0)
+    self.tooltip:AddLine(L["hoa.addon.passive_all_classes"], 0.7, 0.7, 0.7)
+    self.tooltip:AddLine(passive.description, 1, 1, 1, 1)
     if passive.maxRank > 0 then
-        tooltip:AddLine(" ")
-        tooltip:AddLine(L("hoa.addon.max_rank_1", passive.maxRank), 1, 0.82, 0)
+        self.tooltip:AddLine(" ")
+        self.tooltip:AddLine(L("hoa.addon.max_rank_1", passive.maxRank), 1, 0.82, 0)
     end
-    AddState(passive)
-    tooltip:Show()
+    self:AddState(passive)
+    self.tooltip:Show()
 end
 
-local function ShowCardTooltip(owner, card)
+function Codex:ShowCardTooltip(owner, card)
     local rarity = VanillaBonkUI.RARITY[card.rarity] or VanillaBonkUI.RARITY[0]
-    tooltip = GameTooltip
+    self.tooltip = GameTooltip
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-    tooltip:AddLine(card.name, rarity.r, rarity.g, rarity.b)
-    tooltip:AddLine(L("hoa.addon.1_darkmoon_card_all_classes", rarity.name), 0.7, 0.7, 0.7)
+    self.tooltip:AddLine(card.name, rarity.r, rarity.g, rarity.b)
+    self.tooltip:AddLine(L("hoa.addon.1_darkmoon_card_all_classes", rarity.name), 0.7, 0.7, 0.7)
     if card.description ~= "" then
-        tooltip:AddLine(card.description, 1, 1, 1, 1)
+        self.tooltip:AddLine(card.description, 1, 1, 1, 1)
     end
-    tooltip:AddLine(" ")
-    tooltip:AddLine(card.maxCopies == 1 and L["hoa.addon.1_copy_per_run"] or L["hoa.addon.each_copy_adds_a_bit_less_than_the_one_before"], 1, 0.82, 0, 1)
-    AddState(card)
-    tooltip:Show()
+    self.tooltip:AddLine(" ")
+    self.tooltip:AddLine(card.maxCopies == 1 and L["hoa.addon.1_copy_per_run"] or L["hoa.addon.each_copy_adds_a_bit_less_than_the_one_before"], 1, 0.82, 0, 1)
+    self:AddState(card)
+    self.tooltip:Show()
 end
 
-local function ShowGlyphTooltip(owner, glyph)
+function Codex:ShowGlyphTooltip(owner, glyph)
     local rarity = VanillaBonkUI.RARITY[glyph.rarity] or VanillaBonkUI.RARITY[0]
-    tooltip = GameTooltip
+    self.tooltip = GameTooltip
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-    tooltip:AddLine(glyph.name, rarity.r, rarity.g, rarity.b)
-    tooltip:AddLine(L("hoa.addon.1_glyph_all_classes", rarity.name), 0.7, 0.7, 0.7)
+    self.tooltip:AddLine(glyph.name, rarity.r, rarity.g, rarity.b)
+    self.tooltip:AddLine(L("hoa.addon.1_glyph_all_classes", rarity.name), 0.7, 0.7, 0.7)
     if glyph.description ~= "" then
-        tooltip:AddLine(glyph.description, 1, 1, 1, 1)
+        self.tooltip:AddLine(glyph.description, 1, 1, 1, 1)
     end
     if glyph.drawback ~= "" then
-        tooltip:AddLine(glyph.drawback, 1, 0.29, 0.23, 1)
+        self.tooltip:AddLine(glyph.drawback, 1, 0.29, 0.23, 1)
     end
-    tooltip:AddLine(" ")
-    tooltip:AddLine(L["hoa.addon.offered_after_the_first_timed_mini_boss_and_the_first_two_st"], 1, 0.82, 0, 1)
-    AddState(glyph)
-    tooltip:Show()
+    self.tooltip:AddLine(" ")
+    self.tooltip:AddLine(L["hoa.addon.offered_after_the_first_timed_mini_boss_and_the_first_two_st"], 1, 0.82, 0, 1)
+    self:AddState(glyph)
+    self.tooltip:Show()
 end
 
 local function HideTooltip()
     GameTooltip:Hide()
 end
 
-local TOOLTIPS = { w = ShowSpellTooltip, p = ShowPassiveTooltip, c = ShowCardTooltip, g = ShowGlyphTooltip }
+Codex.tooltips = { w = Codex.ShowSpellTooltip, p = Codex.ShowPassiveTooltip, c = Codex.ShowCardTooltip, g = Codex.ShowGlyphTooltip }
 
-local function ShowEntryTooltip(owner, entry, manage)
-    if entry and TOOLTIPS[entry.kind] then
-        TOOLTIPS[entry.kind](owner, entry)
+function Codex:ShowEntryTooltip(owner, entry, manage)
+    local show = entry and self.tooltips[entry.kind]
+    if show then
+        show(self, owner, entry)
         if entry.off then
-            tooltip:AddLine(" ")
-            tooltip:AddLine(L["hoa.addon.banned_it_won_t_turn_up_in_runs"], 1, 0.3, 0.3)
+            self.tooltip:AddLine(" ")
+            self.tooltip:AddLine(L["hoa.addon.banned_it_won_t_turn_up_in_runs"], 1, 0.3, 0.3)
             if manage then
-                tooltip:AddLine(L["hoa.addon.right_click_to_allow_it_again"], 0.4, 1, 0.4)
+                self.tooltip:AddLine(L["hoa.addon.right_click_to_allow_it_again"], 0.4, 1, 0.4)
             end
-            tooltip:Show()
+            self.tooltip:Show()
         elseif not manage then
             return
-        elseif CanSwitch(entry) then
-            tooltip:AddLine(" ")
-            tooltip:AddLine(L["hoa.addon.right_click_to_ban_it_from_your_runs"], 1, 0.82, 0)
-            tooltip:Show()
-        elseif book and entry.owned and POOL_KINDS[entry.kind] then
-            local pool = book.pool[entry.kind]
-            tooltip:AddLine(" ")
-            tooltip:AddLine(pool.slots > 0 and L("hoa.addon.all_your_ban_slots_are_in_use_1_2", pool.used, pool.slots) or
+        elseif self:CanSwitch(entry) then
+            self.tooltip:AddLine(" ")
+            self.tooltip:AddLine(L["hoa.addon.right_click_to_ban_it_from_your_runs"], 1, 0.82, 0)
+            self.tooltip:Show()
+        elseif self.book and entry.owned and POOL_KINDS[entry.kind] then
+            local pool = self.book.pool[entry.kind]
+            self.tooltip:AddLine(" ")
+            self.tooltip:AddLine(pool.slots > 0 and L("hoa.addon.all_your_ban_slots_are_in_use_1_2", pool.used, pool.slots) or
                 L["hoa.addon.you_have_no_ban_slots_yet"], 0.7, 0.7, 0.7, 1)
-            tooltip:Show()
+            self.tooltip:Show()
         end
     end
 end
 
 local function OnEnterEntry()
-    ShowEntryTooltip(this, this.entry)
+    Codex:ShowEntryTooltip(this, this.entry)
 end
 
-local UI = VanillaBonkUI
-
 local window = UI.Window("VanillaBonkSpellbook", WIDTH, HEIGHT)
+Codex.window = window
 window:SetPoint("CENTER", UIParent, "CENTER", 0, 30)
 window.title:SetText(L["hoa.addon.spellbook"])
 window.subtitle = window.headerRight
@@ -288,8 +287,6 @@ SetFont(window.empty, FONT, 12)
 window.empty:SetPoint("TOP", window.list, "TOP", 0, -40)
 window.empty:SetTextColor(0.6, 0.6, 0.6)
 
-local Refresh
-
 local TABS = {
     { key = "spells",     label = L["hoa.addon.spells"] },
     { key = "unlocks",    label = L["hoa.addon.passives"] },
@@ -299,56 +296,54 @@ local TABS = {
     { key = "rules",      label = L["hoa.addon.rules"] },
 }
 
-local eliteAffixes = {}
-
-local function TabHasClasses()
-    return currentTab == "spells" or currentTab == "evolutions"
+function Codex:TabHasClasses()
+    return self.currentTab == "spells" or self.currentTab == "evolutions"
 end
 
-local function TabHasInfoRows()
-    return currentTab == "debuffs" or currentTab == "affixes"
+function Codex:TabHasInfoRows()
+    return self.currentTab == "debuffs" or self.currentTab == "affixes"
 end
 
-local shownTabs = TABS
+Codex.shownTabs = TABS
 
-local function TabLabels()
-    shownTabs = {}
+function Codex:TabLabels()
+    self.shownTabs = {}
     for _, tab in ipairs(TABS) do
-        if (tab.key ~= "evolutions" or (book and getn(book.evolutions) > 0)) and
-            (tab.key ~= "debuffs" or (book and book.debuffs and getn(book.debuffs) > 0)) and
-            (tab.key ~= "affixes" or getn(eliteAffixes) > 0) and
-            (tab.key ~= "rules" or (book and book.rules and getn(book.rules) > 0)) then
-            tinsert(shownTabs, tab)
+        if (tab.key ~= "evolutions" or (self.book and getn(self.book.evolutions) > 0)) and
+            (tab.key ~= "debuffs" or (self.book and self.book.debuffs and getn(self.book.debuffs) > 0)) and
+            (tab.key ~= "affixes" or getn(self.eliteAffixes) > 0) and
+            (tab.key ~= "rules" or (self.book and self.book.rules and getn(self.book.rules) > 0)) then
+            tinsert(self.shownTabs, tab)
         end
     end
     local labels = {}
-    for _, tab in ipairs(shownTabs) do
+    for _, tab in ipairs(self.shownTabs) do
         tinsert(labels, tab.label)
     end
     return labels
 end
 
-local function UpdateTabs()
-    UI.Tabs(window, TabLabels(), function(id)
-        currentTab = shownTabs[id].key
-        Refresh()
+function Codex:UpdateTabs()
+    UI.Tabs(window, self:TabLabels(), function(id)
+        Codex.currentTab = Codex.shownTabs[id].key
+        Codex:Refresh()
     end)
     local found = false
-    for index, tab in ipairs(shownTabs) do
-        if tab.key == currentTab then
+    for index, tab in ipairs(self.shownTabs) do
+        if tab.key == self.currentTab then
             UI.SelectTab(window, index)
             found = true
         end
     end
     if not found then
-        currentTab = shownTabs[1].key
+        self.currentTab = self.shownTabs[1].key
         UI.SelectTab(window, 1)
     end
 end
 
 window.filters = {}
 
-local function CreateFilterButton(index, mask, name)
+function Codex:CreateFilterButton(index, mask, name)
     local button = CreateFrame("Button", nil, window)
     button:SetWidth(26)
     button:SetHeight(26)
@@ -361,9 +356,9 @@ local function CreateFilterButton(index, mask, name)
     button.mask = mask
     button.name = name
     button:SetScript("OnClick", function()
-        classFilter = this.mask
+        Codex.classFilter = this.mask
         PlaySound("igMainMenuOptionCheckBoxOn")
-        Refresh()
+        Codex:Refresh()
     end)
     button:SetScript("OnEnter", function()
         GameTooltip:SetOwner(this, "ANCHOR_BOTTOM")
@@ -376,14 +371,14 @@ local function CreateFilterButton(index, mask, name)
 end
 
 do
-    local all = CreateFilterButton(1, 0, L["hoa.addon.all_classes"])
+    local all = Codex:CreateFilterButton(1, 0, L["hoa.addon.all_classes"])
     all.label = all:CreateFontString(nil, "OVERLAY")
     SetFont(all.label, NUMBER_FONT, 11, "OUTLINE")
     all.label:SetPoint("CENTER", all, "CENTER", 0, 0)
     all.label:SetText(L["hoa.addon.all"])
 
     for index, class in ipairs(CLASSES) do
-        local button = CreateFilterButton(index + 1, class.mask, class.name)
+        local button = Codex:CreateFilterButton(index + 1, class.mask, class.name)
         button.icon = button:CreateTexture(nil, "ARTWORK")
         button.icon:SetTexture(CLASS_ICONS)
         button.icon:SetTexCoord(class.coords[1], class.coords[2], class.coords[3], class.coords[4])
@@ -404,15 +399,15 @@ window.pool:SetPoint("BOTTOMLEFT", window, "BOTTOMLEFT", 30, 22)
 window.pool:SetShadowColor(0, 0, 0, 1)
 window.pool:SetShadowOffset(1, -1)
 
-local function UpdateFilters()
-    local shown = TabHasClasses()
+function Codex:UpdateFilters()
+    local shown = self:TabHasClasses()
     for _, button in ipairs(window.filters) do
         if shown then
             button:Show()
         else
             button:Hide()
         end
-        if button.mask == classFilter then
+        if button.mask == self.classFilter then
             button:SetBackdropColor(0.35, 0.25, 0.05, 0.9)
             button:SetBackdropBorderColor(1, 0.82, 0, 1)
             if button.icon then
@@ -430,9 +425,7 @@ end
 
 window.cards = {}
 
-local TogglePool
-
-local function CreateCard(index)
+function Codex:CreateCard(index)
     local card = CreateFrame("Button", nil, window.list)
     card:SetWidth(CARD_WIDTH)
     card:SetHeight(CARD_HEIGHT)
@@ -519,21 +512,21 @@ local function SpellGroup(spell)
     return FirstClassIndex(spell.classMask) .. ":" .. (spell.spec or "")
 end
 
-local function SpellGroupLabel(spell)
+function Codex:SpellGroupLabel(spell)
     local name = spell.spec ~= "" and spell.spec or L["hoa.addon.other_spells"]
-    if classFilter == 0 then
+    if self.classFilter == 0 then
         return name .. "  |cff9d9d9d" .. ClassNames(spell.classMask) .. "|r"
     end
     return name
 end
 
-local function ShowDivider(index, top, spell)
+function Codex:ShowDivider(index, top, spell)
     local divider = window.dividers[index] or CreateDivider(index)
     local class = CLASSES[FirstClassIndex(spell.classMask)]
     local color = class and class.color or { 1, 0.82, 0 }
     divider:ClearAllPoints()
     divider:SetPoint("TOPLEFT", window.list, "TOPLEFT", 0, -top)
-    divider.label:SetText(SpellGroupLabel(spell))
+    divider.label:SetText(self:SpellGroupLabel(spell))
     divider.label:SetTextColor(color[1], color[2], color[3])
     divider.line:SetVertexColor(color[1], color[2], color[3], 0.45)
     divider:Show()
@@ -644,10 +637,10 @@ local function FillPart(part, entry)
     end
 end
 
-local function SortedSpells()
+function Codex:SortedSpells()
     local list = {}
-    for _, spell in pairs(book.weapons) do
-        if spell.evolvesFrom == 0 and MatchesFilter(spell) then
+    for _, spell in pairs(self.book.weapons) do
+        if spell.evolvesFrom == 0 and self:MatchesFilter(spell) then
             tinsert(list, spell)
         end
     end
@@ -673,16 +666,16 @@ local function SortedSpells()
     return list
 end
 
-local function SortedPassives()
+function Codex:SortedPassives()
     local list = {}
-    for _, passive in pairs(book.passives) do
+    for _, passive in pairs(self.book.passives) do
         tinsert(list, passive)
     end
     table.sort(list, function(a, b) return a.id < b.id end)
     return list
 end
 
-local function ShowCards(entries, grouped)
+function Codex:ShowCards(entries, grouped)
     local top, column, dividers, group = 0, 0, 0, nil
     for index, entry in ipairs(entries) do
         if grouped and SpellGroup(entry) ~= group then
@@ -692,29 +685,29 @@ local function ShowCards(entries, grouped)
             end
             group = SpellGroup(entry)
             dividers = dividers + 1
-            ShowDivider(dividers, top, entry)
+            self:ShowDivider(dividers, top, entry)
             top = top + DIVIDER_HEIGHT
         end
-        local card = window.cards[index] or CreateCard(index)
+        local card = window.cards[index] or self:CreateCard(index)
         PlaceCard(card, column, top)
         card.entry = entry
         card.icon:SetTexture(ICON_PATH .. (entry.icon ~= "" and entry.icon or "INV_Misc_QuestionMark"))
         card.name:SetText(entry.name)
 
-        local lock = book.locks[entry.kind .. entry.id]
+        local lock = self.book.locks[entry.kind .. entry.id]
         if entry.locked then
             card.detail:SetText(lock and L("hoa.addon.locked_by_1", lock.name) or L["hoa.addon.locked_by_a_quest"])
         elseif entry.kind == "p" then
             card.detail:SetText(entry.maxRank > 0 and L("hoa.addon.unlocked_max_rank_1", entry.maxRank) or L["hoa.addon.unlocked"])
         else
             local text = ClassNames(entry.classMask)
-            if entry.starterMask > 0 and (classFilter == 0 or HasFlag(entry.starterMask, classFilter)) then
+            if entry.starterMask > 0 and (self.classFilter == 0 or HasFlag(entry.starterMask, self.classFilter)) then
                 text = L("hoa.addon.1_starter_spell", text)
             end
             card.detail:SetText(text)
         end
 
-        if entry.kind == "w" and book.evolutionOf[entry.id] then
+        if entry.kind == "w" and self.book.evolutionOf[entry.id] then
             card.badge:SetText("|cffff9933>>|r")
         else
             card.badge:SetText("")
@@ -733,7 +726,7 @@ local function ShowCards(entries, grouped)
             card.offText:Hide()
         end
         if GetMouseFocus() == card then
-            ShowEntryTooltip(GetMouseFocus(), entry)
+            self:ShowEntryTooltip(GetMouseFocus(), entry)
         end
         card:Show()
         if column == 1 then
@@ -832,16 +825,16 @@ local function ShowInfoRows(entries, describe)
     return top, count
 end
 
-local function ShowEvolutions()
+function Codex:ShowEvolutions()
     local shown, top, dividers, group = 0, 0, 0, nil
     local columns = EvolutionColumns()
-    for _, base in ipairs(SortedSpells()) do
-        local evolutions = book.evolutionOf[base.id]
+    for _, base in ipairs(self:SortedSpells()) do
+        local evolutions = self.book.evolutionOf[base.id]
         if evolutions then
             if SpellGroup(base) ~= group then
                 group = SpellGroup(base)
                 dividers = dividers + 1
-                ShowDivider(dividers, top, base)
+                self:ShowDivider(dividers, top, base)
                 top = top + DIVIDER_HEIGHT
             end
             shown = shown + 1
@@ -875,6 +868,7 @@ local function ShowEvolutions()
 end
 
 local rules = { section = 1, topics = {}, rows = {} }
+Codex.rules = rules
 
 do
     local SIDE_WIDTH = 140
@@ -922,7 +916,7 @@ do
     local function SelectTopic(index)
         rules.section = index
         PlaySound("igMainMenuOptionCheckBoxOn")
-        Refresh()
+        Codex:Refresh()
     end
 
     local function CreateTopic(index)
@@ -1045,13 +1039,13 @@ do
     end
 end
 
-function Refresh(keepScroll)
-    if not book then
+function Codex:Refresh(keepScroll)
+    if not self.book then
         return
     end
-    if currentTab == "rules" and book.rules and getn(book.rules) > 0 then
-        UpdateTabs()
-        UpdateFilters()
+    if self.currentTab == "rules" and self.book.rules and getn(self.book.rules) > 0 then
+        self:UpdateTabs()
+        self:UpdateFilters()
         for _, card in ipairs(window.cards) do
             card:Hide()
         end
@@ -1059,23 +1053,23 @@ function Refresh(keepScroll)
         window.empty:SetText("")
         window.tally:SetText("")
         window.pool:SetText("")
-        local name = rules.Show(book.rules)
+        local name = rules.Show(self.book.rules)
         window.header:SetText(L("hoa.addon.rules_cff9d9d9d_1_r", name))
         return
     end
     rules.Hide()
     window.scroll:Show()
     local scroll = keepScroll and window.scroll:GetVerticalScroll() or 0
-    UpdateTabs()
-    UpdateFilters()
+    self:UpdateTabs()
+    self:UpdateFilters()
 
     local height, count = 0, 0
-    if not TabHasInfoRows() then
+    if not self:TabHasInfoRows() then
         for _, row in ipairs(window.debuffRows) do
             row:Hide()
         end
     end
-    if TabHasInfoRows() then
+    if self:TabHasInfoRows() then
         for _, card in ipairs(window.cards) do
             card:Hide()
         end
@@ -1083,32 +1077,32 @@ function Refresh(keepScroll)
             row:Hide()
         end
         HideDividers(1)
-        if currentTab == "affixes" then
-            height, count = ShowInfoRows(eliteAffixes)
+        if self.currentTab == "affixes" then
+            height, count = ShowInfoRows(self.eliteAffixes)
         else
-            height, count = ShowInfoRows(book.debuffs, DescribeDebuffLimits)
+            height, count = ShowInfoRows(self.book.debuffs, DescribeDebuffLimits)
         end
         window.empty:SetText(count == 0 and L["hoa.addon.nothing_here_yet"] or "")
-    elseif currentTab == "evolutions" then
+    elseif self.currentTab == "evolutions" then
         for _, card in ipairs(window.cards) do
             card:Hide()
         end
-        height, count = ShowEvolutions()
+        height, count = self:ShowEvolutions()
         window.empty:SetText(count == 0 and L["hoa.addon.no_evolutions_for_this_class"] or "")
     else
         for _, row in ipairs(window.evolutionRows) do
             row:Hide()
         end
         local entries
-        if currentTab == "unlocks" then
-            entries = SortedPassives()
+        if self.currentTab == "unlocks" then
+            entries = self:SortedPassives()
         else
-            entries = SortedSpells()
+            entries = self:SortedSpells()
         end
-        height = ShowCards(entries, currentTab == "spells")
+        height = self:ShowCards(entries, self.currentTab == "spells")
         if table.getn(entries) > 0 then
             window.empty:SetText("")
-        elseif TabHasClasses() and classFilter ~= 0 then
+        elseif self:TabHasClasses() and self.classFilter ~= 0 then
             window.empty:SetText(L["hoa.addon.nothing_here_for_this_class"])
         else
             window.empty:SetText(L["hoa.addon.nothing_here_yet"])
@@ -1120,7 +1114,7 @@ function Refresh(keepScroll)
     window.scroll:SetVerticalScroll(min(scroll, window.scroll:GetVerticalScrollRange()))
 
     local locked = 0
-    for _, list in ipairs({ book.weapons, book.passives }) do
+    for _, list in ipairs({ self.book.weapons, self.book.passives }) do
         for _, entry in pairs(list) do
             if entry.locked then
                 locked = locked + 1
@@ -1129,11 +1123,11 @@ function Refresh(keepScroll)
     end
     window.subtitle:SetText("|cffffffff" .. L("hoa.addon.1_locked_by_quests", locked) .. "|r")
 
-    if TabHasClasses() or TabHasInfoRows() then
+    if self:TabHasClasses() or self:TabHasInfoRows() then
         window.tally:SetText("")
     else
         local owned, held = 0, 0
-        for _, entry in pairs(book.passives) do
+        for _, entry in pairs(self.book.passives) do
             if entry.owned then
                 owned = owned + 1
             else
@@ -1145,18 +1139,18 @@ function Refresh(keepScroll)
     window.pool:SetText("")
 
     local className = L["hoa.addon.all_classes"]
-    if TabHasClasses() then
+    if self:TabHasClasses() then
         for _, class in ipairs(CLASSES) do
-            if class.mask == classFilter then
+            if class.mask == self.classFilter then
                 className = class.name
             end
         end
     end
-    window.header:SetText(L("hoa.addon.1_cff9d9d9d_2_spells_3_passives_r", className, book.spellCount, book.passiveCount))
+    window.header:SetText(L("hoa.addon.1_cff9d9d9d_2_spells_3_passives_r", className, self.book.spellCount, self.book.passiveCount))
 end
 
-TogglePool = function(entry)
-    if not CanSwitch(entry) or window.buying then
+function Codex:TogglePool(entry)
+    if not self:CanSwitch(entry) or window.buying then
         return false
     end
     window.buying = GetTime()
@@ -1173,13 +1167,13 @@ end)
 window:SetScript("OnUpdate", function()
     if this.buying and GetTime() - this.buying > 3 then
         this.buying = nil
-        Refresh(true)
+        Codex:Refresh(true)
     end
 end)
 
 window:SetScript("OnHide", function()
     PlaySound("igSpellBookClose")
-    atKeeper = false
+    Codex.atKeeper = false
     if window.fromGossip then
         window.fromGossip = nil
         if not window.gossipClosed then
@@ -1189,11 +1183,11 @@ window:SetScript("OnHide", function()
     window.gossipClosed = nil
 end)
 
-local function OpenFromGossip()
+function Codex:OpenFromGossip()
     window.fromGossip = true
-    atKeeper = true
+    self.atKeeper = true
     window:Show()
-    Refresh()
+    self:Refresh()
 end
 
 function VanillaBonkCodex.TakeOverGossip()
@@ -1201,20 +1195,20 @@ function VanillaBonkCodex.TakeOverGossip()
     GossipFrame:SetScript("OnHide", nil)
     HideUIPanel(GossipFrame)
     GossipFrame:SetScript("OnHide", closeOnHide)
-    OpenFromGossip()
+    Codex:OpenFromGossip()
 end
 
 local PreviousGossipOnEvent = GossipFrame_OnEvent
 function GossipFrame_OnEvent()
-    if event == "GOSSIP_SHOW" and pendingNpc then
-        local npc = pendingNpc
-        pendingNpc = nil
+    if event == "GOSSIP_SHOW" and Codex.pendingNpc then
+        local npc = Codex.pendingNpc
+        Codex.pendingNpc = nil
         if UI.TalkingTo(npc) then
-            OpenFromGossip()
+            Codex:OpenFromGossip()
             return
         end
     elseif event == "GOSSIP_CLOSED" then
-        pendingNpc = nil
+        Codex.pendingNpc = nil
         if window.fromGossip and window:IsShown() then
             window.gossipClosed = true
             window:Hide()
@@ -1230,14 +1224,12 @@ SlashCmdList["VANILLABONKSPELLBOOK"] = function()
         window:Hide()
         return
     end
-    openRequested = true
+    Codex.openRequested = true
     SendChatMessage(".bonk codex", "SAY")
 end
 
-local handlers = {}
-
-handlers["cdx"] = function(f)
-    incoming = {
+function Codex:BeginCodex(f)
+    self.incoming = {
         npc = f[2] or "",
         classMask = tonumber(f[3]) or 0,
         deck = f[4] == "1",
@@ -1256,11 +1248,11 @@ handlers["cdx"] = function(f)
     }
 end
 
-handlers["cdxr"] = function(f)
-    if not incoming or not f[2] or not f[3] then
+function Codex:AddRuleLine(f)
+    if not self.incoming or not f[2] or not f[3] then
         return
     end
-    local sections = incoming.rules
+    local sections = self.incoming.rules
     local last = sections[getn(sections)]
     if not last or last.name ~= f[2] then
         last = { name = f[2], lines = {} }
@@ -1273,8 +1265,8 @@ handlers["cdxr"] = function(f)
     end
 end
 
-handlers["cdxw"] = function(f)
-    if not incoming then
+function Codex:AddWeapon(f)
+    if not self.incoming then
         return
     end
     local id = tonumber(f[2]) or 0
@@ -1289,11 +1281,11 @@ handlers["cdxw"] = function(f)
         description = "",
     }
     ReadState(spell, f[8])
-    incoming.weapons[id] = spell
+    self.incoming.weapons[id] = spell
 end
 
-handlers["cdxwd"] = function(f)
-    local spell = incoming and incoming.weapons[tonumber(f[2]) or 0]
+function Codex:AddWeaponDetail(f)
+    local spell = self.incoming and self.incoming.weapons[tonumber(f[2]) or 0]
     if spell then
         spell.description = f[3] or ""
         spell.school = f[4] or ""
@@ -1305,8 +1297,8 @@ handlers["cdxwd"] = function(f)
     end
 end
 
-handlers["cdxp"] = function(f)
-    if not incoming then
+function Codex:AddPassive(f)
+    if not self.incoming then
         return
     end
     local id = tonumber(f[2]) or 0
@@ -1319,11 +1311,11 @@ handlers["cdxp"] = function(f)
         description = f[7] or "",
     }
     ReadState(passive, f[6])
-    incoming.passives[id] = passive
+    self.incoming.passives[id] = passive
 end
 
-handlers["cdxc"] = function(f)
-    if not incoming then
+function Codex:AddCard(f)
+    if not self.incoming then
         return
     end
     local id = tonumber(f[2]) or 0
@@ -1337,21 +1329,21 @@ handlers["cdxc"] = function(f)
         description = "",
     }
     ReadState(card, f[7])
-    incoming.cards[id] = card
+    self.incoming.cards[id] = card
 end
 
-handlers["cdxcd"] = function(f)
-    local card = incoming and incoming.cards[tonumber(f[2]) or 0]
+function Codex:AddCardDetail(f)
+    local card = self.incoming and self.incoming.cards[tonumber(f[2]) or 0]
     if card then
         card.description = f[3] or ""
     end
 end
 
-handlers["cdxk"] = function(f)
-    if not incoming then
+function Codex:AddDebuff(f)
+    if not self.incoming then
         return
     end
-    tinsert(incoming.debuffs, {
+    tinsert(self.incoming.debuffs, {
         id = tonumber(f[2]) or 0,
         name = f[3] or "",
         icon = f[4] or "",
@@ -1361,72 +1353,72 @@ handlers["cdxk"] = function(f)
     })
 end
 
-handlers["affixinfo"] = function(f)
+function Codex:AddAffix(f)
     local name = f[2]
     if not name or name == "" then
         return
     end
-    for _, affix in ipairs(eliteAffixes) do
+    for _, affix in ipairs(self.eliteAffixes) do
         if affix.name == name then
             affix.icon, affix.description = f[3] or "", f[4] or ""
             return
         end
     end
-    tinsert(eliteAffixes, { name = name, icon = f[3] or "", description = f[4] or "" })
+    tinsert(self.eliteAffixes, { name = name, icon = f[3] or "", description = f[4] or "" })
 end
 
-handlers["cdxg"] = function(f)
-    if not incoming or not f[2] or f[2] == "" then
+function Codex:AddGlyph(f)
+    if not self.incoming or not f[2] or f[2] == "" then
         return
     end
     local glyph = { kind = "g", id = tonumber(f[2]) or f[2], key = f[2] }
     ReadState(glyph, f[3])
-    incoming.glyphs[f[2]] = glyph
+    self.incoming.glyphs[f[2]] = glyph
 end
 
-handlers["cdxpool"] = function(f)
-    if incoming and incoming.pool[f[2] or ""] then
-        incoming.pool[f[2]] = { used = tonumber(f[3] or "") or 0, slots = tonumber(f[4] or "") or 0 }
+function Codex:SetPool(f)
+    if self.incoming and self.incoming.pool[f[2] or ""] then
+        self.incoming.pool[f[2]] = { used = tonumber(f[3] or "") or 0, slots = tonumber(f[4] or "") or 0 }
     end
 end
 
-handlers["cdxban"] = function(f)
-    if incoming and incoming.bans[f[2] or ""] then
-        tinsert(incoming.bans[f[2]], { earned = f[3] == "1", tickets = tonumber(f[4] or "") or 0, label = f[5] or "", detail = f[6] or "" })
+function Codex:AddBan(f)
+    if self.incoming and self.incoming.bans[f[2] or ""] then
+        tinsert(self.incoming.bans[f[2]], { earned = f[3] == "1", tickets = tonumber(f[4] or "") or 0, label = f[5] or "", detail = f[6] or "" })
     end
 end
 
-handlers["cdxcs"] = function(f)
-    if incoming and f[2] then
-        incoming.stacks[tonumber(f[2]) or 0] = { one = f[3] or "", five = f[4] or "" }
+function Codex:AddCardStacks(f)
+    if self.incoming and f[2] then
+        self.incoming.stacks[tonumber(f[2]) or 0] = { one = f[3] or "", five = f[4] or "" }
     end
 end
 
-handlers["cdxtickets"] = function(f)
-    if incoming then
-        incoming.tickets = tonumber(f[2] or "") or 0
+function Codex:SetTickets(f)
+    if self.incoming then
+        self.incoming.tickets = tonumber(f[2] or "") or 0
     end
 end
 
-handlers["cdxoff"] = function(f)
-    if incoming and f[2] and f[3] then
-        incoming.off[f[2] .. f[3]] = true
+function Codex:AddOff(f)
+    if self.incoming and f[2] and f[3] then
+        self.incoming.off[f[2] .. f[3]] = true
     end
 end
 
-handlers["cdxq"] = function(f)
-    if incoming then
-        incoming.locks[(f[2] or "") .. (f[3] or "")] = { name = f[4] or "", description = f[5] or "",
+function Codex:AddQuestLock(f)
+    if self.incoming then
+        self.incoming.locks[(f[2] or "") .. (f[3] or "")] = { name = f[4] or "", description = f[5] or "",
             progress = tonumber(f[6]) or 0, amount = tonumber(f[7]) or 1 }
     end
 end
 
-handlers["cdxend"] = function()
-    if not incoming then
+function Codex:FinishCodex()
+    if not self.incoming then
         return
     end
-    local received = incoming
-    incoming = nil
+    local received = self.incoming
+    self.incoming = nil
 
     received.evolutions = {}
     received.evolutionOf = {}
@@ -1468,7 +1460,7 @@ handlers["cdxend"] = function()
             entry.off = received.off[kind .. entry.id] and true or nil
         end
     end
-    book = received
+    self.book = received
     window.buying = nil
     if VanillaBonkCodex.onBook then
         VanillaBonkCodex.onBook()
@@ -1483,30 +1475,56 @@ handlers["cdxend"] = function()
     end
 
     if window:IsShown() then
-        openRequested = nil
+        self.openRequested = nil
         if received.npc ~= "" then
-            atKeeper = true
+            self.atKeeper = true
         end
-        Refresh(true)
+        self:Refresh(true)
     elseif received.npc ~= "" then
-        classFilter = received.classMask
+        self.classFilter = received.classMask
         if GossipFrame:IsVisible() and UI.TalkingTo(received.npc) then
             VanillaBonkCodex.TakeOverGossip()
         else
-            pendingNpc = received.npc
+            self.pendingNpc = received.npc
         end
-    elseif openRequested then
-        openRequested = nil
-        classFilter = received.classMask
+    elseif self.openRequested then
+        self.openRequested = nil
+        self.classFilter = received.classMask
         window:Show()
-        Refresh()
+        self:Refresh()
     end
 end
 
-VanillaBonkCodex.ShowEntryTooltip = ShowEntryTooltip
-VanillaBonkCodex.CanSwitch = CanSwitch
+local handlers = {}
+handlers["cdx"] = function(f) Codex:BeginCodex(f) end
+handlers["cdxr"] = function(f) Codex:AddRuleLine(f) end
+handlers["cdxw"] = function(f) Codex:AddWeapon(f) end
+handlers["cdxwd"] = function(f) Codex:AddWeaponDetail(f) end
+handlers["cdxp"] = function(f) Codex:AddPassive(f) end
+handlers["cdxc"] = function(f) Codex:AddCard(f) end
+handlers["cdxcd"] = function(f) Codex:AddCardDetail(f) end
+handlers["cdxk"] = function(f) Codex:AddDebuff(f) end
+handlers["affixinfo"] = function(f) Codex:AddAffix(f) end
+handlers["cdxg"] = function(f) Codex:AddGlyph(f) end
+handlers["cdxpool"] = function(f) Codex:SetPool(f) end
+handlers["cdxban"] = function(f) Codex:AddBan(f) end
+handlers["cdxcs"] = function(f) Codex:AddCardStacks(f) end
+handlers["cdxtickets"] = function(f) Codex:SetTickets(f) end
+handlers["cdxoff"] = function(f) Codex:AddOff(f) end
+handlers["cdxq"] = function(f) Codex:AddQuestLock(f) end
+handlers["cdxend"] = function() Codex:FinishCodex() end
+
+VanillaBonkCodex.ShowEntryTooltip = function(owner, entry, manage)
+    return Codex:ShowEntryTooltip(owner, entry, manage)
+end
+VanillaBonkCodex.CanSwitch = function(entry)
+    return Codex:CanSwitch(entry)
+end
 VanillaBonkCodex.TogglePool = function(entry)
-    return TogglePool(entry)
+    return Codex:TogglePool(entry)
+end
+function Refresh(keepScroll)
+    return Codex:Refresh(keepScroll)
 end
 
 VanillaBonkUI.ListenHoa({
@@ -1528,8 +1546,8 @@ VanillaBonkUI.ListenHoa({
     end,
 })
 
-UI.Module("codex"):OnMoney(function()
-    if window:IsShown() then
-        Refresh(true)
+Codex:OnMoney(function()
+    if Codex.window:IsShown() then
+        Codex:Refresh(true)
     end
 end)
