@@ -18,6 +18,8 @@ local SHOP_HINTS = {
 }
 local MASTERY_SHOP = "3"
 local FORTUNE_SHOP = "2"
+-- The typed shop handler in the run core tells the two shop payloads apart by this kind.
+VB.FORTUNE_SHOP = FORTUNE_SHOP
 local SHOP_REFUNDS = {
     ["1"] = { label = L["hoa.addon.refund_all"], text = L["hoa.addon.refunds_all_upgrades_for_their_full_gold_cost"] },
     ["2"] = { label = L["hoa.addon.refund_all"], text = L["hoa.addon.refunds_all_dark_fortunes_for_their_full_darkmoon_ticket_cos"] },

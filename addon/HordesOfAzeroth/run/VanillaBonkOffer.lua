@@ -199,17 +199,17 @@ end
 offerFrame.skip = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, offerFrame.chrome, "UIPanelButtonTemplate"))
 offerFrame.skip:SetWidth(120)
 offerFrame.skip:SetHeight(24)
-offerFrame.skip:SetScript("OnClick", Skip)
+offerFrame.skip:SetScript("OnClick", function() Offer:Skip() end)
 
 offerFrame.reroll = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, offerFrame.chrome, "UIPanelButtonTemplate"))
 offerFrame.reroll:SetWidth(120)
 offerFrame.reroll:SetHeight(24)
-offerFrame.reroll:SetScript("OnClick", Reroll)
+offerFrame.reroll:SetScript("OnClick", function() Offer:Reroll() end)
 
 offerFrame.banish = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, offerFrame.chrome, "UIPanelButtonTemplate"))
 offerFrame.banish:SetWidth(120)
 offerFrame.banish:SetHeight(24)
-offerFrame.banish:SetScript("OnClick", ToggleBanish)
+offerFrame.banish:SetScript("OnClick", function() Offer:ToggleBanish() end)
 
 do
     local KEY_PROMPT_BUTTONS = { skip = "VANILLABONK_SKIP", reroll = "VANILLABONK_REROLL", banish = "VANILLABONK_BANISH" }

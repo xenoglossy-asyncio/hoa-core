@@ -374,7 +374,7 @@ UI.ListenHoa({
     end,
     HOA_SHOP_OPEN = function(shop)
         local kind = tostring(shop.kind)
-        if kind == FORTUNE_SHOP then
+        if kind == VB.FORTUNE_SHOP then
             handlers["shop"]({
                 false, kind, shop.open and "1" or "0", shop.npc, shop.currency, shop.balance, shop.gates,
                 shop.coop_guest and "1" or "0",

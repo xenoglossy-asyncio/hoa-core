@@ -17,7 +17,7 @@ do
 		local fields = {};
 		local start = 1;
 		while ( true ) do
-			local found = string.find(text, separator, start, 1);
+			local found = string.find(text, separator, start, true);
 			if ( not found ) then
 				table.insert(fields, string.sub(text, start));
 				return fields;

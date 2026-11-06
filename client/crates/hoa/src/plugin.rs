@@ -31,6 +31,13 @@ const HOA_RUN_PAUSED: &str = "HOA_RUN_PAUSED";
 const HOA_COOP_NO_PAUSE: &str = "HOA_COOP_NO_PAUSE";
 const HOA_RUN_XP: &str = "HOA_RUN_XP";
 const HOA_WAVE_BEAT: &str = "HOA_WAVE_BEAT";
+const HOA_MOG_BEGIN: &str = "HOA_MOG_BEGIN";
+const HOA_MOG_SLOT: &str = "HOA_MOG_SLOT";
+const HOA_MOG_LOOK: &str = "HOA_MOG_LOOK";
+const HOA_MOG_OUTFIT: &str = "HOA_MOG_OUTFIT";
+const HOA_MOG_END: &str = "HOA_MOG_END";
+const HOA_HARDCORE_FELL: &str = "HOA_HARDCORE_FELL";
+const HOA_HARDCORE_RESTED: &str = "HOA_HARDCORE_RESTED";
 const HOA_RUN_SUPPORT: &str = "HOA_RUN_SUPPORT";
 const HOA_RUN_GLYPH_METER: &str = "HOA_RUN_GLYPH_METER";
 const HOA_RUN_OTHER_METER: &str = "HOA_RUN_OTHER_METER";
@@ -785,11 +792,11 @@ fn deliver_hoa_messages(world: &mut World) {
                     script.fire_event(HOA_BOARD_END, Vec::new());
                 }
                 HoaMessage::HardcoreRested(_) => {
-                    script.fire_event("HOA_HARDCORE_RESTED", Vec::new());
+                    script.fire_event(HOA_HARDCORE_RESTED, Vec::new());
                 }
                 HoaMessage::HardcoreFell(fell) => {
                     script.fire_event(
-                        "HOA_HARDCORE_FELL",
+                        HOA_HARDCORE_FELL,
                         vec![lua_table(vec![
                             ("name", ScriptValue::Str(fell.name)),
                             ("class_id", ScriptValue::Int(i64::from(fell.class_id))),
@@ -806,11 +813,11 @@ fn deliver_hoa_messages(world: &mut World) {
                     );
                 }
                 HoaMessage::MogBegin(_) => {
-                    script.fire_event("HOA_MOG_BEGIN", Vec::new());
+                    script.fire_event(HOA_MOG_BEGIN, Vec::new());
                 }
                 HoaMessage::MogSlot(slot) => {
                     script.fire_event(
-                        "HOA_MOG_SLOT",
+                        HOA_MOG_SLOT,
                         vec![lua_table(vec![
                             ("slot", ScriptValue::Int(i64::from(slot.slot))),
                             ("worn_entry", ScriptValue::Int(i64::from(slot.worn_entry))),
@@ -823,7 +830,7 @@ fn deliver_hoa_messages(world: &mut World) {
                 }
                 HoaMessage::MogLook(look) => {
                     script.fire_event(
-                        "HOA_MOG_LOOK",
+                        HOA_MOG_LOOK,
                         vec![lua_table(vec![
                             ("group", ScriptValue::Int(i64::from(look.group))),
                             ("entry", ScriptValue::Int(i64::from(look.entry))),
@@ -835,7 +842,7 @@ fn deliver_hoa_messages(world: &mut World) {
                 }
                 HoaMessage::MogOutfit(outfit) => {
                     script.fire_event(
-                        "HOA_MOG_OUTFIT",
+                        HOA_MOG_OUTFIT,
                         vec![lua_table(vec![
                             ("slot", ScriptValue::Int(i64::from(outfit.slot))),
                             ("name", ScriptValue::Str(outfit.name)),
@@ -843,7 +850,7 @@ fn deliver_hoa_messages(world: &mut World) {
                     );
                 }
                 HoaMessage::MogEnd(_) => {
-                    script.fire_event("HOA_MOG_END", Vec::new());
+                    script.fire_event(HOA_MOG_END, Vec::new());
                 }
                 HoaMessage::DeathRecap(recap) => {
                     script.fire_event(
@@ -1949,6 +1956,13 @@ impl Plugin for HordesOfAzerothPlugin {
         add_in_game_event(HOA_CARD_NOW);
         add_in_game_event(HOA_MASTERY_STATE);
         add_in_game_event(HOA_WALLET);
+        add_in_game_event(HOA_MOG_BEGIN);
+        add_in_game_event(HOA_MOG_SLOT);
+        add_in_game_event(HOA_MOG_LOOK);
+        add_in_game_event(HOA_MOG_OUTFIT);
+        add_in_game_event(HOA_MOG_END);
+        add_in_game_event(HOA_HARDCORE_FELL);
+        add_in_game_event(HOA_HARDCORE_RESTED);
         add_in_game_event(HOA_NOTICE);
         add_in_game_event(HOA_MESSAGE);
         add_in_game_event(HOA_FIND);
@@ -2106,6 +2120,74 @@ fn announce_addon_folder() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A fired event name nobody registered is a silent no-op: `fire_event` dispatches nothing
+    /// and an addon's `RegisterEvent` registers nothing, so a whole window can die without one
+    /// error anywhere — the transmogrifier's `HOA_MOG_*` sat unfired exactly this way from the
+    /// first hoa-core build until the live probe caught it. This reads the plugin's own source,
+    /// as `every_handler_names_the_kind_it_registered_for` does for the net handlers, so a new
+    /// message's event cannot land without its registration.
+    #[test]
+    fn every_fired_event_is_registered() {
+        let source = std::fs::read_to_string(std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/src/plugin.rs"
+        )))
+        .expect("the plugin's own source");
+        let constants: std::collections::HashMap<&str, &str> = source
+            .lines()
+            .filter_map(|line| {
+                let line = line.trim();
+                let rest = line.strip_prefix("const ")?;
+                let name = rest.split(':').next()?.trim();
+                let value = line.rsplit('"').nth(1)?;
+                Some((name, value))
+            })
+            .collect();
+        let registered: std::collections::HashSet<&str> = source
+            .lines()
+            .filter_map(|line| {
+                let rest = line.trim().strip_prefix("add_in_game_event(")?;
+                let name = rest.strip_suffix(");")?.trim();
+                Some(constants.get(name).copied().unwrap_or(name))
+            })
+            .collect();
+        assert!(
+            registered.len() > 100,
+            "the registration table vanished: {} events registered",
+            registered.len()
+        );
+        let mut fired: Vec<&str> = Vec::new();
+        for line in source.lines() {
+            for call in line.match_indices("fire_event").map(|(at, _)| at) {
+                let rest = &line[call + "fire_event".len()..];
+                let rest = rest.trim_start().strip_prefix('(').unwrap_or(rest);
+                let name = rest.split(',').next().unwrap_or("").trim();
+                let name = name.trim_start_matches('&');
+                let literal = name.strip_prefix('"').map(|rest| rest.split('"').next().unwrap_or(""));
+                let resolved = literal
+                    .map(|text| text)
+                    .or_else(|| constants.get(name).copied());
+                if let Some(event) = resolved {
+                    if !event.starts_with("HOA_") {
+                        continue; // a frame event of the wider client, not ours to register
+                    }
+                    fired.push(event);
+                }
+            }
+        }
+        let unregistered: Vec<&str> = {
+            let mut seen = fired.clone();
+            seen.sort_unstable();
+            seen.dedup();
+            seen.into_iter().filter(|event| !registered.contains(event)).collect()
+        };
+        assert!(
+            unregistered.is_empty(),
+            "events fired but never add_in_game_event'd (nobody hears them): {}",
+            unregistered.join(", ")
+        );
+    }
 
     #[test]
     fn the_generated_hello_decoder_reads_the_wire_layout() {

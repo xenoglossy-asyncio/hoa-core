@@ -165,7 +165,7 @@ function BonkCoop_Split(text, separator)
 	local fields = {};
 	local start = 1;
 	while ( true ) do
-		local found = string.find(text, separator, start, 1);
+		local found = string.find(text, separator, start, true);
 		if ( not found ) then
 			table.insert(fields, string.sub(text, start));
 			return fields;
@@ -213,7 +213,7 @@ function BonkCoop_Level(text)
 	local result = "";
 	local start = 1;
 	while ( true ) do
-		local found, last = string.find(text, " · ", start, 1);
+		local found, last = string.find(text, " · ", start, true);
 		result = result..BonkCoop_LevelPart(string.sub(text, start, found and found - 1 or -1));
 		if ( not found ) then
 			return result;
@@ -648,7 +648,7 @@ function BonkCoop_Matches(lobby)
 		return nil;
 	end
 	local search = strlower(BonkCoopSearch:GetText() or "");
-	if ( search ~= "" and not string.find(strlower(lobby.name), search, 1, 1) and not string.find(strlower(lobby.host), search, 1, 1) ) then
+	if ( search ~= "" and not string.find(strlower(lobby.name), search, 1, true) and not string.find(strlower(lobby.host), search, 1, true) ) then
 		return nil;
 	end
 	return 1;

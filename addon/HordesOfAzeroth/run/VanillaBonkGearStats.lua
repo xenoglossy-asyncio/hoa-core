@@ -220,8 +220,6 @@ function Gear:AddGearLines(tooltip, link, found, enchantLine)
     tooltip:Show()
 end
 
-VanillaBonkUI.AddGearLines = AddGearLines
-
 function Gear:HookTooltip(tooltip, method, linkOf)
     local original = tooltip and tooltip[method]
     if not original then
@@ -285,7 +283,7 @@ function Gear:InboxItemLink(index)
     return Gear:GearLinkNamed(GetInboxItem(index))
 end
 
-Gear:HookTooltip(GameTooltip, "SetInboxItem", InboxItemLink)
+Gear:HookTooltip(GameTooltip, "SetInboxItem", function(index) return Gear:InboxItemLink(index) end)
 
 local SLOTS_BY_EQUIP_LOC = {
     INVTYPE_HEAD = { 1 }, INVTYPE_NECK = { 2 }, INVTYPE_SHOULDER = { 3 }, INVTYPE_BODY = { 4 },
@@ -363,7 +361,7 @@ end
 Gear:CompareOn("SetBagItem", function(bag, slot) return GetContainerItemLink(bag, slot) end)
 Gear:CompareOn("SetLootItem", function(slot) return GetLootSlotLink(slot) end)
 Gear:CompareOn("SetMerchantItem", function(index) return GetMerchantItemLink(index) end)
-Gear:CompareOn("SetInboxItem", InboxItemLink)
+Gear:CompareOn("SetInboxItem", function(index) return Gear:InboxItemLink(index) end)
 
 local compareOnHide = GameTooltip:GetScript("OnHide")
 GameTooltip:SetScript("OnHide", function()
