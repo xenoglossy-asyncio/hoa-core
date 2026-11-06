@@ -524,7 +524,8 @@ function Get-NavGroups($Previous) {
 
 if (-not $SkipNavTiles) {
     if (-not (Test-DbUp)) { throw 'MariaDB is not running. Start it with tools\start-server.ps1 -DatabaseOnly.' }
-    & (Join-Path $PSScriptRoot 'build-navtiles.ps1') | Out-Null
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'build-navtiles.ps1') | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "build-navtiles.ps1 failed with exit code $LASTEXITCODE." }
     if (git -C $RepoRoot diff --name-only -- config/navtiles.json) { throw 'config/navtiles.json did not match the run zones and has been rebuilt: commit it, then release again.' }
     git -C $RepoRoot checkout -- config/navtiles.json
 }
