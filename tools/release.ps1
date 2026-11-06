@@ -498,30 +498,86 @@ function Get-NavFilesProblem($Group, $Files) {
     if ($stale.Count) { return "$($stale.Count) files are older than the last map generator change in server ($($generatorChanged.ToString('yyyy-MM-dd')))" }
 }
 
+function Split-NavGroup($Group) {
+    $mmaps = Join-Path $DataDir 'mmaps'
+    $limit = 180MB
+    $entries = [System.Collections.Generic.List[object]]::new()
+    $total = 0
+    foreach ($map in $Group.maps.PSObject.Properties) {
+        $id = [int]$map.Name
+        $tiles = if ($map.Value -eq 'all') {
+            @(Get-ChildItem $mmaps -Filter ('{0:D3}*.mmtile' -f $id) | Sort-Object Name | ForEach-Object {
+                $name = $_.BaseName.Substring(3)
+                '{0},{1}' -f [int]$name.Substring(2, 2), [int]$name.Substring(0, 2)
+            })
+        } else { @($map.Value) }
+        $header = Join-Path $mmaps ('{0:D3}.mmap' -f $id)
+        $headerSize = if (Test-Path $header) { (Get-Item $header).Length } else { 0 }
+        $size = $headerSize
+        foreach ($tile in $tiles) {
+            $xy = $tile -split ','
+            $path = Join-Path $mmaps ('{0:D3}{1:D2}{2:D2}.mmtile' -f $id, [int]$xy[1], [int]$xy[0])
+            if (Test-Path $path) { $size += (Get-Item $path).Length }
+        }
+        $total += $size
+        $entries.Add([pscustomobject]@{ Id = $id; Tiles = $tiles; HeaderSize = $headerSize })
+    }
+    if ($total -le $limit) { return @($Group) }
+
+    $parts = [System.Collections.Generic.List[object]]::new()
+    foreach ($entry in $entries) {
+        $chunks = [System.Collections.Generic.List[object]]::new()
+        $current = [System.Collections.Generic.List[string]]::new()
+        $size = $entry.HeaderSize
+        foreach ($tile in $entry.Tiles) {
+            $xy = $tile -split ','
+            $path = Join-Path $mmaps ('{0:D3}{1:D2}{2:D2}.mmtile' -f $entry.Id, [int]$xy[1], [int]$xy[0])
+            $length = if (Test-Path $path) { (Get-Item $path).Length } else { 0 }
+            if ($current.Count -gt 0 -and ($size + $length) -gt $limit) {
+                $chunks.Add([string[]]$current.ToArray())
+                $current = [System.Collections.Generic.List[string]]::new()
+                $size = $entry.HeaderSize
+            }
+            $current.Add($tile)
+            $size += $length
+        }
+        if ($current.Count -gt 0) { $chunks.Add([string[]]$current.ToArray()) }
+        for ($index = 0; $index -lt $chunks.Count; $index++) {
+            $suffix = " - map $($entry.Id)"
+            if ($chunks.Count -gt 1) { $suffix += " (part $($index + 1)/$($chunks.Count))" }
+            $maps = [pscustomobject]@{ "$($entry.Id)" = @($chunks[$index]) }
+            $parts.Add([pscustomobject]@{ name = "$($Group.name)$suffix"; maps = $maps })
+        }
+    }
+    return @($parts)
+}
+
 function Get-NavGroups($Previous) {
     $previousDownloads = @{}
     if ($Previous -and $Previous.navTiles) { foreach ($group in $Previous.navTiles) { if ($group.download) { $previousDownloads[$group.name] = $group.download } } }
     foreach ($group in (Get-Content (Join-Path $ConfigDir 'navtiles.json') -Raw | ConvertFrom-Json).groups) {
-        $files = @(Get-NavGroupFiles $group)
-        $problem = Get-NavFilesProblem $group $files
-        if ($problem) {
-            Write-Warning "Monster paths, $($group.name): $problem. The release has no download for them, so the launcher builds them on the player's processor. Build every tile with tools\extract-client-data.ps1 -MmapsOnly -AllTiles to ship them."
-            [ordered]@{ name = $group.name; maps = $group.maps }
-            continue
+        foreach ($part in @(Split-NavGroup $group)) {
+            $files = @(Get-NavGroupFiles $part)
+            $problem = Get-NavFilesProblem $part $files
+            if ($problem) {
+                Write-Warning "Monster paths, $($part.name): $problem. The release has no download for them, so the launcher builds them on the player's processor. Build every tile with tools\extract-client-data.ps1 -MmapsOnly -AllTiles to ship them."
+                [ordered]@{ name = $part.name; maps = $part.maps }
+                continue
+            }
+            $contentHash = Get-TextSha256 (($files | Sort-Object Target | ForEach-Object { "$($_.Target):$(Get-Sha256 $_.Source)" }) -join "`n")
+            $old = $previousDownloads[$part.name]
+            $download = if ($old -and $old.contentHash -eq $contentHash) {
+                Write-Host "monster paths, $($part.name): unchanged since $($old.release)"
+                $old
+            } else {
+                $slug = ($part.name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')
+                $zip = New-PackageZip "navmesh-$slug" $files
+                $uploads.Add($zip.FullName)
+                Write-Host ('monster paths, {0}: {1} files, {2:N1} MB zipped' -f $part.name, $files.Count, ($zip.Length / 1MB))
+                [ordered]@{ release = $tag; url = "$baseUrl/$($zip.Name)"; size = $zip.Length; sha256 = Get-Sha256 $zip.FullName; contentHash = $contentHash }
+            }
+            [ordered]@{ name = $part.name; maps = $part.maps; download = $download }
         }
-        $contentHash = Get-TextSha256 (($files | Sort-Object Target | ForEach-Object { "$($_.Target):$(Get-Sha256 $_.Source)" }) -join "`n")
-        $old = $previousDownloads[$group.name]
-        $download = if ($old -and $old.contentHash -eq $contentHash) {
-            Write-Host "monster paths, $($group.name): unchanged since $($old.release)"
-            $old
-        } else {
-            $slug = ($group.name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')
-            $zip = New-PackageZip "navmesh-$slug" $files
-            $uploads.Add($zip.FullName)
-            Write-Host ('monster paths, {0}: {1} files, {2:N1} MB zipped' -f $group.name, $files.Count, ($zip.Length / 1MB))
-            [ordered]@{ release = $tag; url = "$baseUrl/$($zip.Name)"; size = $zip.Length; sha256 = Get-Sha256 $zip.FullName; contentHash = $contentHash }
-        }
-        [ordered]@{ name = $group.name; maps = $group.maps; download = $download }
     }
 }
 
