@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-only
 """Build the generated i18n catalogue and check it for drift."""
 
 from __future__ import annotations

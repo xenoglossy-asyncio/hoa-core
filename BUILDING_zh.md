@@ -4,7 +4,7 @@
 
 | 组件 | 需要 |
 | --- | --- |
-| `server/` | CMake 3.20+、Visual Studio 2022 Build Tools（MSVC x64）或 GCC/Clang、Boost/OpenSSL/MySQL 客户端依赖 |
+| `server/` | CMake 3.20+、Visual Studio 2022 Build Tools（MSVC x64）或 GCC/Clang、Boost/OpenSSL 3/MariaDB Connector/C（Windows x64 客户端和 OpenSSL 库已随仓库提供） |
 | `client/` | Rust stable（`client/rust-toolchain.toml`）、Cargo |
 | `launcher/` | .NET SDK 10 |
 | `addon/`、`glue/` | LuaJIT（语法检查） |

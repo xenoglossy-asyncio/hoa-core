@@ -91,7 +91,8 @@ jobs:
             build-essential \
             cmake \
             libcurl4-openssl-dev \
-            libmysqlclient-dev \
+            libmariadb-dev \
+            libmariadb-dev-compat \
             libssl-dev \
             zlib1g-dev
 

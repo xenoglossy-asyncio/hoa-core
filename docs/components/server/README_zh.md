@@ -1,8 +1,8 @@
 # server / 服务端
 
-导入自 `hordes-of-azeroth-server` 的 `zhcn-063` 快照（`930628c2c`，2026-11-04）；许可证 GPL-2.0。这是重构起点，不是最终结构。
+导入自 `hordes-of-azeroth-server` 的 `zhcn-063` 快照（`930628c2c`，2026-11-04）；源码头是 GPL-2.0-or-later，按 GPL-3.0 分发。这是重构起点，不是最终结构。
 
-VMaNGOS 1.12.1 服务端（C++，GPL-2.0），HoA 游戏逻辑在 `src/game/Bonk/`。
+VMaNGOS 1.12.1 服务端（C++，GPL-3.0 分发），HoA 游戏逻辑在 `src/game/Bonk/`。
 
 **状态：已导入**，按 [架构文档](../../architecture/README_zh.md) 逐步调整目录。
 

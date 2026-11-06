@@ -1,6 +1,6 @@
 # server
 
-Imported from the `hordes-of-azeroth-server` `zhcn-063` snapshot (`930628c2c`, 2026-11-04); license GPL-2.0. This is the refactor starting point, not the final structure. See [`UPSTREAM.md`](../../../server/UPSTREAM.md) and [`provenance.yaml`](../../../provenance.yaml).
+Imported from the `hordes-of-azeroth-server` `zhcn-063` snapshot (`930628c2c`, 2026-11-04); the source is GPL-2.0-or-later and is distributed as GPL-3.0. This is the refactor starting point, not the final structure. See [`UPSTREAM.md`](../../../server/UPSTREAM.md) and [`provenance.yaml`](../../../provenance.yaml).
 
 VMaNGOS 1.12.1 server (C++), with the HoA game logic in `src/game/Bonk/`.
 

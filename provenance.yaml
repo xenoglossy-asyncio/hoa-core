@@ -1,4 +1,4 @@
-version: 0.1.2
+version: 0.1.3
 imported_at: 2026-11-04
 note: >
   Tracked-file snapshots only. Upstream git history was not imported; the
@@ -13,7 +13,7 @@ snapshots:
     source_branch: zhcn-063
     commit: 930628c2c05f44af067a138b93e8726955f3b8a6
     subpath: .
-    license: GPL-2.0
+    license: GPL-3.0
 
   - path: client
     upstream: https://github.com/jonhaldors/hordes-of-azeroth-client

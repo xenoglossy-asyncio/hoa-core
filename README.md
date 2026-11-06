@@ -3,7 +3,7 @@
 A monorepo refactor of Hordes of Azeroth: server, client, addon, launcher and shared content in one repository.
 
 - Upstream projects: [jonhaldors/hordes-of-azeroth](https://github.com/jonhaldors/hordes-of-azeroth) (GPL-3.0),
-  [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server) (VMaNGOS, GPL-2.0),
+  [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server) (VMaNGOS, GPL-2.0-or-later),
   [hordes-of-azeroth-client](https://github.com/jonhaldors/hordes-of-azeroth-client) (benilla, MIT / Apache-2.0).
 - This repository is a **hard fork**. It evolves on its own architecture and no longer tracks upstream; upstream code is only a starting point and content source.
 - Version line starts at **0.1.0**.
@@ -22,9 +22,9 @@ A monorepo refactor of Hordes of Azeroth: server, client, addon, launcher and sh
 
 ```
 hoa-core/
-  VERSION             0.1.0
+  VERSION             0.1.3
   docs/               Architecture and design (every document exists as README.md / README_zh.md)
-  server/             VMaNGOS C++ server (GPL-2.0)
+  server/             VMaNGOS C++ server (GPL-3.0 distribution; source GPL-2.0-or-later)
   client/             benilla Rust client (MIT / Apache-2.0)
   addon/              Lua addon (GPL-3.0)
   glue/               Login/character-select GlueXML (GPL-3.0)
@@ -55,15 +55,14 @@ hoa-core/
 
 ## License
 
-The repository aggregates code from several projects; each part keeps its own license:
+The repository aggregates code from several projects; the repository's own code and the server distribution are GPL-3.0, and imported parts keep their compatible licenses:
 
 | Path | License | Source |
 | --- | --- | --- |
-| `server/` | GPL-2.0 (see the bundled MySQL/OpenSSL note) | VMaNGOS / hordes-of-azeroth-server |
+| `server/` | GPL-3.0; source headers are GPL-2.0-or-later; Windows deps are MariaDB Connector/C (LGPL-2.1-or-later) and OpenSSL 3 (Apache-2.0) | VMaNGOS / hordes-of-azeroth-server |
 | `client/` | MIT or Apache-2.0 | benilla / hordes-of-azeroth-client |
 | `addon/`, `glue/`, `launcher/`, `config/`, `localization/` | GPL-3.0 | hordes-of-azeroth |
-| Imported parts of `tools/` | GPL-3.0 | hordes-of-azeroth |
-| New `shared/`, `scripts/`, `docs/` and new `tools/` code | GPL-3.0, except `shared/` (GPL-2.0-or-later) | this repository |
+| `shared/`, `scripts/`, `docs/`, `tools/` | GPL-3.0 | this repository |
 
 The repository stays a monorepo: per-directory `LICENSE` and `UPSTREAM.md` files plus
 `LICENSE-NOTICE.md` are authoritative, and a release tag is the corresponding source. Submodules

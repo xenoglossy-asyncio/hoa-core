@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-only
 param(
     [ValidateSet('all', 'server', 'client')][string]$Part = 'all',
     [string]$ClientSource,
