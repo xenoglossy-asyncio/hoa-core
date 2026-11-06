@@ -31,7 +31,8 @@ uses `https://gitee.com/<giteeRepository>/releases/download/<tag>/<asset>` inste
 latest tag through Gitee's API (`/releases/latest`). Package zips keep the same tag and file name
 on both hosts, so `tools/publish-gitee.ps1 -Version x.y.z` mirrors a published release: it creates
 or reuses the `packages-vX` and `vX` releases and uploads `release/<version>/assets` (set
-`HOA_GITEE_TOKEN` to a token with repo write access). MariaDB lists Tsinghua, Aliyun and USTC
+`HOA_GITEE_TOKEN` to a token with repo write access; it also points the Gitee default branch at
+`main`). MariaDB lists Tsinghua, Aliyun and USTC
 mirrors under `thirdParty[].mirrors`; the launcher tries them first in China and after failures
 elsewhere. A private R2 mirror (`HOA_MIRROR_URL`) remains optional.
 

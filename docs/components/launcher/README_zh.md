@@ -30,7 +30,8 @@ Avalonia C# 启动器。
 `https://gitee.com/<giteeRepository>/releases/download/<tag>/<asset>`，最新 tag 通过 Gitee API
 （`/releases/latest`）解析。两个仓库上的包 zip 使用相同 tag 和文件名，因此
 `tools/publish-gitee.ps1 -Version x.y.z` 可以镜像一次发布：创建或复用 `packages-vX` 和 `vX`
-两个 release，并上传 `release/<version>/assets`（需要设置 `HOA_GITEE_TOKEN`，token 要有仓库写权限）。
+两个 release，并上传 `release/<version>/assets`（需要设置 `HOA_GITEE_TOKEN`，token 要有仓库写权限；
+脚本也会把 Gitee 默认分支设为 `main`）。
 MariaDB 在 `thirdParty[].mirrors` 里配置清华、阿里云、中科大镜像；启动器在中国大陆优先使用它们，
 其它地区在主源失败后回退。可选的 R2 私有镜像（`HOA_MIRROR_URL`）仍然保留。
 

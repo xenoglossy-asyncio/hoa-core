@@ -43,6 +43,15 @@ function Invoke-Gitee([string]$Method, [string]$Path, $Form, [switch]$Multipart)
     }
 }
 
+function Ensure-DefaultBranch {
+    if ($DryRun) { return }
+    $info = Invoke-Gitee 'Get' '' $null
+    if ($info.default_branch -ne $Target) {
+        Invoke-Gitee 'Patch' '' @{ access_token = $Token; default_branch = $Target } | Out-Null
+        Write-Host "default branch -> $Target"
+    }
+}
+
 function Get-Release([string]$Name) {
     if ($DryRun) { return $null }
     try {
@@ -114,6 +123,7 @@ $notes = if (Test-Path $notesPath) { (Get-Content $notesPath -Raw).Trim() } else
 $title = "$($releaseConfig.productName) $Version"
 
 # Packages first: Gitee's "latest" release must be the launcher release, which carries the manifest.
+Ensure-DefaultBranch
 $packageFiles = @(Get-ChildItem $AssetsDir -Filter '*.zip' -File | ForEach-Object FullName | Sort-Object)
 $packages = Ensure-Release $PackageTag "$title update packages" "Packages the launcher downloads for $Tag. Players don't need anything here: get the launcher from the $Tag release." $true
 if ($packageFiles.Count) {
