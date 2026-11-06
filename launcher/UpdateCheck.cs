@@ -26,6 +26,7 @@ namespace HordesOfAzeroth.Launcher
     {
         public string Name;
         public string Url;
+        public List<string> Mirrors = new List<string>();
         public string Sha256;
         public long Size;
         public string ContentHash;
@@ -146,6 +147,9 @@ namespace HordesOfAzeroth.Launcher
                     {
                         Name = package["name"] as string,
                         Url = package["url"] as string,
+                        Mirrors = package.TryGetValue("mirrors", out object packageMirrors) && packageMirrors is object[] packageMirrorList
+                            ? packageMirrorList.OfType<string>().ToList()
+                            : new List<string>(),
                         Sha256 = package["sha256"] as string,
                         Size = Convert.ToInt64(package["size"]),
                         ContentHash = package["contentHash"] as string,
@@ -182,6 +186,9 @@ namespace HordesOfAzeroth.Launcher
                         {
                             Name = navGroup.Name,
                             Url = pack["url"] as string,
+                            Mirrors = pack.TryGetValue("mirrors", out object packMirrors) && packMirrors is object[] packMirrorList
+                                ? packMirrorList.OfType<string>().ToList()
+                                : new List<string>(),
                             Sha256 = pack["sha256"] as string,
                             Size = Convert.ToInt64(pack["size"]),
                             ContentHash = pack["contentHash"] as string,

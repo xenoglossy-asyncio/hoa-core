@@ -333,7 +333,7 @@ namespace HordesOfAzeroth.Launcher
         {
             PackageEntry launcher = manifest.Packages.First(p => p.Name == "launcher");
             Dictionary<string, string> installed = InstalledPackages();
-            string file = await FetchAsync(launcher.Url, launcher.Sha256, _ => { }, cancel);
+            string file = await FetchAsync(launcher.Url, launcher.Sha256, _ => { }, cancel, launcher.Mirrors);
             Unzip(file, m_folder.Root, false, PendingVersion);
             installed[launcher.Name] = launcher.ContentHash;
             WritePairs(PackagesFile, installed);
@@ -398,7 +398,7 @@ namespace HordesOfAzeroth.Launcher
             }
             foreach (PackageEntry package in packages)
             {
-                string file = await FetchAsync(package.Url, package.Sha256, report, cancel);
+                string file = await FetchAsync(package.Url, package.Sha256, report, cancel, package.Mirrors);
                 Unzip(file, m_folder.Root, false, PendingVersion);
                 installed[package.Name] = package.ContentHash;
                 WritePairs(PackagesFile, installed);
