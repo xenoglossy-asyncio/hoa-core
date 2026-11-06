@@ -33,6 +33,17 @@ local MODES = {
 local HEAL_COLOR = UI.HEAL_COLOR
 local ABSORB_COLOR = UI.ABSORB_COLOR
 
+local Meter = UI.Module("meter")
+Meter.mode = MODE_SPELLS
+Meter.spells = {}
+Meter.glyphs = {}
+Meter.others = {}
+Meter.support = {}
+Meter.party = {}
+Meter.seconds = 0
+Meter.rows = {}
+Meter.inRun = false
+
 local function Short(value)
     if value >= 1000000 then
         return format("%.2fM", value / 1000000)
@@ -88,15 +99,7 @@ meter.rule:SetHeight(1)
 meter.rule:SetPoint("TOPLEFT", meter.header, "BOTTOMLEFT", 0, 0)
 meter.rule:SetPoint("TOPRIGHT", meter.header, "BOTTOMRIGHT", 0, 0)
 
-local mode = MODE_SPELLS
-local spells = {}
-local glyphs = {}
-local others = {}
-local support = {}
-local party = {}
-local seconds = 0
-local rows = {}
-local Refresh
+Meter.meter = meter
 
 local menu = CreateFrame("Frame", nil, meter)
 menu:SetFrameStrata("DIALOG")
@@ -108,7 +111,7 @@ menu:Hide()
 menu.options = {}
 menu:SetScript("OnShow", function()
     for _, option in ipairs(this.options) do
-        if option.mode == mode then
+        if option.mode == Meter.mode then
             option.text:SetTextColor(1, 1, 1)
         else
             option.text:SetTextColor(1, 0.82, 0)
@@ -116,25 +119,27 @@ menu:SetScript("OnShow", function()
     end
 end)
 
-local function ToggleMenu()
-    if menu:IsShown() then
-        menu:Hide()
+function Meter:ToggleMenu()
+    if self.menu:IsShown() then
+        self.menu:Hide()
     else
-        menu:Show()
+        self.menu:Show()
     end
     PlaySound("igMainMenuOptionCheckBoxOn")
 end
 
-local function ChooseMode(chosen)
-    mode = chosen
-    VanillaBonkMeterMode = mode
-    meter.title:SetText(ModeLabel(mode))
-    menu:Hide()
-    for _, row in ipairs(rows) do
+function Meter:ChooseMode(chosen)
+    self.mode = chosen
+    VanillaBonkMeterMode = chosen
+    self.meter.title:SetText(ModeLabel(chosen))
+    self.menu:Hide()
+    for _, row in ipairs(self.rows) do
         row.key = nil
     end
-    Refresh()
+    self:Refresh()
 end
+
+Meter.menu = menu
 
 for index, entry in ipairs(MODES) do
     local option = CreateFrame("Button", nil, menu)
@@ -155,7 +160,7 @@ for index, entry in ipairs(MODES) do
     option:SetScript("OnLeave", function() this.glow:Hide() end)
     option:SetScript("OnClick", function()
         PlaySound("igCharacterInfoTab")
-        ChooseMode(this.mode)
+        Meter:ChooseMode(this.mode)
     end)
 end
 
@@ -166,18 +171,20 @@ picker:SetPoint("TOPLEFT", meter, "TOPLEFT", 4, -3)
 picker:SetNormalTexture(ARROW_TEXTURE .. "-Up")
 picker:SetPushedTexture(ARROW_TEXTURE .. "-Down")
 picker:SetHighlightTexture(ARROW_TEXTURE .. "-Highlight")
-picker:SetScript("OnClick", ToggleMenu)
+picker:SetScript("OnClick", function() Meter:ToggleMenu() end)
+Meter.picker = picker
 
 local titleButton = CreateFrame("Button", nil, meter)
 titleButton:SetHeight(HEADER - 4)
 titleButton:SetPoint("LEFT", picker, "RIGHT", 2, 0)
 titleButton:SetWidth(120)
-titleButton:SetScript("OnClick", ToggleMenu)
+titleButton:SetScript("OnClick", function() Meter:ToggleMenu() end)
+Meter.titleButton = titleButton
 
 meter.title = UI.Text(titleButton, 13)
 meter.title:SetPoint("LEFT", titleButton, "LEFT", 2, 0)
 meter.title:SetTextColor(1, 0.82, 0)
-meter.title:SetText(ModeLabel(mode))
+meter.title:SetText(ModeLabel(Meter.mode))
 
 meter.total = UI.Text(meter, 12, UI.NUMBER_FONT)
 meter.total:SetPoint("RIGHT", meter.header, "RIGHT", -6, 0)
@@ -223,14 +230,14 @@ meter.eye:SetScript("OnClick", function()
     VanillaBonkMeterHidden = {}
     GameTooltip:Hide()
     PlaySound("igMainMenuOptionCheckBoxOn")
-    Refresh()
+    Meter:Refresh()
 end)
 
 meter.empty = UI.Text(meter, 11)
 meter.empty:SetPoint("TOPLEFT", meter, "TOPLEFT", PAD + 4, -(HEADER + PAD + 4))
 meter.empty:SetTextColor(0.6, 0.6, 0.6)
 
-local function AddPartLines(entry)
+function Meter:AddPartLines(entry)
     for _, part in ipairs(entry.parts) do
         local kind = UI.DamageType(part.key)
         GameTooltip:AddDoubleLine(kind.name, Short(part.damage) .. " (" .. Percent(part.damage, entry.damage) .. "%)",
@@ -238,14 +245,14 @@ local function AddPartLines(entry)
     end
 end
 
-local function SpellTooltip(entry, share)
+function Meter:SpellTooltip(entry, share)
     GameTooltip:AddLine(entry.name, 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.damage_2"], Short(entry.damage), 1, 0.82, 0, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["hoa.addon.per_second"], Short(seconds > 0 and entry.damage / seconds or 0), 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.per_second"], Short(self.seconds > 0 and entry.damage / self.seconds or 0), 1, 0.82, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.share"], share .. "%", 1, 0.82, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.kills_2"], entry.kills or 0, 1, 0.82, 0, 1, 1, 1)
     if getn(entry.parts) > 1 then
-        AddPartLines(entry)
+        self:AddPartLines(entry)
     end
 end
 
@@ -253,7 +260,7 @@ local function AddHideHint()
     GameTooltip:AddLine(L["hoa.addon.right_click_to_hide"], 0.6, 0.6, 0.6)
 end
 
-local function TypeTooltip(entry, share)
+function Meter:TypeTooltip(entry, share)
     local kind = UI.DamageType(entry.key)
     GameTooltip:AddDoubleLine(kind.name, Short(entry.damage) .. " (" .. share .. "%)", kind.r, kind.g, kind.b, 1, 1, 1)
     if kind.note then
@@ -264,45 +271,45 @@ local function TypeTooltip(entry, share)
     end
 end
 
-local function HealTooltip(entry, share)
+function Meter:HealTooltip(entry, share)
     GameTooltip:AddLine(entry.name, 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.healed"], Short(entry.healed), HEAL_COLOR.r, HEAL_COLOR.g, HEAL_COLOR.b, 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.absorbed"], Short(entry.absorbed), ABSORB_COLOR.r, ABSORB_COLOR.g, ABSORB_COLOR.b, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L["hoa.addon.per_second"], Short(seconds > 0 and entry.damage / seconds or 0), 1, 0.82, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L["hoa.addon.per_second"], Short(self.seconds > 0 and entry.damage / self.seconds or 0), 1, 0.82, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L["hoa.addon.share"], share .. "%", 1, 0.82, 0, 1, 1, 1)
 end
 
-local function ShowRowTooltip()
-    local entry = this.entry
+function Meter:ShowRowTooltip(frame)
+    local entry = frame.entry
     if not entry then
         return
     end
-    this.glow:Show()
-    GameTooltip:SetOwner(this, "ANCHOR_LEFT")
+    frame.glow:Show()
+    GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
     if entry.healed then
-        HealTooltip(entry, this.share or 0)
+        self:HealTooltip(entry, frame.share or 0)
     elseif entry.sources then
-        TypeTooltip(entry, this.share or 0)
+        self:TypeTooltip(entry, frame.share or 0)
     else
-        SpellTooltip(entry, this.share or 0)
+        self:SpellTooltip(entry, frame.share or 0)
     end
     AddHideHint()
     GameTooltip:Show()
 end
 
-local function HideRowEntry()
-    if arg1 ~= "RightButton" or not this.entry then
+function Meter:HideRowEntry(frame, button)
+    if button ~= "RightButton" or not frame.entry then
         return
     end
-    Hidden()[this.entry.hideKey] = true
+    Hidden()[frame.entry.hideKey] = true
     GameTooltip:Hide()
-    this.glow:Hide()
+    frame.glow:Hide()
     PlaySound("igMainMenuOptionCheckBoxOff")
-    Refresh()
+    self:Refresh()
 end
 
-local function HideRowTooltip()
-    this.glow:Hide()
+function Meter:HideRowTooltip(frame)
+    frame.glow:Hide()
     GameTooltip:Hide()
 end
 
@@ -313,9 +320,9 @@ for index = 1, MAX_ROWS do
     row:SetPoint("TOPLEFT", meter, "TOPLEFT", PAD, top)
     row:SetPoint("TOPRIGHT", meter, "TOPRIGHT", -PAD, top)
     row:EnableMouse(true)
-    row:SetScript("OnEnter", ShowRowTooltip)
-    row:SetScript("OnLeave", HideRowTooltip)
-    row:SetScript("OnMouseUp", HideRowEntry)
+    row:SetScript("OnEnter", function() Meter:ShowRowTooltip(this) end)
+    row:SetScript("OnLeave", function() Meter:HideRowTooltip(this) end)
+    row:SetScript("OnMouseUp", function() Meter:HideRowEntry(this, arg1) end)
 
     row.frame = row:CreateTexture(nil, "BACKGROUND")
     row.frame:SetTexture(UI.FLAT)
@@ -361,7 +368,7 @@ for index = 1, MAX_ROWS do
     row.shown = 0
     row.target = 0
     row:Hide()
-    rows[index] = row
+    Meter.rows[index] = row
 end
 
 local function PartColor(part)
@@ -371,8 +378,7 @@ local function PartColor(part)
     return UI.DamageType(part.key)
 end
 
-local function DrawRow(row)
-    local entry = row.entry
+local function DrawRow(row)    local entry = row.entry
     local width = row.barWidth * row.shown
     local x = 0
     for index, fill in ipairs(row.parts) do
@@ -392,14 +398,14 @@ local function DrawRow(row)
     end
 end
 
-local function Sources()
+function Meter:Sources()
     local sources = {}
-    for _, spell in pairs(spells) do
+    for _, spell in pairs(self.spells) do
         if spell.icon then
             tinsert(sources, spell)
         end
     end
-    for _, glyph in ipairs(glyphs) do
+    for _, glyph in ipairs(self.glyphs) do
         local info = VanillaBonk_GlyphInfo and VanillaBonk_GlyphInfo(glyph.id)
         if info then
             tinsert(sources, {
@@ -408,15 +414,15 @@ local function Sources()
             })
         end
     end
-    for _, other in ipairs(others) do
+    for _, other in ipairs(self.others) do
         tinsert(sources, other)
     end
     return sources
 end
 
-local function SpellEntries()
+function Meter:SpellEntries()
     local entries = {}
-    for _, spell in ipairs(Sources()) do
+    for _, spell in ipairs(self:Sources()) do
         tinsert(entries, {
             id = spell.id or ("s" .. spell.index), hideKey = "s:" .. (spell.name or ""), index = spell.index, icon = spell.icon,
             name = spell.name or "", damage = spell.damage, kills = spell.kills, parts = UI.DamageParts(spell.types, spell.damage, spell.icon),
@@ -425,10 +431,10 @@ local function SpellEntries()
     return entries
 end
 
-local function TypeEntries()
+function Meter:TypeEntries()
     local byKey = {}
     local entries = {}
-    for _, spell in ipairs(Sources()) do
+    for _, spell in ipairs(self:Sources()) do
         if spell.icon then
             for _, part in ipairs(UI.DamageParts(spell.types, spell.damage, spell.icon)) do
                 local entry = byKey[part.key]
@@ -451,9 +457,9 @@ local function TypeEntries()
     return entries
 end
 
-local function HealEntries()
+function Meter:HealEntries()
     local entries = {}
-    for index, source in ipairs(support) do
+    for index, source in ipairs(self.support) do
         local total = source.healed + source.absorbed
         if total > 0 then
             tinsert(entries, {
@@ -471,19 +477,19 @@ local function MeterWidth()
     return max(MIN_WIDTH, min(MAX_WIDTH, room))
 end
 
-local function AllEntries()
-    if mode == MODE_TYPES then
-        return TypeEntries()
-    elseif mode == MODE_HEALING then
-        return HealEntries()
+function Meter:AllEntries()
+    if self.mode == MODE_TYPES then
+        return self:TypeEntries()
+    elseif self.mode == MODE_HEALING then
+        return self:HealEntries()
     end
-    return SpellEntries()
+    return self:SpellEntries()
 end
 
-local function Entries()
+function Meter:Entries()
     local hidden = Hidden()
     local shown = {}
-    for _, entry in ipairs(AllEntries()) do
+    for _, entry in ipairs(self:AllEntries()) do
         if not hidden[entry.hideKey] then
             tinsert(shown, entry)
         end
@@ -491,10 +497,11 @@ local function Entries()
     return shown
 end
 
-Refresh = function()
+function Meter:Refresh()
     local width = MeterWidth()
+    local meter = self.meter
     meter:SetWidth(width)
-    local entries = Entries()
+    local entries = self:Entries()
     local total, top = 0, 0
     for _, entry in ipairs(entries) do
         total = total + entry.damage
@@ -508,7 +515,7 @@ Refresh = function()
     end)
 
     local count = min(getn(entries), MAX_ROWS)
-    for index, row in ipairs(rows) do
+    for index, row in ipairs(self.rows) do
         local entry = entries[index]
         if index <= count and entry then
             row.entry = entry
@@ -531,13 +538,13 @@ Refresh = function()
         end
     end
     if count == 0 then
-        meter.empty:SetText(mode == MODE_HEALING and L["hoa.addon.no_healing_yet"] or L["hoa.addon.no_damage_yet"])
+        meter.empty:SetText(self.mode == MODE_HEALING and L["hoa.addon.no_healing_yet"] or L["hoa.addon.no_damage_yet"])
         meter.empty:Show()
     else
         meter.empty:Hide()
     end
     meter:SetHeight(HEADER + PAD * 2 + max(1, count) * (ROW + ROW_GAP) - ROW_GAP)
-    meter.total:SetText(Short(total) .. " |cffa0a0a0(" .. Short(seconds > 0 and total / seconds or 0) .. "/s)|r")
+    meter.total:SetText(Short(total) .. " |cffa0a0a0(" .. Short(self.seconds > 0 and total / self.seconds or 0) .. "/s)|r")
     if HiddenCount() > 0 then
         meter.eye:Show()
     else
@@ -547,7 +554,7 @@ end
 
 meter:SetScript("OnUpdate", function()
     local step = min(1, arg1 * BAR_SPEED)
-    for _, row in ipairs(rows) do
+    for _, row in ipairs(Meter.rows) do
         if row:IsShown() and row.shown ~= row.target then
             local shown = row.shown + (row.target - row.shown) * step
             if abs(shown - row.target) < 0.002 then
@@ -560,7 +567,7 @@ meter:SetScript("OnUpdate", function()
 end)
 
 meter:SetScript("OnHide", function()
-    menu:Hide()
+    Meter.menu:Hide()
 end)
 
 local partyFrame = CreateFrame("Frame", nil, meter)
@@ -569,6 +576,7 @@ partyFrame:SetPoint("BOTTOMRIGHT", meter, "TOPRIGHT", 0, 2)
 partyFrame:SetHeight(HEADER)
 Framed(partyFrame, 0.62)
 partyFrame:Hide()
+Meter.partyFrame = partyFrame
 
 partyFrame.header = partyFrame:CreateTexture(nil, "BORDER")
 partyFrame.header:SetTexture(UI.FLAT)
@@ -582,7 +590,7 @@ partyFrame.toggle:SetAllPoints(partyFrame.header)
 partyFrame.toggle:SetScript("OnClick", function()
     VanillaBonkPartyMeterOpen = not VanillaBonkPartyMeterOpen
     PlaySound(VanillaBonkPartyMeterOpen and "igMainMenuOptionCheckBoxOn" or "igMainMenuOptionCheckBoxOff")
-    partyFrame.Refresh()
+    Meter:RefreshParty()
 end)
 
 partyFrame.title = UI.Text(partyFrame.toggle, 13)
@@ -630,23 +638,24 @@ for index = 1, PARTY_ROWS do
     partyFrame.rows[index] = row
 end
 
-function partyFrame.Refresh()
-    if getn(party) < 2 then
+function Meter:RefreshParty()
+    local partyFrame = self.partyFrame
+    if getn(self.party) < 2 then
         partyFrame:Hide()
         return
     end
     local members = {}
     local total, top = 0, 0
-    for _, member in ipairs(party) do
+    for _, member in ipairs(self.party) do
         tinsert(members, member)
         total = total + member.damage
         top = max(top, member.damage)
     end
     table.sort(members, function(a, b) return a.damage > b.damage end)
-    partyFrame.total:SetText(Short(total) .. " |cffa0a0a0(" .. Short(seconds > 0 and total / seconds or 0) .. "/s)|r")
+    partyFrame.total:SetText(Short(total) .. " |cffa0a0a0(" .. Short(self.seconds > 0 and total / self.seconds or 0) .. "/s)|r")
     local open = VanillaBonkPartyMeterOpen
     partyFrame.arrow:SetTexture(open and PARTY_OPEN_TEXTURE or PARTY_CLOSED_TEXTURE)
-    local barWidth = meter:GetWidth() - PAD * 2 - ROW - 2
+    local barWidth = self.meter:GetWidth() - PAD * 2 - ROW - 2
     local count = 0
     for index, row in ipairs(partyFrame.rows) do
         local member = members[index]
@@ -672,16 +681,18 @@ function partyFrame.Refresh()
     partyFrame:Show()
 end
 
-UI.Module("meter"):Listen({
+function partyFrame.Refresh()
+    Meter:RefreshParty()
+end
+
+Meter:Listen({
     VARIABLES_LOADED = function()
         if VanillaBonkMeterMode == MODE_TYPES or VanillaBonkMeterMode == MODE_HEALING then
-            mode = VanillaBonkMeterMode
+            Meter.mode = VanillaBonkMeterMode
         end
-        meter.title:SetText(ModeLabel(mode))
+        Meter.meter.title:SetText(ModeLabel(Meter.mode))
     end,
 })
-
-local handlers = {}
 
 local function TildeFields(text)
     local fields = { false }
@@ -691,154 +702,98 @@ local function TildeFields(text)
     return fields
 end
 
-local function Spell(index)
-    if not spells[index] then
-        spells[index] = { index = index, damage = 0, kills = 0 }
+function Meter:Spell(index)
+    local spell = self.spells[index]
+    if not spell then
+        spell = { index = index, damage = 0, kills = 0 }
+        self.spells[index] = spell
     end
-    return spells[index]
+    return spell
 end
 
-local inRun = false
-
-local function ShowMeter()
-    inRun = true
+function Meter:ShowMeter()
+    self.inRun = true
     if UI.Option("damageMeter", true) then
-        meter:Show()
+        self.meter:Show()
     else
-        meter:Hide()
+        self.meter:Hide()
+    end
+end
+
+function Meter:ApplyDamageMeter()
+    if self.inRun then
+        self:ShowMeter()
     end
 end
 
 function UI.ApplyDamageMeter()
-    if inRun then
-        ShowMeter()
-    end
+    Meter:ApplyDamageMeter()
 end
 
-UI.ListenHoa({
-    HOA_LOADOUT = function(loadout)
-        handlers["loadout"]({ false, loadout.entries, loadout.spell_slots, loadout.passive_slots })
-    end,
-    HOA_WEAPON_INFO = function(weapon)
-        local index = tonumber(weapon.index)
-        if index and index > 0 then
-            Spell(index).name = weapon.name
-            Refresh()
-        end
-    end,
-    HOA_RUN_SUPPORT = function(state)
-        handlers["support"]({ false, state.text })
-    end,
-    HOA_RUN_GLYPH_METER = function(state)
-        handlers["gmeter"]({ false, state.text })
-    end,
-    HOA_RUN_OTHER_METER = function(state)
-        handlers["xmeter"](TildeFields(state.text))
-    end,
-    HOA_RUN_PARTY_METER = function(state)
-        handlers["pmeter"](TildeFields(state.text))
-    end,
-    HOA_RUN_STATE = function(state)
-        seconds = tonumber(state.total_s) or seconds
-        local stats = state.weapon_stats
-        if stats then
-            for index, item in ipairs(UI.Split(stats, ",")) do
-                local parts = UI.Split(item, ":")
-                local spell = Spell(index)
-                spell.damage = tonumber(parts[1]) or 0
-                spell.kills = tonumber(parts[2]) or 0
-            end
-        end
-        local types = state.damage_types
-        if types then
-            for index, item in ipairs(UI.Split(types, ",")) do
-                Spell(index).types = item
-            end
-        end
-        Refresh()
-        ShowMeter()
-    end,
-})
-UI.Module("meter"):OnRunStart(function()
-    spells = {}
-    glyphs = {}
-    others = {}
-    support = {}
-    party = {}
-    partyFrame.Refresh()
-    seconds = 0
-    for _, row in ipairs(rows) do
-        row.key = nil
-    end
-    Refresh()
-    ShowMeter()
-end):OnRunEnd(function()
-    inRun = false
-    meter:Hide()
-end)
-
-handlers["gmeter"] = function(f)
-    glyphs = {}
-    for order, item in ipairs(UI.Split(f[2] or "", ",")) do
+function Meter:HandleGlyphMeter(text)
+    self.glyphs = {}
+    for order, item in ipairs(UI.Split(text or "", ",")) do
         local _, _, id, damage, kills, types = strfind(item, "^(%d+):(%d+):(%d+):(.*)$")
         if id then
-            tinsert(glyphs, { id = id, order = order, damage = tonumber(damage) or 0, kills = tonumber(kills) or 0, types = types })
+            tinsert(self.glyphs, { id = id, order = order, damage = tonumber(damage) or 0, kills = tonumber(kills) or 0, types = types })
         end
     end
-    if mode ~= MODE_HEALING then
-        Refresh()
+    if self.mode ~= MODE_HEALING then
+        self:Refresh()
     end
 end
 
-handlers["xmeter"] = function(f)
-    others = {}
+function Meter:HandleOtherMeter(text)
+    local f = TildeFields(text)
+    self.others = {}
     local field = 2
     while f[field + OTHER_FIELDS - 1] do
-        local order = getn(others) + 1
-        tinsert(others, {
+        local order = getn(self.others) + 1
+        tinsert(self.others, {
             id = "x" .. f[field + 1], index = OTHER_INDEX + order, icon = f[field] ~= "" and f[field] or "INV_Misc_QuestionMark",
             name = f[field + 1] == "Melee" and L["hoa.addon.melee"] or f[field + 1], damage = tonumber(f[field + 2]) or 0, kills = tonumber(f[field + 3]) or 0, types = f[field + 4],
         })
         field = field + OTHER_FIELDS
     end
-    if mode ~= MODE_HEALING then
-        Refresh()
+    if self.mode ~= MODE_HEALING then
+        self:Refresh()
     end
 end
 
-handlers["pmeter"] = function(f)
-    party = {}
+function Meter:HandlePartyMeter(text)
+    local f = TildeFields(text)
+    self.party = {}
     local field = 2
     while f[field + 2] do
-        tinsert(party, { name = f[field], damage = tonumber(f[field + 1]) or 0, class = tonumber(f[field + 2]) })
+        tinsert(self.party, { name = f[field], damage = tonumber(f[field + 1]) or 0, class = tonumber(f[field + 2]) })
         field = field + 3
     end
-    partyFrame.Refresh()
+    self:RefreshParty()
 end
 
-handlers["support"] = function(f)
-    support = {}
-    for _, item in ipairs(UI.Split(f[2] or "", ",")) do
+function Meter:HandleSupport(text)
+    self.support = {}
+    for _, item in ipairs(UI.Split(text or "", ",")) do
         local _, _, icon, healed, absorbed, name = strfind(item, "^([^:]*):(%d+):(%d+):(.+)$")
         if name then
-            tinsert(support, {
+            tinsert(self.support, {
                 icon = icon ~= "" and icon or "INV_Misc_QuestionMark", name = name,
                 healed = tonumber(healed) or 0, absorbed = tonumber(absorbed) or 0,
             })
         end
     end
-    if mode == MODE_HEALING then
-        Refresh()
+    if self.mode == MODE_HEALING then
+        self:Refresh()
     end
 end
 
-handlers["loadout"] = function(f)
+function Meter:HandleLoadout(entries)
     local index = 0
-    for _, item in ipairs(UI.Split(f[2] or "", ",")) do
+    for _, item in ipairs(UI.Split(entries or "", ",")) do
         local parts = UI.Split(item, ":")
         if parts[1] == "w" or parts[1] == "e" then
             index = index + 1
-            local spell = Spell(index)
+            local spell = self:Spell(index)
             if spell.icon and spell.icon ~= parts[2] then
                 spell.damage = 0
                 spell.kills = 0
@@ -848,16 +803,82 @@ handlers["loadout"] = function(f)
         end
     end
     for extra = index + 1, MAX_ROWS do
-        spells[extra] = nil
+        self.spells[extra] = nil
     end
-    Refresh()
+    self:Refresh()
 end
 
-handlers["pw"] = function(f)
-    local index = tonumber(f[2])
-    if index and spells[index] then
-        spells[index].name = f[3]
-        Refresh()
+function Meter:HandleState(state)
+    self.seconds = tonumber(state.total_s) or self.seconds
+    local stats = state.weapon_stats
+    if stats then
+        for index, item in ipairs(UI.Split(stats, ",")) do
+            local parts = UI.Split(item, ":")
+            local spell = self:Spell(index)
+            spell.damage = tonumber(parts[1]) or 0
+            spell.kills = tonumber(parts[2]) or 0
+        end
     end
+    local types = state.damage_types
+    if types then
+        for index, item in ipairs(UI.Split(types, ",")) do
+            self:Spell(index).types = item
+        end
+    end
+    self:Refresh()
+    self:ShowMeter()
 end
+
+function Meter:StartRun()
+    self.spells = {}
+    self.glyphs = {}
+    self.others = {}
+    self.support = {}
+    self.party = {}
+    self:RefreshParty()
+    self.seconds = 0
+    for _, row in ipairs(self.rows) do
+        row.key = nil
+    end
+    self:Refresh()
+    self:ShowMeter()
+end
+
+function Meter:EndRun()
+    self.inRun = false
+    self.meter:Hide()
+end
+
+UI.ListenHoa({
+    HOA_LOADOUT = function(loadout)
+        Meter:HandleLoadout(loadout.entries)
+    end,
+    HOA_WEAPON_INFO = function(weapon)
+        local index = tonumber(weapon.index)
+        if index and index > 0 then
+            Meter:Spell(index).name = weapon.name
+            Meter:Refresh()
+        end
+    end,
+    HOA_RUN_SUPPORT = function(state)
+        Meter:HandleSupport(state.text)
+    end,
+    HOA_RUN_GLYPH_METER = function(state)
+        Meter:HandleGlyphMeter(state.text)
+    end,
+    HOA_RUN_OTHER_METER = function(state)
+        Meter:HandleOtherMeter(state.text)
+    end,
+    HOA_RUN_PARTY_METER = function(state)
+        Meter:HandlePartyMeter(state.text)
+    end,
+    HOA_RUN_STATE = function(state)
+        Meter:HandleState(state)
+    end,
+})
+Meter:OnRunStart(function()
+    Meter:StartRun()
+end):OnRunEnd(function()
+    Meter:EndRun()
+end)
 
