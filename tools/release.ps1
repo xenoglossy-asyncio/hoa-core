@@ -288,15 +288,16 @@ function Sync-ReleaseSource([string]$Fork, [string]$Directory, [string]$Commit) 
 }
 
 function Invoke-LinuxBuild([string]$Part) {
-    $submodule = if ($Part -eq 'server') { 'server/core' } else { 'client' }
-    $source = if ($Part -eq 'server') { $serverSource } else { $clientSource }
-    $commit = (git -C $RepoRoot rev-parse "HEAD:$submodule").Trim()
-    $stamp = Join-Path $linuxOut "$Part-commit.txt"
-    if ((Test-Path $stamp) -and (Get-Content $stamp -Raw).Trim() -eq $commit) { return }
-    Sync-ReleaseSource (Join-Path $RepoRoot $submodule) $source $commit
-    Write-Host "Building the Linux $Part from fork commit $($commit.Substring(0, 9)) in WSL..."
-    & (Join-Path $PSScriptRoot 'build-linux.ps1') -Part $Part -ClientSource $clientSource -ServerSource $serverSource -Out $linuxOut
-    [System.IO.File]::WriteAllText($stamp, $commit)
+    $commit = (git -C $RepoRoot rev-parse HEAD).Trim()
+    $serverStamp = Join-Path $linuxOut 'server-commit.txt'
+    $clientStamp = Join-Path $linuxOut 'client-commit.txt'
+    $serverDone = (Test-Path $serverStamp) -and ((Get-Content $serverStamp -Raw).Trim() -eq $commit)
+    $clientDone = (Test-Path $clientStamp) -and ((Get-Content $clientStamp -Raw).Trim() -eq $commit)
+    if (($Part -eq 'server' -and $serverDone) -or ($Part -eq 'client' -and $clientDone)) { return }
+    Write-Host "Building the Linux server and client from commit $($commit.Substring(0, 9)) in Docker..."
+    & (Join-Path $PSScriptRoot 'build-linux.ps1') -Part all -ClientSource (Join-Path $RepoRoot 'client') -ServerSource (Join-Path $RepoRoot 'server') -Out $linuxOut
+    [System.IO.File]::WriteAllText($serverStamp, $commit)
+    [System.IO.File]::WriteAllText($clientStamp, $commit)
 }
 
 function Invoke-PackageBuild([string]$Name) {
