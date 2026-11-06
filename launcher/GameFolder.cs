@@ -21,7 +21,7 @@ namespace HordesOfAzeroth.Launcher
         public string ConfigWtf => Path.Combine(Root, "WTF", "Config.wtf");
         public string OldAccount => Path.Combine(Root, "WTF", "Account", "PLAYER");
         public string OldSavedVariables => Path.Combine(OldAccount, "SavedVariables");
-        public string GlueXml => Path.Combine(Root, "Interface", "GlueXML");
+        public string GlueXml => Path.Combine(Root, "Data", "Interface", "GlueXML");
         public string AddOns => Path.Combine(Root, "Interface", "AddOns");
         public string ClientState => Path.Combine(Root, "benilla-config");
         public string ClientConfig => Path.Combine(ClientState, "config.toml");
