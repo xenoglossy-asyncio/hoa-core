@@ -31,8 +31,8 @@
 #endif
 #include <mysql.h>
 
-// my_bool declaration is removed in 8.0
-#if MYSQL_VERSION_ID >= 80000
+// MySQL 8 removed my_bool; MariaDB Connector/C still provides it.
+#if !defined(MARIADB_VERSION_ID) && MYSQL_VERSION_ID >= 80000
 typedef char my_bool;
 #ifdef _MSC_VER
 #pragma message("You are using an incompatible mysql version!")

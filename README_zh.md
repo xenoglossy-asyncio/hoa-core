@@ -3,7 +3,7 @@
 一个把服务端、客户端、插件、启动器和共享内容放进同一个仓库的重构项目。
 
 - 上游：[jonhaldors/hordes-of-azeroth](https://github.com/jonhaldors/hordes-of-azeroth)（GPL-3.0）、
-  [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server)（VMaNGOS，GPL-2.0）、
+  [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server)（VMaNGOS，GPL-2.0-or-later）、
   [hordes-of-azeroth-client](https://github.com/jonhaldors/hordes-of-azeroth-client)（benilla，MIT / Apache-2.0）
 - 本仓库是**硬分叉**，按自己的架构独立演进，不再跟随上游；上游代码只作为起点和内容来源。
 - 版本线从 **0.1.0** 开始。
@@ -22,9 +22,9 @@
 
 ```
 hoa-core/
-  VERSION             0.1.0
+  VERSION             0.1.3
   docs/               架构与设计文档（每个文档都有 README.md / README_zh.md）
-  server/             VMaNGOS C++ 服务端（GPL-2.0）
+  server/             VMaNGOS C++ 服务端（GPL-3.0 分发；源码头 GPL-2.0-or-later）
   client/             benilla Rust 客户端（MIT / Apache-2.0）
   addon/              Lua 插件（GPL-3.0）
   glue/               登录/选人/建号 GlueXML（GPL-3.0）
@@ -55,14 +55,13 @@ hoa-core/
 
 ## 许可
 
-本仓库包含多个来源的代码，各部分保持自己的许可证：
+本仓库包含多个来源的代码；本仓库原创代码和服务端分发统一为 GPL-3.0，导入的部分保留各自兼容的许可证：
 
 | 目录 | 许可证 | 来源 |
 | --- | --- | --- |
-| `server/` | GPL-2.0 | VMaNGOS / hordes-of-azeroth-server |
+| `server/` | GPL-3.0；源码头 GPL-2.0-or-later；Windows 依赖是 MariaDB Connector/C（LGPL-2.1-or-later）和 OpenSSL 3（Apache-2.0） | VMaNGOS / hordes-of-azeroth-server |
 | `client/` | MIT 或 Apache-2.0（二选一） | benilla / hordes-of-azeroth-client |
 | `addon/`、`glue/`、`launcher/`、`config/`、`localization/` | GPL-3.0 | hordes-of-azeroth |
-| `tools/` 中从上游导入的部分 | GPL-3.0 | hordes-of-azeroth |
-| `shared/`、`scripts/`、`docs/`、`tools/` 中新写的部分 | GPL-2.0-or-later | 本仓库新代码 |
+| `shared/`、`scripts/`、`docs/`、`tools/` | GPL-3.0 | 本仓库新代码 |
 
 详见 [LICENSE-NOTICE.md](LICENSE-NOTICE.md)。World of Warcraft 是 Blizzard Entertainment 的商标；本项目不附带任何游戏资源。

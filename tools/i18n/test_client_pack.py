@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-only
 """Tests for the generated client language packs."""
 
 from __future__ import annotations

@@ -6,7 +6,7 @@
 
 | 目录 | 开源仓库 | 导入分支/提交 | 许可证 |
 | --- | --- | --- | --- |
-| `server/` | https://github.com/jonhaldors/hordes-of-azeroth-server | `zhcn-063` / `930628c2c05f44af067a138b93e8726955f3b8a6`（上游 `vanilla-bonk` 基线 `b41bf911790061dc539bc62140b256a69d44edc7`） | GPL-2.0 |
+| `server/` | https://github.com/jonhaldors/hordes-of-azeroth-server | `zhcn-063` / `930628c2c05f44af067a138b93e8726955f3b8a6`（上游 `vanilla-bonk` 基线 `b41bf911790061dc539bc62140b256a69d44edc7`） | GPL-3.0 分发（源码头 GPL-2.0-or-later） |
 | `client/` | https://github.com/jonhaldors/hordes-of-azeroth-client | `zhcn-063` / `74a4e4eb8ef5030fcde1657531217d3f3f4b384f`（上游 `main` 基线 `1f23d0eaf02afe8831e9229bff027a93d387f5eb`） | MIT 或 Apache-2.0 |
 | `addon/HordesOfAzeroth/` | https://github.com/jonhaldors/hordes-of-azeroth | `zhcn-063` / `3ca658b525bd67bf0302fa30c80829305295f3c5`（`Interface/AddOns/HordesOfAzeroth`） | GPL-3.0 |
 | `glue/` | https://github.com/jonhaldors/hordes-of-azeroth | 同上（`Interface/GlueXML`） | GPL-3.0 |
@@ -36,9 +36,9 @@
 
 导入的目录各自保留原许可证文件：
 
-- `server/LICENSE`（GPL-2.0）
+- `server/LICENSE`（GPL-3.0）
 - `client/LICENSE-MIT`、`client/LICENSE-APACHE`
 - 根目录 `LICENSE`、`THIRD-PARTY-NOTICES.md` 覆盖 addon/glue/launcher/tools 等来自主仓库的部分
-- 新写的 `shared/`、`scripts/`、`docs/`、部分 `tools/` 使用 GPL-2.0-or-later
+- 新写的 `shared/`、`scripts/`、`docs/`、部分 `tools/` 使用 GPL-3.0
 
 详见 [LICENSE-NOTICE.md](../../LICENSE-NOTICE.md)。

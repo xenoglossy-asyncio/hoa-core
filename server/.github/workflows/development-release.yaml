@@ -38,7 +38,8 @@ jobs:
           sudo apt install -y --no-install-recommends \
             build-essential \
             cmake \
-            libmysqlclient-dev \
+            libmariadb-dev \
+            libmariadb-dev-compat \
             libssl-dev \
             patchelf \
             zlib1g-dev
@@ -120,13 +121,9 @@ jobs:
         # explicitly so the build doesn't silently break if a future runner
         # image stops shipping it.
         #
-        # `mysql-client@8.4` is pinned (MySQL LTS through 2032) because the
-        # current `mysql-client` formula tracks MySQL 9, which removed the
-        # `mysql_native_password` authentication plugin that MariaDB still
-        # uses by default. MySQL 8.4 keeps the plugin built into the client
-        # library, so MariaDB users can connect out of the box. Matches the
-        # MySQL 8.0 ABI used by the Linux build's `libmysqlclient`.
-        run: brew install openssl@3 mysql-client@8.4
+        # `mariadb-connector-c` provides the client library used by the
+        # Linux build and keeps the authentication plugins MariaDB expects.
+        run: brew install openssl@3 mariadb-connector-c
 
       - name: Build release binaries
         run: |

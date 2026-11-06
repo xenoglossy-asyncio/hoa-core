@@ -15,15 +15,15 @@ layout/text utilities or the public `VanillaBonkRun` API. The tracker remains th
 
 ## Licensing and repository structure
 
-- [x] Pick the repository license: GPL-3.0 for original code; `shared/` stays GPL-2.0-or-later so
-      the GPL-2.0 server and GPL-3.0 addon can both use it.
+- [x] Pick the repository license: GPL-3.0 for original code, `shared/` and the server distribution.
 - [x] Keep the repository a monorepo; add `LICENSES/` and per-directory `UPSTREAM.md` files instead
       of submodules.
 - [x] Regenerate `THIRD-PARTY-NOTICES.md` from the verified dependency list.
-- [x] Add SPDX headers to repository-owned scripts: `scripts/` is GPL-3.0-only and `tools/` is
-      GPL-2.0-or-later; imported and derived files keep their upstream notices.
-- [ ] Only before a GPL-3.0 server release: replace or isolate the bundled Windows MySQL client and
-      OpenSSL 1.0.2. The server remains GPL-2.0 while they are bundled.
+- [x] Add SPDX headers to repository-owned scripts: `scripts/` and `tools/` are GPL-3.0-only;
+      imported and derived files keep their upstream notices.
+- [x] Replace the bundled Windows MySQL client and OpenSSL 1.0.2: MariaDB Connector/C 3.4.10
+      (LGPL-2.1-or-later) and OpenSSL 3.5.9 LTS (Apache-2.0); the server is now GPL-3.0.
+      MariaDB Server remains GPL-2.0-only but is downloaded and run as a separate program.
 - Not planned unless upstream tracking changes: use submodules and update CI checkout plus
       `tools/release.ps1` first (`git archive` does not include submodule contents).
 

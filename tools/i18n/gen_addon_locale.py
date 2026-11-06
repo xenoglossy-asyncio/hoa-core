@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-only
 """Generate the addon language data from shared/i18n/addon/addon.yaml."""
 
 from __future__ import annotations

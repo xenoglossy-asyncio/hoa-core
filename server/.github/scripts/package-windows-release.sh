@@ -39,8 +39,9 @@ if [ ! -d "$dep_dir" ]; then
   exit 1
 fi
 
-cp -f "$dep_dir/libmySQL.dll" "$release_dir/libmySQL.dll"
-cp -f "$dep_dir/libeay32.dll" "$release_dir/libeay32.dll"
+cp -f "$dep_dir/libcrypto-3-x64.dll" "$release_dir/libcrypto-3-x64.dll"
+cp -f "$dep_dir/legacy.dll" "$release_dir/legacy.dll"
+cp -f "$dep_dir/libmariadb.dll" "$release_dir/libmariadb.dll"
 
 rm -f "$archive_path"
 

@@ -4,7 +4,7 @@
 
 | Component | Requirements |
 | --- | --- |
-| `server/` | CMake 3.20+, Visual Studio 2022 Build Tools (MSVC x64) or GCC/Clang, Boost/OpenSSL/MySQL client libraries |
+| `server/` | CMake 3.20+, Visual Studio 2022 Build Tools (MSVC x64) or GCC/Clang, Boost/OpenSSL 3/MariaDB Connector/C (the Windows x64 client and OpenSSL libraries are bundled) |
 | `client/` | Rust stable (see `client/rust-toolchain.toml`), Cargo |
 | `launcher/` | .NET SDK 10 |
 | `addon/`, `glue/` | LuaJIT (syntax check) |

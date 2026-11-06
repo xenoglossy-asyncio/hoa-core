@@ -45,11 +45,11 @@ find_package(Git)
 
 # Find out what system we use to include the needed libs
 if(WIN32)
-  if(PLATFORM MATCHES X86) # 32-bit
-    set(DEP_ARCH win32)
-  else() # 64-bit
-    set(DEP_ARCH x64)
+  if(PLATFORM MATCHES X86)
+    message(FATAL_ERROR
+      "Windows builds are x64 only. The bundled GPL-3.0-compatible MariaDB Connector/C and OpenSSL 3 libraries are provided for x64.")
   endif()
+  set(DEP_ARCH x64)
 endif()
 
 # Set up the install-prefix
@@ -96,11 +96,11 @@ endif()
 # Using the prepackages Windows dependencies from the repo
 if(WIN32)
   set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/mysql)
-  set(MYSQL_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.lib)
-  set(MYSQL_DEBUG_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.lib)
+  set(MYSQL_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmariadb.lib)
+  set(MYSQL_DEBUG_LIBRARY ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmariadb.lib)
   set(OPENSSL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/windows/include/openssl)
-  set(OPENSSL_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libeay32.lib)
-  set(OPENSSL_DEBUG_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libeay32.lib)
+  set(OPENSSL_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libcrypto.lib)
+  set(OPENSSL_DEBUG_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libcrypto.lib)
   set(ZLIB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/dep/windows/include/zlib)
   if (REQUIRES_LIBCURL AND MSVC)
     # MinGW falls through to find_package(CURL) below, which picks up
@@ -215,33 +215,20 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 if(WIN32)
   install(
     FILES
-      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libeay32.dll
-      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmySQL.dll
+      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libcrypto-3-x64.dll
+      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/legacy.dll
+      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmariadb.dll
     DESTINATION ${LIBS_DIR}
     CONFIGURATIONS Release
   )
   install(
     FILES
-      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libeay32.dll
-      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_debug/libmySQL.dll
+      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libcrypto-3-x64.dll
+      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/legacy.dll
+      ${CMAKE_SOURCE_DIR}/dep/windows/lib/${DEP_ARCH}_release/libmariadb.dll
     DESTINATION ${LIBS_DIR}
     CONFIGURATIONS Debug
   )
-  if(PLATFORM MATCHES X86)
-    # Copy dll's Windows needs
-    install(
-      FILES
-        ${CMAKE_SOURCE_DIR}/dep/windows/lib/win32_release/dbghelp.dll
-      DESTINATION ${LIBS_DIR}
-      CONFIGURATIONS Release
-    )
-    install(
-      FILES
-        ${CMAKE_SOURCE_DIR}/dep/windows/lib/win32_debug/dbghelp.dll
-      DESTINATION ${LIBS_DIR}
-      CONFIGURATIONS Debug
-    )
-  endif()
 endif()
 
 if(XCODE)

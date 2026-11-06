@@ -1,3 +1,9 @@
+## 0.1.3
+
+- Licensing: the server is now distributed under GPL-3.0. The GPL-2.0-only Windows MySQL client was replaced by MariaDB Connector/C 3.4.10 (LGPL-2.1-or-later), and OpenSSL 1.0.2 by OpenSSL 3.5.9 LTS (Apache-2.0, including the legacy provider). The old `libmySQL`/`libeay32` files were removed; MariaDB Server remains a separate GPL-2.0 download.
+- Addon: phase D object refactor completed. The scoreboard, codex, meter, quartermaster, vault, transmog and controller panel/HUD now use `UI.Module` controllers; offer cards own their layout and keyword methods through `OfferCard`; the core combat-log, shield and gossip state moved into controllers.
+- Full release now includes generated navmesh/mmap pathfinding tiles for every run map, so players no longer build them on their CPU at first launch.
+
 ## 0.1.2
 
 - Package and navmesh entries in the manifest now list a Gitee mirror next to their GitHub URL; the launcher prefers the mirror in China and falls back to the other host on failure.
