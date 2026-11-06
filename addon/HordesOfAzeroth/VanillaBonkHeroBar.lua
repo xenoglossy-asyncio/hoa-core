@@ -1256,7 +1256,7 @@ UI.Module("heroBar"):OnEnterWorld(function()
     end
     RefreshXp()
 end)
-local events = UI.Listen({
+local events = UI.Module("heroBar"):Listen({
     PLAYER_XP_UPDATE = function()
         RefreshXp()
     end,

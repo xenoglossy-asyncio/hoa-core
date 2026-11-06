@@ -722,7 +722,7 @@ end
 
 if C_NamePlate and C_NamePlate.GetNamePlateForUnit and UnitGUID then
     local units = CreateFrame("Frame")
-    UI.Listen({
+    UI.Module("plates"):Listen({
         NAME_PLATE_UNIT_ADDED = function(unit)
             if unit then
                 OnPlateUnit(unit, UnitGUID(unit))

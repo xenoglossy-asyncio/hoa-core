@@ -36,7 +36,7 @@ end
 local runner = CreateFrame("Frame")
 runner:Hide()
 
-UI.Listen({
+UI.Module("mail"):Listen({
     UI_ERROR_MESSAGE = function(message)
         if runner:IsShown() and message == ERR_INV_FULL then
             runner:Hide()
