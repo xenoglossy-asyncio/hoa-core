@@ -35,10 +35,10 @@
     }
   ],
   "packages": [
-    { "name": "launcher", "os": "windows", "build": "launcher", "changesWith": "tools/launcher/*.*", "files": [{ "from": "release/build/launcher/HoALauncher.exe", "to": "HoALauncher.exe" }] },
-    { "name": "addon", "git": ["Interface/AddOns/HordesOfAzeroth"] },
-    { "name": "glue", "git": ["Interface/GlueXML"] },
-    { "name": "launcher", "os": "linux", "build": "linux-launcher", "changesWith": "tools/launcher/*.*", "files": [{ "from": "release/build/linux/launcher/HoALauncher", "to": "HoALauncher" }] },
+    { "name": "launcher", "os": "windows", "build": "launcher", "changesWith": "launcher/*.*", "files": [{ "from": "release/build/launcher/HoALauncher.exe", "to": "HoALauncher.exe" }] },
+    { "name": "addon", "git": [{ "from": "addon/HordesOfAzeroth", "to": "Interface/AddOns/HordesOfAzeroth" }] },
+    { "name": "glue", "git": [{ "from": "glue/GlueXML", "to": "Interface/GlueXML" }] },
+    { "name": "launcher", "os": "linux", "build": "linux-launcher", "changesWith": "launcher/*.*", "files": [{ "from": "release/build/linux/launcher/HoALauncher", "to": "HoALauncher" }] },
     { "name": "client", "os": "windows", "build": "client", "files": [{ "from": "release/build/client/HordesOfAzeroth.exe", "to": "HordesOfAzeroth.exe" }, { "from": "release/build/client/CLIENT-LICENSES.md", "to": "CLIENT-LICENSES.md" }, { "from": "THIRD-PARTY-NOTICES.md" }] },
     { "name": "client", "os": "linux", "build": "linux-client", "files": [{ "from": "release/build/linux/client/HordesOfAzeroth", "to": "HordesOfAzeroth.x86_64" }, { "from": "release/build/client/CLIENT-LICENSES.md", "to": "CLIENT-LICENSES.md" }, { "from": "THIRD-PARTY-NOTICES.md" }] },
     { "name": "telegraphkit", "os": "windows", "build": "telegraphkit", "changesWith": "tools/telegraphs/*.cs", "files": [{ "from": "release/build/TelegraphKit.exe", "to": "tools/TelegraphKit.exe" }] },
@@ -108,17 +108,15 @@
     {
       "name": "base-db",
       "files": [
-        { "from": "server/downloads/db/mysql-dump/logon.sql", "to": "server/sql/logon.sql" },
-        { "from": "server/downloads/db/mysql-dump/characters.sql", "to": "server/sql/characters.sql" },
-        { "from": "server/downloads/db/mysql-dump/logs.sql", "to": "server/sql/logs.sql" }
+        { "from": "server/sql/logon.sql", "to": "server/sql/logon.sql" },
+        { "from": "server/sql/characters.sql", "to": "server/sql/characters.sql" },
+        { "from": "server/sql/logs.sql", "to": "server/sql/logs.sql" }
       ]
     },
     {
       "name": "migrations",
       "files": [
-        { "from": "server/core/sql/migrations/*_characters.sql", "to": "server/sql/migrations" },
-        { "from": "server/core/sql/migrations/*_logon.sql", "to": "server/sql/migrations" },
-        { "from": "server/core/sql/migrations/*_logs.sql", "to": "server/sql/migrations" }
+        { "from": "server/sql/migrations/*.sql", "to": "server/sql/migrations" }
       ]
     },
     { "name": "world-db", "build": "world-dump", "files": [{ "from": "release/build/world.sql", "to": "server/sql/world.sql" }] }
