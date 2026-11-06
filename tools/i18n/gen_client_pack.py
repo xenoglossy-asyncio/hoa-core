@@ -32,6 +32,7 @@ def render() -> dict[str, bytes]:
     messages = {
         "enUS": fallback,
         "zhCN": {entry["id"]: entry["zhCN"] for entry in entries},
+        "zhTW": {entry["id"]: entry.get("zhTW", entry["enUS"]) for entry in entries},
     }
 
     for entry in entries:
@@ -55,7 +56,7 @@ def render() -> dict[str, bytes]:
         alias_text.setdefault(english, entry["zhCN"])
 
     packs: dict[str, bytes] = {}
-    for locale in ("enUS", "zhCN"):
+    for locale in ("enUS", "zhCN", "zhTW"):
         document = {
             "version": 1,
             "locale": locale,

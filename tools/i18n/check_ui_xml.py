@@ -56,16 +56,23 @@ def load_pack(locale: str) -> dict:
 
 def main() -> int:
     errors: list[str] = []
-    packs = {locale: load_pack(locale) for locale in ("enUS", "zhCN")}
+    locales = ("enUS", "zhCN", "zhTW")
+    packs = {locale: load_pack(locale) for locale in locales}
     globals_en = packs["enUS"]["globals"]
-    globals_zh = packs["zhCN"]["globals"]
     aliases = packs["enUS"]["aliases"]
+
+    def missing_key(key: str) -> str | None:
+        for locale in locales:
+            if key not in packs[locale]["globals"]:
+                return locale
+        return None
 
     for path in sorted(UI_XML.glob("*.xml")):
         text = strip_xml_comments(path.read_text(encoding="utf-8"))
         for key in sorted(set(HOA_KEY.findall(text))):
-            if key not in globals_en or key not in globals_zh:
-                errors.append(f"{path.name}: {key} is not in both packs")
+            locale = missing_key(key)
+            if locale:
+                errors.append(f"{path.name}: {key} is missing from {locale}")
         for value in (
             TEXT_ATTR.findall(text)
             + LUA_TEXT_ASSIGN.findall(text)
@@ -83,8 +90,9 @@ def main() -> int:
     for path in [GLUE_XML / "BonkGlue.xml", GLUE_XML / "BonkCoop.xml", GLUE_XML / "BonkGluePad.xml"]:
         text = strip_xml_comments(path.read_text(encoding="utf-8"))
         for key in sorted(set(HOA_KEY.findall(text))):
-            if key not in globals_en or key not in globals_zh:
-                errors.append(f"{path.name}: {key} is not in both packs")
+            locale = missing_key(key)
+            if locale:
+                errors.append(f"{path.name}: {key} is missing from {locale}")
         for value in (
             TEXT_ATTR.findall(text)
             + LUA_TEXT_ASSIGN.findall(text)

@@ -63,6 +63,13 @@ function VanillaBonkLocale.Register(language, strings)
     VanillaBonkLocale.reverse = nil
 end
 
+function VanillaBonkLocale.RegisterLanguages(tables)
+    for language, strings in pairs(tables) do
+        VanillaBonkLocale.tables[language] = strings
+    end
+    VanillaBonkLocale.reverse = nil
+end
+
 function VanillaBonkLocale.RegisterKeys(keys)
     VanillaBonkLocale.keys = keys
 end

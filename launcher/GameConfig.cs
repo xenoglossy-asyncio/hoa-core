@@ -21,6 +21,7 @@ namespace HordesOfAzeroth.Launcher
         {
             ("enUS", "hoa.launcher.language_english"),
             ("zhCN", "hoa.launcher.language_simplified_chinese"),
+            ("zhTW", "hoa.launcher.language_traditional_chinese"),
         };
 
         static readonly string[] CarriedOver =

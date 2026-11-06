@@ -27,6 +27,7 @@ class ClientPackTests(unittest.TestCase):
         for entry in ui:
             self.assertTrue(entry["enUS"].strip(), entry["id"])
             self.assertTrue(entry["zhCN"].strip(), entry["id"])
+            self.assertTrue(entry.get("zhTW", "").strip(), entry["id"])
 
     def test_generated_packs_match_the_sources(self) -> None:
         for locale, document in self.packs.items():

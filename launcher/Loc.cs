@@ -20,6 +20,7 @@ namespace HordesOfAzeroth.Launcher
         {
             ["enUS"] = LauncherStrings.EnUs,
             ["zhCN"] = LauncherStrings.ZhCn,
+            ["zhTW"] = LauncherStrings.ZhTw,
         };
 
         static readonly ConditionalWeakTable<AvaloniaObject, Dictionary<AvaloniaProperty, Shown>> Originals =

@@ -19,7 +19,7 @@ use crate::cvars::{hoa_language, Cvars};
 static PACKS_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/assets/i18n");
 
 const FALLBACK: &str = "enUS";
-const SUPPORTED: [&str; 2] = ["enUS", "zhCN"];
+const SUPPORTED: [&str; 3] = ["enUS", "zhCN", "zhTW"];
 
 #[derive(Debug, Deserialize)]
 struct PackFile {
@@ -357,6 +357,7 @@ mod tests {
     fn supported_codes_normalize_and_unknown_codes_fall_back() {
         assert_eq!(UiLanguage::normalize("enUS"), "enUS");
         assert_eq!(UiLanguage::normalize("zhcn"), "zhCN");
+        assert_eq!(UiLanguage::normalize("zhtw"), "zhTW");
         assert_eq!(UiLanguage::normalize("frFR"), "enUS");
         assert_eq!(UiLanguage::normalize(""), "enUS");
     }
@@ -373,10 +374,10 @@ mod tests {
             );
             assert_eq!(
                 pack.text("hoa.ui.options.title"),
-                Some(if locale == "zhCN" {
-                    "选项"
-                } else {
-                    "Options"
+                Some(match locale {
+                    "zhCN" => "选项",
+                    "zhTW" => "選項",
+                    _ => "Options",
                 })
             );
         }
@@ -391,7 +392,7 @@ mod tests {
 
     #[test]
     fn install_seats_globals_and_the_text_function() {
-        for (locale, title) in [("enUS", "Options"), ("zhCN", "选项")] {
+        for (locale, title) in [("enUS", "Options"), ("zhCN", "选项"), ("zhTW", "選項")] {
             let mut script = UiScript::new().expect("VM");
             script.set_ui_locale(Some(locale_for_code(locale).index()));
             install_for_script(&script);

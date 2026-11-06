@@ -52,6 +52,14 @@ def render() -> bytes:
     lines += [
         "        };",
         "",
+        "        public static readonly Dictionary<string, string> ZhTw = new Dictionary<string, string>",
+        "        {",
+    ]
+    for entry in entries:
+        lines.append(f"            [{csharp(entry['id'])}] = {csharp(entry.get('zhTW', entry['enUS']))},")
+    lines += [
+        "        };",
+        "",
         "        public static readonly Dictionary<string, string> EnglishToId = new Dictionary<string, string>",
         "        {",
     ]
