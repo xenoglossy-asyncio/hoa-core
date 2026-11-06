@@ -20,7 +20,21 @@ See [BUILDING.md](../../../BUILDING.md). `dotnet build` passes; publishing and p
 ## To change
 
 - Make language selection account-level; expire caches by `(locale, contentVersion)` before launch.
-- Clean up upstream URLs in `Repository`/`StatsUrl`/`MirrorUrl`; point them at the new repository or leave them empty.
+- Keep `config/release.json` in sync with the fork's GitHub and Gitee repositories.
+
+## Update sources
+
+`config/release.json` names the GitHub repository, its Gitee mirror (`giteeRepository`) and the
+third-party downloads. The launcher reads `manifest.json` / `manifest-linux.json` from
+`https://github.com/<repository>/releases/latest/download/`; in China (or after GitHub fails) it
+uses `https://gitee.com/<giteeRepository>/releases/download/<tag>/<asset>` instead, resolving the
+latest tag through Gitee's API (`/releases/latest`). Package zips keep the same tag and file name
+on both hosts, so `tools/publish-gitee.ps1 -Version x.y.z` mirrors a published release: it creates
+or reuses the `packages-vX` and `vX` releases and uploads `release/<version>/assets` (set
+`HOA_GITEE_TOKEN` to a token with repo write access; it also points the Gitee default branch at
+`main`). MariaDB lists Tsinghua, Aliyun and USTC
+mirrors under `thirdParty[].mirrors`; the launcher tries them first in China and after failures
+elsewhere. A private R2 mirror (`HOA_MIRROR_URL`) remains optional.
 
 ## Direct co-op
 

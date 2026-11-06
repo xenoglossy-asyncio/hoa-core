@@ -1,5 +1,6 @@
 {
-  "repository": "jonhaldors/hordes-of-azeroth",
+  "repository": "xenoglossy-asyncio/hoa-core",
+  "giteeRepository": "xenoglossy-asyncio/hoa-core",
   "productName": "Hordes of Azeroth",
   "minLauncherVersion": "0.1.0",
   "realmName": "Hordes of Azeroth",
@@ -11,6 +12,11 @@
       "version": "11.4.13",
       "licence": "GPL-2.0",
       "url": "https://archive.mariadb.org/mariadb-11.4.13/winx64-packages/mariadb-11.4.13-winx64.zip",
+      "mirrors": [
+        "https://mirrors.tuna.tsinghua.edu.cn/mariadb/mariadb-11.4.13/winx64-packages/mariadb-11.4.13-winx64.zip",
+        "https://mirrors.aliyun.com/mariadb/mariadb-11.4.13/winx64-packages/mariadb-11.4.13-winx64.zip",
+        "https://mirrors.ustc.edu.cn/mariadb/mariadb-11.4.13/winx64-packages/mariadb-11.4.13-winx64.zip"
+      ],
       "localCopy": "server/downloads/mariadb-11.4.13-winx64.zip",
       "install": { "unzipTo": "server/mariadb", "stripTopFolder": true }
     },
@@ -20,6 +26,11 @@
       "version": "11.4.13",
       "licence": "GPL-2.0",
       "url": "https://archive.mariadb.org/mariadb-11.4.13/bintar-linux-systemd-x86_64/mariadb-11.4.13-linux-systemd-x86_64.tar.gz",
+      "mirrors": [
+        "https://mirrors.tuna.tsinghua.edu.cn/mariadb/mariadb-11.4.13/bintar-linux-systemd-x86_64/mariadb-11.4.13-linux-systemd-x86_64.tar.gz",
+        "https://mirrors.aliyun.com/mariadb/mariadb-11.4.13/bintar-linux-systemd-x86_64/mariadb-11.4.13-linux-systemd-x86_64.tar.gz",
+        "https://mirrors.ustc.edu.cn/mariadb/mariadb-11.4.13/bintar-linux-systemd-x86_64/mariadb-11.4.13-linux-systemd-x86_64.tar.gz"
+      ],
       "install": { "unzipTo": "server/mariadb", "stripTopFolder": true }
     }
   ],
