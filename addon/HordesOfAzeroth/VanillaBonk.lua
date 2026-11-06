@@ -75,6 +75,12 @@ local function DialogBackdrop(frame)
 end
 VB.DialogBackdrop = DialogBackdrop
 
+UI.Module("buffTimers"):Listen({
+    VARIABLES_LOADED = function()
+        SHOW_BUFF_DURATIONS = "1"
+    end,
+})
+
 local hiddenBars = CreateFrame("Frame")
 hiddenBars:Hide()
 
@@ -304,86 +310,6 @@ UI.ListenHoa({
         SetCombatLogQuiet(true)
     end,
 })
-
-handlers["offer"] = function(f)
-    VB.offer = {}
-    VB.offerLevel = f[2]
-    VB.offerSource = f[4]
-    VB.rerolls = tonumber(f[5]) or 0
-    VB.banishes = tonumber(f[6]) or 0
-    VB.skips = tonumber(f[7]) or 0
-end
-
-handlers["opt"] = function(f)
-    local description = gsub(f[8] or "", "|n", "\n")
-    if f[3] == "c" then
-        description = gsub(description, "%s*You hold %d+%.?$", "")
-    end
-    VB.offer[tonumber(f[2])] = {
-        kind = f[3],
-        newLevel = tonumber(f[4]) or 1,
-        maxLevel = tonumber(f[5]) or 0,
-        name = f[6],
-        icon = f[7],
-        description = description,
-        rarity = tonumber(f[9] or ""),
-        locked = f[10] == "1",
-        damageBefore = f[11] or "",
-        damageAfter = f[12] or "",
-        damageLabel = f[13] or "",
-        banishable = f[14] ~= "0",
-        stats = {},
-    }
-end
-
-handlers["ostat"] = function(f)
-    local option = VB.offer[tonumber(f[2])]
-    if option then
-        tinsert(option.stats, { label = f[3] or "", before = f[4] or "", after = f[5] or "" })
-    end
-end
-
-handlers["offerend"] = function()
-    VB.ShowOffer(VB.offerLevel)
-end
-
-handlers["picked"] = function()
-    VB.offer = {}
-    VB.CloseOffer()
-end
-
-handlers["leyoffer"] = function()
-    VB.offer = {}
-    VB.offerLevel = nil
-    VB.offerSource = "ley"
-    VB.rerolls, VB.banishes, VB.skips = 0, 0, 0
-end
-
-handlers["leyopt"] = function(f)
-    local index = tonumber(f[2] or "")
-    if not index then
-        return
-    end
-    local card = f[7] == "c"
-    VB.offer[index] = {
-        kind = card and "c" or "ley",
-        newLevel = card and tonumber(f[8] or "") or 1,
-        maxLevel = card and tonumber(f[9] or "") or 0,
-        name = f[3] or "",
-        icon = f[4] or "",
-        description = card and gsub(f[5] or "", "%s*You hold %d+%.?$", "") or (f[5] or ""),
-        rarity = tonumber(f[6] or ""),
-    }
-end
-
-handlers["leyofferend"] = function()
-    VB.ShowOffer(nil)
-end
-
-handlers["leyofferclose"] = function()
-    VB.offer = {}
-    VB.CloseOffer()
-end
 
 UI.ListenHoa({
     HOA_CODEX = function(entry)

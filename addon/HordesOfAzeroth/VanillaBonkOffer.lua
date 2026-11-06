@@ -6,6 +6,8 @@ local DialogBackdrop = VB.DialogBackdrop
 local FONT = VB.FONT
 local ICON_PATH = VB.ICON_PATH
 local SetFont = VB.SetFont
+local handlers = VB.handlers
+local Offer = UI.Module("offer")
 
 local RARITIES = {
     [0] = { name = L["hoa.addon.common"], r = 1, g = 1, b = 1 },
@@ -15,18 +17,13 @@ local RARITIES = {
     [4] = { name = L["hoa.addon.legendary"], r = 1, g = 0.5, b = 0 },
 }
 
-local function RarityText(rarity, text)
+function Offer:RarityText(rarity, text)
     local color = RARITIES[rarity] or RARITIES[0]
     return format("|cff%02x%02x%02x%s|r", color.r * 255, color.g * 255, color.b * 255, text)
 end
 
-UI.Module("buffTimers"):Listen({
-    VARIABLES_LOADED = function()
-        SHOW_BUFF_DURATIONS = "1"
-    end,
-})
-
-local offerFrame = CreateFrame("Frame", "VanillaBonkOffer", UIParent)
+Offer.frame = CreateFrame("Frame", "VanillaBonkOffer", UIParent)
+local offerFrame = Offer.frame
 offerFrame:SetAllPoints(UIParent)
 offerFrame:SetFrameStrata("DIALOG")
 offerFrame:EnableMouse(false)
@@ -74,7 +71,7 @@ offerFrame.hint:SetShadowOffset(1, -1)
 offerFrame.hint:SetPoint("CENTER", offerFrame, "CENTER", 0, -206)
 offerFrame.hint:SetTextColor(0.78, 0.78, 0.78)
 
-offerFrame.cards = {}
+Offer.cards = {}
 offerFrame.cardDrop = 0
 offerFrame.MAX_GROWTH = 120
 
@@ -88,14 +85,14 @@ tinsert(UISpecialFrames, "VanillaBonkBanishEscape")
 
 function VB.IsBanishTarget(card)
     local option = VB.offer[card.index]
-    return offerFrame.banishing and option ~= nil and option.banishable
+    return Offer.banishing and option ~= nil and option.banishable
 end
 
-local function SetBanishMode(on)
+function Offer:SetBanishMode(on)
     on = on and true or false
-    offerFrame.banishing = on
-    offerFrame.banishWarned = nil
-    for _, card in ipairs(offerFrame.cards) do
+    Offer.banishing = on
+    Offer.banishWarned = nil
+    for _, card in ipairs(Offer.cards) do
         if card:IsShown() and card.lineColor then
             local target = VB.IsBanishTarget(card)
             if target then
@@ -133,12 +130,12 @@ local function SetBanishMode(on)
 end
 
 offerFrame.banishEscape:SetScript("OnHide", function()
-    if not this:IsShown() and offerFrame.banishing then
-        SetBanishMode(false)
+    if not this:IsShown() and Offer.banishing then
+        Offer:SetBanishMode(false)
     end
 end)
 
-local function Pick(index)
+function Offer:Pick(index)
     if not VB.offer[index] or (VB.picking and GetTime() - (VB.pickingAt or 0) < 3) then
         return
     end
@@ -148,33 +145,33 @@ local function Pick(index)
     Command((VB.offerSource == "ley" and "leypick " or "pick ") .. index)
 end
 
-local function Banish(index)
+function Offer:Banish(index)
     if not VB.offer[index] or VB.picking or (VB.banishes or 0) < 1 or VB.offerSource == "ley" then
         return
     end
     if not VB.offer[index].banishable then
-        if offerFrame.banishWarned then
+        if Offer.banishWarned then
             return
         end
-        offerFrame.banishWarned = true
+        Offer.banishWarned = true
         UIErrorsFrame:AddMessage(L["hoa.addon.you_can_t_banish_an_upgrade_you_already_have"], 1, 0.1, 0.1, 1)
         return
     end
     VB.picking = true
     VB.pickingAt = GetTime()
-    SetBanishMode(false)
+    Offer:SetBanishMode(false)
     Command("banish " .. index)
 end
 
-local function ToggleBanish()
-    if offerFrame.banishing then
-        SetBanishMode(false)
+function Offer:ToggleBanish()
+    if Offer.banishing then
+        Offer:SetBanishMode(false)
     elseif not VB.picking and (VB.banishes or 0) > 0 and VB.offerSource ~= "ley" then
-        SetBanishMode(true)
+        Offer:SetBanishMode(true)
     end
 end
 
-local function Reroll()
+function Offer:Reroll()
     if VB.picking or (VB.rerolls or 0) < 1 then
         return
     end
@@ -183,7 +180,7 @@ local function Reroll()
     Command("reroll")
 end
 
-local function Skip()
+function Offer:Skip()
     if VB.picking or (VB.skips or 0) < 1 then
         return
     end
@@ -192,7 +189,7 @@ local function Skip()
     Command("pass")
 end
 
-local function Lock(index)
+function Offer:Lock(index)
     if not VB.offer[index] or VB.picking or VB.offerSource ~= "chest" then
         return
     end
@@ -222,7 +219,7 @@ do
         button.keyPrompt:SetText(text)
     end
 
-    function offerFrame.RefreshKeyPrompts()
+    function Offer:RefreshKeyPrompts()
         for name in pairs(KEY_PROMPT_BUTTONS) do
             RefreshKeyPrompt(offerFrame[name])
         end
@@ -243,7 +240,7 @@ do
         end)
     end
 
-    UI.Module("offerKeyPrompts"):OnBindings(offerFrame.RefreshKeyPrompts)
+    UI.Module("offerKeyPrompts"):OnBindings(function() Offer:RefreshKeyPrompts() end)
 end
 
 local CardArt = VanillaBonkUI.CardArt
@@ -273,7 +270,7 @@ local function IsLetter(char)
     return char ~= "" and strfind(char, "%a") ~= nil
 end
 
-local function KeywordTerms()
+function Offer:KeywordTerms()
     if VB.keywordTerms then
         return VB.keywordTerms
     end
@@ -294,7 +291,7 @@ end
 
 local HTML_ESCAPES = { ["&"] = "&amp;", ["<"] = "&lt;", [">"] = "&gt;" }
 
-local function MatchKeyword(text, pos, terms)
+function Offer:MatchKeyword(text, pos, terms)
     if IsLetter(strsub(text, pos - 1, pos - 1)) then
         return nil
     end
@@ -342,8 +339,8 @@ function VB.TermColor(term)
     return format("|cff%02x%02x%02x", floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5))
 end
 
-local function KeywordHtml(text)
-    local terms = KeywordTerms()
+function Offer:KeywordHtml(text)
+    local terms = Offer:KeywordTerms()
     local pieces, links = {}, {}
     local pos, length = 1, strlen(text)
     while pos <= length do
@@ -356,7 +353,7 @@ local function KeywordHtml(text)
             tinsert(pieces, "<br/>")
             pos = pos + 1
         else
-            local term, stop = MatchKeyword(text, pos, terms)
+            local term, stop = Offer:MatchKeyword(text, pos, terms)
             if term then
                 tinsert(pieces, VB.TermColor(term) .. '<a href="bonkkw:' .. term.id .. '">' .. term.text .. "</a>|r")
                 tinsert(links, term.id)
@@ -370,22 +367,22 @@ local function KeywordHtml(text)
     return '<html><body><p align="center">' .. table.concat(pieces) .. "</p></body></html>", links
 end
 
-local function FindKeyword(text)
-    local terms = KeywordTerms()
+function Offer:FindKeyword(text)
+    local terms = Offer:KeywordTerms()
     for pos = 1, strlen(text) do
-        local term, stop = MatchKeyword(text, pos, terms)
+        local term, stop = Offer:MatchKeyword(text, pos, terms)
         if term then
             return term, pos, stop
         end
     end
 end
 
-local function ColorKeywords(text)
-    local terms = KeywordTerms()
+function Offer:ColorKeywords(text)
+    local terms = Offer:KeywordTerms()
     local pieces = {}
     local pos, length = 1, strlen(text)
     while pos <= length do
-        local term, stop = MatchKeyword(text, pos, terms)
+        local term, stop = Offer:MatchKeyword(text, pos, terms)
         if term then
             tinsert(pieces, VB.TermColor(term) .. term.text .. "|r")
             pos = stop + 1
@@ -425,7 +422,7 @@ function VanillaBonkUI.FillKeywordTip(tooltip, id)
     tooltip:AddLine(keyword.description, 1, 1, 1, 1)
 end
 
-local function ShowKeywordTooltip(id, owner)
+function Offer:ShowKeywordTooltip(id, owner)
     if not VanillaBonkUI.HasKeywordTip(id) then
         return
     end
@@ -434,7 +431,7 @@ local function ShowKeywordTooltip(id, owner)
     GameTooltip:Show()
 end
 
-local function HighlightCard(card)
+function Offer:HighlightCard(card)
     if VB.IsBanishTarget(card) then
         card.line:SetBackdropBorderColor(1, 0.1, 0.05, 1)
     else
@@ -442,7 +439,7 @@ local function HighlightCard(card)
     end
 end
 
-local function UnhighlightCard(card)
+function Offer:UnhighlightCard(card)
     if VB.IsBanishTarget(card) then
         card.line:SetBackdropBorderColor(BANISH_RED[1], BANISH_RED[2], BANISH_RED[3], 1)
         return
@@ -451,21 +448,21 @@ local function UnhighlightCard(card)
     card.line:SetBackdropBorderColor(color[1], color[2], color[3], color[4])
 end
 
-local function ClickCard(card, button)
+function Offer:ClickCard(card, button)
     if button == "RightButton" then
-        if offerFrame.banishing then
-            SetBanishMode(false)
+        if Offer.banishing then
+            Offer:SetBanishMode(false)
         end
-    elseif offerFrame.banishing then
-        Banish(card.index)
+    elseif Offer.banishing then
+        Offer:Banish(card.index)
     else
-        Pick(card.index)
+        Offer:Pick(card.index)
     end
 end
 
 local KEYWORD_HOVER_MIN_FRAMES = 2
 local KEYWORD_HOVER_MAX_FRAMES = 120
-local function UnderlineKeyword(hover, width)
+function Offer:UnderlineKeyword(hover, width)
     local dotWidth, dotStep = 2, 4
     hover.dots = hover.dots or {}
     local count = floor((width - dotWidth) / dotStep) + 1
@@ -497,7 +494,7 @@ local function ReadingOrder(a, b)
     return a:GetLeft() < b:GetLeft()
 end
 
-local function KeywordSpans(html)
+function Offer:KeywordSpans(html)
     local spans = {}
     for _, span in ipairs({ html:GetChildren() }) do
         if span:IsShown() and span:GetLeft() and span:GetTop() then
@@ -509,23 +506,23 @@ local function KeywordSpans(html)
     return spans
 end
 
-local function CreateKeywordHover(card, index, parent)
+function Offer:CreateKeywordHover(card, index, parent)
     local hover = CreateFrame("Button", nil, parent or card)
     hover:SetFrameLevel(card.description:GetFrameLevel() + 2)
     hover:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     hover.card = card
     hover:SetScript("OnEnter", function()
-        HighlightCard(this.card)
-        ShowKeywordTooltip(this.keyword, this)
+        Offer:HighlightCard(this.card)
+        Offer:ShowKeywordTooltip(this.keyword, this)
     end)
     hover:SetScript("OnLeave", function()
         GameTooltip:Hide()
         if not MouseIsOver(this.card) then
-            UnhighlightCard(this.card)
+            Offer:UnhighlightCard(this.card)
         end
     end)
     hover:SetScript("OnClick", function()
-        ClickCard(this.card, arg1)
+        Offer:ClickCard(this.card, arg1)
     end)
     if index then
         card.hovers[index] = hover
@@ -533,16 +530,16 @@ local function CreateKeywordHover(card, index, parent)
     return hover
 end
 
-local function PlaceKeywordHovers(card, spans)
+function Offer:PlaceKeywordHovers(card, spans)
     local html = card.description
     for index, span in ipairs(spans) do
-        local hover = card.hovers[index] or CreateKeywordHover(card, index)
+        local hover = card.hovers[index] or Offer:CreateKeywordHover(card, index)
         hover:ClearAllPoints()
         hover:SetPoint("TOPLEFT", html, "TOPLEFT", span:GetLeft() - html:GetLeft(), span:GetTop() - html:GetTop())
         hover:SetWidth(span:GetWidth())
         hover:SetHeight(span:GetHeight())
         hover.keyword = card.descriptionLinks and card.descriptionLinks[index]
-        UnderlineKeyword(hover, span:GetWidth())
+        Offer:UnderlineKeyword(hover, span:GetWidth())
         hover:Show()
     end
     for index = table.getn(spans) + 1, table.getn(card.hovers) do
@@ -550,7 +547,7 @@ local function PlaceKeywordHovers(card, spans)
     end
 end
 
-local function SetKeywordText(card)
+function Offer:SetKeywordText(card)
     for _, hover in ipairs(card.hovers) do
         hover:Hide()
     end
@@ -558,7 +555,7 @@ local function SetKeywordText(card)
     card.description.hoverFrames = 0
 end
 
-local function UpdateKeywordHovers(html)
+function Offer:UpdateKeywordHovers(html)
     local links = table.getn(html.card.descriptionLinks or {})
     if links == 0 then
         html.hoverFrames = nil
@@ -568,18 +565,18 @@ local function UpdateKeywordHovers(html)
     if html.hoverFrames < KEYWORD_HOVER_MIN_FRAMES then
         return
     end
-    local spans = KeywordSpans(html)
+    local spans = Offer:KeywordSpans(html)
     if table.getn(spans) >= links then
         html.hoverFrames = nil
-        PlaceKeywordHovers(html.card, spans)
+        Offer:PlaceKeywordHovers(html.card, spans)
     elseif html.hoverFrames >= KEYWORD_HOVER_MAX_FRAMES then
         html.hoverFrames = nil
     end
 end
 
-local function RebuildKeywordLinks(card)
+function Offer:RebuildKeywordLinks(card)
     if card.descriptionHtml then
-        SetKeywordText(card)
+        Offer:SetKeywordText(card)
     end
 end
 
@@ -688,7 +685,7 @@ for index = 1, MAX_CARDS do
     card.hovers = {}
     card.description:SetScript("OnUpdate", function()
         if this.hoverFrames then
-            UpdateKeywordHovers(this)
+            Offer:UpdateKeywordHovers(this)
         end
     end)
 
@@ -700,13 +697,13 @@ for index = 1, MAX_CARDS do
     card.highlight:SetAllPoints(card.art)
 
     card:SetScript("OnClick", function()
-        ClickCard(this, arg1)
+        Offer:ClickCard(this, arg1)
     end)
     card:SetScript("OnEnter", function()
-        HighlightCard(this)
+        Offer:HighlightCard(this)
     end)
     card:SetScript("OnLeave", function()
-        UnhighlightCard(this)
+        Offer:UnhighlightCard(this)
     end)
 
     card.lock = VanillaBonkUI.SliceButton(CreateFrame("Button", nil, card, "UIPanelButtonTemplate"))
@@ -715,10 +712,10 @@ for index = 1, MAX_CARDS do
     card.lock:SetPoint("BOTTOM", card, "BOTTOM", 0, 18)
     card.lock.index = index
     card.lock:SetScript("OnClick", function()
-        Lock(this.index)
+        Offer:Lock(this.index)
     end)
 
-    offerFrame.cards[index] = card
+    Offer.cards[index] = card
 end
 
 local OFFER_POP = 0.24
@@ -752,7 +749,7 @@ offerFrame.SIDE_SCALE = 0.5
 offerFrame.SIDE_BOTTOM = 140
 offerFrame.SIDE_BUTTON_STEP = 28
 
-local function PlaceCard(card, scale, alpha, rise)
+function Offer:PlaceCard(card, scale, alpha, rise)
     card:SetAlpha(alpha)
     card.alphaNow = alpha
     card:ClearAllPoints()
@@ -766,7 +763,7 @@ local function PlaceCard(card, scale, alpha, rise)
     card:SetPoint("CENTER", offerFrame, "CENTER", card.x / scale, (16 - offerFrame.cardDrop + rise) / scale)
 end
 
-function offerFrame.ApplySideChrome()
+function Offer:ApplySideChrome()
     offerFrame.title:ClearAllPoints()
     offerFrame.subtitle:ClearAllPoints()
     if offerFrame.side then
@@ -796,7 +793,7 @@ BINDING_NAME_VANILLABONK_REROLL = L["hoa.addon.reroll_cards"]
 BINDING_NAME_VANILLABONK_SKIP = L["hoa.addon.skip_cards"]
 BINDING_NAME_VANILLABONK_BANISH = L["hoa.addon.banish_card"]
 
-local function GiveBackChoiceKeys()
+function Offer:GiveBackChoiceKeys()
     if not VanillaBonkChoiceKeys or (VanillaBonkGlyphs and VanillaBonkGlyphs.open) then
         return
     end
@@ -810,7 +807,7 @@ local function GiveBackChoiceKeys()
     VanillaBonkChoiceKeys = nil
 end
 
-local function TakeChoiceKeys()
+function Offer:TakeChoiceKeys()
     if VanillaBonkChoiceKeys then
         return
     end
@@ -820,11 +817,11 @@ local function TakeChoiceKeys()
         SetBinding(key, action)
     end
     VanillaBonkChoiceKeys = before
-    offerFrame.RefreshKeyPrompts()
+    Offer:RefreshKeyPrompts()
 end
 
-VanillaBonk_TakeChoiceKeys = TakeChoiceKeys
-VanillaBonk_GiveBackChoiceKeys = GiveBackChoiceKeys
+VanillaBonk_TakeChoiceKeys = function() Offer:TakeChoiceKeys() end
+VanillaBonk_GiveBackChoiceKeys = function() Offer:GiveBackChoiceKeys() end
 
 function VanillaBonk_ChoiceKey(key)
     if VanillaBonkMenu and VanillaBonkMenu:IsShown() then
@@ -837,29 +834,29 @@ function VanillaBonk_ChoiceKey(key)
     if key == "R" and VanillaBonk_GlyphReroll and VanillaBonk_GlyphReroll() then
         return
     end
-    if not offerFrame.open then
+    if not Offer.open then
         return
     end
-    if index and offerFrame.banishing then
-        Banish(index)
+    if index and Offer.banishing then
+        Offer:Banish(index)
     elseif index then
-        Pick(index)
+        Offer:Pick(index)
     elseif key == "R" then
-        Reroll()
+        Offer:Reroll()
     elseif key == "X" then
-        Skip()
+        Offer:Skip()
     elseif key == "B" then
-        ToggleBanish()
+        Offer:ToggleBanish()
     end
 end
 
 UI.Module("choiceKeys"):Listen({
-    VARIABLES_LOADED = GiveBackChoiceKeys,
-    PLAYER_LOGOUT = GiveBackChoiceKeys,
+    VARIABLES_LOADED = function() Offer:GiveBackChoiceKeys() end,
+    PLAYER_LOGOUT = function() Offer:GiveBackChoiceKeys() end,
 })
 
 local CARD_TEXT_WIDTH = 220
-local function LayoutDamageRow(card, option, hasLock)
+function Offer:LayoutDamageRow(card, option, hasLock)
     local row = card.damage
     local after = option and option.damageAfter or ""
     if after == "" then
@@ -909,7 +906,7 @@ local function LayoutDamageRow(card, option, hasLock)
     return DAMAGE_ROW_HEIGHT + DAMAGE_ROW_GAP
 end
 
-local function FitCardText(card, width, darkmoon, hasLock, damageRoom)
+function Offer:FitCardText(card, width, darkmoon, hasLock, damageRoom)
     local scale = min(1, width / CARD_TEXT_WIDTH)
     card.name:SetFont(FONT, max(12, floor(17 * scale + 0.5)))
     card.name:SetWidth(width - 28)
@@ -936,12 +933,12 @@ local function FitCardText(card, width, darkmoon, hasLock, damageRoom)
     card.overflow = max(0, (card.measure:GetHeight() or 0) - room)
     card.description:SetFont("P", FONT, size, "")
     card.description:SetHeight(max(room, 12))
-    card.descriptionHtml, card.descriptionLinks = KeywordHtml(card.descriptionText or "")
-    SetKeywordText(card)
+    card.descriptionHtml, card.descriptionLinks = Offer:KeywordHtml(card.descriptionText or "")
+    Offer:SetKeywordText(card)
     return room
 end
 
-local function GetStatBlock(card, index)
+function Offer:GetStatBlock(card, index)
     card.stats = card.stats or {}
     local block = card.stats[index]
     if block then
@@ -962,12 +959,12 @@ local function GetStatBlock(card, index)
     block.measure:SetTextColor(0, 0, 0, 0)
     block.measure:SetShadowColor(0, 0, 0, 0)
     block.measure:SetPoint("TOPLEFT", block, "TOPLEFT", 0, 0)
-    block.hover = CreateKeywordHover(card, nil, block)
+    block.hover = Offer:CreateKeywordHover(card, nil, block)
     card.stats[index] = block
     return block
 end
 
-local function HideStats(card, from)
+function Offer:HideStats(card, from)
     if not card.stats then
         return
     end
@@ -976,9 +973,9 @@ local function HideStats(card, from)
     end
 end
 
-function STAT_BLOCK.PlaceKeyword(block, label, size)
+function Offer:PlaceStatKeyword(block, label, size)
     local hover = block.hover
-    local term, start = FindKeyword(label)
+    local term, start = Offer:FindKeyword(label)
     if not term then
         hover:Hide()
         return
@@ -993,11 +990,11 @@ function STAT_BLOCK.PlaceKeyword(block, label, size)
     hover:SetWidth(word)
     hover:SetHeight(size + 2)
     hover.keyword = term.id
-    UnderlineKeyword(hover, word)
+    Offer:UnderlineKeyword(hover, word)
     hover:Show()
 end
 
-local function LayoutStats(card, stats, width, room)
+function Offer:LayoutStats(card, stats, width, room)
     local scale = min(1, width / CARD_TEXT_WIDTH)
     local count = getn(stats)
     local labelSize = max(8, floor(STAT_BLOCK.labelSize * scale + 0.5))
@@ -1005,15 +1002,15 @@ local function LayoutStats(card, stats, width, room)
     local valueSize = max(10, min(floor(STAT_BLOCK.valueSize * scale + 0.5), step - labelSize - 8))
     local arrowSize = floor(valueSize * 0.8 + 0.5)
     for index, stat in ipairs(stats) do
-        local block = GetStatBlock(card, index)
+        local block = Offer:GetStatBlock(card, index)
         block:SetWidth(width - 20)
         block:SetHeight(step)
         block:ClearAllPoints()
         block:SetPoint("TOP", card.divider, "BOTTOMRIGHT", 0, -8 - (index - 1) * step)
         block.label:SetFont(FONT, labelSize)
         block.label:SetWidth(width - 24)
-        block.label:SetText(ColorKeywords(stat.label))
-        STAT_BLOCK.PlaceKeyword(block, stat.label, labelSize)
+        block.label:SetText(Offer:ColorKeywords(stat.label))
+        Offer:PlaceStatKeyword(block, stat.label, labelSize)
         block.before:SetFont(FONT, valueSize)
         block.after:SetFont(FONT, valueSize)
         local capped = stat.before == stat.after
@@ -1036,10 +1033,10 @@ local function LayoutStats(card, stats, width, room)
         block.after:SetPoint("LEFT", block.arrow, "RIGHT", STAT_BLOCK.arrowGap, 0)
         block:Show()
     end
-    HideStats(card, count + 1)
+    Offer:HideStats(card, count + 1)
 end
 
-function offerFrame.FitCard(card, option, width, hasLock)
+function Offer:FitCard(card, option, width, hasLock)
     local darkmoon = option.kind == "c"
     if not darkmoon then
         VanillaBonkUI.TalentArtCoords(card.art, width - 18, offerFrame.cardHeight - 18)
@@ -1047,17 +1044,17 @@ function offerFrame.FitCard(card, option, width, hasLock)
     if option.stats and getn(option.stats) > 0 then
         card.descriptionText = ""
         card.damage:Hide()
-        LayoutStats(card, option.stats, width, FitCardText(card, width, darkmoon, hasLock, 0))
+        Offer:LayoutStats(card, option.stats, width, Offer:FitCardText(card, width, darkmoon, hasLock, 0))
     else
-        HideStats(card, 1)
+        Offer:HideStats(card, 1)
         card.descriptionText = option.description
-        FitCardText(card, width, darkmoon, hasLock, LayoutDamageRow(card, option, hasLock))
+        Offer:FitCardText(card, width, darkmoon, hasLock, Offer:LayoutDamageRow(card, option, hasLock))
     end
 end
 
-function offerFrame.GrowCardsToFit(width, hasLock)
+function Offer:GrowCardsToFit(width, hasLock)
     local grow = 0
-    for index, card in ipairs(offerFrame.cards) do
+    for index, card in ipairs(Offer.cards) do
         if VB.offer[index] then
             grow = max(grow, card.overflow or 0)
         end
@@ -1065,25 +1062,25 @@ function offerFrame.GrowCardsToFit(width, hasLock)
     grow = min(ceil(grow), offerFrame.MAX_GROWTH)
     if grow > 0 then
         offerFrame.cardHeight = CARD_HEIGHT + grow
-        for index, card in ipairs(offerFrame.cards) do
+        for index, card in ipairs(Offer.cards) do
             local option = VB.offer[index]
             if option then
                 card:SetHeight(offerFrame.cardHeight)
-                offerFrame.FitCard(card, option, width, hasLock)
+                Offer:FitCard(card, option, width, hasLock)
             end
         end
     end
     offerFrame.cardDrop = grow / 2
-    for index, card in ipairs(offerFrame.cards) do
+    for index, card in ipairs(Offer.cards) do
         if VB.offer[index] and not card.pop then
-            PlaceCard(card, 1, 1, 0)
+            Offer:PlaceCard(card, 1, 1, 0)
         end
     end
     offerFrame.hint:SetPoint("CENTER", offerFrame, "CENTER", 0, -206 - grow)
     return grow
 end
 
-function offerFrame.Subtitle()
+function Offer:Subtitle()
     if VB.offerSource == "ley" then
         return L["hoa.addon.choose_a_blessing"]
     end
@@ -1101,17 +1098,17 @@ function offerFrame.Subtitle()
     return cards > 0 and L["hoa.addon.choose_a_darkmoon_card"] or L["hoa.addon.choose_an_upgrade"]
 end
 
-local function ShowOffer(level)
-    if offerFrame.anim and offerFrame.anim.mode == "close" then
-        offerFrame.deferred = { level = level }
+function Offer:ShowOffer(level)
+    if Offer.anim and Offer.anim.mode == "close" then
+        Offer.deferred = { level = level }
         return
     end
-    local fresh = not offerFrame.open
+    local fresh = not Offer.open
     offerFrame.side = VB.sideOffers and true or false
     offerFrame.SIDE_SCALE = VanillaBonkUI.SideScale(0.5)
-    offerFrame.ApplySideChrome()
-    if not fresh and not offerFrame.anim then
-        offerFrame.anim = { mode = "pop", t = 0 }
+    Offer:ApplySideChrome()
+    if not fresh and not Offer.anim then
+        Offer.anim = { mode = "pop", t = 0 }
     end
 
     if VB.offerSource == "chest" then
@@ -1121,7 +1118,7 @@ local function ShowOffer(level)
     else
         offerFrame.title:SetText(L("hoa.addon.level_1", level))
     end
-    offerFrame.subtitle:SetText(offerFrame.Subtitle())
+    offerFrame.subtitle:SetText(Offer:Subtitle())
 
     local count = getn(VB.offer)
     local gap = count <= 3 and 20 or 12
@@ -1131,7 +1128,7 @@ local function ShowOffer(level)
     local hasLock = VB.offerSource == "chest"
     offerFrame.cardHeight = CARD_HEIGHT
 
-    for index, card in ipairs(offerFrame.cards) do
+    for index, card in ipairs(Offer.cards) do
         local option = VB.offer[index]
         if option then
             card:SetWidth(width)
@@ -1140,12 +1137,12 @@ local function ShowOffer(level)
             local look = option.name .. option.icon .. option.newLevel .. (option.rarity or "")
             if fresh then
                 card.pop = 0.08 + (index - 1) * OFFER_STAGGER
-                PlaceCard(card, 0.8, 0, -24)
+                Offer:PlaceCard(card, 0.8, 0, -24)
             elseif card.look ~= look or not card:IsShown() then
-                card.pop = offerFrame.anim.t
-                PlaceCard(card, 0.8, 0, -24)
+                card.pop = Offer.anim.t
+                Offer:PlaceCard(card, 0.8, 0, -24)
             elseif not card.pop then
-                PlaceCard(card, 1, 1, 0)
+                Offer:PlaceCard(card, 1, 1, 0)
             end
             card.look = look
             card.divider:SetWidth((width - 48) / 2)
@@ -1184,9 +1181,9 @@ local function ShowOffer(level)
                 card.lineColor = { 0.85, 0.75, 0.5, 0.35 }
                 card.glow:Hide()
             end
-            local rarityName = option.rarity and RARITIES[option.rarity] and RarityText(option.rarity, RARITIES[option.rarity].name)
+            local rarityName = option.rarity and RARITIES[option.rarity] and Offer:RarityText(option.rarity, RARITIES[option.rarity].name)
             if option.kind == "e" then
-                card.level:SetText(L("hoa.addon.1_evolution", RarityText(4, L["hoa.addon.legendary"])))
+                card.level:SetText(L("hoa.addon.1_evolution", Offer:RarityText(4, L["hoa.addon.legendary"])))
             elseif option.kind == "ley" then
                 card.level:SetText(rarityName and L("hoa.addon.1_blessing", rarityName) or L["hoa.addon.blessing"])
             elseif option.kind == "c" then
@@ -1214,7 +1211,7 @@ local function ShowOffer(level)
             card.line:SetBackdropBorderColor(card.lineColor[1], card.lineColor[2], card.lineColor[3], card.lineColor[4])
             card.borderColor = color and { color.r, color.g, color.b } or { 1, 1, 1 }
             card:SetBackdropBorderColor(card.borderColor[1], card.borderColor[2], card.borderColor[3])
-            offerFrame.FitCard(card, option, width, hasLock)
+            Offer:FitCard(card, option, width, hasLock)
             if hasLock then
                 card.lock:SetText(option.locked and L["hoa.addon.locked"] or L["hoa.addon.lock"])
                 card.lock:Show()
@@ -1229,7 +1226,7 @@ local function ShowOffer(level)
         end
     end
 
-    local grow = offerFrame.GrowCardsToFit(width, hasLock)
+    local grow = Offer:GrowCardsToFit(width, hasLock)
     local canBanish = (VB.banishes or 0) > 0 and VB.offerSource ~= "ley"
 
     local buttons = {}
@@ -1269,46 +1266,46 @@ local function ShowOffer(level)
 
     VB.picking = false
     VB.pickedIndex = nil
-    SetBanishMode(false)
+    Offer:SetBanishMode(false)
     if fresh then
         CollectGarbageIfDue()
         PlaySound("LEVELUP")
-        offerFrame.open = true
-        TakeChoiceKeys()
-        offerFrame.anim = { mode = "open", t = 0, dimFrom = offerFrame.dimAlpha or 0 }
+        Offer.open = true
+        Offer:TakeChoiceKeys()
+        Offer.anim = { mode = "open", t = 0, dimFrom = offerFrame.dimAlpha or 0 }
         offerFrame.chrome:SetAlpha(0)
         offerFrame.dim:SetVertexColor(0, 0, 0, OFFER_DIM * (offerFrame.dimAlpha or 0))
     end
     offerFrame:Show()
 end
 
-local function AnimateOffer(frame, elapsed)
-    local anim = frame.anim
+function Offer:AnimateOffer(frame, elapsed)
+    local anim = self.anim
     anim.t = anim.t + elapsed
     local t = anim.t
 
     if anim.mode == "close" then
         local e = Progress(t, 0, OFFER_CLOSE)
-        if not frame.deferred then
+        if not self.deferred then
             frame.dimAlpha = anim.dimFrom * (1 - e)
             frame.dim:SetVertexColor(0, 0, 0, OFFER_DIM * frame.dimAlpha)
         end
         frame.chrome:SetAlpha(anim.chromeFrom * (1 - e))
-        for _, card in ipairs(frame.cards) do
+        for _, card in ipairs(self.cards) do
             if card:IsShown() then
                 if card.index == VB.pickedIndex then
-                    PlaceCard(card, 1 + 0.08 * EaseOut(e), card.closeFrom * (1 - e), 6 * e)
+                    Offer:PlaceCard(card, 1 + 0.08 * EaseOut(e), card.closeFrom * (1 - e), 6 * e)
                 else
-                    PlaceCard(card, 1 - 0.06 * e, card.closeFrom * max(0, 1 - e * 1.5), -12 * e)
+                    Offer:PlaceCard(card, 1 - 0.06 * e, card.closeFrom * max(0, 1 - e * 1.5), -12 * e)
                 end
             end
         end
         if e >= 1 then
-            frame.anim = nil
-            local deferred = frame.deferred
-            frame.deferred = nil
+            self.anim = nil
+            local deferred = self.deferred
+            self.deferred = nil
             if deferred then
-                ShowOffer(deferred.level)
+                Offer:ShowOffer(deferred.level)
             else
                 frame:Hide()
             end
@@ -1325,68 +1322,70 @@ local function AnimateOffer(frame, elapsed)
         frame.title:SetPoint("CENTER", frame, "CENTER", 0, 230 + 16 * (1 - header))
         busy = header < 1
     end
-    for _, card in ipairs(frame.cards) do
+    for _, card in ipairs(self.cards) do
         if card.pop then
             local p = Progress(t, card.pop, OFFER_POP)
-            PlaceCard(card, 0.8 + 0.2 * EaseBack(p), min(1, p * 2), -24 * (1 - EaseOut(p)))
+            Offer:PlaceCard(card, 0.8 + 0.2 * EaseBack(p), min(1, p * 2), -24 * (1 - EaseOut(p)))
             if p >= 1 then
                 card.pop = nil
-                RebuildKeywordLinks(card)
+                Offer:RebuildKeywordLinks(card)
             else
                 busy = true
             end
         end
     end
     if not busy then
-        frame.anim = nil
+        self.anim = nil
     end
 end
 
 offerFrame:SetScript("OnUpdate", function()
-    if this.anim then
-        AnimateOffer(this, arg1)
+    if Offer.anim then
+        Offer:AnimateOffer(this, arg1)
     end
 end)
 
 offerFrame:SetScript("OnShow", function()
-    if this.open then
-        TakeChoiceKeys()
+    if Offer.open then
+        Offer:TakeChoiceKeys()
     end
-    for _, card in ipairs(this.cards) do
+    for _, card in ipairs(Offer.cards) do
         if card:IsShown() and not card.pop then
-            RebuildKeywordLinks(card)
+            Offer:RebuildKeywordLinks(card)
         end
     end
 end)
 
 offerFrame:SetScript("OnHide", function()
-    GiveBackChoiceKeys()
+    Offer:GiveBackChoiceKeys()
     if this:IsShown() then
         return
     end
-    SetBanishMode(false)
-    this.anim = nil
-    this.open = false
-    this.deferred = nil
+    Offer:SetBanishMode(false)
+    Offer.anim = nil
+    Offer.open = false
+    Offer.deferred = nil
     this.dimAlpha = 0
 end)
 
-local function CloseOffer()
-    if not offerFrame:IsShown() or not offerFrame.open then
+function Offer:CloseOffer()
+    if not offerFrame:IsShown() or not Offer.open then
         return
     end
-    GiveBackChoiceKeys()
-    SetBanishMode(false)
+    Offer:GiveBackChoiceKeys()
+    Offer:SetBanishMode(false)
     offerFrame:EnableMouse(false)
-    offerFrame.open = false
-    offerFrame.anim = { mode = "close", t = 0, dimFrom = offerFrame.dimAlpha or 1, chromeFrom = offerFrame.chrome:GetAlpha() }
-    for _, card in ipairs(offerFrame.cards) do
+    Offer.open = false
+    Offer.anim = { mode = "close", t = 0, dimFrom = offerFrame.dimAlpha or 1, chromeFrom = offerFrame.chrome:GetAlpha() }
+    for _, card in ipairs(Offer.cards) do
         card.pop = nil
         card.closeFrom = card.alphaNow or 1
     end
 end
 
-local results = CreateFrame("Frame", "VanillaBonkResults", UIParent)
+local Results = UI.Module("results")
+Results.frame = CreateFrame("Frame", "VanillaBonkResults", UIParent)
+local results = Results.frame
 results:SetWidth(360)
 results:SetHeight(210)
 results:SetPoint("CENTER", UIParent, "CENTER", 0, 100)
@@ -1413,7 +1412,100 @@ results.close:SetScript("OnClick", function()
 end)
 
 
-VB.offerFrame = offerFrame
+
+
+function Offer:ApplyOffer(f)
+    VB.offer = {}
+    VB.offerLevel = f[2]
+    VB.offerSource = f[4]
+    VB.rerolls = tonumber(f[5]) or 0
+    VB.banishes = tonumber(f[6]) or 0
+    VB.skips = tonumber(f[7]) or 0
+end
+
+function Offer:ApplyOption(f)
+    local description = gsub(f[8] or "", "|n", "\n")
+    if f[3] == "c" then
+        description = gsub(description, "%s*You hold %d+%.?$", "")
+    end
+    VB.offer[tonumber(f[2])] = {
+        kind = f[3],
+        newLevel = tonumber(f[4]) or 1,
+        maxLevel = tonumber(f[5]) or 0,
+        name = f[6],
+        icon = f[7],
+        description = description,
+        rarity = tonumber(f[9] or ""),
+        locked = f[10] == "1",
+        damageBefore = f[11] or "",
+        damageAfter = f[12] or "",
+        damageLabel = f[13] or "",
+        banishable = f[14] ~= "0",
+        stats = {},
+    }
+end
+
+function Offer:ApplyStat(f)
+    local option = VB.offer[tonumber(f[2])]
+    if option then
+        tinsert(option.stats, { label = f[3] or "", before = f[4] or "", after = f[5] or "" })
+    end
+end
+
+function Offer:EndOffer()
+    Offer:ShowOffer(VB.offerLevel)
+end
+
+function Offer:Picked()
+    VB.offer = {}
+    Offer:CloseOffer()
+end
+
+function Offer:LeyOffer()
+    VB.offer = {}
+    VB.offerLevel = nil
+    VB.offerSource = "ley"
+    VB.rerolls, VB.banishes, VB.skips = 0, 0, 0
+end
+
+function Offer:ApplyLeyOption(f)
+    local index = tonumber(f[2] or "")
+    if not index then
+        return
+    end
+    local card = f[7] == "c"
+    VB.offer[index] = {
+        kind = card and "c" or "ley",
+        newLevel = card and tonumber(f[8] or "") or 1,
+        maxLevel = card and tonumber(f[9] or "") or 0,
+        name = f[3] or "",
+        icon = f[4] or "",
+        description = card and gsub(f[5] or "", "%s*You hold %d+%.?$", "") or (f[5] or ""),
+        rarity = tonumber(f[6] or ""),
+    }
+end
+
+function Offer:EndLeyOffer()
+    Offer:ShowOffer(nil)
+end
+
+function Offer:CloseLeyOffer()
+    VB.offer = {}
+    Offer:CloseOffer()
+end
+
+
+handlers["offer"] = function(f) Offer:ApplyOffer(f) end
+handlers["opt"] = function(f) Offer:ApplyOption(f) end
+handlers["ostat"] = function(f) Offer:ApplyStat(f) end
+handlers["offerend"] = function() Offer:EndOffer() end
+handlers["picked"] = function() Offer:Picked() end
+handlers["leyoffer"] = function() Offer:LeyOffer() end
+handlers["leyopt"] = function(f) Offer:ApplyLeyOption(f) end
+handlers["leyofferend"] = function() Offer:EndLeyOffer() end
+handlers["leyofferclose"] = function() Offer:CloseLeyOffer() end
+
+VB.offerFrame = Offer.frame
 VB.results = results
-VB.ShowOffer = ShowOffer
-VB.CloseOffer = CloseOffer
+VB.ShowOffer = function(level) Offer:ShowOffer(level) end
+VB.CloseOffer = function() Offer:CloseOffer() end
