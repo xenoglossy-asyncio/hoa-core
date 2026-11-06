@@ -8,10 +8,14 @@ Hordes of Azeroth is not affiliated with or endorsed by Blizzard Entertainment. 
 | --- | --- | --- | --- |
 | benilla | The game client (our fork: `client`, built as `HordesOfAzeroth.exe`) | MIT OR Apache-2.0 | https://github.com/samwhosung/benilla |
 | Rust crates in the client | Bevy, wgpu, mlua's Lua and the other libraries benilla builds on, compiled into `HordesOfAzeroth.exe`; every crate with its full licence text is listed in `CLIENT-LICENSES.md` next to the game | Each crate's own licence (MIT, Apache-2.0, MPL-2.0, zlib, BSD and similar) | https://crates.io |
-| VMaNGOS | The game server (our fork: `server/core`) | GPL-2.0 | https://github.com/vmangos/core |
+| VMaNGOS | The game server (our fork: `server`) | GPL-2.0 (most source headers say "or later"; the server is distributed as GPL-2.0) | https://github.com/vmangos/core |
+| MySQL client library | Server database client bundled for Windows (`libmySQL.dll` and `server/dep/windows/include/mysql`) | GPL-2.0 (version 2 only) | https://dev.mysql.com/ |
+| OpenSSL 1.0.2 | Crypto/TLS bundled for the Windows server (`server/dep/windows/include/openssl`) | OpenSSL License and SSLeay License (not GPL-compatible; see [docs/licensing](docs/licensing/README.md)) | https://www.openssl.org/ |
 | VMaNGOS world database | The base of the shipped world database (`world-db`), with our changes applied | GPL-2.0 | https://github.com/vmangos/core/releases |
 | MariaDB Server | The local database | GPL-2.0 | https://mariadb.org |
 | Barlow Bold | Health numbers font in the addon (`Interface/AddOns/HordesOfAzeroth/Fonts`, licence in `Barlow-OFL.txt` beside it) | SIL Open Font License 1.1 | https://github.com/jpt/barlow |
+| Noto Sans SC / Noto Sans TC | Chinese font fallbacks in the addon (`Fonts/NotoSansSC-OFL.txt`, `Fonts/NotoSansTC-OFL.txt`) | SIL Open Font License 1.1 | https://fonts.google.com/noto |
+| Avalonia, Mono.Nat | Launcher windowing and NAT helpers | MIT | https://avaloniaui.net/ , https://github.com/AlanMcGovern/Mono.Nat |
 | Microsoft Visual C++ Redistributable | Runtime DLLs next to the server and map tools | Microsoft Software License Terms (redistributable files) | https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist |
 
 MariaDB is downloaded by the launcher from its own release page. The client and the VMaNGOS-based server are built from our forks' source: [hordes-of-azeroth-client](https://github.com/jonhaldors/hordes-of-azeroth-client) and [hordes-of-azeroth-server](https://github.com/jonhaldors/hordes-of-azeroth-server).
