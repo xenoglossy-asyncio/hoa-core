@@ -1,4 +1,5 @@
 #include "BonkRun.h"
+#include "BonkAura.h"
 #include "BonkLocale.h"
 #include "BonkPlayer.h"
 #include "Creature.h"
@@ -216,12 +217,24 @@ void BonkRun::Enrage()
     {
         holder->SetAuraMaxDuration(int32(length));
         holder->RefreshHolder();
+        SendEnrageText();
         return;
     }
     BonkPlayer::SpellTweak& tweak = m_player->GetBonkPlayer()->TweakSpell(BONK_SPELL_ENRAGE_LOOK);
     tweak.durationMs = length;
     tweak.durationScale = 1.0f;
     m_player->CastCustomSpell(m_player, BONK_SPELL_ENRAGE_LOOK, 0, 0, {}, true);
+}
+
+// The Enrage haste and duration scale with the Flurry and Berserker masteries, so the aura text is
+// formatted from the live values rather than the catalog's fixed wording.
+void BonkRun::SendEnrageText() const
+{
+    BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_ENRAGE_LOOK);
+    if (!entry || !m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_ENRAGE_LOOK,
+        sBonkAura.Format(*entry, GetLocale(), { FormatBonkNumber(GetEnrageHaste()) }));
 }
 
 void BonkRun::EnrageOnKill(uint32 killingSpell)

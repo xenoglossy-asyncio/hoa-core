@@ -2,9 +2,9 @@
 // Do not edit by hand.
 
 pub const PROTOCOL_VERSION: u16 = 31;
-pub const CONTENT_HASH: &str = "sha256:804b813b6ab968ef8794998938d6025d348afd1b714f491a8cd708558c67f5f0";
+pub const CONTENT_HASH: &str = "sha256:1e73df89908dce206d10796ed647f58a792d7a349884e7c8cef6a8aff88abafc";
 
-pub const CONTENT_SECTIONS: &[(&str, &str)] = &[("cards", "sha256:8aba242a5b845e04070eb9abf8bd523cdcbde8cf60a06f9fec25882de07c095b"), ("spells", "sha256:53b232af1f0a8c8165abc0f722157a845cc03c92deeb9f4217cfa592bb2a081f"), ("tables", "sha256:faa3b8f018b6c366ead16fff3aae533d7637e23dd0464e0dd4969d0c1d7b0f05")];
+pub const CONTENT_SECTIONS: &[(&str, &str)] = &[("cards", "sha256:8aba242a5b845e04070eb9abf8bd523cdcbde8cf60a06f9fec25882de07c095b"), ("spells", "sha256:681afd1f58efbde3244e2c7ca4dfd4100f89445e87309c05b91d9ae685c0c9f7"), ("tables", "sha256:faa3b8f018b6c366ead16fff3aae533d7637e23dd0464e0dd4969d0c1d7b0f05")];
 
 pub const MSG_AURA_VALUE: u16 = 0x0002;
 pub const MSG_DASH: u16 = 0x0003;

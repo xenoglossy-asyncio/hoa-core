@@ -616,14 +616,16 @@
   display:
     name: Enrage
     name_zhCN: 狂怒
-    description: Haste increased by 25% for 4 sec.
-    description_zhCN: 急速提高25%，持续4秒。
-    reason: The native look row only says "Haste increased"; the HoA proc has a fixed value and duration.
+    description: Haste increased.
+    description_zhCN: 急速提高。
+    reason: The haste and duration are not fixed - the Flurry and Berserker masteries scale them - so the text states the effect and the run sends the real values through the aura text channel.
   stacks:
     source: none
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 33467
   key: deterrence_window
   native: true
@@ -734,11 +736,14 @@
   key: darkmoon_surge
   cpp: BONK_SPELL_DARKMOON_SURGE
   source: card:21
+  reason: The aura is the active surge window, not the trinket card, so its text states the live bonus (copies included) instead of the card's every-30-sec rule.
   stacks:
     source: copies
   permanent: false
   dynamic:
     kind: card_total
+    enUS: 'Power increased by {1}%.'
+    zhCN: 力量提高{1}%。
 - id: 60005
   key: shield
   cpp: BONK_SPELL_PLAYER_SHIELD
