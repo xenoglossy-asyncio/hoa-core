@@ -252,7 +252,13 @@ def resolve_dynamic(entry: dict, kind: str) -> tuple[str, str, str]:
     if dynamic_kind == "card_total" and kind != "card":
         raise SystemExit(f"spells.yaml: aura {entry['id']} dynamic card_total needs a card source")
     if dynamic_kind not in DYNAMIC_TEMPLATE_KINDS:
-        return dynamic_kind, "", ""
+        # A card aura's text is the held card's description, sent per copy count, so its template
+        # is optional; one that names a template (the surge window's live bonus) is honored.
+        if dynamic_kind != "card_total":
+            return dynamic_kind, "", ""
+        if not any(isinstance(dynamic.get(locale), str) and dynamic.get(locale, "").strip()
+                   for locale in ("enUS", "zhCN")):
+            return dynamic_kind, "", ""
     templates = {}
     for locale in ("enUS", "zhCN"):
         template = dynamic.get(locale)

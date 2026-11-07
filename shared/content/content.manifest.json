@@ -1,5 +1,5 @@
 {
-  "hash": "sha256:804b813b6ab968ef8794998938d6025d348afd1b714f491a8cd708558c67f5f0",
+  "hash": "sha256:1e73df89908dce206d10796ed647f58a792d7a349884e7c8cef6a8aff88abafc",
   "schema": 1,
   "sections": {
     "cards": {
@@ -12,7 +12,7 @@
       "files": [
         "shared/content/spells/spells.yaml"
       ],
-      "hash": "sha256:53b232af1f0a8c8165abc0f722157a845cc03c92deeb9f4217cfa592bb2a081f"
+      "hash": "sha256:681afd1f58efbde3244e2c7ca4dfd4100f89445e87309c05b91d9ae685c0c9f7"
     },
     "tables": {
       "files": [

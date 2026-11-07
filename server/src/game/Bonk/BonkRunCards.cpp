@@ -1,4 +1,5 @@
 #include "BonkRun.h"
+#include "BonkAura.h"
 #include "BonkCodex.h"
 #include "BonkLocale.h"
 #include "BonkMgr.h"
@@ -517,7 +518,11 @@ void BonkRun::UpdateCards(uint32 diff)
                 m_player->ForceValuesUpdateAtIndex(UNIT_FIELD_AURAFLAGS + (holder->GetAuraSlot() >> 3));
                 m_player->ExecuteDelayedActions();
                 m_player->SendForcedObjectUpdate();
-                SendCardAuraText(BONK_SPELL_DARKMOON_SURGE, *charm);
+                // The surge window's aura text states the live bonus (copies included), not the
+                // trinket card's every-30-sec rule.
+                if (BonkAuraEntry const* surge = sBonkAura.Get(BONK_SPELL_DARKMOON_SURGE))
+                    m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_DARKMOON_SURGE,
+                        sBonkAura.Format(*surge, GetLocale(), { FormatBonkNumber(GetCardTotal(BONK_CARD_POWER_SURGE, 0)) }));
             }
             StartCardCooldown(BONK_CARD_POWER_SURGE, charm->cooldownMs);
             m_player->GetBonkPlayer()->Notify(BONK_STRING_POWER_SURGE, { Localize(BONK_FIELD_CARD_NAME, charm->id, charm->name), FormatBonkNumber(GetCardTotal(BONK_CARD_POWER_SURGE, 0)),
@@ -1010,6 +1015,18 @@ std::string BonkRun::DescribeHeldCard(BonkCard const& card, uint32 copies, Local
 
 void BonkRun::SendCardAuraText(uint32 spellId, BonkCard const& card) const
 {
+    // An aura with a dynamic template (the surge window's live bonus) states the active effect,
+    // not the held card's rule; the rest fall back to the card description with its total line.
+    if (BonkAuraEntry const* entry = sBonkAura.Get(spellId))
+    {
+        std::string const formatted = sBonkAura.Format(*entry, GetLocale(),
+            { FormatBonkNumber(GetCardTotal(card.effect, 0)) });
+        if (!formatted.empty())
+        {
+            m_player->GetBonkPlayer()->SendAuraText(spellId, formatted);
+            return;
+        }
+    }
     m_player->GetBonkPlayer()->SendAuraText(spellId, DescribeHeldCard(card, GetCardCopies(card.id), GetLocale()));
 }
 

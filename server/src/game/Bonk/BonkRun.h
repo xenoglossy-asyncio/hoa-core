@@ -2365,6 +2365,7 @@ class BonkRun
 
         float GetEnrageHaste() const;
         void Enrage();
+        void SendEnrageText() const;
         void EnrageOnKill(uint32 killingSpell);
         void ResolveCriticalStrikes();
         void OpenDeepWound(OwnedWeapon const& owned, Creature* mob);
