@@ -55,3 +55,7 @@ tmp/
 # Python
 __pycache__/
 *.pyc
+
+# Claude Code working state stays local; the repo skills are tracked and ship with the tree.
+.claude/*
+!.claude/skills
