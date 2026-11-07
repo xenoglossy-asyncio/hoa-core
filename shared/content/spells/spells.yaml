@@ -978,7 +978,9 @@
     source: none
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60024
   key: slice_and_dice
   cpp: BONK_SPELL_SLICE_AND_DICE
@@ -987,7 +989,9 @@
     source: none
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60025
   key: borrowed_time
   cpp: BONK_SPELL_BORROWED_TIME
@@ -996,7 +1000,9 @@
     source: none
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60026
   key: flurry
   cpp: BONK_SPELL_FLURRY
@@ -1005,7 +1011,9 @@
     source: none
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60027
   key: lifebloom
   cpp: BONK_SPELL_LIFEBLOOM_HASTE
@@ -1024,7 +1032,9 @@
     max: 10
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Power increased by {1}%.'
+    zhCN: 力量提高{1}%。
 - id: 60029
   key: forceful_winds
   cpp: BONK_SPELL_FORCEFUL_WINDS
@@ -1034,7 +1044,9 @@
     max: 5
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Power increased by {1}%.'
+    zhCN: 力量提高{1}%。
 - id: 60030
   key: danse_macabre
   cpp: BONK_SPELL_DANSE_MACABRE
@@ -1044,7 +1056,9 @@
     max: 10
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Power increased by {1}%.'
+    zhCN: 力量提高{1}%。
 - id: 60031
   key: avenging_wrath
   cpp: BONK_SPELL_AVENGING_WRATH
@@ -1054,7 +1068,9 @@
     max: 5
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60032
   key: zealotry
   cpp: BONK_SPELL_ZEALOTRY
@@ -1064,7 +1080,9 @@
     max: 10
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60033
   key: arcane_tempo
   cpp: BONK_SPELL_ARCANE_TEMPO
@@ -1074,7 +1092,9 @@
     max: 5
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60034
   key: starlord
   cpp: BONK_SPELL_STARLORD
@@ -1084,7 +1104,9 @@
     max: 3
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60035
   key: soul_of_the_forest
   cpp: BONK_SPELL_SOUL_OF_THE_FOREST
@@ -1094,7 +1116,9 @@
     max: 10
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60036
   key: harvester_of_souls
   cpp: BONK_SPELL_HARVESTER_OF_SOULS
@@ -1104,7 +1128,9 @@
     max: 10
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60037
   key: unrelenting_storm
   cpp: BONK_SPELL_UNRELENTING_STORM
@@ -1114,7 +1140,9 @@
     max: 10
   permanent: false
   dynamic:
-    kind: none
+    kind: stack_percent
+    enUS: 'Haste increased by {1}%.'
+    zhCN: 急速提高{1}%。
 - id: 60038
   key: mongoose_fury
   cpp: BONK_SPELL_MONGOOSE_FURY

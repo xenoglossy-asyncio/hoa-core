@@ -644,10 +644,10 @@ class BonkRun
         void RefreshKillPowerAura() const;
         void AddKillPowerStack() const;
         void RefreshUnhitPowerAura() const;
-        void ApplyTimedAura(uint32 spellId, uint32 durationMs) const;
+        void ApplyTimedAura(uint32 spellId, uint32 durationMs, float percent = 0.0f) const;
         void ApplyTimedAuraTo(Unit* target, uint32 spellId, uint32 durationMs, uint32 flags) const;
         uint32 RemainingAuraMs(uint32 spellId) const;
-        void SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const;
+        void SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils, float percentPerStack = 0.0f) const;
         bool SyncStackAura(uint32 spellId, uint32 stacks) const;
         void UpdateTalentAuras();
         uint32 GetCardAuraStacks(uint32 spellId) const;

@@ -458,7 +458,7 @@ void BonkRun::CastOnStruck()
     }
 }
 
-void BonkRun::ApplyTimedAura(uint32 spellId, uint32 durationMs) const
+void BonkRun::ApplyTimedAura(uint32 spellId, uint32 durationMs, float percent) const
 {
     if (!m_player || !m_player->IsAlive())
         return;
@@ -468,6 +468,13 @@ void BonkRun::ApplyTimedAura(uint32 spellId, uint32 durationMs) const
         holder->SetAuraMaxDuration(int32(durationMs));
         holder->UpdateAuraDuration();
     }
+    // A flat-percent window (Rapid Fire, Slice and Dice, Borrowed Time, Flurry): the bonus does not
+    // stack, so state it once when the aura is applied.
+    if (percent > 0.0f)
+        if (BonkAuraEntry const* entry = sBonkAura.Get(spellId))
+            if (m_player->GetBonkPlayer()->IsAddonReady())
+                m_player->GetBonkPlayer()->SendAuraText(spellId,
+                    sBonkAura.Format(*entry, GetLocale(), { FormatBonkNumber(percent) }));
 }
 
 void BonkRun::ApplyTimedAuraTo(Unit* target, uint32 spellId, uint32 durationMs, uint32 flags) const
@@ -490,7 +497,7 @@ uint32 BonkRun::RemainingAuraMs(uint32 spellId) const
     return holder->GetAuraDuration() > 0 ? uint32(holder->GetAuraDuration()) : 0;
 }
 
-void BonkRun::SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils) const
+void BonkRun::SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& untils, float percentPerStack) const
 {
     uint32 stacks = 0;
     uint32 longest = 0;
@@ -524,6 +531,14 @@ void BonkRun::SyncTimedStackAura(uint32 spellId, std::vector<uint32> const& unti
     holder->SetAuraDuration(int32(longest));
     holder->SetAuraMaxDuration(int32(longest));
     holder->UpdateAuraDuration();
+    // State the live bonus in the tooltip: stacks x the per-stack value the mastery grants. Sent
+    // only here (the early return above skips an unchanged stack/duration), so the text moves just
+    // when the number it shows does; the client skips a re-send of an identical string.
+    if (percentPerStack > 0.0f)
+        if (BonkAuraEntry const* entry = sBonkAura.Get(spellId))
+            if (m_player->GetBonkPlayer()->IsAddonReady())
+                m_player->GetBonkPlayer()->SendAuraText(spellId,
+                    sBonkAura.Format(*entry, GetLocale(), { FormatBonkNumber(float(stacks) * percentPerStack) }));
 }
 
 bool BonkRun::SyncStackAura(uint32 spellId, uint32 stacks) const
@@ -555,16 +570,19 @@ void BonkRun::UpdateTalentAuras()
     if (m_totalMs < m_nextTalentAuraSyncMs)
         return;
     m_nextTalentAuraSyncMs = m_totalMs + 400;
-    SyncTimedStackAura(BONK_SPELL_BLOODSURGE, m_bloodsurgeUntil);
-    SyncTimedStackAura(BONK_SPELL_FORCEFUL_WINDS, m_forcefulUntil);
-    SyncTimedStackAura(BONK_SPELL_DANSE_MACABRE, m_danseUntil);
-    SyncTimedStackAura(BONK_SPELL_STARLORD, m_starlordUntil);
-    SyncTimedStackAura(BONK_SPELL_SOUL_OF_THE_FOREST, m_forestUntil);
-    SyncTimedStackAura(BONK_SPELL_HARVESTER_OF_SOULS, m_harvestUntil);
-    SyncTimedStackAura(BONK_SPELL_UNRELENTING_STORM, m_unrelentingUntil);
+    SyncTimedStackAura(BONK_SPELL_BLOODSURGE, m_bloodsurgeUntil, m_mastery.Special(BONK_SPECIAL_BLOODSURGE));
+    SyncTimedStackAura(BONK_SPELL_FORCEFUL_WINDS, m_forcefulUntil, m_mastery.Special(BONK_SPECIAL_FORCEFUL_WINDS));
+    SyncTimedStackAura(BONK_SPELL_DANSE_MACABRE, m_danseUntil, m_mastery.Special(BONK_SPECIAL_DANSE_MACABRE));
+    SyncTimedStackAura(BONK_SPELL_STARLORD, m_starlordUntil, m_mastery.Special(BONK_SPECIAL_STARLORD));
+    SyncTimedStackAura(BONK_SPELL_SOUL_OF_THE_FOREST, m_forestUntil, m_mastery.Special(BONK_SPECIAL_SOUL_OF_THE_FOREST));
+    SyncTimedStackAura(BONK_SPELL_HARVESTER_OF_SOULS, m_harvestUntil, m_mastery.Special(BONK_SPECIAL_HARVESTER_OF_SOULS));
+    SyncTimedStackAura(BONK_SPELL_UNRELENTING_STORM, m_unrelentingUntil, m_mastery.Special(BONK_SPECIAL_UNRELENTING_STORM));
     for (auto const& itr : m_castHasteUntil)
         if (uint32 const spellId = CastHasteAura(itr.first))
-            SyncTimedStackAura(spellId, itr.second);
+        {
+            auto perStack = m_mastery.castHaste.find(itr.first);
+            SyncTimedStackAura(spellId, itr.second, perStack != m_mastery.castHaste.end() ? perStack->second : 0.0f);
+        }
     SyncStackAura(BONK_SPELL_MONGOOSE_FURY, m_mongooseStacks);
     SyncStackAura(BONK_SPELL_BULWARK, m_bulwarkStacks);
     SyncStackAura(BONK_SPELL_ANCIENT_MADNESS, m_madnessStacks);
@@ -644,7 +662,7 @@ void BonkRun::OnTalentCastDone(OwnedWeapon& owned)
     if (root == BONK_WEAPON_POWER_WORD_SHIELD)
     {
         if (m_mastery.Special(BONK_SPECIAL_BORROWED_TIME) > 0.0f)
-            ApplyTimedAura(BONK_SPELL_BORROWED_TIME, BONK_BORROWED_TIME_MS);
+            ApplyTimedAura(BONK_SPELL_BORROWED_TIME, BONK_BORROWED_TIME_MS, m_mastery.Special(BONK_SPECIAL_BORROWED_TIME));
         if (m_mastery.Special(BONK_SPECIAL_SHINING_FORCE) > 0.0f)
             for (Creature* mob : GetMobsInRange(BONK_SHINING_FORCE_RADIUS))
                 m_pendingStuns.push_back(mob->GetObjectGuid());
@@ -662,11 +680,11 @@ void BonkRun::OnTalentCastDone(OwnedWeapon& owned)
         if (adrenaline > 0.0f)
             ReduceTimer(BONK_WEAPON_BLADE_FLURRY, int32(adrenaline * IN_MILLISECONDS));
         if (m_mastery.Special(BONK_SPECIAL_SLICE_AND_DICE) > 0.0f)
-            ApplyTimedAura(BONK_SPELL_SLICE_AND_DICE, BONK_SLICE_AND_DICE_MS);
+            ApplyTimedAura(BONK_SPELL_SLICE_AND_DICE, BONK_SLICE_AND_DICE_MS, m_mastery.Special(BONK_SPECIAL_SLICE_AND_DICE));
     }
 
     if (root == BONK_WEAPON_HUNTERS_MARK && m_mastery.Special(BONK_SPECIAL_RAPID_FIRE) > 0.0f)
-        ApplyTimedAura(BONK_SPELL_RAPID_FIRE, BONK_RAPID_FIRE_MS);
+        ApplyTimedAura(BONK_SPELL_RAPID_FIRE, BONK_RAPID_FIRE_MS, m_mastery.Special(BONK_SPECIAL_RAPID_FIRE));
 
     if (root == BONK_WEAPON_THUNDER_CLAP && m_mastery.Special(BONK_SPECIAL_THUNDERLORD) > 0.0f)
     {
@@ -907,7 +925,7 @@ void BonkRun::OnTalentDamage(Unit* victim, SpellEntry const* spell)
 void BonkRun::OnTalentWindfury()
 {
     if (m_mastery.Special(BONK_SPECIAL_FLURRY) > 0.0f)
-        ApplyTimedAura(BONK_SPELL_FLURRY, BONK_FLURRY_MS);
+        ApplyTimedAura(BONK_SPELL_FLURRY, BONK_FLURRY_MS, m_mastery.Special(BONK_SPECIAL_FLURRY));
     if (m_mastery.Special(BONK_SPECIAL_FORCEFUL_WINDS) > 0.0f)
         PushTimedStack(m_forcefulUntil, m_totalMs, BONK_FORCEFUL_WINDS_MS, BONK_FORCEFUL_WINDS_STACKS);
 }
