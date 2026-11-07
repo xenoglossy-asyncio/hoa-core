@@ -1,4 +1,5 @@
 #include "BonkRun.h"
+#include "Log.h"
 #include "BonkAura.h"
 #include "BonkLocale.h"
 #include "BonkPlayer.h"
@@ -224,6 +225,7 @@ void BonkRun::Enrage()
     tweak.durationMs = length;
     tweak.durationScale = 1.0f;
     m_player->CastCustomSpell(m_player, BONK_SPELL_ENRAGE_LOOK, 0, 0, {}, true);
+    SendEnrageText();
 }
 
 // The Enrage haste and duration scale with the Flurry and Berserker masteries, so the aura text is
@@ -482,8 +484,24 @@ void BonkRun::ResetWarriorState()
     m_strikeImpactMs.clear();
 }
 
+// Stock spells the warrior's kit triggers but HoA does not want shown, stripped every tick because
+// they apply asynchronously (a strip right after the cast misses them):
+//  - the Bloodthirst weapon casts stock Bloodthirst (23881), whose heal-on-melee proc sub-spells
+//    (the 23885-23894 family, aura type 42) leave a meaningless "heals 0 health" buff; HoA computes
+//    the Bloodthirst heal directly, so none of that family is a wanted aura.
+//  - 7069 "Enraging Aura" is a stock party aura dragged in around the enrage window; HoA's Enrage is
+//    the 33462 window aura alone, so 7069 is noise.
+void BonkRun::StripStockWarriorAuras()
+{
+    static uint32 const STOCK_LOOK_AURAS[] = { 23881, 23885, 23886, 23887, 23888, 23889, 23890, 23891, 23892, 23893, 23894, 7069 };
+    for (uint32 spellId : STOCK_LOOK_AURAS)
+        if (m_player->HasAura(spellId))
+            m_player->RemoveAurasDueToSpell(spellId);
+}
+
 void BonkRun::UpdateWarrior(uint32 diff)
 {
+    StripStockWarriorAuras();
     ApplyBloodlust();
     BurstBloodShield();
     UpdateBladestorm(diff);
@@ -853,6 +871,31 @@ void BonkRun::StartBladestorm(OwnedWeapon const& owned)
         m_bladestorm.pulseMs = GetBladestormPulseMs(owned);
     }
     m_bladestorm.leftMs = std::max(m_bladestorm.leftMs, length);
+
+    // The spin window's aura states the remaining time and the pulse rate, so the player
+    // sees how long the storm lasts (Enraged makes it 50% longer).
+    if (m_player->IsAlive())
+    {
+        if (SpellAuraHolder* holder = m_player->AddAura(BONK_SPELL_BLADESTORM_AURA, ADD_AURA_POSITIVE))
+        {
+            holder->SetAuraMaxDuration(int32(length));
+            holder->SetAuraDuration(int32(m_bladestorm.leftMs));
+            holder->UpdateAuraDuration();
+        }
+        SendBladestormText(owned);
+    }
+}
+
+// The Bladestorm's aura text states the remaining spin time and the pulse rate.
+void BonkRun::SendBladestormText(OwnedWeapon const& owned) const
+{
+    BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_BLADESTORM_AURA);
+    if (!entry || !m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_BLADESTORM_AURA,
+        sBonkAura.Format(*entry, GetLocale(),
+            { FormatBonkNumber(m_bladestorm.leftMs / 1000.0f),
+              FormatBonkNumber(GetBladestormPulseMs(owned) / 1000.0f) }));
 }
 
 void BonkRun::UpdateBladestorm(uint32 diff)
@@ -873,6 +916,7 @@ void BonkRun::PulseBladestorm(uint32 diff)
     if (!spellInfo || m_bladestorm.leftMs <= 0 || !m_player->IsAlive())
     {
         m_bladestorm = Bladestorm();
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_BLADESTORM_AURA);
         return;
     }
     if (m_bladestorm.pulseMs > 0)
@@ -880,6 +924,8 @@ void BonkRun::PulseBladestorm(uint32 diff)
 
     m_bladestorm.pulseMs += GetBladestormPulseMs(*owned);
     CastSelfArea(*owned, spellInfo, GetWeaponArea(*owned));
+    // The stock Whirlwind Effect spell leaves a meaningless permanent aura; strip it.
+    m_player->RemoveAurasDueToSpell(15576);
 }
 
 void BonkRun::StartSteelCyclone(OwnedWeapon const& owned)

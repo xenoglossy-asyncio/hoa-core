@@ -1,4 +1,5 @@
 #include "BonkRun.h"
+#include "BonkAura.h"
 #include "BonkMobAI.h"
 #include "BonkPlayer.h"
 #include "Creature.h"

@@ -375,6 +375,13 @@ void BonkRun::AddCard(BonkCard const& card)
     }
     switch (card.effect)
     {
+        case BONK_CARD_POWER_SURGE:
+            // The surge's aura text states the live bonus; pick up a copy mid-cooldown and
+            // the card tooltip in the deck needs the new total even before the next trigger.
+            if (BonkAuraEntry const* surge = sBonkAura.Get(BONK_SPELL_DARKMOON_SURGE))
+                m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_DARKMOON_SURGE,
+                    sBonkAura.Format(*surge, GetLocale(), { FormatBonkNumber(GetCardTotal(BONK_CARD_POWER_SURGE, 0)) }));
+            break;
         case BONK_CARD_SOULSTONE:
             ++m_soulstones;
             break;

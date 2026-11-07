@@ -396,6 +396,39 @@ void BonkRun::ResendAuraTexts() const
                 SendCardAuraText(aura.spell, *card);
 }
 
+
+// The shield regen countdown: a visible aura whose remaining time is the delay until the
+// no-damage refill, removed the moment the shield is full or the player is dead.
+void BonkRun::UpdateShieldRegenAura()
+{
+    uint32 const max = GetMaxShield();
+    bool const needAura = m_player->IsAlive() && m_spellShield < max;
+
+    if (!needAura)
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_SHIELD_REGEN);
+        return;
+    }
+
+    uint32 const leftMs = BONK_SHIELD_REGEN_DELAY_MS - std::min(m_shieldIdleMs, BONK_SHIELD_REGEN_DELAY_MS);
+    if (SpellAuraHolder* holder = m_player->GetSpellAuraHolder(BONK_SPELL_SHIELD_REGEN, m_player->GetObjectGuid()))
+    {
+        holder->SetAuraMaxDuration(int32(BONK_SHIELD_REGEN_DELAY_MS));
+        holder->SetAuraDuration(int32(leftMs));
+        holder->UpdateAuraDuration();
+    }
+    else if (SpellAuraHolder* fresh = m_player->AddAura(BONK_SPELL_SHIELD_REGEN, ADD_AURA_NEGATIVE))
+    {
+        fresh->SetAuraMaxDuration(int32(BONK_SHIELD_REGEN_DELAY_MS));
+        fresh->SetAuraDuration(int32(leftMs));
+        fresh->UpdateAuraDuration();
+    }
+    if (BonkAuraEntry const* entry = sBonkAura.Get(BONK_SPELL_SHIELD_REGEN))
+        if (m_player->GetBonkPlayer()->IsAddonReady())
+            m_player->GetBonkPlayer()->SendAuraText(BONK_SPELL_SHIELD_REGEN,
+                sBonkAura.Format(*entry, GetLocale(), { std::to_string((leftMs + 999) / IN_MILLISECONDS) }));
+}
+
 void BonkRun::UpdateBossWounds(uint32)
 {
 }
@@ -516,6 +549,7 @@ void BonkRun::UpdateShield(uint32 diff)
             RefillShield(max);
     }
     RechargeJuggernautShield(diff, max);
+    UpdateShieldRegenAura();
 
     uint32 const total = m_spellShield;
     bool forceSend = false;

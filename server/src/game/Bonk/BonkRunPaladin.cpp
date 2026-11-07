@@ -1,4 +1,5 @@
 #include "BonkRun.h"
+#include "BonkAura.h"
 #include "BonkLocale.h"
 #include "BonkMobAI.h"
 #include "BonkPlayer.h"
@@ -10,6 +11,7 @@
 #include "Utilities/Random.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -916,4 +918,39 @@ float BonkRun::GetPaladinDamageMultiplier(Unit const* victim) const
     if (IsStandingInConsecration())
         scale *= FindOwned(BONK_WEAPON_HALLOWED_GROUND) ? BONK_HALLOWED_GROUND_BONUS : BONK_CONSECRATION_BONUS;
     return scale;
+}
+
+// The two invisible numbers a paladin gets for standing in their own Consecration, made visible:
+// the damage bonus (which tracks the Consecration / Hallowed Ground evolution) and, when the
+// Guardian of the Light capstone is learned, the damage reduction. Both persist while the paladin
+// stands in the cloud and drop when they leave, so UpdateOwnCombat refreshes them every tick.
+void BonkRun::UpdateConsecrationAura()
+{
+    if (m_player->GetClass() != CLASS_PALADIN || !m_player->IsAlive() || !IsStandingInConsecration())
+    {
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_CONSECRATION_MIGHT);
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_CONSECRATION_GUARD);
+        return;
+    }
+
+    float const bonus = FindOwned(BONK_WEAPON_HALLOWED_GROUND) ? BONK_HALLOWED_GROUND_BONUS : BONK_CONSECRATION_BONUS;
+    ApplyConsecrationAura(BONK_SPELL_CONSECRATION_MIGHT, uint32(std::lround((bonus - 1.0f) * 100.0f)));
+
+    if (m_mastery.Has(BONK_CAPSTONE_GUARDIAN_OF_THE_LIGHT))
+        ApplyConsecrationAura(BONK_SPELL_CONSECRATION_GUARD, uint32(std::lround((1.0f - BONK_GUARDIAN_TAKEN) * 100.0f)));
+    else
+        m_player->RemoveAurasDueToSpell(BONK_SPELL_CONSECRATION_GUARD);
+}
+
+// A Consecration state has no countdown of its own - it lasts as long as the paladin stands in the
+// cloud - so the aura is applied permanently and the live percent is pushed into its tooltip text.
+void BonkRun::ApplyConsecrationAura(uint32 spellId, uint32 percent)
+{
+    if (!m_player->HasAura(spellId))
+        m_player->AddAura(spellId, ADD_AURA_PERMANENT);
+    BonkAuraEntry const* entry = sBonkAura.Get(spellId);
+    if (!entry || !m_player->GetBonkPlayer()->IsAddonReady())
+        return;
+    m_player->GetBonkPlayer()->SendAuraText(spellId,
+        sBonkAura.Format(*entry, GetLocale(), { std::to_string(percent) }));
 }

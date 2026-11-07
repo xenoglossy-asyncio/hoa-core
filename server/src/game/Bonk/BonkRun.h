@@ -608,6 +608,7 @@ class BonkRun
         void UpdateRecovery(uint32 diff);
         void ReportQuestCounts();
         void UpdateShield(uint32 diff);
+        void UpdateShieldRegenAura();
         void SendShieldState() const;
         uint32 GetMaxShield() const;
         BonkSupportSource ShieldStatSupport() const;
@@ -2383,6 +2384,7 @@ class BonkRun
         void HealFromStrikes(OwnedWeapon const& owned, SpellEntry const* spellInfo, uint32 hits);
         void ResetWarriorState();
         void UpdateWarrior(uint32 diff);
+        void StripStockWarriorAuras();
         OwnedWeapon const* FindOwnedByFlag(BonkWeaponFlags flag) const;
         static bool SwingsWeapon(BonkWeapon const& weapon);
         void SwingWeapon(OwnedWeapon const& owned);
@@ -2434,7 +2436,8 @@ class BonkRun
         bool TakeChainExecutionSlot(OwnedWeapon const& owned);
         uint32 SweepExecute(OwnedWeapon& owned, SpellEntry const* spellInfo, float nearRange);
         void OnWhirlwindSpin(OwnedWeapon const& owned);
-        void StartBladestorm(OwnedWeapon const& owned);
+        void StartBladestorm(OwnedWeapon const& owned);        void SendBladestormText(OwnedWeapon const& owned) const;
+
         void UpdateBladestorm(uint32 diff);
         void PulseBladestorm(uint32 diff);
         int32 GetBladestormPulseMs(OwnedWeapon const& owned) const;
@@ -2762,6 +2765,8 @@ class BonkRun
         float GetSealOfLightHeal(float damageBonus) const;
         bool GetPaladinStrength(BonkWeapon const& weapon, float damageBonus, WeaponStrength& strength) const;
         float GetPaladinDamageMultiplier(Unit const* victim) const;
+        void UpdateConsecrationAura();
+        void ApplyConsecrationAura(uint32 spellId, uint32 percent);
         std::vector<uint32> m_sealOfLightTimes;
         std::vector<uint32> m_retributionTimes;
         uint32 m_paladinStrikes = 0;

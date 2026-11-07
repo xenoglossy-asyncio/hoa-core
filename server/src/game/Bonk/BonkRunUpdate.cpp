@@ -57,6 +57,7 @@ void BonkRun::UpdateOwnCombat(uint32 diff)
     LandDueBolts();
     UpdateArrowStorms(diff);
     UpdateKeywordClouds(diff);
+    UpdateConsecrationAura();
     UpdateWarrior(diff);
     UpdateMage(diff);
     UpdateTalents(diff);

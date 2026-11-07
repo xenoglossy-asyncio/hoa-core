@@ -186,6 +186,9 @@ void BonkRun::StrikeWith(OwnedWeapon& owned, SpellEntry const* spellInfo, Creatu
     else
     {
         m_player->CastCustomSpell(target, spellInfo, basePoints[0], basePoints[1], basePoints[2], true);
+        // The stock Bloodthirst heal buff (23881) shows a meaningless "heals for 0" aura; strip it.
+        if (spellInfo->Id == 23881)
+            m_player->RemoveAurasDueToSpell(23881);
         if (uint32 const kit = GetCastAnimationKit(spellInfo->Id))
         {
             uint32 const animationNow = WorldTimer::getMSTime();
@@ -2222,6 +2225,9 @@ void BonkRun::CastSelfArea(OwnedWeapon& owned, SpellEntry const* spellInfo, floa
     optional<int32> basePoints[MAX_EFFECT_INDEX];
     GetBasePoints(owned, spellInfo, share, basePoints);
     m_player->CastCustomSpell(m_player, spellInfo, basePoints[0], basePoints[1], basePoints[2], true);
+    // The stock Whirlwind Effect spell (15576) leaves a meaningless permanent aura; strip it.
+    if (spellInfo->Id == 15576)
+        m_player->RemoveAurasDueToSpell(15576);
     ShowAreaImpact(spellInfo, owned.weapon.radius * areaScale);
     if (owned.weapon.HasFlag(BONK_WEAPON_FLAG_KNOCKBACK))
         for (Creature* mob : GetMobsInRange(owned.weapon.radius * areaScale))

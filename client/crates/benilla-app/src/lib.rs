@@ -244,6 +244,15 @@ pub fn config_dir() -> Option<std::path::PathBuf> {
 
 /// Rewrites a custom spell's tooltip description, for values the aura carries at runtime.
 pub fn set_hoa_spell_description(world: &mut bevy::prelude::World, spell_id: u32, description: String) {
+    // Skip a repeat of the text already stored: the server re-sends a live value every tick (a
+    // countdown, an enrage window), and touching `Spells` marks it changed, which the tooltip feed
+    // reads to requeue cached aura views. Skipping an unchanged text keeps that cache stable, so a
+    // tooltip only rebuilds when the value it shows actually moves.
+    if let Some(texts) = world.get_resource::<hoa_aura::HoaValueTexts>() {
+        if texts.0.get(&spell_id).map_or(false, |prev| *prev == description) {
+            return;
+        }
+    }
     if let Some(mut spells) = world.get_resource_mut::<crate::ui_action::Spells>() {
         spells.catalog.set_overlay_description(spell_id, description.clone());
     }

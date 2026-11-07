@@ -762,6 +762,78 @@
     kind: shield_absorb
     enUS: Absorbs {1} damage.
     zhCN: 吸收 {1} 点伤害。
+- id: 60057
+  key: shield_regen
+  cpp: BONK_SPELL_SHIELD_REGEN
+  source: none
+  reason: The shield regen timer; a visible countdown to the 4-second no-damage refill.
+  display:
+    name: Shield Regenerating
+    name_zhCN: 护盾恢复
+    icon: Interface\Icons\Spell_Holy_PowerWordShield
+    description: Shield will regenerate when you avoid damage.
+    description_zhCN: 避免受到伤害后护盾将恢复。
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: stack_percent
+    enUS: 'Shield regenerates in {1} sec.'
+    zhCN: 护盾将在{1}秒后恢复。
+- id: 60058
+  key: bladestorm_window
+  cpp: BONK_SPELL_BLADESTORM_AURA
+  source: weapon:323
+  reason: The Bladestorm spin state; the code drives the pulses, this aura shows the window.
+  display:
+    name: Spinning Blades
+    name_zhCN: 旋刃
+    icon: Interface\Icons\Ability_Whirlwind
+    description: Spinning, striking all nearby enemies.
+    description_zhCN: 旋转攻击周围所有敌人。
+  stacks:
+    source: none
+  permanent: false
+  dynamic:
+    kind: stack_percent
+    enUS: 'Spinning for {1} sec. Strikes every {2} sec.'
+    zhCN: 旋转{1}秒。每{2}秒攻击一次。
+- id: 60059
+  key: consecration_might
+  cpp: BONK_SPELL_CONSECRATION_MIGHT
+  source: none
+  reason: The damage bonus from standing in your own Consecration; the value tracks the Consecration or Hallowed Ground evolution.
+  display:
+    name: Consecrated Might
+    name_zhCN: 奉献之力
+    icon: Interface\Icons\Spell_Holy_AuraOfLight
+    description: Damage increased while standing in Consecration.
+    description_zhCN: 站在奉献中时伤害提高。
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: stack_percent
+    enUS: 'Damage increased by {1}%.'
+    zhCN: 伤害提高{1}%。
+- id: 60060
+  key: consecration_guard
+  cpp: BONK_SPELL_CONSECRATION_GUARD
+  source: none
+  reason: The Guardian of the Light capstone's damage reduction while standing in Consecration.
+  display:
+    name: Guardian of the Light
+    name_zhCN: 光之守护者
+    icon: Interface\Icons\Spell_Holy_SealOfProtection
+    description: Damage taken reduced while standing in Consecration.
+    description_zhCN: 站在奉献中时受到的伤害降低。
+  stacks:
+    source: none
+  permanent: true
+  dynamic:
+    kind: stack_percent
+    enUS: 'Damage taken reduced by {1}%.'
+    zhCN: 受到的伤害降低{1}%。
 - id: 60006
   key: card_haste
   cpp: BONK_SPELL_CARD_HASTE

@@ -784,6 +784,9 @@ pub(super) fn feed_spell_tooltips(
             return;
         };
         let memory = memory.get(script);
+        // A dynamic aura-text update rewrites a description in the overlay through the `Spells`
+        // resource; that is not part of `seen`, so note the change and requeue the aura views below.
+        let spells_changed = spells.as_ref().map_or(false, |s| s.is_changed());
         let Some(spells) = spells.as_deref() else {
             return;
         };
@@ -906,6 +909,13 @@ pub(super) fn feed_spell_tooltips(
         changes = changes.with_reagents(&memory.reagents, &reagent_state);
         memory.reagents = reagent_state;
         memory.requeue(&changes, &mut wanted, &mut wanted_pet, &mut wanted_aura);
+        // The overlay's description moved (a dynamic aura text landed): rebuild every aura view so
+        // the tooltip shows the live value instead of the cached base description. Without this the
+        // first-built text sticks - the Enrage tooltip kept reading "Haste increased." because the
+        // per-tick value text never requeued the cached view.
+        if spells_changed {
+            wanted_aura.extend(memory.aura_pushed.drain().map(|(key, _)| key));
+        }
         // The pet's inputs: a new pet, or its level, bases, form, reach or motion moving, rebuilds
         // the pet views alone.
         let pet_guid = self_store.and_then(|s| s.0.unit_pet_guid());

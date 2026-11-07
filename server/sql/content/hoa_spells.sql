@@ -18,6 +18,14 @@ UPDATE `hoa_spell_clone` SET `entry` = 60004, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60005, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60057, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60058, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60059, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
+UPDATE `hoa_spell_clone` SET `entry` = 60060, `build` = 5875;
+INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60006, `build` = 5875;
 INSERT INTO `spell_template` SELECT * FROM `hoa_spell_clone`;
 UPDATE `hoa_spell_clone` SET `entry` = 60007, `build` = 5875;
@@ -203,6 +211,66 @@ UPDATE `spell_template` SET
   `attributesEx3` = 0,
   `attributesEx4` = 0
 WHERE `entry` = 60005 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Shield Regenerating',
+  `nameSubtext` = '',
+  `description` = 'Shield will regenerate when you avoid damage.',
+  `auraDescription` = 'Shield will regenerate when you avoid damage.',
+  `spellIconId` = 60057,
+  `stackAmount` = 0,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60057 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Spinning Blades',
+  `nameSubtext` = '',
+  `description` = 'Spinning, striking all nearby enemies.',
+  `auraDescription` = 'Spinning, striking all nearby enemies.',
+  `spellIconId` = 60058,
+  `stackAmount` = 0,
+  `durationIndex` = 28,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60058 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Consecrated Might',
+  `nameSubtext` = '',
+  `description` = 'Damage increased while standing in Consecration.',
+  `auraDescription` = 'Damage increased while standing in Consecration.',
+  `spellIconId` = 60059,
+  `stackAmount` = 0,
+  `durationIndex` = 0,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60059 AND `build` = 5875;
+
+UPDATE `spell_template` SET
+  `name` = 'Guardian of the Light',
+  `nameSubtext` = '',
+  `description` = 'Damage taken reduced while standing in Consecration.',
+  `auraDescription` = 'Damage taken reduced while standing in Consecration.',
+  `spellIconId` = 60060,
+  `stackAmount` = 0,
+  `durationIndex` = 0,
+  `attributes` = 0,
+  `attributesEx` = 0,
+  `attributesEx2` = 0,
+  `attributesEx3` = 0,
+  `attributesEx4` = 0
+WHERE `entry` = 60060 AND `build` = 5875;
 
 UPDATE `spell_template` SET
   `name` = 'Darkmoon Card: Blue Dragon',
